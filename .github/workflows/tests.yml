@@ -1,0 +1,51 @@
+name: Laravel Tests
+#on: [ push, pull_request ]
+on: [ pull_request ]
+
+jobs:
+  build-and-test:
+    name: Build and Test
+    runs-on: ubuntu-latest
+
+    services:
+      postgres:
+        image: postgres:latest
+        env:
+          POSTGRES_USER: admin
+          POSTGRES_PASSWORD: admin
+          POSTGRES_DB: eshop
+        ports:
+          - 5432:5432
+        options: --health-cmd pg_isready --health-interval 10s --health-timeout 5s --health-retries 5
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+
+      - name: Setup PHP
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: 8.4
+          extensions: dom, curl, libxml, mbstring, zip, pcntl, pdo, sqlite, pdo_sqlite
+          coverage: xdebug
+
+      - name: Fix permissions
+        run: sudo chown -R $USER:$USER $HOME/.composer
+
+      - name: Install dependencies
+        run: composer install --no-scripts
+
+      - name: Copy .env file
+        run: cp .env.initial .env
+
+      - name: Generate application key
+        run: php artisan key:generate
+
+      - name: Copy .env file
+        run: cp .env .env.testing
+
+      - name: Create symlink for storage
+        run: php artisan storage:link
+
+      - name: Run tests
+        run: ./vendor/bin/phpunit
