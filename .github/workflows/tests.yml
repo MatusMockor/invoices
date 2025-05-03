@@ -36,7 +36,7 @@ jobs:
         run: composer install --no-scripts
 
       - name: Copy .env file
-        run: cp .env.initial .env
+        run: cp .env.example .env
 
       - name: Generate application key
         run: php artisan key:generate
