@@ -2,90 +2,112 @@
 
 namespace App\Services;
 
-use GuzzleHttp\Client;
-use Exception;
-use Illuminate\Support\Facades\Log;
 use App\Models\Company;
+use Illuminate\Http\Client\ConnectionException;
+use Illuminate\Support\Facades\Http;
+use Illuminate\Support\Facades\Log;
 
 class CompanyDataService
 {
-    protected $client;
-    
+    /**
+     * Základní URL a případný API klíč jsou načteny z config/services.php
+     */
+    protected string $baseUrl;
+    protected ?string $apiKey;
+
     public function __construct()
     {
-        $this->client = new Client([
-            'base_uri' => 'https://www.finstat.sk/api/',
-            'timeout' => 10.0,
-        ]);
+        $this->baseUrl = rtrim(config('services.finstat.base_url', 'https://www.finstat.sk/api/'), '/') . '/';
+        $this->apiKey  = config('services.finstat.key');
     }
-    
-    public function fetchCompanyDataByIco(string $ico)
+
+    /**
+     * Načtení údajů o firmě dle IČO.
+     */
+    public function fetchCompanyDataByIco(string $ico): array
     {
+        // Rychlá validace vstupu (8 čísel)
+        if (strlen($ico) !== 8 || !ctype_digit($ico)) {
+            return [
+                'success' => false,
+                'message' => 'Neplatné IČO',
+            ];
+        }
+
         try {
-            // This is a placeholder API call. In a real app, you would use a specific
-            // Slovakian business registry API with proper authentication
-            // Example APIs: finstat.sk, registeruz.sk, or orsr.sk
-            
-            // Simulating API response for example purposes
-            // In real implementation, you would make an actual API request here
-            
-            // Simulate successful API response
-            if (strlen($ico) === 8 && is_numeric($ico)) {
+            $response = Http::baseUrl($this->baseUrl)
+                ->timeout(10)
+                ->acceptJson()
+                ->when(
+                    $this->apiKey,
+                    fn ($request) => $request->withQueryParameters(['key' => $this->apiKey])
+                )
+                ->get("companies/{$ico}");
+
+            if ($response->successful()) {
+                $data = $response->json();
+
                 return [
                     'success' => true,
                     'data' => [
-                        'ico' => $ico,
-                        'name' => 'Spoločnosť ' . $ico,
-                        'street' => 'Hlavná ' . rand(1, 100),
-                        'city' => 'Bratislava',
-                        'postal_code' => '811 0' . rand(1, 9),
-                        'country' => 'Slovensko',
-                        'dic' => '202' . rand(1000000, 9999999),
-                        'ic_dph' => 'SK202' . rand(1000000, 9999999),
-                    ]
+                        'ico'         => $data['ico']                    ?? $ico,
+                        'name'        => $data['name']                   ?? '',
+                        'street'      => $data['address']['street']      ?? '',
+                        'city'        => $data['address']['city']        ?? '',
+                        'postal_code' => $data['address']['zip']         ?? '',
+                        'country'     => $data['address']['country']     ?? 'Slovensko',
+                        'dic'         => $data['dic']                    ?? null,
+                        'ic_dph'      => $data['ic_dph']                 ?? null,
+                    ],
                 ];
             }
-            
+
+            Log::warning('Finstat API response not successful', [
+                'status' => $response->status(),
+                'body'   => $response->body(),
+            ]);
+
             return [
                 'success' => false,
-                'message' => 'Neplatné IČO'
+                'message' => 'Nepodarilo sa načítať dáta o spoločnosti.',
             ];
-            
-        } catch (Exception $e) {
-            Log::error('Error fetching company data: ' . $e->getMessage());
+        } catch (ConnectionException $e) {
+            Log::error('Error fetching company data', ['message' => $e->getMessage()]);
+
             return [
                 'success' => false,
-                'message' => 'Chyba pri získavaní údajov spoločnosti'
+                'message' => 'Chyba pri získavaní údajov spoločnosti.',
             ];
         }
     }
-    
-    public function findOrCreateCompany(string $ico)
+
+    /**
+     * Vyhledá firmu podle IČO v DB, případně ji stáhne z API a založí.
+     */
+    public function findOrCreateCompany(string $ico): ?Company
     {
-        // First check if company already exists in our database
+        // Pokus o nalezení v databázi
         $company = Company::where('ico', $ico)->first();
-        
         if ($company) {
             return $company;
         }
-        
-        // If not, fetch from API and create
+
+        // Načtení z API
         $companyData = $this->fetchCompanyDataByIco($ico);
-        
-        if (!$companyData['success']) {
+        if (! $companyData['success']) {
             return null;
         }
-        
-        // Create new company record
+
+        // Vytvoření nové firmy
         return Company::create([
-            'ico' => $companyData['data']['ico'],
-            'name' => $companyData['data']['name'],
-            'street' => $companyData['data']['street'],
-            'city' => $companyData['data']['city'],
+            'ico'         => $companyData['data']['ico'],
+            'name'        => $companyData['data']['name'],
+            'street'      => $companyData['data']['street'],
+            'city'        => $companyData['data']['city'],
             'postal_code' => $companyData['data']['postal_code'],
-            'country' => $companyData['data']['country'],
-            'dic' => $companyData['data']['dic'],
-            'ic_dph' => $companyData['data']['ic_dph'],
+            'country'     => $companyData['data']['country'],
+            'dic'         => $companyData['data']['dic'],
+            'ic_dph'      => $companyData['data']['ic_dph'],
         ]);
     }
 }
