@@ -11,7 +11,16 @@ class Invoice extends Model
 {
     use HasFactory;
 
+    /**
+     * Get the user that owns the invoice.
+     */
+    public function user(): BelongsTo
+    {
+        return $this->belongsTo(User::class);
+    }
+
     protected $fillable = [
+        'user_id',
         'invoice_number',
         'issue_date',
         'due_date',
