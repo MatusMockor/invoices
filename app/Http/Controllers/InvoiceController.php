@@ -4,9 +4,9 @@ namespace App\Http\Controllers;
 
 use App\Http\Requests\Invoices\CreateInvoiceRequest;
 use App\Http\Requests\Invoices\UpdateInvoiceRequest;
-use App\Models\Partner;
 use App\Models\Invoice;
 use App\Models\InvoiceItem;
+use App\Models\Partner;
 use App\Services\PartnerDataService;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Support\Facades\DB;
