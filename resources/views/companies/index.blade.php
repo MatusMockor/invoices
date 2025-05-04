@@ -126,39 +126,4 @@
             @endif
         </div>
     </div>
-
-    <!-- JavaScript for dropdown menus -->
-    <script>
-        document.addEventListener('DOMContentLoaded', function() {
-            // Get all dropdown buttons
-            const dropdownButtons = document.querySelectorAll('[id^="dropdown-button-"]');
-
-            // Add click event listener to each button
-            dropdownButtons.forEach(button => {
-                button.addEventListener('click', function() {
-                    const id = this.id.replace('dropdown-button-', '');
-                    const menu = document.getElementById(`dropdown-menu-${id}`);
-
-                    // Toggle dropdown visibility
-                    menu.classList.toggle('hidden');
-
-                    // Update aria-expanded attribute
-                    this.setAttribute('aria-expanded', menu.classList.contains('hidden') ? 'false' : 'true');
-                });
-            });
-
-            // Close dropdown when clicking outside
-            document.addEventListener('click', function(event) {
-                dropdownButtons.forEach(button => {
-                    const id = button.id.replace('dropdown-button-', '');
-                    const menu = document.getElementById(`dropdown-menu-${id}`);
-
-                    if (!button.contains(event.target) && !menu.contains(event.target) && !menu.classList.contains('hidden')) {
-                        menu.classList.add('hidden');
-                        button.setAttribute('aria-expanded', 'false');
-                    }
-                });
-            });
-        });
-    </script>
 </x-app-layout>
