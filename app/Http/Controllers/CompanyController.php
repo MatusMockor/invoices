@@ -5,7 +5,6 @@ namespace App\Http\Controllers;
 use App\Http\Resources\CompanyResource;
 use App\Models\Company;
 use App\Services\CompanyDataService;
-use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 
 class CompanyController extends Controller
