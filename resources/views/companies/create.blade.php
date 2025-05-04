@@ -72,6 +72,22 @@
                             </div>
                         </div>
 
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
+                            <!-- IBAN -->
+                            <div>
+                                <x-input-label for="iban" :value="__('IBAN')" />
+                                <x-text-input id="iban" class="block mt-1 w-full" type="text" name="iban" :value="old('iban')" />
+                                <x-input-error :messages="$errors->get('iban')" class="mt-2" />
+                            </div>
+
+                            <!-- SWIFT -->
+                            <div>
+                                <x-input-label for="swift" :value="__('SWIFT')" />
+                                <x-text-input id="swift" class="block mt-1 w-full" type="text" name="swift" :value="old('swift')" />
+                                <x-input-error :messages="$errors->get('swift')" class="mt-2" />
+                            </div>
+                        </div>
+
                         <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
                             <!-- Phone -->
                             <div>
