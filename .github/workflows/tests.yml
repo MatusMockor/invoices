@@ -41,11 +41,11 @@ jobs:
       - name: Generate application key
         run: php artisan key:generate
 
-      - name: Copy .env file
-        run: cp .env .env.testing
-
-      - name: Create symlink for storage
-        run: php artisan storage:link
+#      - name: Copy .env file
+#        run: cp .env .env.testing
+#
+#      - name: Create symlink for storage
+#        run: php artisan storage:link
 
       - name: Run tests
         run: ./vendor/bin/phpunit
