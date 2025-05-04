@@ -2,6 +2,7 @@
 
 use App\Http\Controllers\CompanyController;
 use App\Http\Controllers\InvoiceController;
+use App\Http\Controllers\PartnerController;
 use App\Http\Controllers\ProfileController;
 use Illuminate\Support\Facades\Route;
 
@@ -24,9 +25,9 @@ Route::middleware('auth')->group(function () {
 
     // Company routes
     Route::resource('companies', CompanyController::class);
-    Route::post('/companies/fetch-by-ico', [CompanyController::class, 'fetchByIco'])->name('companies.fetch-by-ico');
+
     Route::resource('partners', PartnerController::class);
-    Route::post('/partners/fetch-by-ico', [PartnerController::class, 'fetchByIco'])->name('companies.fetch-by-ico');
+    Route::post('/partners/fetch-by-ico', [PartnerController::class, 'fetchByIco'])->name('partners.fetch-by-ico');
 });
 
 require __DIR__.'/auth.php';
