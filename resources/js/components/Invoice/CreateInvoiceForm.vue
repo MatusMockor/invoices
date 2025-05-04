@@ -15,6 +15,16 @@
                 <!-- Company Information -->
                 <div class="bg-white dark:bg-gray-800 p-6 rounded-lg shadow">
                     <h3 class="text-lg font-medium text-gray-900 dark:text-gray-100 mb-4">Údaje o spoločnosti</h3>
+
+                  <div class="mb-4 space-y-2">
+                    <label for="supplier_company_id" class="block text-sm font-medium text-gray-700 dark:text-gray-300">Dodávateľ (Vaša spoločnosť)</label>
+                    <select id="supplier_company_id" v-model="form.supplier_company_id" class="w-full rounded-md border-gray-300 dark:border-gray-600 dark:bg-gray-800 shadow-sm focus:border-indigo-300 focus:ring focus:ring-indigo-200 focus:ring-opacity-50 dark:text-white">
+                      <option value="">Vyberte dodávateľa</option>
+                      <option v-for="company in userCompanies" :key="company.id" :value="company.id">
+                        {{ company.name }} ({{ company.ico }})
+                      </option>
+                    </select>
+                  </div>
                     
                     <div class="mb-4">
                         <label for="ico" class="block text-sm font-medium text-gray-700 dark:text-gray-300">IČO</label>
@@ -193,6 +203,15 @@ export default {
     csrfToken: {
       type: String,
       required: true
+        },
+        userCompanies: {
+            type: Array,
+            required: true
+      },
+      currentCompanyId: {
+          type: Number,
+          required: false,
+          default: null
     }
   },
     data() {
@@ -209,6 +228,7 @@ export default {
                 issue_date: new Date().toISOString().substr(0, 10),
                 due_date: new Date(new Date().setDate(new Date().getDate() + 14)).toISOString().substr(0, 10),
                 status: 'draft',
+                supplier_company_id: this.currentCompanyId || '',
                 currency: 'EUR',
                 note: '',
                 items: [
