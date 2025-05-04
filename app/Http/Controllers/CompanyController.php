@@ -2,81 +2,62 @@
 
 namespace App\Http\Controllers;
 
+use App\Http\Requests\Companies\CreateCompanyRequest;
+use App\Http\Requests\Companies\FetchCompanyByIcoRequest;
+use App\Http\Requests\Companies\UpdateCompanyRequest;
 use App\Http\Resources\CompanyResource;
 use App\Models\Company;
 use App\Services\CompanyDataService;
-use Illuminate\Http\Request;
+use Illuminate\Http\JsonResponse;
+use Illuminate\Http\RedirectResponse;
+use Illuminate\View\View;
 
 class CompanyController extends Controller
 {
-    protected $companyDataService;
-
-    public function __construct(CompanyDataService $companyDataService)
-    {
-        $this->companyDataService = $companyDataService;
+    public function __construct(
+        protected CompanyDataService $companyDataService
+    ) {
     }
 
-    public function index()
+    public function index(): View
     {
-        $companies = Company::latest()->paginate(10);
+        $companies = Company::query()->latest()->paginate(10);
 
         return view('companies.index', compact('companies'));
     }
 
-    public function create()
+    public function create(): View
     {
         return view('companies.create');
     }
 
-    public function store(Request $request)
+    public function store(CreateCompanyRequest $request): RedirectResponse
     {
-        $validated = $request->validate([
-            'ico' => 'required|string|max:8',
-            'name' => 'required|string|max:255',
-            'street' => 'nullable|string|max:255',
-            'city' => 'nullable|string|max:255',
-            'postal_code' => 'nullable|string|max:10',
-            'country' => 'nullable|string|max:255',
-            'dic' => 'nullable|string|max:20',
-            'ic_dph' => 'nullable|string|max:20',
-        ]);
-
-        Company::create($validated);
+        Company::query()->create($request->validated());
 
         return redirect()->route('companies.index')
             ->with('success', 'Spoločnosť bola úspešne vytvorená');
     }
 
-    public function show(Company $company)
+    public function show(Company $company): View
     {
         return view('companies.show', compact('company'));
     }
 
-    public function edit(Company $company)
+    public function edit(Company $company): View
     {
         return view('companies.edit', compact('company'));
     }
 
-    public function update(Request $request, Company $company)
+    public function update(UpdateCompanyRequest $request, Company $company): RedirectResponse
     {
-        $validated = $request->validate([
-            'ico' => 'required|string|max:8',
-            'name' => 'required|string|max:255',
-            'street' => 'nullable|string|max:255',
-            'city' => 'nullable|string|max:255',
-            'postal_code' => 'nullable|string|max:10',
-            'country' => 'nullable|string|max:255',
-            'dic' => 'nullable|string|max:20',
-            'ic_dph' => 'nullable|string|max:20',
-        ]);
-
-        $company->update($validated);
+        $company->update($request->validated());
 
         return redirect()->route('companies.index')
             ->with('success', 'Údaje spoločnosti boli úspešne aktualizované');
     }
 
-    public function destroy(Company $company)
+    public function destroy(Company $company): RedirectResponse
     {
         $company->delete();
 
@@ -84,12 +65,8 @@ class CompanyController extends Controller
             ->with('success', 'Spoločnosť bola úspešne vymazaná');
     }
 
-    public function fetchByIco(Request $request)
+    public function fetchByIco(FetchCompanyByIcoRequest $request): JsonResponse|CompanyResource
     {
-        $request->validate([
-            'ico' => 'required|string|max:8',
-        ]);
-
         $companyData = $this->companyDataService->findOrCreateCompany($request->ico);
 
         if (! $companyData) {
