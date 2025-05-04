@@ -1,10 +1,10 @@
 <x-app-layout>
     <x-slot name="header">
         <div class="flex justify-between items-center">
-            <h2 class="font-semibold text-xl text-gray-800 leading-tight">
+            <h2 class="font-semibold text-xl text-gray-800 dark:text-gray-200 leading-tight">
                 {{ __('Pridať novú spoločnosť') }}
             </h2>
-            <a href="{{ route('companies.index') }}" class="inline-flex items-center px-4 py-2 bg-gray-800 border border-transparent rounded-md font-semibold text-xs text-white uppercase tracking-widest hover:bg-gray-700 focus:bg-gray-700 active:bg-gray-900 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 transition ease-in-out duration-150">
+            <a href="{{ route('companies.index') }}" class="inline-flex items-center px-4 py-2 bg-gray-800 dark:bg-gray-700 border border-transparent rounded-md font-semibold text-xs text-white uppercase tracking-widest hover:bg-gray-700 dark:hover:bg-gray-600 focus:bg-gray-700 active:bg-gray-900 dark:active:bg-gray-800 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 dark:focus:ring-offset-gray-800 transition ease-in-out duration-150">
                 Späť na zoznam
             </a>
         </div>
@@ -12,10 +12,10 @@
 
     <div class="py-12">
         <div class="max-w-7xl mx-auto sm:px-6 lg:px-8">
-            <div class="bg-white overflow-hidden shadow-sm sm:rounded-lg">
-                <div class="p-6 bg-white border-b border-gray-200">
+            <div class="bg-white dark:bg-gray-800 overflow-hidden shadow-sm sm:rounded-lg">
+                <div class="p-6 bg-white dark:bg-gray-800 border-b border-gray-200 dark:border-gray-700">
                     @if ($errors->any())
-                        <div class="mb-6 bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded relative" role="alert">
+                        <div class="mb-6 bg-red-100 dark:bg-red-900 border border-red-400 dark:border-red-700 text-red-700 dark:text-red-300 px-4 py-3 rounded relative" role="alert">
                             <strong class="font-bold">Chyba!</strong>
                             <span class="block sm:inline">Prosím opravte nasledujúce chyby:</span>
                             <ul class="mt-3 list-disc list-inside text-sm">
@@ -32,62 +32,62 @@
                         <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
                             <div>
                                 <div class="mb-4">
-                                    <label for="ico" class="block text-sm font-medium text-gray-700">IČO *</label>
+                                    <label for="ico" class="block text-sm font-medium text-gray-700 dark:text-gray-300">IČO *</label>
                                     <div class="mt-1 flex rounded-md shadow-sm">
-                                        <input type="text" name="ico" id="ico" value="{{ old('ico') }}" class="focus:ring-indigo-500 focus:border-indigo-500 flex-1 block w-full rounded-md sm:text-sm border-gray-300" placeholder="Zadajte IČO" required>
-                                        <button type="button" id="fetch-company-btn" class="ml-2 inline-flex items-center px-3 py-2 border border-transparent text-sm leading-4 font-medium rounded-md text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500">
+                                        <input type="text" name="ico" id="ico" value="{{ old('ico') }}" class="border-gray-300 dark:border-gray-700 dark:bg-gray-900 dark:text-gray-300 focus:border-indigo-500 dark:focus:border-indigo-600 focus:ring-indigo-500 dark:focus:ring-indigo-600 flex-1 block w-full rounded-md sm:text-sm" placeholder="Zadajte IČO" required>
+                                        <button type="button" id="fetch-company-btn" class="ml-2 inline-flex items-center px-3 py-2 border border-transparent text-sm leading-4 font-medium rounded-md text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 dark:focus:ring-offset-gray-800">
                                             Načítať údaje
                                         </button>
                                     </div>
-                                    <div id="company-message" class="text-sm text-gray-500 mt-1 hidden"></div>
+                                    <div id="company-message" class="text-sm text-gray-500 dark:text-gray-400 mt-1 hidden"></div>
                                 </div>
                                 
                                 <div class="mb-4">
-                                    <label for="name" class="block text-sm font-medium text-gray-700">Názov spoločnosti *</label>
-                                    <input type="text" name="name" id="name" value="{{ old('name') }}" class="mt-1 focus:ring-indigo-500 focus:border-indigo-500 block w-full shadow-sm sm:text-sm border-gray-300 rounded-md" required>
+                                    <label for="name" class="block text-sm font-medium text-gray-700 dark:text-gray-300">Názov spoločnosti *</label>
+                                    <input type="text" name="name" id="name" value="{{ old('name') }}" class="mt-1 border-gray-300 dark:border-gray-700 dark:bg-gray-900 dark:text-gray-300 focus:border-indigo-500 dark:focus:border-indigo-600 focus:ring-indigo-500 dark:focus:ring-indigo-600 block w-full shadow-sm sm:text-sm rounded-md" required>
                                 </div>
                                 
                                 <div class="mb-4">
-                                    <label for="street" class="block text-sm font-medium text-gray-700">Ulica a číslo *</label>
-                                    <input type="text" name="street" id="street" value="{{ old('street') }}" class="mt-1 focus:ring-indigo-500 focus:border-indigo-500 block w-full shadow-sm sm:text-sm border-gray-300 rounded-md" required>
+                                    <label for="street" class="block text-sm font-medium text-gray-700 dark:text-gray-300">Ulica a číslo *</label>
+                                    <input type="text" name="street" id="street" value="{{ old('street') }}" class="mt-1 border-gray-300 dark:border-gray-700 dark:bg-gray-900 dark:text-gray-300 focus:border-indigo-500 dark:focus:border-indigo-600 focus:ring-indigo-500 dark:focus:ring-indigo-600 block w-full shadow-sm sm:text-sm rounded-md" required>
                                 </div>
                                 
                                 <div class="mb-4">
-                                    <label for="city" class="block text-sm font-medium text-gray-700">Mesto *</label>
-                                    <input type="text" name="city" id="city" value="{{ old('city') }}" class="mt-1 focus:ring-indigo-500 focus:border-indigo-500 block w-full shadow-sm sm:text-sm border-gray-300 rounded-md" required>
+                                    <label for="city" class="block text-sm font-medium text-gray-700 dark:text-gray-300">Mesto *</label>
+                                    <input type="text" name="city" id="city" value="{{ old('city') }}" class="mt-1 border-gray-300 dark:border-gray-700 dark:bg-gray-900 dark:text-gray-300 focus:border-indigo-500 dark:focus:border-indigo-600 focus:ring-indigo-500 dark:focus:ring-indigo-600 block w-full shadow-sm sm:text-sm rounded-md" required>
                                 </div>
                             </div>
                             
                             <div>
                                 <div class="mb-4">
-                                    <label for="postal_code" class="block text-sm font-medium text-gray-700">PSČ *</label>
-                                    <input type="text" name="postal_code" id="postal_code" value="{{ old('postal_code') }}" class="mt-1 focus:ring-indigo-500 focus:border-indigo-500 block w-full shadow-sm sm:text-sm border-gray-300 rounded-md" required>
+                                    <label for="postal_code" class="block text-sm font-medium text-gray-700 dark:text-gray-300">PSČ *</label>
+                                    <input type="text" name="postal_code" id="postal_code" value="{{ old('postal_code') }}" class="mt-1 border-gray-300 dark:border-gray-700 dark:bg-gray-900 dark:text-gray-300 focus:border-indigo-500 dark:focus:border-indigo-600 focus:ring-indigo-500 dark:focus:ring-indigo-600 block w-full shadow-sm sm:text-sm rounded-md" required>
                                 </div>
                                 
                                 <div class="mb-4">
-                                    <label for="country" class="block text-sm font-medium text-gray-700">Krajina *</label>
-                                    <input type="text" name="country" id="country" value="{{ old('country', 'Slovensko') }}" class="mt-1 focus:ring-indigo-500 focus:border-indigo-500 block w-full shadow-sm sm:text-sm border-gray-300 rounded-md" required>
+                                    <label for="country" class="block text-sm font-medium text-gray-700 dark:text-gray-300">Krajina *</label>
+                                    <input type="text" name="country" id="country" value="{{ old('country', 'Slovensko') }}" class="mt-1 border-gray-300 dark:border-gray-700 dark:bg-gray-900 dark:text-gray-300 focus:border-indigo-500 dark:focus:border-indigo-600 focus:ring-indigo-500 dark:focus:ring-indigo-600 block w-full shadow-sm sm:text-sm rounded-md" required>
                                 </div>
                                 
                                 <div class="mb-4">
-                                    <label for="dic" class="block text-sm font-medium text-gray-700">DIČ</label>
-                                    <input type="text" name="dic" id="dic" value="{{ old('dic') }}" class="mt-1 focus:ring-indigo-500 focus:border-indigo-500 block w-full shadow-sm sm:text-sm border-gray-300 rounded-md">
+                                    <label for="dic" class="block text-sm font-medium text-gray-700 dark:text-gray-300">DIČ</label>
+                                    <input type="text" name="dic" id="dic" value="{{ old('dic') }}" class="mt-1 border-gray-300 dark:border-gray-700 dark:bg-gray-900 dark:text-gray-300 focus:border-indigo-500 dark:focus:border-indigo-600 focus:ring-indigo-500 dark:focus:ring-indigo-600 block w-full shadow-sm sm:text-sm rounded-md">
                                 </div>
                                 
                                 <div class="mb-4">
-                                    <label for="ic_dph" class="block text-sm font-medium text-gray-700">IČ DPH</label>
-                                    <input type="text" name="ic_dph" id="ic_dph" value="{{ old('ic_dph') }}" class="mt-1 focus:ring-indigo-500 focus:border-indigo-500 block w-full shadow-sm sm:text-sm border-gray-300 rounded-md">
+                                    <label for="ic_dph" class="block text-sm font-medium text-gray-700 dark:text-gray-300">IČ DPH</label>
+                                    <input type="text" name="ic_dph" id="ic_dph" value="{{ old('ic_dph') }}" class="mt-1 border-gray-300 dark:border-gray-700 dark:bg-gray-900 dark:text-gray-300 focus:border-indigo-500 dark:focus:border-indigo-600 focus:ring-indigo-500 dark:focus:ring-indigo-600 block w-full shadow-sm sm:text-sm rounded-md">
                                 </div>
                             </div>
                         </div>
                         
                         <div class="mb-4">
-                            <label for="note" class="block text-sm font-medium text-gray-700">Poznámka</label>
-                            <textarea name="note" id="note" rows="3" class="mt-1 focus:ring-indigo-500 focus:border-indigo-500 block w-full shadow-sm sm:text-sm border-gray-300 rounded-md">{{ old('note') }}</textarea>
+                            <label for="note" class="block text-sm font-medium text-gray-700 dark:text-gray-300">Poznámka</label>
+                            <textarea name="note" id="note" rows="3" class="mt-1 border-gray-300 dark:border-gray-700 dark:bg-gray-900 dark:text-gray-300 focus:border-indigo-500 dark:focus:border-indigo-600 focus:ring-indigo-500 dark:focus:ring-indigo-600 block w-full shadow-sm sm:text-sm rounded-md">{{ old('note') }}</textarea>
                         </div>
                         
                         <div class="flex justify-end">
-                            <button type="submit" class="inline-flex items-center px-4 py-2 bg-indigo-600 border border-transparent rounded-md font-semibold text-xs text-white uppercase tracking-widest hover:bg-indigo-500 focus:bg-indigo-500 active:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 transition ease-in-out duration-150">
+                            <button type="submit" class="inline-flex items-center px-4 py-2 bg-indigo-600 border border-transparent rounded-md font-semibold text-xs text-white uppercase tracking-widest hover:bg-indigo-500 focus:bg-indigo-500 active:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 dark:focus:ring-offset-gray-800 transition ease-in-out duration-150">
                                 Pridať spoločnosť
                             </button>
                         </div>
@@ -106,13 +106,13 @@
                 
                 if (!ico) {
                     messageDiv.textContent = 'Zadajte IČO';
-                    messageDiv.classList.remove('hidden', 'text-green-500');
-                    messageDiv.classList.add('text-red-500');
+                    messageDiv.classList.remove('hidden', 'text-green-500', 'text-green-400');
+                    messageDiv.classList.add('text-red-500', 'dark:text-red-400');
                     return;
                 }
                 
                 messageDiv.textContent = 'Načítavam údaje...';
-                messageDiv.classList.remove('hidden', 'text-red-500', 'text-green-500');
+                messageDiv.classList.remove('hidden', 'text-red-500', 'text-red-400', 'text-green-500', 'text-green-400');
                 
                 fetch('{{ route('companies.fetch-by-ico') }}', {
                     method: 'POST',
@@ -133,19 +133,19 @@
                         document.getElementById('ic_dph').value = data.data.ic_dph;
                         
                         messageDiv.textContent = 'Údaje úspešne načítané';
-                        messageDiv.classList.remove('text-red-500');
-                        messageDiv.classList.add('text-green-500');
+                        messageDiv.classList.remove('text-red-500', 'dark:text-red-400');
+                        messageDiv.classList.add('text-green-500', 'dark:text-green-400');
                     } else {
                         messageDiv.textContent = data.message || 'Nepodarilo sa načítať údaje';
-                        messageDiv.classList.remove('text-green-500');
-                        messageDiv.classList.add('text-red-500');
+                        messageDiv.classList.remove('text-green-500', 'dark:text-green-400');
+                        messageDiv.classList.add('text-red-500', 'dark:text-red-400');
                     }
                 })
                 .catch(error => {
                     console.error('Error:', error);
                     messageDiv.textContent = 'Chyba pri načítaní údajov';
-                    messageDiv.classList.remove('text-green-500');
-                    messageDiv.classList.add('text-red-500');
+                    messageDiv.classList.remove('text-green-500', 'dark:text-green-400');
+                    messageDiv.classList.add('text-red-500', 'dark:text-red-400');
                 });
             });
         });
