@@ -2,10 +2,9 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\Company;
 use App\Http\Requests\StoreCompanyRequest;
+use App\Models\Company;
 use Illuminate\Http\RedirectResponse;
-use Illuminate\Http\Request;
 use Illuminate\View\View;
 
 class CompanyController extends Controller
@@ -16,7 +15,7 @@ class CompanyController extends Controller
     public function index(): View
     {
         $companies = auth()->user()->companies;
-        
+
         return view('companies.index', compact('companies'));
     }
 
@@ -35,9 +34,9 @@ class CompanyController extends Controller
     {
         $validated = $request->validated();
         $validated['user_id'] = auth()->id();
-        
+
         $company = Company::create($validated);
-        
+
         return redirect()->route('companies.show', $company)
             ->with('success', 'Company was successfully created');
     }
@@ -66,7 +65,7 @@ class CompanyController extends Controller
     {
 
         $company->update($request->validated());
-        
+
         return redirect()->route('companies.show', $company)
             ->with('success', 'Company was successfully updated');
     }
@@ -78,7 +77,7 @@ class CompanyController extends Controller
     {
 
         $company->delete();
-        
+
         return redirect()->route('companies.index')
             ->with('success', 'Company was successfully deleted');
     }
