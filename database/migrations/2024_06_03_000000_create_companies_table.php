@@ -14,6 +14,8 @@ return new class extends Migration
         Schema::create('companies', static function (Blueprint $table) {
             $table->id();
             $table->foreignId('user_id')->constrained()->onDelete('cascade');
+            $table->string('iban')->nullable()->after('ico');
+            $table->string('swift')->nullable()->after('iban');
             $table->string('name');
             $table->string('street')->nullable();
             $table->string('city')->nullable();
