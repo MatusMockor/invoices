@@ -1,6 +1,6 @@
 import './bootstrap';
 import {createApp} from 'vue';
-import CreateInvoiceForm from './Components/Invoice/CreateInvoiceForm.vue';
+import CreateInvoiceForm from './components/Invoice/CreateInvoiceForm.vue';
 
 // Add dark mode detection
 if (localStorage.theme === 'dark' || (!('theme' in localStorage) && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
