@@ -42,14 +42,16 @@ class InvoiceController extends Controller
         }
 
         $validated = $request->validated();
+        $user = auth()->user();
 
         // Create invoice
         $invoice = Invoice::create([
             'invoice_number' => $validated['invoice_number'],
-            'user_id' => auth()->user()->id,
+            'user_id' => $user->id,
             'issue_date' => $validated['issue_date'],
             'due_date' => $validated['due_date'],
-            'company_id' => $company->id,
+            'company_id' => $company->id, // This is the recipient company
+            'supplier_company_id' => $user->current_company_id, // Set the active company as supplier
             'total_amount' => $validated['total_amount'],
             'currency' => $validated['currency'],
             'note' => $validated['note'],
@@ -101,12 +103,15 @@ class InvoiceController extends Controller
 
             $validated = $request->validated();
 
+            $user = auth()->user();
+
             // Update invoice
             $invoice->update([
                 'invoice_number' => $validated['invoice_number'],
                 'issue_date' => $validated['issue_date'],
                 'due_date' => $validated['due_date'],
-                'company_id' => $company->id,
+                'company_id' => $company->id, // This is the recipient company
+                'supplier_id' => $user->current_company_id, // Keep the active company as supplier
                 'total_amount' => $validated['total_amount'],
                 'currency' => $validated['currency'],
                 'note' => $validated['note'],
