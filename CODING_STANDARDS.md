@@ -17,7 +17,7 @@ app/Http/Requests
 •	Name with Create, Update, Delete.
 
 app/Models
-•	Avoid fillable.
+•	Use fillable.
 
 1. Testing
    •	Use Pest PHP for all tests.
