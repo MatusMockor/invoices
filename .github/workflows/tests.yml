@@ -32,8 +32,20 @@ jobs:
       - name: Fix permissions
         run: sudo chown -R $USER:$USER $HOME/.composer
 
-      - name: Install dependencies
+      - name: Install PHP dependencies
         run: composer install --no-scripts
+      
+      - name: Setup Node.js
+        uses: actions/setup-node@v3
+        with:
+          node-version: '22'
+          cache: 'npm'
+      
+      - name: Install NPM dependencies
+        run: npm ci
+      
+      - name: Build frontend assets
+        run: npm run build
 
       - name: Copy .env file
         run: cp .env.example .env
