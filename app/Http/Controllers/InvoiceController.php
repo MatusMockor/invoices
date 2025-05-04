@@ -2,53 +2,39 @@
 
 namespace App\Http\Controllers;
 
+use App\Http\Requests\Invoices\CreateInvoiceRequest;
+use App\Http\Requests\Invoices\UpdateInvoiceRequest;
 use App\Models\Company;
 use App\Models\Invoice;
 use App\Models\InvoiceItem;
 use App\Services\CompanyDataService;
-use Illuminate\Http\Request;
+use Illuminate\Http\RedirectResponse;
 use Illuminate\Support\Facades\DB;
+use Illuminate\View\View;
+use Throwable;
 
 class InvoiceController extends Controller
 {
-    protected $companyDataService;
+    public function __construct(
+        protected CompanyDataService $companyDataService
+    ) {}
 
-    public function __construct(CompanyDataService $companyDataService)
+    public function index(): View
     {
-        $this->companyDataService = $companyDataService;
-    }
-
-    public function index()
-    {
-        $invoices = Invoice::with('company')->latest()->paginate(10);
+        $invoices = Invoice::query()->with('company')->latest()->paginate(10);
 
         return view('invoices.index', compact('invoices'));
     }
 
-    public function create()
+    public function create(): View
     {
-        $companies = Company::orderBy('name')->get();
+        $companies = Company::query()->orderBy('name')->get();
 
         return view('invoices.create', compact('companies'));
     }
 
-    public function store(Request $request)
+    public function store(CreateInvoiceRequest $request): RedirectResponse
     {
-        $validated = $request->validate([
-            'ico' => 'required|string|max:8',
-            'invoice_number' => 'required|string|max:20|unique:invoices',
-            'issue_date' => 'required|date',
-            'due_date' => 'required|date|after_or_equal:issue_date',
-            'total_amount' => 'required|numeric|min:0',
-            'currency' => 'required|string|max:3',
-            'note' => 'nullable|string',
-            'status' => 'required|string|in:draft,sent,paid,cancelled',
-            'items' => 'required|array|min:1',
-            'items.*.description' => 'required|string|max:255',
-            'items.*.quantity' => 'required|integer|min:1',
-            'items.*.unit_price' => 'required|numeric|min:0',
-        ]);
-
         try {
             DB::beginTransaction();
 
@@ -59,8 +45,10 @@ class InvoiceController extends Controller
                 return back()->withErrors(['ico' => 'Spoločnosť s daným IČO sa nepodarilo nájsť.'])->withInput();
             }
 
+            $validated = $request->validated();
+
             // Create invoice
-            $invoice = Invoice::create([
+            $invoice = Invoice::query()->create([
                 'invoice_number' => $validated['invoice_number'],
                 'issue_date' => $validated['issue_date'],
                 'due_date' => $validated['due_date'],
@@ -73,7 +61,7 @@ class InvoiceController extends Controller
 
             // Create invoice items
             foreach ($validated['items'] as $item) {
-                InvoiceItem::create([
+                InvoiceItem::query()->create([
                     'invoice_id' => $invoice->id,
                     'description' => $item['description'],
                     'quantity' => $item['quantity'],
@@ -87,46 +75,30 @@ class InvoiceController extends Controller
             return redirect()->route('invoices.index')
                 ->with('success', 'Faktúra bola úspešne vytvorená');
 
-        } catch (\Exception $e) {
+        } catch (Throwable $e) {
             DB::rollBack();
 
             return back()->withErrors(['message' => 'Nastala chyba pri vytváraní faktúry: '.$e->getMessage()])->withInput();
         }
     }
 
-    public function show(Invoice $invoice)
+    public function show(Invoice $invoice): View
     {
         $invoice->load(['company', 'items']);
 
         return view('invoices.show', compact('invoice'));
     }
 
-    public function edit(Invoice $invoice)
+    public function edit(Invoice $invoice): View
     {
         $invoice->load(['company', 'items']);
-        $companies = Company::orderBy('name')->get();
+        $companies = Company::query()->orderBy('name')->get();
 
         return view('invoices.edit', compact('invoice', 'companies'));
     }
 
-    public function update(Request $request, Invoice $invoice)
+    public function update(UpdateInvoiceRequest $request, Invoice $invoice): RedirectResponse
     {
-        $validated = $request->validate([
-            'ico' => 'required|string|max:8',
-            'invoice_number' => 'required|string|max:20|unique:invoices,invoice_number,'.$invoice->id,
-            'issue_date' => 'required|date',
-            'due_date' => 'required|date|after_or_equal:issue_date',
-            'total_amount' => 'required|numeric|min:0',
-            'currency' => 'required|string|max:3',
-            'note' => 'nullable|string',
-            'status' => 'required|string|in:draft,sent,paid,cancelled',
-            'items' => 'required|array|min:1',
-            'items.*.id' => 'nullable|exists:invoice_items,id',
-            'items.*.description' => 'required|string|max:255',
-            'items.*.quantity' => 'required|integer|min:1',
-            'items.*.unit_price' => 'required|numeric|min:0',
-        ]);
-
         try {
             DB::beginTransaction();
 
@@ -136,6 +108,8 @@ class InvoiceController extends Controller
             if (! $company) {
                 return back()->withErrors(['ico' => 'Spoločnosť s daným IČO sa nepodarilo nájsť.'])->withInput();
             }
+
+            $validated = $request->validated();
 
             // Update invoice
             $invoice->update([
@@ -154,7 +128,7 @@ class InvoiceController extends Controller
 
             // Create new invoice items
             foreach ($validated['items'] as $item) {
-                InvoiceItem::create([
+                InvoiceItem::query()->create([
                     'invoice_id' => $invoice->id,
                     'description' => $item['description'],
                     'quantity' => $item['quantity'],
@@ -168,14 +142,14 @@ class InvoiceController extends Controller
             return redirect()->route('invoices.index')
                 ->with('success', 'Faktúra bola úspešne aktualizovaná');
 
-        } catch (\Exception $e) {
+        } catch (Throwable $e) {
             DB::rollBack();
 
             return back()->withErrors(['message' => 'Nastala chyba pri aktualizácii faktúry: '.$e->getMessage()])->withInput();
         }
     }
 
-    public function destroy(Invoice $invoice)
+    public function destroy(Invoice $invoice): RedirectResponse
     {
         $invoice->delete();
 
