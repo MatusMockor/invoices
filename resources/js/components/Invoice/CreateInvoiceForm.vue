@@ -133,6 +133,7 @@
                                             </td>
                                             <td class="px-6 py-4 whitespace-nowrap">
                                                 <input type="number" v-model="item.unit_price" @input="updateTotal" class="item-price border-gray-300 dark:border-gray-700 dark:bg-gray-900 dark:text-gray-300 focus:border-indigo-500 dark:focus:border-indigo-600 focus:ring-indigo-500 dark:focus:ring-indigo-600 rounded-md shadow-sm text-sm w-32" min="0" step="0.01" placeholder="0.00" required>
+                                                <div class="text-xs text-gray-500 dark:text-gray-400 mt-1">Cena s DPH</div>
                                             </td>
                                             <td class="px-6 py-4 whitespace-nowrap item-total dark:text-gray-300">
                                                 {{ getItemTotal(index).toFixed(2) }}
@@ -157,9 +158,9 @@
                     </div>
                     
                     <div class="mt-6 text-right">
-                        <div class="text-sm text-gray-500 dark:text-gray-400">Medzisúčet: <span>{{ subtotal.toFixed(2) }}</span> <span>{{ form.currency }}</span></div>
+                        <div class="text-sm text-gray-500 dark:text-gray-400">Cena bez DPH: <span>{{ subtotal.toFixed(2) }}</span> <span>{{ form.currency }}</span></div>
                         <div class="text-sm text-gray-500 dark:text-gray-400">DPH (20%): <span>{{ vat.toFixed(2) }}</span> <span>{{ form.currency }}</span></div>
-                        <div class="text-lg font-bold text-gray-900 dark:text-gray-100">Spolu: <span>{{ grandTotal.toFixed(2) }}</span> <span>{{ form.currency }}</span></div>
+                        <div class="text-lg font-bold text-gray-900 dark:text-gray-100">Spolu s DPH: <span>{{ grandTotal.toFixed(2) }}</span> <span>{{ form.currency }}</span></div>
                         <input type="hidden" v-model="form.total_amount">
                     </div>
                 </div>
@@ -260,12 +261,13 @@ export default {
             return item.quantity * item.unit_price;
         },
         updateTotal() {
-            this.subtotal = this.form.items.reduce((total, item) => {
+            this.grandTotal = this.form.items.reduce((total, item) => {
                 return total + (item.quantity * item.unit_price);
             }, 0);
             
-            this.vat = this.subtotal * 0.2;
-            this.grandTotal = this.subtotal + this.vat;
+            // Calculate subtotal and VAT from the grand total (which now includes VAT)
+            this.subtotal = this.grandTotal / 1.2;
+            this.vat = this.grandTotal - this.subtotal;
             this.form.total_amount = this.grandTotal;
         },
         addItem() {
