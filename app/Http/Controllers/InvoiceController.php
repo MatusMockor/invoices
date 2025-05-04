@@ -35,9 +35,9 @@ class InvoiceController extends Controller
 
     public function store(CreateInvoiceRequest $request): RedirectResponse
     {
-        $company = $this->companyDataService->findOrCreateCompany($request->ico);
+        $partner = $this->companyDataService->findOrCreateCompany($request->ico);
 
-        if (! $company) {
+        if (! $partner) {
             return back()->withErrors(['ico' => 'Spoločnosť s daným IČO sa nepodarilo nájsť.'])->withInput();
         }
 
@@ -50,7 +50,7 @@ class InvoiceController extends Controller
             'user_id' => $user->id,
             'issue_date' => $validated['issue_date'],
             'due_date' => $validated['due_date'],
-            'company_id' => $company->id, // This is the recipient company
+            'partner_id' => $partner->id, // This is the recipient company
             'supplier_company_id' => $user->current_company_id, // Set the active company as supplier
             'total_amount' => $validated['total_amount'],
             'currency' => $validated['currency'],

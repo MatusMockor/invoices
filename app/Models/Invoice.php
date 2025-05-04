@@ -24,7 +24,7 @@ class Invoice extends Model
         'invoice_number',
         'issue_date',
         'due_date',
-        'company_id',
+        'partner_id',
         'supplier_company_id',
         'total_amount',
         'currency',
