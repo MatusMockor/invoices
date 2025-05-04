@@ -25,6 +25,7 @@ Route::middleware('auth')->group(function () {
 
     // Company routes
     Route::resource('companies', CompanyController::class);
+    Route::post('/companies/{company}/switch', [CompanyController::class, 'switchCompany'])->name('companies.switch');
 
     Route::resource('partners', PartnerController::class);
     Route::post('/partners/fetch-by-ico', [PartnerController::class, 'fetchByIco'])->name('partners.fetch-by-ico');
