@@ -25,6 +25,8 @@ Route::middleware('auth')->group(function () {
     // Company routes
     Route::resource('companies', CompanyController::class);
     Route::post('/companies/fetch-by-ico', [CompanyController::class, 'fetchByIco'])->name('companies.fetch-by-ico');
+    Route::resource('partners', PartnerController::class);
+    Route::post('/partners/fetch-by-ico', [PartnerController::class, 'fetchByIco'])->name('companies.fetch-by-ico');
 });
 
 require __DIR__.'/auth.php';

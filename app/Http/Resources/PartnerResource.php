@@ -4,14 +4,14 @@ declare(strict_types=1);
 
 namespace App\Http\Resources;
 
-use App\Models\Company;
+use App\Models\Partner;
 use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\JsonResource;
 
 /**
- * @mixin Company
+ * @mixin Partner
  */
-class CompanyResource extends JsonResource
+class PartnerResource extends JsonResource
 {
     /**
      * @SuppressWarnings(PHPMD.UnusedFormalParameter)

@@ -5,66 +5,66 @@ namespace App\Http\Controllers;
 use App\Http\Requests\Companies\CreateCompanyRequest;
 use App\Http\Requests\Companies\FetchCompanyByIcoRequest;
 use App\Http\Requests\Companies\UpdateCompanyRequest;
-use App\Http\Resources\CompanyResource;
-use App\Models\Company;
-use App\Services\CompanyDataService;
+use App\Http\Resources\PartnerResource;
+use App\Models\Partner;
+use App\Services\PartnerDataService;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\View\View;
 
-class CompanyController extends Controller
+class PartnerController extends Controller
 {
     public function __construct(
-        protected CompanyDataService $companyDataService
+        protected PartnerDataService $companyDataService
     ) {}
 
     public function index(): View
     {
-        $companies = Company::query()->latest()->paginate(10);
+        $companies = Partner::query()->latest()->paginate(10);
 
-        return view('companies.index', compact('companies'));
+        return view('partners.index', compact('companies'));
     }
 
     public function create(): View
     {
-        return view('companies.create');
+        return view('partners.create');
     }
 
     public function store(CreateCompanyRequest $request): RedirectResponse
     {
-        Company::query()->create($request->validated());
+        Partner::query()->create($request->validated());
 
-        return redirect()->route('companies.index')
+        return redirect()->route('partners.index')
             ->with('success', 'Spoločnosť bola úspešne vytvorená');
     }
 
-    public function show(Company $company): View
+    public function show(Partner $company): View
     {
-        return view('companies.show', compact('company'));
+        return view('partners.show', compact('company'));
     }
 
-    public function edit(Company $company): View
+    public function edit(Partner $company): View
     {
-        return view('companies.edit', compact('company'));
+        return view('partners.edit', compact('company'));
     }
 
-    public function update(UpdateCompanyRequest $request, Company $company): RedirectResponse
+    public function update(UpdateCompanyRequest $request, Partner $company): RedirectResponse
     {
         $company->update($request->validated());
 
-        return redirect()->route('companies.index')
+        return redirect()->route('partners.index')
             ->with('success', 'Údaje spoločnosti boli úspešne aktualizované');
     }
 
-    public function destroy(Company $company): RedirectResponse
+    public function destroy(Partner $company): RedirectResponse
     {
         $company->delete();
 
-        return redirect()->route('companies.index')
+        return redirect()->route('partners.index')
             ->with('success', 'Spoločnosť bola úspešne vymazaná');
     }
 
-    public function fetchByIco(FetchCompanyByIcoRequest $request): JsonResponse|CompanyResource
+    public function fetchByIco(FetchCompanyByIcoRequest $request): JsonResponse|PartnerResource
     {
         $companyData = $this->companyDataService->findOrCreateCompany($request->ico);
 
@@ -75,6 +75,6 @@ class CompanyController extends Controller
             ], 404);
         }
 
-        return new CompanyResource($companyData);
+        return new PartnerResource($companyData);
     }
 }

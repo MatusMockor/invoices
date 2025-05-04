@@ -36,9 +36,9 @@ class Invoice extends Model
         'due_date' => 'date',
     ];
 
-    public function company(): BelongsTo
+    public function partner(): BelongsTo
     {
-        return $this->belongsTo(Company::class);
+        return $this->belongsTo(Partner::class);
     }
 
     public function items(): HasMany

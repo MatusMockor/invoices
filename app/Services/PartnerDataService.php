@@ -2,12 +2,12 @@
 
 namespace App\Services;
 
-use App\Models\Company;
+use App\Models\Partner;
 use Illuminate\Http\Client\ConnectionException;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Log;
 
-class CompanyDataService
+class PartnerDataService
 {
     /**
      * Základní URL a případný API klíč jsou načteny z config/services.php
@@ -85,10 +85,10 @@ class CompanyDataService
     /**
      * Vyhledá firmu podle IČO v DB, případně ji stáhne z API a založí.
      */
-    public function findOrCreateCompany(string $ico): ?Company
+    public function findOrCreateCompany(string $ico): ?Partner
     {
         // Pokus o nalezení v databázi
-        $company = Company::where('ico', $ico)->first();
+        $company = Partner::where('ico', $ico)->first();
         if ($company) {
             return $company;
         }
@@ -100,7 +100,7 @@ class CompanyDataService
         }
 
         // Vytvoření nové firmy
-        return Company::create([
+        return Partner::create([
             'ico' => $companyData['data']['ico'],
             'name' => $companyData['data']['name'],
             'street' => $companyData['data']['street'],

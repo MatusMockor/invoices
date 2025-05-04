@@ -4,10 +4,10 @@ namespace App\Http\Controllers;
 
 use App\Http\Requests\Invoices\CreateInvoiceRequest;
 use App\Http\Requests\Invoices\UpdateInvoiceRequest;
-use App\Models\Company;
+use App\Models\Partner;
 use App\Models\Invoice;
 use App\Models\InvoiceItem;
-use App\Services\CompanyDataService;
+use App\Services\PartnerDataService;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Support\Facades\DB;
 use Illuminate\View\View;
@@ -16,19 +16,19 @@ use Throwable;
 class InvoiceController extends Controller
 {
     public function __construct(
-        protected CompanyDataService $companyDataService
+        protected PartnerDataService $companyDataService
     ) {}
 
     public function index(): View
     {
-        $invoices = Invoice::query()->with('company')->latest()->paginate(10);
+        $invoices = Invoice::with('partner')->latest()->paginate(10);
 
         return view('invoices.index', compact('invoices'));
     }
 
     public function create(): View
     {
-        $companies = Company::query()->orderBy('name')->get();
+        $companies = Partner::query()->orderBy('name')->get();
 
         return view('invoices.create', compact('companies'));
     }
@@ -74,15 +74,15 @@ class InvoiceController extends Controller
 
     public function show(Invoice $invoice): View
     {
-        $invoice->load(['company', 'items']);
+        $invoice->load(['partner', 'items']);
 
         return view('invoices.show', compact('invoice'));
     }
 
     public function edit(Invoice $invoice): View
     {
-        $invoice->load(['company', 'items']);
-        $companies = Company::query()->orderBy('name')->get();
+        $invoice->load(['partner', 'items']);
+        $companies = Partner::query()->orderBy('name')->get();
 
         return view('invoices.edit', compact('invoice', 'companies'));
     }
