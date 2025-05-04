@@ -16,8 +16,7 @@ class CompanyController extends Controller
 {
     public function __construct(
         protected CompanyDataService $companyDataService
-    ) {
-    }
+    ) {}
 
     public function index(): View
     {
