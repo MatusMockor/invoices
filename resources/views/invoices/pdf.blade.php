@@ -233,9 +233,11 @@
                 <div><strong>Suma na úhradu:</strong> {{ number_format($invoice->total_amount, 2, ',', ' ') }} {{ $invoice->currency }}</div>
                 
                 @if($qrCode)
-                <div class="qr-code">
-                    <div style="margin-bottom: 10px;">Naskenujte pre platbu cez PAY by square</div>
-                    {!! $qrCode !!}
+                <div class="qr-code" style="margin-top: 15px; margin-bottom: 15px;">
+                    <div style="margin-bottom: 10px; font-weight: bold;">Naskenujte pre platbu cez PAY by square</div>
+                    <div style="width: 200px; height: 200px;">
+                        {!! $qrCode !!}
+                    </div>
                 </div>
                 @endif
                 @endif

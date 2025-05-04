@@ -22,8 +22,8 @@ class PayBySquareService
         $paymentData = $this->formatPaymentData($iban, $amount, $variableSymbol, $currency, $message);
         
         // Generate QR code as SVG (doesn't require Imagick)
-        return QrCode::format('svg')
-            ->size(200)
+        return QrCode::size(200)
+            ->format('svg')
             ->errorCorrection('H')
             ->generate($paymentData);
     }
