@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Http\Resources\CompanyResource;
 use App\Models\Company;
 use App\Services\CompanyDataService;
 use Illuminate\Http\JsonResponse;
@@ -84,24 +85,21 @@ class CompanyController extends Controller
             ->with('success', 'Spoločnosť bola úspešne vymazaná');
     }
 
-    public function fetchByIco(Request $request): JsonResponse
+    public function fetchByIco(Request $request)
     {
         $request->validate([
             'ico' => 'required|string|max:8',
         ]);
 
-        $companyData = $this->companyDataService->fetchCompanyDataByIco($request->ico);
+        $companyData = $this->companyDataService->findOrCreateCompany($request->ico);
 
-        if (! $companyData['success']) {
+        if (! $companyData) {
             return response()->json([
                 'success' => false,
-                'message' => $companyData['message'] ?? 'Údaje spoločnosti sa nenašli',
+                'message' => 'Údaje spoločnosti sa nenašli',
             ], 404);
         }
 
-        return response()->json([
-            'success' => true,
-            'data' => $companyData['data'],
-        ]);
+        return new CompanyResource($companyData);
     }
 }
