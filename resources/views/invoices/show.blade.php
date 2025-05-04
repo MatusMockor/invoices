@@ -65,14 +65,14 @@
                         <h3 class="text-lg font-medium text-gray-900 dark:text-white border-b border-gray-200 dark:border-gray-700 pb-2 mb-4">Dodávateľ</h3>
                         
                         <div class="space-y-2 text-gray-700 dark:text-gray-300">
-                            <p class="font-bold text-lg text-gray-900 dark:text-white">Vaša Spoločnosť s.r.o.</p>
-                            <p>Hlavná 123</p>
-                            <p>811 01 Bratislava</p>
-                            <p>Slovensko</p>
+                            <p class="font-bold text-lg text-gray-900 dark:text-white">{{$invoice->supplierCompany->name}}</p>
+                            <p>{{$invoice->supplierCompany->street}}</p>
+                            <p>{{$invoice->supplierCompany->postal_code .' '. $invoice->supplierCompany->city}}</p>
+                            <p>{{$invoice->supplierCompany->country}}</p>
                             <div class="pt-4 border-t border-gray-200 dark:border-gray-700 mt-4">
-                                <p>IČO: 12345678</p>
-                                <p>DIČ: 2023456789</p>
-                                <p>IČ DPH: SK2023456789</p>
+                                <p>IČO: {{$invoice->supplierCompany->ico}}</p>
+                                <p>DIČ: {{$invoice->supplierCompany->dic}}</p>
+                                <p>IČ DPH: {{$invoice->supplierCompany->ic_dph}}</p>
                             </div>
                         </div>
                     </div>
@@ -84,17 +84,17 @@
                         <h3 class="text-lg font-medium text-gray-900 dark:text-white border-b border-gray-200 dark:border-gray-700 pb-2 mb-4">Odberateľ</h3>
                         
                         <div class="space-y-2 text-gray-700 dark:text-gray-300">
-                            <p class="font-bold text-lg text-gray-900 dark:text-white">{{ $invoice->company->name }}</p>
-                            <p>{{ $invoice->company->street }}</p>
-                            <p>{{ $invoice->company->postal_code }} {{ $invoice->company->city }}</p>
-                            <p>{{ $invoice->company->country }}</p>
+                            <p class="font-bold text-lg text-gray-900 dark:text-white">{{ $invoice->partner->name }}</p>
+                            <p>{{ $invoice->partner->street }}</p>
+                            <p>{{ $invoice->partner->postal_code }} {{ $invoice->partner->city }}</p>
+                            <p>{{ $invoice->partner->country }}</p>
                             <div class="pt-4 border-t border-gray-200 dark:border-gray-700 mt-4">
-                                <p>IČO: {{ $invoice->company->ico }}</p>
-                                @if($invoice->company->dic)
-                                    <p>DIČ: {{ $invoice->company->dic }}</p>
+                                <p>IČO: {{ $invoice->partner->ico }}</p>
+                                @if($invoice->partner->dic)
+                                    <p>DIČ: {{ $invoice->partner->dic }}</p>
                                 @endif
-                                @if($invoice->company->ic_dph)
-                                    <p>IČ DPH: {{ $invoice->company->ic_dph }}</p>
+                                @if($invoice->partner->ic_dph)
+                                    <p>IČ DPH: {{ $invoice->partner->ic_dph }}</p>
                                 @endif
                             </div>
                         </div>
