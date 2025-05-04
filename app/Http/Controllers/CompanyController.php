@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Http\Requests\StoreCompanyRequest;
 use App\Models\Company;
 use Illuminate\Http\RedirectResponse;
+use Illuminate\Http\Request;
 use Illuminate\View\View;
 
 class CompanyController extends Controller
@@ -80,5 +81,25 @@ class CompanyController extends Controller
 
         return redirect()->route('companies.index')
             ->with('success', 'Company was successfully deleted');
+    }
+
+    /**
+     * Switch the user's current company.
+     */
+    public function switchCompany(Request $request, Company $company): RedirectResponse
+    {
+        $user = auth()->user();
+
+        // Check if the user is associated with this company
+        if ($company->user_id !== $user->id) {
+            return redirect()->route('companies.index')
+                ->with('error', 'You are not authorized to access this company.');
+        }
+
+        // Set this company as the current company for the user
+        $user->switchCompany($company);
+
+        return redirect()->back()
+            ->with('success', 'Company switched successfully.');
     }
 }
