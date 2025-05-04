@@ -8,7 +8,7 @@ return new class extends Migration
 {
     public function up(): void
     {
-        Schema::create('companies', function (Blueprint $table) {
+        Schema::create('companies', static function (Blueprint $table) {
             $table->id();
             $table->string('ico')->unique();
             $table->string('name');
