@@ -34,7 +34,7 @@ class PartnerFactory extends Factory
             'postal_code' => $this->faker->postcode(),
             'country' => $this->faker->country(),
             'dic' => $this->faker->numerify('##########'),
-            'ic_dph' => 'SK' . $this->faker->numerify('##########'),
+            'ic_dph' => 'SK'.$this->faker->numerify('##########'),
         ];
     }
 }
