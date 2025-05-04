@@ -2,7 +2,8 @@
 
 namespace App\Http\Controllers;
 
-use App\Http\Requests\StoreCompanyRequest;
+use App\Http\Requests\Companies\CreateCompanyRequest;
+use App\Http\Requests\Companies\UpdateCompanyRequest;
 use App\Models\Company;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
@@ -31,7 +32,7 @@ class CompanyController extends Controller
     /**
      * Store a newly created company in database.
      */
-    public function store(StoreCompanyRequest $request): RedirectResponse
+    public function store(CreateCompanyRequest $request): RedirectResponse
     {
         $validated = $request->validated();
         $validated['user_id'] = auth()->id();
@@ -55,16 +56,14 @@ class CompanyController extends Controller
      */
     public function edit(Company $company): View
     {
-
         return view('companies.edit', compact('company'));
     }
 
     /**
      * Update the specified company in database.
      */
-    public function update(StoreCompanyRequest $request, Company $company): RedirectResponse
+    public function update(UpdateCompanyRequest $request, Company $company): RedirectResponse
     {
-
         $company->update($request->validated());
 
         return redirect()->route('companies.show', $company)
@@ -76,7 +75,6 @@ class CompanyController extends Controller
      */
     public function destroy(Company $company): RedirectResponse
     {
-
         $company->delete();
 
         return redirect()->route('companies.index')
