@@ -27,15 +27,26 @@
                 </div>
             </div>
 
-            <!-- Settings Dropdown -->
-            <settings-dropdown
-                user-name="{{ Auth::user()->name }}"
-                profile-route="{{ route('profile.edit') }}"
-                logout-route="{{ route('logout') }}"
-                profile-text="{{ __('Profile') }}"
-                logout-text="{{ __('Log Out') }}"
-                csrf-token="{{ csrf_token() }}"
-            ></settings-dropdown>
+            <div class="hidden sm:flex sm:items-center sm:ml-6">
+                <!-- Company Dropdown -->
+                <company-switcher
+                    :current-company='@json(Auth::user()->currentCompany)'
+                    :companies='@json(Auth::user()->companies)'
+                    switch-url="{{ route('companies.switch', ['company' => '__id__']) }}"
+                    create-url="{{ route('companies.create') }}"
+                    csrf-token="{{ csrf_token() }}"
+                ></company-switcher>
+
+                <!-- Settings Dropdown -->
+                <settings-dropdown
+                    user-name="{{ Auth::user()->name }}"
+                    profile-route="{{ route('profile.edit') }}"
+                    logout-route="{{ route('logout') }}"
+                    profile-text="{{ __('Profile') }}"
+                    logout-text="{{ __('Log Out') }}"
+                    csrf-token="{{ csrf_token() }}"
+                ></settings-dropdown>
+            </div>
 
             <!-- Hamburger -->
             <div class="-me-2 flex items-center sm:hidden">
