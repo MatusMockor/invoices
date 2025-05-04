@@ -3,6 +3,7 @@ import {createApp} from 'vue';
 import CreateInvoiceForm from './components/Invoice/CreateInvoiceForm.vue';
 import './bootstrap';
 import SettingsDropdown from './components/SettingsDropdown.vue';
+import CompanySwitcher from "./components/CompanySwitcher.vue";
 
 
 
@@ -30,6 +31,7 @@ app.component('settings-dropdown', SettingsDropdown);
 
 // Register Vue components
 app.component('create-invoice-form', CreateInvoiceForm);
+app.component('company-switcher', CompanySwitcher);
 
 // Mount Vue app when the DOM is fully loaded
 app.mount('#app');
