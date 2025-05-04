@@ -1,16 +1,12 @@
 import './bootstrap';
-import { createApp } from 'vue';
-import Alpine from 'alpinejs';
-import ExampleComponent from './components/ExampleComponent.vue';
+import {createApp} from 'vue';
+import CreateInvoiceForm from './Components/Invoice/CreateInvoiceForm.vue';
 
-window.Alpine = Alpine;
-Alpine.start();
-
-// Initialize Vue application
+// Wait for DOM to be ready before mounting Vue
 const app = createApp({});
 
 // Register Vue components
-app.component('example-component', ExampleComponent);
+app.component('create-invoice-form', CreateInvoiceForm);
 
-// Mount Vue app
+// Mount Vue app when the DOM is fully loaded
 app.mount('#app');
