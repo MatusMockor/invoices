@@ -4,7 +4,7 @@
             <h2 class="font-semibold text-xl text-gray-800 dark:text-gray-200 leading-tight">
                 {{ __('Pridať novú spoločnosť') }}
             </h2>
-            <a href="{{ route('companies.index') }}" class="inline-flex items-center px-4 py-2 bg-gray-800 dark:bg-gray-700 border border-transparent rounded-md font-semibold text-xs text-white uppercase tracking-widest hover:bg-gray-700 dark:hover:bg-gray-600 focus:bg-gray-700 active:bg-gray-900 dark:active:bg-gray-800 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 dark:focus:ring-offset-gray-800 transition ease-in-out duration-150">
+            <a href="{{ route('partners.index') }}" class="inline-flex items-center px-4 py-2 bg-gray-800 dark:bg-gray-700 border border-transparent rounded-md font-semibold text-xs text-white uppercase tracking-widest hover:bg-gray-700 dark:hover:bg-gray-600 focus:bg-gray-700 active:bg-gray-900 dark:active:bg-gray-800 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 dark:focus:ring-offset-gray-800 transition ease-in-out duration-150">
                 Späť na zoznam
             </a>
         </div>
@@ -26,7 +26,7 @@
                         </div>
                     @endif
 
-                    <form action="{{ route('companies.store') }}" method="POST">
+                    <form action="{{ route('partners.store') }}" method="POST">
                         @csrf
                         
                         <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
@@ -114,7 +114,7 @@
                 messageDiv.textContent = 'Načítavam údaje...';
                 messageDiv.classList.remove('hidden', 'text-red-500', 'text-red-400', 'text-green-500', 'text-green-400');
                 
-                fetch('{{ route('companies.fetch-by-ico') }}', {
+                fetch('{{ route('partners.fetch-by-ico') }}', {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json',
