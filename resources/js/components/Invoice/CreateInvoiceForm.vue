@@ -1,6 +1,6 @@
 <template>
     <div>
-        <div v-if="errors.length" class="mb-6 bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded relative" role="alert">
+        <div v-if="errors.length" class="mb-6 bg-red-100 dark:bg-red-900 border border-red-400 dark:border-red-700 text-red-700 dark:text-red-300 px-4 py-3 rounded relative" role="alert">
             <strong class="font-bold">Chyba!</strong>
             <span class="block sm:inline">Prosím opravte nasledujúce chyby:</span>
             <ul class="mt-3 list-disc list-inside text-sm">
@@ -11,14 +11,14 @@
         <form @submit.prevent="submitForm" id="invoice-form">
             <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
                 <!-- Company Information -->
-                <div class="bg-white p-6 rounded-lg shadow">
-                    <h3 class="text-lg font-medium text-gray-900 mb-4">Údaje o spoločnosti</h3>
+                <div class="bg-white dark:bg-gray-800 p-6 rounded-lg shadow">
+                    <h3 class="text-lg font-medium text-gray-900 dark:text-gray-100 mb-4">Údaje o spoločnosti</h3>
                     
                     <div class="mb-4">
-                        <label for="ico" class="block text-sm font-medium text-gray-700">IČO</label>
+                        <label for="ico" class="block text-sm font-medium text-gray-700 dark:text-gray-300">IČO</label>
                         <div class="mt-1 flex rounded-md shadow-sm">
-                            <input type="text" v-model="form.ico" id="ico" class="focus:ring-indigo-500 focus:border-indigo-500 flex-1 block w-full rounded-md sm:text-sm border-gray-300" placeholder="Zadajte IČO">
-                            <button type="button" @click="fetchCompanyData" class="ml-2 inline-flex items-center px-3 py-2 border border-transparent text-sm leading-4 font-medium rounded-md text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500">
+                            <input type="text" v-model="form.ico" id="ico" class="border-gray-300 dark:border-gray-700 dark:bg-gray-900 dark:text-gray-300 focus:border-indigo-500 dark:focus:border-indigo-600 focus:ring-indigo-500 dark:focus:ring-indigo-600 rounded-md shadow-sm flex-1 block w-full sm:text-sm" placeholder="Zadajte IČO">
+                            <button type="button" @click="fetchCompanyData" class="ml-2 inline-flex items-center px-3 py-2 border border-transparent text-sm leading-4 font-medium rounded-md text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 dark:focus:ring-offset-gray-800">
                                 Načítať údaje
                             </button>
                         </div>
@@ -27,60 +27,60 @@
                     
                     <div id="company-details" class="space-y-4">
                         <div>
-                            <label for="company_name" class="block text-sm font-medium text-gray-700">Názov spoločnosti</label>
-                            <input type="text" v-model="form.company_name" id="company_name" readonly class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm bg-gray-50">
+                            <label for="company_name" class="block text-sm font-medium text-gray-700 dark:text-gray-300">Názov spoločnosti</label>
+                            <input type="text" v-model="form.company_name" id="company_name" readonly class="mt-1 block w-full rounded-md border-gray-300 dark:border-gray-700 dark:bg-gray-900 dark:text-gray-300 shadow-sm focus:border-indigo-500 dark:focus:border-indigo-600 focus:ring-indigo-500 dark:focus:ring-indigo-600 sm:text-sm bg-gray-50 dark:bg-gray-800">
                         </div>
                         
                         <div>
-                            <label for="company_address" class="block text-sm font-medium text-gray-700">Adresa</label>
-                            <input type="text" v-model="form.company_address" id="company_address" readonly class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm bg-gray-50">
+                            <label for="company_address" class="block text-sm font-medium text-gray-700 dark:text-gray-300">Adresa</label>
+                            <input type="text" v-model="form.company_address" id="company_address" readonly class="mt-1 block w-full rounded-md border-gray-300 dark:border-gray-700 dark:bg-gray-900 dark:text-gray-300 shadow-sm focus:border-indigo-500 dark:focus:border-indigo-600 focus:ring-indigo-500 dark:focus:ring-indigo-600 sm:text-sm bg-gray-50 dark:bg-gray-800">
                         </div>
                         
                         <div>
-                            <label for="company_city" class="block text-sm font-medium text-gray-700">Mesto</label>
-                            <input type="text" v-model="form.company_city" id="company_city" readonly class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm bg-gray-50">
+                            <label for="company_city" class="block text-sm font-medium text-gray-700 dark:text-gray-300">Mesto</label>
+                            <input type="text" v-model="form.company_city" id="company_city" readonly class="mt-1 block w-full rounded-md border-gray-300 dark:border-gray-700 dark:bg-gray-900 dark:text-gray-300 shadow-sm focus:border-indigo-500 dark:focus:border-indigo-600 focus:ring-indigo-500 dark:focus:ring-indigo-600 sm:text-sm bg-gray-50 dark:bg-gray-800">
                         </div>
                         
                         <div>
-                            <label for="company_postal_code" class="block text-sm font-medium text-gray-700">PSČ</label>
-                            <input type="text" v-model="form.company_postal_code" id="company_postal_code" readonly class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm bg-gray-50">
+                            <label for="company_postal_code" class="block text-sm font-medium text-gray-700 dark:text-gray-300">PSČ</label>
+                            <input type="text" v-model="form.company_postal_code" id="company_postal_code" readonly class="mt-1 block w-full rounded-md border-gray-300 dark:border-gray-700 dark:bg-gray-900 dark:text-gray-300 shadow-sm focus:border-indigo-500 dark:focus:border-indigo-600 focus:ring-indigo-500 dark:focus:ring-indigo-600 sm:text-sm bg-gray-50 dark:bg-gray-800">
                         </div>
                         
                         <div>
-                            <label for="company_dic" class="block text-sm font-medium text-gray-700">DIČ</label>
-                            <input type="text" v-model="form.company_dic" id="company_dic" readonly class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm bg-gray-50">
+                            <label for="company_dic" class="block text-sm font-medium text-gray-700 dark:text-gray-300">DIČ</label>
+                            <input type="text" v-model="form.company_dic" id="company_dic" readonly class="mt-1 block w-full rounded-md border-gray-300 dark:border-gray-700 dark:bg-gray-900 dark:text-gray-300 shadow-sm focus:border-indigo-500 dark:focus:border-indigo-600 focus:ring-indigo-500 dark:focus:ring-indigo-600 sm:text-sm bg-gray-50 dark:bg-gray-800">
                         </div>
                         
                         <div>
-                            <label for="company_ic_dph" class="block text-sm font-medium text-gray-700">IČ DPH</label>
-                            <input type="text" v-model="form.company_ic_dph" id="company_ic_dph" readonly class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm bg-gray-50">
+                            <label for="company_ic_dph" class="block text-sm font-medium text-gray-700 dark:text-gray-300">IČ DPH</label>
+                            <input type="text" v-model="form.company_ic_dph" id="company_ic_dph" readonly class="mt-1 block w-full rounded-md border-gray-300 dark:border-gray-700 dark:bg-gray-900 dark:text-gray-300 shadow-sm focus:border-indigo-500 dark:focus:border-indigo-600 focus:ring-indigo-500 dark:focus:ring-indigo-600 sm:text-sm bg-gray-50 dark:bg-gray-800">
                         </div>
                     </div>
                 </div>
                 
                 <!-- Invoice Information -->
-                <div class="bg-white p-6 rounded-lg shadow">
-                    <h3 class="text-lg font-medium text-gray-900 mb-4">Údaje o faktúre</h3>
+                <div class="bg-white dark:bg-gray-800 p-6 rounded-lg shadow">
+                    <h3 class="text-lg font-medium text-gray-900 dark:text-gray-100 mb-4">Údaje o faktúre</h3>
                     
                     <div class="grid grid-cols-1 gap-4">
                         <div>
-                            <label for="invoice_number" class="block text-sm font-medium text-gray-700">Číslo faktúry</label>
-                            <input type="text" v-model="form.invoice_number" id="invoice_number" class="mt-1 focus:ring-indigo-500 focus:border-indigo-500 block w-full shadow-sm sm:text-sm border-gray-300 rounded-md">
+                            <label for="invoice_number" class="block text-sm font-medium text-gray-700 dark:text-gray-300">Číslo faktúry</label>
+                            <input type="text" v-model="form.invoice_number" id="invoice_number" class="mt-1 block w-full rounded-md border-gray-300 dark:border-gray-700 dark:bg-gray-900 dark:text-gray-300 shadow-sm focus:border-indigo-500 dark:focus:border-indigo-600 focus:ring-indigo-500 dark:focus:ring-indigo-600 sm:text-sm">
                         </div>
                         
                         <div>
-                            <label for="issue_date" class="block text-sm font-medium text-gray-700">Dátum vystavenia</label>
-                            <input type="date" v-model="form.issue_date" id="issue_date" class="mt-1 focus:ring-indigo-500 focus:border-indigo-500 block w-full shadow-sm sm:text-sm border-gray-300 rounded-md">
+                            <label for="issue_date" class="block text-sm font-medium text-gray-700 dark:text-gray-300">Dátum vystavenia</label>
+                            <input type="date" v-model="form.issue_date" id="issue_date" class="mt-1 block w-full rounded-md border-gray-300 dark:border-gray-700 dark:bg-gray-900 dark:text-gray-300 shadow-sm focus:border-indigo-500 dark:focus:border-indigo-600 focus:ring-indigo-500 dark:focus:ring-indigo-600 sm:text-sm">
                         </div>
                         
                         <div>
-                            <label for="due_date" class="block text-sm font-medium text-gray-700">Dátum splatnosti</label>
-                            <input type="date" v-model="form.due_date" id="due_date" class="mt-1 focus:ring-indigo-500 focus:border-indigo-500 block w-full shadow-sm sm:text-sm border-gray-300 rounded-md">
+                            <label for="due_date" class="block text-sm font-medium text-gray-700 dark:text-gray-300">Dátum splatnosti</label>
+                            <input type="date" v-model="form.due_date" id="due_date" class="mt-1 block w-full rounded-md border-gray-300 dark:border-gray-700 dark:bg-gray-900 dark:text-gray-300 shadow-sm focus:border-indigo-500 dark:focus:border-indigo-600 focus:ring-indigo-500 dark:focus:ring-indigo-600 sm:text-sm">
                         </div>
                         
                         <div>
-                            <label for="status" class="block text-sm font-medium text-gray-700">Stav faktúry</label>
-                            <select v-model="form.status" id="status" class="mt-1 block w-full py-2 px-3 border border-gray-300 bg-white rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm">
+                            <label for="status" class="block text-sm font-medium text-gray-700 dark:text-gray-300">Stav faktúry</label>
+                            <select v-model="form.status" id="status" class="mt-1 block w-full py-2 px-3 border border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-900 dark:text-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 dark:focus:ring-indigo-600 focus:border-indigo-500 dark:focus:border-indigo-600 sm:text-sm">
                                 <option value="draft">Koncept</option>
                                 <option value="sent">Odoslaná</option>
                                 <option value="paid">Zaplatená</option>
@@ -89,8 +89,8 @@
                         </div>
                         
                         <div>
-                            <label for="currency" class="block text-sm font-medium text-gray-700">Mena</label>
-                            <select v-model="form.currency" id="currency" @change="updateCurrency" class="mt-1 block w-full py-2 px-3 border border-gray-300 bg-white rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm">
+                            <label for="currency" class="block text-sm font-medium text-gray-700 dark:text-gray-300">Mena</label>
+                            <select v-model="form.currency" id="currency" @change="updateCurrency" class="mt-1 block w-full py-2 px-3 border border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-900 dark:text-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 dark:focus:ring-indigo-600 focus:border-indigo-500 dark:focus:border-indigo-600 sm:text-sm">
                                 <option value="EUR">EUR</option>
                                 <option value="USD">USD</option>
                                 <option value="CZK">CZK</option>
@@ -98,47 +98,47 @@
                         </div>
                         
                         <div>
-                            <label for="note" class="block text-sm font-medium text-gray-700">Poznámka</label>
-                            <textarea v-model="form.note" id="note" rows="3" class="mt-1 focus:ring-indigo-500 focus:border-indigo-500 block w-full shadow-sm sm:text-sm border-gray-300 rounded-md"></textarea>
+                            <label for="note" class="block text-sm font-medium text-gray-700 dark:text-gray-300">Poznámka</label>
+                            <textarea v-model="form.note" id="note" rows="3" class="mt-1 block w-full rounded-md border-gray-300 dark:border-gray-700 dark:bg-gray-900 dark:text-gray-300 shadow-sm focus:border-indigo-500 dark:focus:border-indigo-600 focus:ring-indigo-500 dark:focus:ring-indigo-600 sm:text-sm"></textarea>
                         </div>
                     </div>
                 </div>
             </div>
             
             <!-- Invoice Items -->
-            <div class="bg-white p-6 rounded-lg shadow mb-6">
-                <h3 class="text-lg font-medium text-gray-900 mb-4">Položky faktúry</h3>
+            <div class="bg-white dark:bg-gray-800 p-6 rounded-lg shadow mb-6">
+                <h3 class="text-lg font-medium text-gray-900 dark:text-gray-100 mb-4">Položky faktúry</h3>
                 
                 <div class="flex flex-col">
                     <div class="-my-2 overflow-x-auto sm:-mx-6 lg:-mx-8">
                         <div class="py-2 align-middle inline-block min-w-full sm:px-6 lg:px-8">
-                            <div class="shadow overflow-hidden border-b border-gray-200 sm:rounded-lg">
-                                <table class="min-w-full divide-y divide-gray-200" id="items-table">
-                                    <thead class="bg-gray-50">
+                            <div class="shadow overflow-hidden border-b border-gray-200 dark:border-gray-700 sm:rounded-lg">
+                                <table class="min-w-full divide-y divide-gray-200 dark:divide-gray-700" id="items-table">
+                                    <thead class="bg-gray-50 dark:bg-gray-700">
                                         <tr>
-                                            <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Popis</th>
-                                            <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Množstvo</th>
-                                            <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Jednotková cena</th>
-                                            <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Spolu</th>
-                                            <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Akcie</th>
+                                            <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">Popis</th>
+                                            <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">Množstvo</th>
+                                            <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">Jednotková cena</th>
+                                            <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">Spolu</th>
+                                            <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">Akcie</th>
                                         </tr>
                                     </thead>
-                                    <tbody class="bg-white divide-y divide-gray-200">
+                                    <tbody class="bg-white dark:bg-gray-800 divide-y divide-gray-200 dark:divide-gray-700">
                                         <tr v-for="(item, index) in form.items" :key="index" class="item-row">
                                             <td class="px-6 py-4 whitespace-nowrap">
-                                                <input type="text" v-model="item.description" class="item-description border-gray-300 focus:border-indigo-500 focus:ring-indigo-500 rounded-md shadow-sm text-sm" placeholder="Zadajte popis položky" required>
+                                                <input type="text" v-model="item.description" class="item-description border-gray-300 dark:border-gray-700 dark:bg-gray-900 dark:text-gray-300 focus:border-indigo-500 dark:focus:border-indigo-600 focus:ring-indigo-500 dark:focus:ring-indigo-600 rounded-md shadow-sm text-sm" placeholder="Zadajte popis položky" required>
                                             </td>
                                             <td class="px-6 py-4 whitespace-nowrap">
-                                                <input type="number" v-model="item.quantity" @input="updateTotal" class="item-quantity border-gray-300 focus:border-indigo-500 focus:ring-indigo-500 rounded-md shadow-sm text-sm w-20" min="1" required>
+                                                <input type="number" v-model="item.quantity" @input="updateTotal" class="item-quantity border-gray-300 dark:border-gray-700 dark:bg-gray-900 dark:text-gray-300 focus:border-indigo-500 dark:focus:border-indigo-600 focus:ring-indigo-500 dark:focus:ring-indigo-600 rounded-md shadow-sm text-sm w-20" min="1" required>
                                             </td>
                                             <td class="px-6 py-4 whitespace-nowrap">
-                                                <input type="number" v-model="item.unit_price" @input="updateTotal" class="item-price border-gray-300 focus:border-indigo-500 focus:ring-indigo-500 rounded-md shadow-sm text-sm w-32" min="0" step="0.01" placeholder="0.00" required>
+                                                <input type="number" v-model="item.unit_price" @input="updateTotal" class="item-price border-gray-300 dark:border-gray-700 dark:bg-gray-900 dark:text-gray-300 focus:border-indigo-500 dark:focus:border-indigo-600 focus:ring-indigo-500 dark:focus:ring-indigo-600 rounded-md shadow-sm text-sm w-32" min="0" step="0.01" placeholder="0.00" required>
                                             </td>
-                                            <td class="px-6 py-4 whitespace-nowrap item-total">
+                                            <td class="px-6 py-4 whitespace-nowrap item-total dark:text-gray-300">
                                                 {{ getItemTotal(index).toFixed(2) }}
                                             </td>
                                             <td class="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
-                                                <button type="button" class="text-red-600 hover:text-red-900 remove-item" @click="removeItem(index)">Odstrániť</button>
+                                                <button type="button" class="text-red-600 dark:text-red-400 hover:text-red-900 dark:hover:text-red-300 remove-item" @click="removeItem(index)">Odstrániť</button>
                                             </td>
                                         </tr>
                                     </tbody>
@@ -148,8 +148,8 @@
                     </div>
                     
                     <div class="mt-4">
-                        <button type="button" @click="addItem" class="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md text-indigo-700 bg-indigo-100 hover:bg-indigo-200 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500">
-                            <svg class="-ml-1 mr-2 h-5 w-5 text-indigo-500" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor">
+                        <button type="button" @click="addItem" class="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md text-indigo-700 dark:text-indigo-300 bg-indigo-100 dark:bg-indigo-900 hover:bg-indigo-200 dark:hover:bg-indigo-800 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 dark:focus:ring-offset-gray-800">
+                            <svg class="-ml-1 mr-2 h-5 w-5 text-indigo-500 dark:text-indigo-400" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor">
                                 <path fill-rule="evenodd" d="M10 5a1 1 0 011 1v3h3a1 1 0 110 2h-3v3a1 1 0 11-2 0v-3H6a1 1 0 110-2h3V6a1 1 0 011-1z" clip-rule="evenodd" />
                             </svg>
                             Pridať položku
@@ -157,16 +157,16 @@
                     </div>
                     
                     <div class="mt-6 text-right">
-                        <div class="text-sm text-gray-500">Medzisúčet: <span>{{ subtotal.toFixed(2) }}</span> <span>{{ form.currency }}</span></div>
-                        <div class="text-sm text-gray-500">DPH (20%): <span>{{ vat.toFixed(2) }}</span> <span>{{ form.currency }}</span></div>
-                        <div class="text-lg font-bold">Spolu: <span>{{ grandTotal.toFixed(2) }}</span> <span>{{ form.currency }}</span></div>
+                        <div class="text-sm text-gray-500 dark:text-gray-400">Medzisúčet: <span>{{ subtotal.toFixed(2) }}</span> <span>{{ form.currency }}</span></div>
+                        <div class="text-sm text-gray-500 dark:text-gray-400">DPH (20%): <span>{{ vat.toFixed(2) }}</span> <span>{{ form.currency }}</span></div>
+                        <div class="text-lg font-bold text-gray-900 dark:text-gray-100">Spolu: <span>{{ grandTotal.toFixed(2) }}</span> <span>{{ form.currency }}</span></div>
                         <input type="hidden" v-model="form.total_amount">
                     </div>
                 </div>
             </div>
             
             <div class="flex justify-end">
-                <button type="submit" class="inline-flex items-center px-4 py-2 bg-indigo-600 border border-transparent rounded-md font-semibold text-xs text-white uppercase tracking-widest hover:bg-indigo-500 focus:bg-indigo-500 active:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 transition ease-in-out duration-150">
+                <button type="submit" class="inline-flex items-center px-4 py-2 bg-indigo-600 border border-transparent rounded-md font-semibold text-xs text-white uppercase tracking-widest hover:bg-indigo-500 focus:bg-indigo-500 active:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 dark:focus:ring-offset-gray-800 transition ease-in-out duration-150">
                     Vytvoriť faktúru
                 </button>
             </div>
@@ -200,18 +200,18 @@ export default {
                 status: 'draft',
                 currency: 'EUR',
                 note: '',
-                total_amount: '0.00',
                 items: [
                     {
                         description: '',
                         quantity: 1,
                         unit_price: 0
                     }
-                ]
+                ],
+                total_amount: 0
             },
+            errors: [],
             companyMessage: '',
             companyMessageClass: '',
-            errors: [],
             subtotal: 0,
             vat: 0,
             grandTotal: 0
@@ -223,52 +223,50 @@ export default {
     methods: {
         fetchCompanyData() {
             if (!this.form.ico) {
-                this.companyMessage = 'Zadajte IČO';
-                this.companyMessageClass = 'text-red-500';
+                this.companyMessage = 'Prosím zadajte IČO';
+                this.companyMessageClass = 'text-red-600 dark:text-red-400';
                 return;
             }
             
             this.companyMessage = 'Načítavam údaje...';
-            this.companyMessageClass = '';
-
-            axios.post(this.fetchCompanyUrl, {
-                ico: this.form.ico
-            })
-            .then(response => {
-                const data = response.data;
-                if (data.success) {
-                    this.form.company_name = data.data.name;
-                    this.form.company_address = data.data.street;
-                    this.form.company_city = data.data.city;
-                    this.form.company_postal_code = data.data.postal_code;
-                    this.form.company_dic = data.data.dic;
-                    this.form.company_ic_dph = data.data.ic_dph;
-                    
-                    this.companyMessage = 'Údaje úspešne načítané';
-                    this.companyMessageClass = 'text-green-500';
-                } else {
-                    this.companyMessage = data.message || 'Nepodarilo sa načítať údaje';
-                    this.companyMessageClass = 'text-red-500';
-                }
-            })
-            .catch(error => {
-                console.error('Error:', error);
-                this.companyMessage = 'Chyba pri načítaní údajov';
-                this.companyMessageClass = 'text-red-500';
-            });
+            this.companyMessageClass = 'text-gray-600 dark:text-gray-400';
+            
+            axios.get(this.fetchCompanyUrl + '?ico=' + this.form.ico)
+                .then(response => {
+                    if (response.data.success) {
+                        const data = response.data.data;
+                        this.form.company_name = data.name;
+                        this.form.company_address = data.address;
+                        this.form.company_city = data.city;
+                        this.form.company_postal_code = data.postal_code;
+                        this.form.company_dic = data.dic || '';
+                        this.form.company_ic_dph = data.ic_dph || '';
+                        
+                        this.companyMessage = 'Údaje úspešne načítané';
+                        this.companyMessageClass = 'text-green-600 dark:text-green-400';
+                    } else {
+                        this.companyMessage = response.data.message || 'Nepodarilo sa načítať údaje';
+                        this.companyMessageClass = 'text-red-600 dark:text-red-400';
+                    }
+                })
+                .catch(error => {
+                    this.companyMessage = 'Chyba pri načítaní údajov';
+                    this.companyMessageClass = 'text-red-600 dark:text-red-400';
+                    console.error(error);
+                });
         },
         getItemTotal(index) {
             const item = this.form.items[index];
-            return (parseFloat(item.quantity) || 0) * (parseFloat(item.unit_price) || 0);
+            return item.quantity * item.unit_price;
         },
         updateTotal() {
-            this.subtotal = this.form.items.reduce((total, item, index) => {
-                return total + this.getItemTotal(index);
+            this.subtotal = this.form.items.reduce((total, item) => {
+                return total + (item.quantity * item.unit_price);
             }, 0);
             
-            this.vat = this.subtotal * 0.2; // 20% VAT
+            this.vat = this.subtotal * 0.2;
             this.grandTotal = this.subtotal + this.vat;
-            this.form.total_amount = this.grandTotal.toFixed(2);
+            this.form.total_amount = this.grandTotal;
         },
         addItem() {
             this.form.items.push({
@@ -291,51 +289,67 @@ export default {
         validateForm() {
             this.errors = [];
             
-            // Check if company data is loaded
+            if (!this.form.ico) {
+                this.errors.push('IČO je povinné');
+            }
+            
             if (!this.form.company_name) {
-                this.errors.push('Zadajte IČO a načítajte údaje o spoločnosti');
-                return false;
+                this.errors.push('Názov spoločnosti je povinný');
             }
             
-            // Check if all required fields are filled
-            if (!this.form.ico || !this.form.invoice_number || !this.form.issue_date || !this.form.due_date) {
-                this.errors.push('Vyplňte všetky povinné polia faktúry');
-                return false;
+            if (!this.form.company_address) {
+                this.errors.push('Adresa spoločnosti je povinná');
             }
             
-            // Check if at least one item has a description and price
-            let validItems = false;
+            if (!this.form.company_city) {
+                this.errors.push('Mesto je povinné');
+            }
             
-            for (const item of this.form.items) {
-                if (item.description && parseFloat(item.unit_price) > 0) {
-                    validItems = true;
-                    break;
+            if (!this.form.company_postal_code) {
+                this.errors.push('PSČ je povinné');
+            }
+            
+            if (!this.form.invoice_number) {
+                this.errors.push('Číslo faktúry je povinné');
+            }
+            
+            if (!this.form.issue_date) {
+                this.errors.push('Dátum vystavenia je povinný');
+            }
+            
+            if (!this.form.due_date) {
+                this.errors.push('Dátum splatnosti je povinný');
+            }
+            
+            // Validate items
+            let hasEmptyItems = false;
+            this.form.items.forEach((item, index) => {
+                if (!item.description) {
+                    hasEmptyItems = true;
                 }
+            });
+            
+            if (hasEmptyItems) {
+                this.errors.push('Všetky položky musia mať vyplnený popis');
             }
             
-            if (!validItems) {
-                this.errors.push('Pridajte aspoň jednu položku s popisom a cenou');
-                return false;
-            }
-            
-            return true;
+            return this.errors.length === 0;
         },
         submitForm() {
-            if (!this.validateForm()) {
-                return;
+            if (this.validateForm()) {
+                // Submit form logic here
+                const formData = {
+                    ...this.form
+                };
+                
+                this.$emit('submit', formData);
+                
+                // Reset form or redirect
+                // this.resetForm();
+                
+                // Or emit event for parent component to handle
+                this.$emit('created', formData);
             }
-            
-            axios.post('/invoices', this.form)
-                .then(response => {
-                    window.location.href = '/invoices';
-                })
-                .catch(error => {
-                    if (error.response && error.response.data && error.response.data.errors) {
-                        this.errors = Object.values(error.response.data.errors).flat();
-                    } else {
-                        this.errors = ['Nastala chyba pri ukladaní faktúry.'];
-                    }
-                });
         }
     }
 };
