@@ -30,16 +30,12 @@ class InvoicePdfService
         // Generate QR code if IBAN is provided
         $qrCode = null;
         if ($iban) {
-            try {
-                $qrCode = $this->payBySquareService->generateQrCode(
-                    $iban,
-                    $invoice->total_amount,
-                    $invoice->invoice_number,
-                    $invoice->currency ?? 'EUR'
-                );
-            } catch (\Exception $e) {
-                \Log::error('QR code generation failed: ' . $e->getMessage());
-            }
+            $qrCode = $this->payBySquareService->generateQrCode(
+                $iban,
+                $invoice->total_amount,
+                $invoice->invoice_number,
+                $invoice->currency ?? 'EUR'
+            );
         }
         
         // Generate PDF
