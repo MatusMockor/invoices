@@ -178,6 +178,12 @@
 import axios from 'axios';
 
 export default {
+  props: {
+    fetchCompanyUrl: {
+      type: String,
+      required: true
+    }
+  },
     data() {
         return {
             form: {
@@ -224,8 +230,8 @@ export default {
             
             this.companyMessage = 'Načítavam údaje...';
             this.companyMessageClass = '';
-            
-            axios.post('/api/companies/fetch-by-ico', {
+
+            axios.post(this.fetchCompanyUrl, {
                 ico: this.form.ico
             })
             .then(response => {
