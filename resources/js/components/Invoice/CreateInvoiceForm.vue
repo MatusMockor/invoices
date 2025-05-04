@@ -232,7 +232,7 @@ export default {
             this.companyMessage = 'Načítavam údaje...';
             this.companyMessageClass = 'text-gray-600 dark:text-gray-400';
             
-            axios.get(this.fetchCompanyUrl + '?ico=' + this.form.ico)
+            axios.post(this.fetchCompanyUrl + '?ico=' + this.form.ico)
                 .then(response => {
                     if (response.data.success) {
                         const data = response.data.data;
