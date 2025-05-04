@@ -6,19 +6,16 @@ use App\Models\Company;
 use App\Models\Invoice;
 use App\Models\InvoiceItem;
 use App\Services\CompanyDataService;
-use App\Services\InvoicePdfService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 
 class InvoiceController extends Controller
 {
     protected $companyDataService;
-    protected $invoicePdfService;
 
-    public function __construct(CompanyDataService $companyDataService, InvoicePdfService $invoicePdfService)
+    public function __construct(CompanyDataService $companyDataService)
     {
         $this->companyDataService = $companyDataService;
-        $this->invoicePdfService = $invoicePdfService;
     }
 
     public function index()
@@ -184,31 +181,5 @@ class InvoiceController extends Controller
 
         return redirect()->route('invoices.index')
             ->with('success', 'Faktúra bola úspešne vymazaná');
-    }
-
-    /**
-     * Preview invoice PDF
-     *
-     * @param Invoice $invoice
-     * @param Request $request
-     * @return \Illuminate\Http\Response
-     */
-    public function previewPdf(Invoice $invoice, Request $request)
-    {
-        $iban = $request->input('iban');
-        return $this->invoicePdfService->streamPdf($invoice, $iban);
-    }
-
-    /**
-     * Download invoice PDF
-     *
-     * @param Invoice $invoice
-     * @param Request $request
-     * @return \Illuminate\Http\Response
-     */
-    public function downloadPdf(Invoice $invoice, Request $request)
-    {
-        $iban = $request->input('iban');
-        return $this->invoicePdfService->downloadPdf($invoice, $iban);
     }
 }
