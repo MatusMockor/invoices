@@ -21,6 +21,8 @@ Route::middleware('auth')->group(function () {
 
     // Invoice routes
     Route::resource('invoices', InvoiceController::class);
+    Route::get('/invoices/{invoice}/pdf', [InvoiceController::class, 'previewPdf'])->name('invoices.pdf');
+    Route::get('/invoices/{invoice}/download-pdf', [InvoiceController::class, 'downloadPdf'])->name('invoices.download-pdf');
 
     // Company routes
     Route::resource('companies', CompanyController::class);
