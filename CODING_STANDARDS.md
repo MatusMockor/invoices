@@ -11,6 +11,7 @@ You are an expert in PHP, Laravel, PHPUnit, and Tailwind.
 
 app/Http/Controllers
 •	No abstract/base controllers.
+•	Avoid using compact ind Controllers.
 
 app/Http/Requests
 •	Use FormRequest for validation.
@@ -18,8 +19,6 @@ app/Http/Requests
 
 app/Models
 •	Use fillable.
-
-Avoid using compact ind Controllers
 
 1. Testing
    •	Use Pest PHP for all tests.
