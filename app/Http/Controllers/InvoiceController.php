@@ -7,7 +7,6 @@ use App\Http\Requests\Invoices\UpdateInvoiceRequest;
 use App\Models\Company;
 use App\Models\Invoice;
 use App\Models\InvoiceItem;
-use App\Models\User;
 use App\Services\CompanyDataService;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Support\Facades\DB;
@@ -36,40 +35,40 @@ class InvoiceController extends Controller
 
     public function store(CreateInvoiceRequest $request): RedirectResponse
     {
-            $company = $this->companyDataService->findOrCreateCompany($request->ico);
+        $company = $this->companyDataService->findOrCreateCompany($request->ico);
 
-            if (! $company) {
-                return back()->withErrors(['ico' => 'Spoločnosť s daným IČO sa nepodarilo nájsť.'])->withInput();
-            }
+        if (! $company) {
+            return back()->withErrors(['ico' => 'Spoločnosť s daným IČO sa nepodarilo nájsť.'])->withInput();
+        }
 
-            $validated = $request->validated();
+        $validated = $request->validated();
 
-            // Create invoice
-            $invoice = Invoice::create([
-                'invoice_number' => $validated['invoice_number'],
-                'user_id' => auth()->user()->id,
-                'issue_date' => $validated['issue_date'],
-                'due_date' => $validated['due_date'],
-                'company_id' => $company->id,
-                'total_amount' => $validated['total_amount'],
-                'currency' => $validated['currency'],
-                'note' => $validated['note'],
-                'status' => $validated['status'],
+        // Create invoice
+        $invoice = Invoice::create([
+            'invoice_number' => $validated['invoice_number'],
+            'user_id' => auth()->user()->id,
+            'issue_date' => $validated['issue_date'],
+            'due_date' => $validated['due_date'],
+            'company_id' => $company->id,
+            'total_amount' => $validated['total_amount'],
+            'currency' => $validated['currency'],
+            'note' => $validated['note'],
+            'status' => $validated['status'],
+        ]);
+
+        // Create invoice items
+        foreach ($validated['items'] as $item) {
+            InvoiceItem::create([
+                'invoice_id' => $invoice->id,
+                'description' => $item['description'],
+                'quantity' => $item['quantity'],
+                'unit_price' => $item['unit_price'],
+                'total_price' => $item['quantity'] * $item['unit_price'],
             ]);
+        }
 
-            // Create invoice items
-            foreach ($validated['items'] as $item) {
-                InvoiceItem::create([
-                    'invoice_id' => $invoice->id,
-                    'description' => $item['description'],
-                    'quantity' => $item['quantity'],
-                    'unit_price' => $item['unit_price'],
-                    'total_price' => $item['quantity'] * $item['unit_price'],
-                ]);
-            }
-
-            return redirect()->route('invoices.index')
-                ->with('success', 'Faktúra bola úspešne vytvorená');
+        return redirect()->route('invoices.index')
+            ->with('success', 'Faktúra bola úspešne vytvorená');
 
     }
 
