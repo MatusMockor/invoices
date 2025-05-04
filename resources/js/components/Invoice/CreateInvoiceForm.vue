@@ -237,7 +237,7 @@ export default {
                     if (response.data.success) {
                         const data = response.data.data;
                         this.form.company_name = data.name;
-                        this.form.company_address = data.address;
+                        this.form.company_address = data.street;
                         this.form.company_city = data.city;
                         this.form.company_postal_code = data.postal_code;
                         this.form.company_dic = data.dic || '';
