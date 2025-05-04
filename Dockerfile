@@ -14,7 +14,7 @@ ENV SOURCE_COMMIT=$SOURCE_COMMIT_VALUE \
 # Install packages
 RUN apk --no-cache --update add apache2 curl dumb-init php84-apache2 php84-bcmath php84-bz2 php84-calendar php84-common php84-gd php84-ctype \
     php84-curl php84-dom php84-fileinfo php84-iconv php84-mbstring php84-opcache php84-openssl php84-pdo_pgsql php84-pdo_sqlite php84-phar  \
-    php84-session php84-simplexml php84-tokenizer php84-pecl-xdebug php84-zip php84-xml php84-xmlwriter php84-pecl-memcache \
+    php84-session php84-simplexml php84-tokenizer php84-pecl-xdebug php84-zip php84-xml php84-xmlwriter php84-pecl-memcache imagemagick php84-pecl-imagick \
     && mkdir /var/www/html \
     && ln -s /usr/bin/php84 /usr/bin/php
 
