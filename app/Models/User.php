@@ -73,6 +73,7 @@ class User extends Authenticatable
         }
 
         $this->current_company_id = $company->id;
+
         return $this->save();
     }
 }

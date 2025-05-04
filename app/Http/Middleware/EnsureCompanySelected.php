@@ -17,7 +17,7 @@ class EnsureCompanySelected
         if (Auth::check() && Auth::user()->current_company_id === null) {
             // If the user doesn't have a current company selected
             $userCompanies = Auth::user()->companies;
-            
+
             if ($userCompanies->count() > 0) {
                 // Automatically select the first company
                 Auth::user()->switchCompany($userCompanies->first());
@@ -27,7 +27,7 @@ class EnsureCompanySelected
                     ->with('error', 'You must be associated with at least one company.');
             }
         }
-        
+
         return $next($request);
     }
 }
