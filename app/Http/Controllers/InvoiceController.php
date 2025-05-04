@@ -21,7 +21,10 @@ class InvoiceController extends Controller
 
     public function index(): View
     {
-        $invoices = Invoice::with('partner')->latest()->paginate(10);
+        $invoices = Invoice::with('partner')
+            ->where('supplier_company_id', auth()->user()->current_company_id)
+            ->latest()
+            ->paginate(10);
 
         return view('invoices.index', compact('invoices'));
     }
