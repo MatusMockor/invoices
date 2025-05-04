@@ -13,12 +13,13 @@ class CompanyDataService
      * Základní URL a případný API klíč jsou načteny z config/services.php
      */
     protected string $baseUrl;
+
     protected ?string $apiKey;
 
     public function __construct()
     {
-        $this->baseUrl = rtrim(config('services.finstat.base_url', 'https://www.finstat.sk/api/'), '/') . '/';
-        $this->apiKey  = config('services.finstat.key');
+        $this->baseUrl = rtrim(config('services.finstat.base_url', 'https://www.finstat.sk/api/'), '/').'/';
+        $this->apiKey = config('services.finstat.key');
     }
 
     /**
@@ -27,7 +28,7 @@ class CompanyDataService
     public function fetchCompanyDataByIco(string $ico): array
     {
         // Rychlá validace vstupu (8 čísel)
-        if (strlen($ico) !== 8 || !ctype_digit($ico)) {
+        if (strlen($ico) !== 8 || ! ctype_digit($ico)) {
             return [
                 'success' => false,
                 'message' => 'Neplatné IČO',
@@ -50,21 +51,21 @@ class CompanyDataService
                 return [
                     'success' => true,
                     'data' => [
-                        'ico'         => $data['ico']                    ?? $ico,
-                        'name'        => $data['name']                   ?? '',
-                        'street'      => $data['address']['street']      ?? '',
-                        'city'        => $data['address']['city']        ?? '',
-                        'postal_code' => $data['address']['zip']         ?? '',
-                        'country'     => $data['address']['country']     ?? 'Slovensko',
-                        'dic'         => $data['dic']                    ?? null,
-                        'ic_dph'      => $data['ic_dph']                 ?? null,
+                        'ico' => $data['ico'] ?? $ico,
+                        'name' => $data['name'] ?? '',
+                        'street' => $data['address']['street'] ?? '',
+                        'city' => $data['address']['city'] ?? '',
+                        'postal_code' => $data['address']['zip'] ?? '',
+                        'country' => $data['address']['country'] ?? 'Slovensko',
+                        'dic' => $data['dic'] ?? null,
+                        'ic_dph' => $data['ic_dph'] ?? null,
                     ],
                 ];
             }
 
             Log::warning('Finstat API response not successful', [
                 'status' => $response->status(),
-                'body'   => $response->body(),
+                'body' => $response->body(),
             ]);
 
             return [
@@ -100,14 +101,14 @@ class CompanyDataService
 
         // Vytvoření nové firmy
         return Company::create([
-            'ico'         => $companyData['data']['ico'],
-            'name'        => $companyData['data']['name'],
-            'street'      => $companyData['data']['street'],
-            'city'        => $companyData['data']['city'],
+            'ico' => $companyData['data']['ico'],
+            'name' => $companyData['data']['name'],
+            'street' => $companyData['data']['street'],
+            'city' => $companyData['data']['city'],
             'postal_code' => $companyData['data']['postal_code'],
-            'country'     => $companyData['data']['country'],
-            'dic'         => $companyData['data']['dic'],
-            'ic_dph'      => $companyData['data']['ic_dph'],
+            'country' => $companyData['data']['country'],
+            'dic' => $companyData['data']['dic'],
+            'ic_dph' => $companyData['data']['ic_dph'],
         ]);
     }
 }
