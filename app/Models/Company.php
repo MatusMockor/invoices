@@ -24,6 +24,8 @@ class Company extends Model
         'ico',
         'dic',
         'ic_dph',
+        'iban',
+        'swift',
         'phone',
         'email',
         'website',
