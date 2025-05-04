@@ -7,6 +7,7 @@ use App\Http\Requests\Invoices\UpdateInvoiceRequest;
 use App\Models\Company;
 use App\Models\Invoice;
 use App\Models\InvoiceItem;
+use App\Models\User;
 use App\Services\CompanyDataService;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Support\Facades\DB;
@@ -35,10 +36,6 @@ class InvoiceController extends Controller
 
     public function store(CreateInvoiceRequest $request): RedirectResponse
     {
-        try {
-            DB::beginTransaction();
-
-            // Find or create company based on ICO
             $company = $this->companyDataService->findOrCreateCompany($request->ico);
 
             if (! $company) {
@@ -48,8 +45,9 @@ class InvoiceController extends Controller
             $validated = $request->validated();
 
             // Create invoice
-            $invoice = Invoice::query()->create([
+            $invoice = Invoice::create([
                 'invoice_number' => $validated['invoice_number'],
+                'user_id' => auth()->user()->id,
                 'issue_date' => $validated['issue_date'],
                 'due_date' => $validated['due_date'],
                 'company_id' => $company->id,
@@ -61,7 +59,7 @@ class InvoiceController extends Controller
 
             // Create invoice items
             foreach ($validated['items'] as $item) {
-                InvoiceItem::query()->create([
+                InvoiceItem::create([
                     'invoice_id' => $invoice->id,
                     'description' => $item['description'],
                     'quantity' => $item['quantity'],
@@ -70,16 +68,9 @@ class InvoiceController extends Controller
                 ]);
             }
 
-            DB::commit();
-
             return redirect()->route('invoices.index')
                 ->with('success', 'Faktúra bola úspešne vytvorená');
 
-        } catch (Throwable $e) {
-            DB::rollBack();
-
-            return back()->withErrors(['message' => 'Nastala chyba pri vytváraní faktúry: '.$e->getMessage()])->withInput();
-        }
     }
 
     public function show(Invoice $invoice): View
