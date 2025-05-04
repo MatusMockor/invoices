@@ -19,6 +19,8 @@ app/Http/Requests
 app/Models
 •	Use fillable.
 
+Avoid using compact ind Controllers
+
 1. Testing
    •	Use Pest PHP for all tests.
    •	Run composer lint after changes.
