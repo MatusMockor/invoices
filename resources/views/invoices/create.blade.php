@@ -16,6 +16,8 @@
                 <div class="p-6 bg-white dark:bg-gray-800 border-b border-gray-200 dark:border-gray-700">
                     <create-invoice-form
                         :fetch-company-url="'{{ route('companies.fetch-by-ico') }}'"
+                        :submit-url="'{{ route('invoices.store') }}'"
+                        :csrf-token="'{{ csrf_token() }}'"
                     />
                 </div>
             </div>

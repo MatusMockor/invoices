@@ -8,7 +8,9 @@
             </ul>
         </div>
 
-        <form @submit.prevent="submitForm" id="invoice-form">
+        <form :action="submitUrl" method="POST" @submit="onSubmit" id="invoice-form">
+            <input type="hidden" name="_token" :value="csrfToken">
+
             <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
                 <!-- Company Information -->
                 <div class="bg-white dark:bg-gray-800 p-6 rounded-lg shadow">
@@ -17,7 +19,7 @@
                     <div class="mb-4">
                         <label for="ico" class="block text-sm font-medium text-gray-700 dark:text-gray-300">IČO</label>
                         <div class="mt-1 flex rounded-md shadow-sm">
-                            <input type="text" v-model="form.ico" id="ico" class="border-gray-300 dark:border-gray-700 dark:bg-gray-900 dark:text-gray-300 focus:border-indigo-500 dark:focus:border-indigo-600 focus:ring-indigo-500 dark:focus:ring-indigo-600 rounded-md shadow-sm flex-1 block w-full sm:text-sm" placeholder="Zadajte IČO">
+                            <input type="text" v-model="form.ico" name="ico" id="ico" class="border-gray-300 dark:border-gray-700 dark:bg-gray-900 dark:text-gray-300 focus:border-indigo-500 dark:focus:border-indigo-600 focus:ring-indigo-500 dark:focus:ring-indigo-600 rounded-md shadow-sm flex-1 block w-full sm:text-sm" placeholder="Zadajte IČO">
                             <button type="button" @click="fetchCompanyData" class="ml-2 inline-flex items-center px-3 py-2 border border-transparent text-sm leading-4 font-medium rounded-md text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 dark:focus:ring-offset-gray-800">
                                 Načítať údaje
                             </button>
@@ -65,22 +67,22 @@
                     <div class="grid grid-cols-1 gap-4">
                         <div>
                             <label for="invoice_number" class="block text-sm font-medium text-gray-700 dark:text-gray-300">Číslo faktúry</label>
-                            <input type="text" v-model="form.invoice_number" id="invoice_number" class="mt-1 block w-full rounded-md border-gray-300 dark:border-gray-700 dark:bg-gray-900 dark:text-gray-300 shadow-sm focus:border-indigo-500 dark:focus:border-indigo-600 focus:ring-indigo-500 dark:focus:ring-indigo-600 sm:text-sm">
+                            <input type="text" v-model="form.invoice_number" name="invoice_number" id="invoice_number" class="mt-1 block w-full rounded-md border-gray-300 dark:border-gray-700 dark:bg-gray-900 dark:text-gray-300 shadow-sm focus:border-indigo-500 dark:focus:border-indigo-600 focus:ring-indigo-500 dark:focus:ring-indigo-600 sm:text-sm">
                         </div>
                         
                         <div>
                             <label for="issue_date" class="block text-sm font-medium text-gray-700 dark:text-gray-300">Dátum vystavenia</label>
-                            <input type="date" v-model="form.issue_date" id="issue_date" class="mt-1 block w-full rounded-md border-gray-300 dark:border-gray-700 dark:bg-gray-900 dark:text-gray-300 shadow-sm focus:border-indigo-500 dark:focus:border-indigo-600 focus:ring-indigo-500 dark:focus:ring-indigo-600 sm:text-sm">
+                            <input type="date" v-model="form.issue_date" name="issue_date" id="issue_date" class="mt-1 block w-full rounded-md border-gray-300 dark:border-gray-700 dark:bg-gray-900 dark:text-gray-300 shadow-sm focus:border-indigo-500 dark:focus:border-indigo-600 focus:ring-indigo-500 dark:focus:ring-indigo-600 sm:text-sm">
                         </div>
                         
                         <div>
                             <label for="due_date" class="block text-sm font-medium text-gray-700 dark:text-gray-300">Dátum splatnosti</label>
-                            <input type="date" v-model="form.due_date" id="due_date" class="mt-1 block w-full rounded-md border-gray-300 dark:border-gray-700 dark:bg-gray-900 dark:text-gray-300 shadow-sm focus:border-indigo-500 dark:focus:border-indigo-600 focus:ring-indigo-500 dark:focus:ring-indigo-600 sm:text-sm">
+                            <input type="date" v-model="form.due_date" name="due_date" id="due_date" class="mt-1 block w-full rounded-md border-gray-300 dark:border-gray-700 dark:bg-gray-900 dark:text-gray-300 shadow-sm focus:border-indigo-500 dark:focus:border-indigo-600 focus:ring-indigo-500 dark:focus:ring-indigo-600 sm:text-sm">
                         </div>
                         
                         <div>
                             <label for="status" class="block text-sm font-medium text-gray-700 dark:text-gray-300">Stav faktúry</label>
-                            <select v-model="form.status" id="status" class="mt-1 block w-full py-2 px-3 border border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-900 dark:text-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 dark:focus:ring-indigo-600 focus:border-indigo-500 dark:focus:border-indigo-600 sm:text-sm">
+                            <select v-model="form.status" name="status" id="status" class="mt-1 block w-full py-2 px-3 border border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-900 dark:text-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 dark:focus:ring-offset-gray-800">
                                 <option value="draft">Koncept</option>
                                 <option value="sent">Odoslaná</option>
                                 <option value="paid">Zaplatená</option>
@@ -90,7 +92,7 @@
                         
                         <div>
                             <label for="currency" class="block text-sm font-medium text-gray-700 dark:text-gray-300">Mena</label>
-                            <select v-model="form.currency" id="currency" @change="updateCurrency" class="mt-1 block w-full py-2 px-3 border border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-900 dark:text-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 dark:focus:ring-indigo-600 focus:border-indigo-500 dark:focus:border-indigo-600 sm:text-sm">
+                            <select v-model="form.currency" name="currency" id="currency" @change="updateCurrency" class="mt-1 block w-full py-2 px-3 border border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-900 dark:text-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 dark:focus:ring-offset-gray-800">
                                 <option value="EUR">EUR</option>
                                 <option value="USD">USD</option>
                                 <option value="CZK">CZK</option>
@@ -99,7 +101,7 @@
                         
                         <div>
                             <label for="note" class="block text-sm font-medium text-gray-700 dark:text-gray-300">Poznámka</label>
-                            <textarea v-model="form.note" id="note" rows="3" class="mt-1 block w-full rounded-md border-gray-300 dark:border-gray-700 dark:bg-gray-900 dark:text-gray-300 shadow-sm focus:border-indigo-500 dark:focus:border-indigo-600 focus:ring-indigo-500 dark:focus:ring-indigo-600 sm:text-sm"></textarea>
+                            <textarea v-model="form.note" name="note" id="note" rows="3" class="mt-1 block w-full rounded-md border-gray-300 dark:border-gray-700 dark:bg-gray-900 dark:text-gray-300 shadow-sm focus:border-indigo-500 dark:focus:border-indigo-600 focus:ring-indigo-500 dark:focus:ring-indigo-600 sm:text-sm"></textarea>
                         </div>
                     </div>
                 </div>
@@ -126,13 +128,13 @@
                                     <tbody class="bg-white dark:bg-gray-800 divide-y divide-gray-200 dark:divide-gray-700">
                                         <tr v-for="(item, index) in form.items" :key="index" class="item-row">
                                             <td class="px-6 py-4 whitespace-nowrap">
-                                                <input type="text" v-model="item.description" class="item-description border-gray-300 dark:border-gray-700 dark:bg-gray-900 dark:text-gray-300 focus:border-indigo-500 dark:focus:border-indigo-600 focus:ring-indigo-500 dark:focus:ring-indigo-600 rounded-md shadow-sm text-sm" placeholder="Zadajte popis položky" required>
+                                                <input type="text" v-model="item.description" :name="'items['+index+'][description]'" class="item-description border-gray-300 dark:border-gray-700 dark:bg-gray-900 dark:text-gray-300 focus:border-indigo-500 dark:focus:border-indigo-600 focus:ring-indigo-500 dark:focus:ring-indigo-600 rounded-md shadow-sm text-sm" placeholder="Zadajte popis položky" required>
                                             </td>
                                             <td class="px-6 py-4 whitespace-nowrap">
-                                                <input type="number" v-model="item.quantity" @input="updateTotal" class="item-quantity border-gray-300 dark:border-gray-700 dark:bg-gray-900 dark:text-gray-300 focus:border-indigo-500 dark:focus:border-indigo-600 focus:ring-indigo-500 dark:focus:ring-indigo-600 rounded-md shadow-sm text-sm w-20" min="1" required>
+                                                <input type="number" v-model="item.quantity" @input="updateTotal" :name="'items['+index+'][quantity]'" class="item-quantity border-gray-300 dark:border-gray-700 dark:bg-gray-900 dark:text-gray-300 focus:border-indigo-500 dark:focus:border-indigo-600 focus:ring-indigo-500 dark:focus:ring-indigo-600 rounded-md shadow-sm text-sm w-20" min="1" required>
                                             </td>
                                             <td class="px-6 py-4 whitespace-nowrap">
-                                                <input type="number" v-model="item.unit_price" @input="updateTotal" class="item-price border-gray-300 dark:border-gray-700 dark:bg-gray-900 dark:text-gray-300 focus:border-indigo-500 dark:focus:border-indigo-600 focus:ring-indigo-500 dark:focus:ring-indigo-600 rounded-md shadow-sm text-sm w-32" min="0" step="0.01" placeholder="0.00" required>
+                                                <input type="number" v-model="item.unit_price" @input="updateTotal" :name="'items['+index+'][unit_price]'" class="item-price border-gray-300 dark:border-gray-700 dark:bg-gray-900 dark:text-gray-300 focus:border-indigo-500 dark:focus:border-indigo-600 focus:ring-indigo-500 dark:focus:ring-indigo-600 rounded-md shadow-sm text-sm w-32" min="0" step="0.01" placeholder="0.00" required>
                                                 <div class="text-xs text-gray-500 dark:text-gray-400 mt-1">Cena s DPH</div>
                                             </td>
                                             <td class="px-6 py-4 whitespace-nowrap item-total dark:text-gray-300">
@@ -161,7 +163,7 @@
                         <div class="text-sm text-gray-500 dark:text-gray-400">Cena bez DPH: <span>{{ subtotal.toFixed(2) }}</span> <span>{{ form.currency }}</span></div>
                         <div class="text-sm text-gray-500 dark:text-gray-400">DPH (20%): <span>{{ vat.toFixed(2) }}</span> <span>{{ form.currency }}</span></div>
                         <div class="text-lg font-bold text-gray-900 dark:text-gray-100">Spolu s DPH: <span>{{ grandTotal.toFixed(2) }}</span> <span>{{ form.currency }}</span></div>
-                        <input type="hidden" v-model="form.total_amount">
+                        <input type="hidden" v-model="form.total_amount" name="total_amount">
                     </div>
                 </div>
             </div>
@@ -183,6 +185,14 @@ export default {
     fetchCompanyUrl: {
       type: String,
       required: true
+    },
+    submitUrl: {
+      type: String,
+      required: true
+    },
+    csrfToken: {
+      type: String,
+      required: true
     }
   },
     data() {
@@ -195,7 +205,7 @@ export default {
                 company_postal_code: '',
                 company_dic: '',
                 company_ic_dph: '',
-                invoice_number: 'INVOICE-' + new Date().toISOString().substr(0, 10).replace(/-/g, '') + '-' + Math.floor(1000 + Math.random() * 9000),
+                invoice_number: new Date().toISOString().substr(0, 10).replace(/-/g, '') + '-' + Math.floor(1000 + Math.random() * 9000),
                 issue_date: new Date().toISOString().substr(0, 10),
                 due_date: new Date(new Date().setDate(new Date().getDate() + 14)).toISOString().substr(0, 10),
                 status: 'draft',
@@ -298,19 +308,19 @@ export default {
             if (!this.form.company_name) {
                 this.errors.push('Názov spoločnosti je povinný');
             }
-            
+
             if (!this.form.company_address) {
                 this.errors.push('Adresa spoločnosti je povinná');
             }
-            
+
             if (!this.form.company_city) {
                 this.errors.push('Mesto je povinné');
             }
-            
+
             if (!this.form.company_postal_code) {
                 this.errors.push('PSČ je povinné');
             }
-            
+
             if (!this.form.invoice_number) {
                 this.errors.push('Číslo faktúry je povinné');
             }
@@ -337,21 +347,13 @@ export default {
             
             return this.errors.length === 0;
         },
-        submitForm() {
+        onSubmit(event) {
             if (this.validateForm()) {
-                // Submit form logic here
-                const formData = {
-                    ...this.form
-                };
-                
-                this.$emit('submit', formData);
-                
-                // Reset form or redirect
-                // this.resetForm();
-                
-                // Or emit event for parent component to handle
-                this.$emit('created', formData);
+                // Form is valid, allow the traditional form submission to proceed
+                return true;
             }
+            // Form is invalid, prevent submission
+            event.preventDefault();
         }
     }
 };
