@@ -7,8 +7,10 @@ use App\Http\Requests\Invoices\UpdateInvoiceRequest;
 use App\Models\Invoice;
 use App\Models\InvoiceItem;
 use App\Models\Partner;
+use App\Services\InvoicePdfService;
 use App\Services\PartnerDataService;
 use Illuminate\Http\RedirectResponse;
+use Illuminate\Http\Response;
 use Illuminate\Support\Facades\DB;
 use Illuminate\View\View;
 use Throwable;
@@ -16,7 +18,8 @@ use Throwable;
 class InvoiceController extends Controller
 {
     public function __construct(
-        protected PartnerDataService $companyDataService
+        protected PartnerDataService $companyDataService,
+        protected InvoicePdfService $pdfService
     ) {}
 
     public function index(): View
@@ -153,5 +156,27 @@ class InvoiceController extends Controller
 
         return redirect()->route('invoices.index')
             ->with('success', 'Faktúra bola úspešne vymazaná');
+    }
+
+    /**
+     * Download the invoice as PDF
+     *
+     * @param Invoice $invoice
+     * @return Response
+     */
+    public function downloadPdf(Invoice $invoice): Response
+    {
+        return $this->pdfService->downloadPdf($invoice);
+    }
+
+    /**
+     * View the invoice as PDF in browser
+     *
+     * @param Invoice $invoice
+     * @return Response
+     */
+    public function viewPdf(Invoice $invoice): Response
+    {
+        return $this->pdfService->streamPdf($invoice);
     }
 }
