@@ -3,7 +3,6 @@
 namespace Database\Factories;
 
 use App\Models\Partner;
-use App\Models\User;
 use Illuminate\Database\Eloquent\Factories\Factory;
 
 /**
@@ -26,9 +25,8 @@ class PartnerFactory extends Factory
     public function definition(): array
     {
         return [
-            'user_id' => User::factory(),
             'name' => $this->faker->company(),
-            'ico' => $this->faker->numerify('########'),
+            'ico' => $this->faker->unique()->numerify('########'),
             'street' => $this->faker->streetAddress(),
             'city' => $this->faker->city(),
             'postal_code' => $this->faker->postcode(),
@@ -36,5 +34,18 @@ class PartnerFactory extends Factory
             'dic' => $this->faker->numerify('##########'),
             'ic_dph' => 'SK'.$this->faker->numerify('##########'),
         ];
+    }
+    
+    /**
+     * Indicate that the partner is from Slovakia.
+     */
+    public function slovak(): Factory
+    {
+        return $this->state(function (array $attributes) {
+            return [
+                'country' => 'Slovakia',
+                'postal_code' => $this->faker->numerify('#####'), // Slovak postal code format
+            ];
+        });
     }
 }
