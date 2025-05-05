@@ -28,7 +28,7 @@ class InvoiceItemFactory extends Factory
         $quantity = $this->faker->numberBetween(1, 10);
         $unitPrice = $this->faker->randomFloat(2, 10, 1000);
         $totalPrice = $quantity * $unitPrice;
-        
+
         return [
             'invoice_id' => Invoice::factory(),
             'description' => $this->faker->sentence(),

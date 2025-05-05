@@ -160,9 +160,6 @@ class InvoiceController extends Controller
 
     /**
      * Download the invoice as PDF
-     *
-     * @param Invoice $invoice
-     * @return Response
      */
     public function downloadPdf(Invoice $invoice): Response
     {
@@ -171,9 +168,6 @@ class InvoiceController extends Controller
 
     /**
      * View the invoice as PDF in browser
-     *
-     * @param Invoice $invoice
-     * @return Response
      */
     public function viewPdf(Invoice $invoice): Response
     {

@@ -29,7 +29,7 @@ class InvoiceFactory extends Factory
     {
         return [
             'user_id' => User::factory(),
-            'invoice_number' => 'INV-' . date('Y') . '-' . $this->faker->unique()->randomNumber(3),
+            'invoice_number' => 'INV-'.date('Y').'-'.$this->faker->unique()->randomNumber(3),
             'issue_date' => $this->faker->dateTimeBetween('-30 days', 'now'),
             'due_date' => $this->faker->dateTimeBetween('now', '+30 days'),
             'partner_id' => Partner::factory(),
@@ -40,11 +40,9 @@ class InvoiceFactory extends Factory
             'status' => $this->faker->randomElement(['draft', 'sent', 'paid', 'cancelled']),
         ];
     }
-    
+
     /**
      * Indicate that the invoice is in draft status.
-     *
-     * @return \Illuminate\Database\Eloquent\Factories\Factory
      */
     public function draft(): Factory
     {
@@ -54,11 +52,9 @@ class InvoiceFactory extends Factory
             ];
         });
     }
-    
+
     /**
      * Indicate that the invoice has been sent.
-     *
-     * @return \Illuminate\Database\Eloquent\Factories\Factory
      */
     public function sent(): Factory
     {
@@ -68,11 +64,9 @@ class InvoiceFactory extends Factory
             ];
         });
     }
-    
+
     /**
      * Indicate that the invoice has been paid.
-     *
-     * @return \Illuminate\Database\Eloquent\Factories\Factory
      */
     public function paid(): Factory
     {
@@ -82,11 +76,9 @@ class InvoiceFactory extends Factory
             ];
         });
     }
-    
+
     /**
      * Indicate that the invoice has been cancelled.
-     *
-     * @return \Illuminate\Database\Eloquent\Factories\Factory
      */
     public function cancelled(): Factory
     {

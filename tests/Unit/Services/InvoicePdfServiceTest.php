@@ -21,7 +21,7 @@ class InvoicePdfServiceTest extends TestCase
     protected function setUp(): void
     {
         parent::setUp();
-        
+
         // Create test data
         $this->user = User::factory()->create();
         $this->company = Company::factory()->create([
@@ -34,7 +34,7 @@ class InvoicePdfServiceTest extends TestCase
             'partner_id' => $this->partner->id,
             'invoice_number' => 'INV-2025-001',
         ]);
-        
+
         // Create some invoice items
         InvoiceItem::factory()->count(3)->create([
             'invoice_id' => $this->invoice->id,
@@ -49,17 +49,17 @@ class InvoicePdfServiceTest extends TestCase
             ->once()
             ->with('invoices.pdf', ['invoice' => $this->invoice])
             ->andReturn($pdfMock);
-        
+
         // Create the service
-        $service = new InvoicePdfService();
-        
+        $service = new InvoicePdfService;
+
         // Call the method
         $result = $service->generatePdf($this->invoice);
-        
+
         // Assert the result is the PDF mock
         $this->assertSame($pdfMock, $result);
     }
-    
+
     public function test_download_pdf_returns_download_response()
     {
         // Create a mock of the PDF instance
@@ -68,21 +68,21 @@ class InvoicePdfServiceTest extends TestCase
             ->once()
             ->with('invoice-INV-2025-001.pdf')
             ->andReturn(new Response('pdf content'));
-        
+
         // Create a partial mock of the service
         $service = Mockery::mock(InvoicePdfService::class)->makePartial();
         $service->shouldReceive('generatePdf')
             ->once()
             ->with($this->invoice)
             ->andReturn($pdfMock);
-        
+
         // Call the method
         $response = $service->downloadPdf($this->invoice);
-        
+
         // Assert the response is a Response instance
         $this->assertInstanceOf(Response::class, $response);
     }
-    
+
     public function test_stream_pdf_returns_stream_response()
     {
         // Create a mock of the PDF instance
@@ -91,17 +91,17 @@ class InvoicePdfServiceTest extends TestCase
             ->once()
             ->withNoArgs()
             ->andReturn(new Response('pdf content'));
-        
+
         // Create a partial mock of the service
         $service = Mockery::mock(InvoicePdfService::class)->makePartial();
         $service->shouldReceive('generatePdf')
             ->once()
             ->with($this->invoice)
             ->andReturn($pdfMock);
-        
+
         // Call the method
         $response = $service->streamPdf($this->invoice);
-        
+
         // Assert the response is a Response instance
         $this->assertInstanceOf(Response::class, $response);
     }
