@@ -35,7 +35,7 @@ class PartnerFactory extends Factory
             'ic_dph' => 'SK'.$this->faker->numerify('##########'),
         ];
     }
-    
+
     /**
      * Indicate that the partner is from Slovakia.
      */

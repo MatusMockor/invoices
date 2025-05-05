@@ -14,7 +14,7 @@ class PartnerSeeder extends Seeder
     {
         // Create some partners with Slovak data
         Partner::factory(3)->slovak()->create();
-        
+
         // Create a specific partner with known data
         Partner::factory()->create([
             'name' => 'ABC Corporation',
@@ -26,7 +26,7 @@ class PartnerSeeder extends Seeder
             'postal_code' => '81101',
             'country' => 'Slovakia',
         ]);
-        
+
         // Create some random partners
         Partner::factory(5)->create();
     }
