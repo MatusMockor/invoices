@@ -125,11 +125,11 @@
                     <table cellpadding="0" cellspacing="0" style="font-size: 8pt; width: 100%;">
                         <tr>
                             <td width="100" style="padding-bottom: 3px;">Dátum vystavenia:</td>
-                            <td style="font-weight: bold; padding-bottom: 3px;">{{ \Carbon\Carbon::parse($invoice->issue_date)->format('d.m.Y') }}</td>
+                            <td style="padding-bottom: 3px;">{{ \Carbon\Carbon::parse($invoice->issue_date)->format('d.m.Y') }}</td>
                         </tr>
                         <tr>
                             <td width="100" style="padding-bottom: 3px;">Dátum dodania:</td>
-                            <td style="font-weight: bold; padding-bottom: 3px;">{{ \Carbon\Carbon::parse($invoice->issue_date)->format('d.m.Y') }}</td>
+                            <td style="padding-bottom: 3px;">{{ \Carbon\Carbon::parse($invoice->issue_date)->format('d.m.Y') }}</td>
                         </tr>
                         <tr>
                             <td width="100">Splatnosť:</td>
