@@ -7,6 +7,7 @@ use App\Models\User;
 use Illuminate\Database\Seeder;
 use Database\Seeders\CompanySeeder;
 use Database\Seeders\PartnerSeeder;
+use Database\Seeders\InvoiceSeeder;
 
 class DatabaseSeeder extends Seeder
 {
@@ -25,6 +26,7 @@ class DatabaseSeeder extends Seeder
         $this->call([
             CompanySeeder::class,
             PartnerSeeder::class,
+            InvoiceSeeder::class,
         ]);
     }
 }
