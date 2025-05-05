@@ -35,7 +35,7 @@ class CompanyFactory extends Factory
             'ico' => $this->faker->numerify('########'), // 8-digit company ID commonly used in Slovakia
             'dic' => $this->faker->numerify('##########'), // 10-digit tax ID
             'ic_dph' => 'SK'.$this->faker->numerify('##########'), // VAT ID with SK prefix
-            'iban' => 'SK'.$this->faker->numerify('##').$this->faker->bothify('?????????????????'), // Slovak IBAN format
+            'iban' => 'SK'.$this->faker->numerify('##############'), // Slovak IBAN format with numbers only
             'swift' => $this->faker->regexify('[A-Z]{6}[A-Z0-9]{2}[A-Z0-9]{3}'), // SWIFT/BIC code format
             'phone' => $this->faker->phoneNumber(),
             'email' => $this->faker->companyEmail(),
@@ -62,7 +62,7 @@ class CompanyFactory extends Factory
             return [
                 'country' => 'Slovakia',
                 'postal_code' => $this->faker->numerify('#####'), // Slovak postal code format
-                'iban' => 'SK'.$this->faker->numerify('##').$this->faker->bothify('?????????????????'),
+                'iban' => 'SK'.$this->faker->numerify('##################'), // Slovak IBAN format (24 chars total)
                 'swift' => 'TATR'.$this->faker->regexify('[A-Z0-9]{4}'), // Example of a Slovak bank SWIFT
                 'phone' => '+421'.$this->faker->numerify('#########'), // Slovak phone number format
             ];
