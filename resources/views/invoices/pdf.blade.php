@@ -112,12 +112,21 @@
                     {{ $invoice->supplierCompany->postal_code }} {{ $invoice->supplierCompany->city }}, Slovenská republika<br>
                 </div>
                 
-                <div style="margin-bottom: 10px; font-size: 8pt; white-space: nowrap;">
-                    <span style="display: inline-block;">IČO: {{ $invoice->supplierCompany->ico }}</span>
+                <div style="margin-bottom: 10px; font-size: 8pt;">
+                    <div style="white-space: nowrap;">
+                        <span style="display: inline-block;">IČO: {{ $invoice->supplierCompany->ico }}</span>
+                    </div>
+                    <div style="white-space: nowrap;">
+                        <span style="display: inline-block;">DIČ: {{ $invoice->supplierCompany->dic }}</span>
+                    </div>
                     @if($invoice->supplierCompany->ic_dph)
-                        <span style="margin-left: 10px; display: inline-block;">IČ DPH: {{ $invoice->supplierCompany->ic_dph }}</span>
+                    <div style="white-space: nowrap;">
+                        <span style="display: inline-block;">IČ DPH: {{ $invoice->supplierCompany->ic_dph }}</span>
+                    </div>
                     @else
-                        <span style="margin-left: 10px; display: inline-block;">Nie je platiteľ DPH</span>
+                    <div style="white-space: nowrap;">
+                        <span style="display: inline-block;">Nie je platiteľ DPH</span>
+                    </div>
                     @endif
                 </div>
                 
