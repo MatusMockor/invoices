@@ -62,9 +62,9 @@ class CompanyFactory extends Factory
             return [
                 'country' => 'Slovakia',
                 'postal_code' => $this->faker->numerify('#####'), // Slovak postal code format
-                'iban' => 'SK'.$this->faker->numerify('##################'), // Slovak IBAN format (24 chars total)
-                'swift' => 'TATR'.$this->faker->regexify('[A-Z0-9]{4}'), // Example of a Slovak bank SWIFT
-                'phone' => '+421'.$this->faker->numerify('#########'), // Slovak phone number format
+                'iban' => $this->faker->iban('SK'), // Slovak IBAN format (24 chars total)
+                'swift' => $this->faker->swiftBicNumber('[A-Z0-9]{4}'), // Example of a Slovak bank SWIFT
+                'phone' => $this->faker->phoneNumber, // Slovak phone number format
             ];
         });
     }
