@@ -30,6 +30,8 @@ class Company extends Model
         'email',
         'website',
         'user_id',
+        'company_type',
+        'registration_number',
     ];
 
     /**
