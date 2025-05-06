@@ -23,20 +23,20 @@ class CreateCompanyRequest extends FormRequest
     {
         return [
             'name' => 'required|string|max:255',
-            'street' => 'nullable|string|max:255',
-            'city' => 'nullable|string|max:255',
-            'postal_code' => 'nullable|string|max:255',
-            'country' => 'nullable|string|max:255',
-            'ico' => 'nullable|string|max:255',
-            'dic' => 'nullable|string|max:255',
+            'street' => 'required|string|max:255',
+            'city' => 'required|string|max:255',
+            'postal_code' => 'required|string|max:255',
+            'country' => 'required|string|max:255',
+            'ico' => 'required|string|max:255',
+            'dic' => 'required|string|max:255',
             'ic_dph' => 'nullable|string|max:255',
             'iban' => 'nullable|string|max:34|regex:/^[A-Z]{2}[0-9]{2}[A-Z0-9]{1,30}$/',
             'swift' => 'nullable|string|min:8|max:11|regex:/^[A-Z]{6}[A-Z0-9]{2}([A-Z0-9]{3})?$/',
             'phone' => 'nullable|string|max:255',
             'email' => 'nullable|email|max:255',
             'website' => 'nullable|url|max:255',
-            'company_type' => 'nullable|string|max:255',
-            'registration_number' => 'nullable|string|max:255',
+            'company_type' => 'required|string|max:255',
+            'registration_number' => 'required|string|max:255',
         ];
     }
 

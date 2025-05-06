@@ -2,9 +2,9 @@
 
 namespace App\Http\Controllers;
 
-use App\Http\Requests\Companies\CreateCompanyRequest;
 use App\Http\Requests\Companies\FetchCompanyByIcoRequest;
-use App\Http\Requests\Companies\UpdateCompanyRequest;
+use App\Http\Requests\Partners\CreatePartnerRequest;
+use App\Http\Requests\Partners\UpdatePartnerRequest;
 use App\Http\Resources\PartnerResource;
 use App\Models\Partner;
 use App\Services\PartnerDataService;
@@ -30,7 +30,7 @@ class PartnerController extends Controller
         return view('partners.create');
     }
 
-    public function store(CreateCompanyRequest $request): RedirectResponse
+    public function store(CreatePartnerRequest $request): RedirectResponse
     {
         Partner::query()->create($request->validated());
 
@@ -48,9 +48,9 @@ class PartnerController extends Controller
         return view('partners.edit', compact('partner'));
     }
 
-    public function update(UpdateCompanyRequest $request, Partner $company): RedirectResponse
+    public function update(UpdatePartnerRequest $request, Partner $partner): RedirectResponse
     {
-        $company->update($request->validated());
+        $partner->update($request->validated());
 
         return redirect()->route('partners.index')
             ->with('success', 'Údaje spoločnosti boli úspešne aktualizované');

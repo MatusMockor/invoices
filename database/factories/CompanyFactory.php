@@ -25,6 +25,8 @@ class CompanyFactory extends Factory
      */
     public function definition(): array
     {
+        $companyTypes = ['živnosť', 's.r.o.'];
+
         return [
             'user_id' => User::factory(),
             'name' => $this->faker->company(),
@@ -40,6 +42,8 @@ class CompanyFactory extends Factory
             'phone' => $this->faker->phoneNumber(),
             'email' => $this->faker->companyEmail(),
             'website' => $this->faker->url(),
+            'company_type' => $this->faker->randomElement($companyTypes),
+            'registration_number' => 'OR '.$this->faker->randomElement(['Bratislava I', 'Košice', 'Žilina', 'Prešov', 'Banská Bystrica']).', Oddiel: '.$this->faker->randomElement(['Sro', 'Sa']).', Vložka č. '.$this->faker->numerify('######'),
         ];
     }
 

@@ -14,44 +14,44 @@
                         @method('PUT')
 
                         <div>
-                            <x-input-label for="name" :value="__('Company Name')" />
+                            <x-input-label for="name" :value="__('Company Name *')" />
                             <x-text-input id="name" class="block mt-1 w-full" type="text" name="name" :value="old('name', $partner->name)" required autofocus />
                             <x-input-error :messages="$errors->get('name')" class="mt-2" />
                         </div>
 
                         <div>
-                            <x-input-label for="street" :value="__('Street')" />
+                            <x-input-label for="street" :value="__('Street *')" />
                             <x-text-input id="street" class="block mt-1 w-full" type="text" name="street" :value="old('street', $partner->street)" required />
                             <x-input-error :messages="$errors->get('street')" class="mt-2" />
                         </div>
 
                         <div>
-                            <x-input-label for="city" :value="__('City')" />
+                            <x-input-label for="city" :value="__('City *')" />
                             <x-text-input id="city" class="block mt-1 w-full" type="text" name="city" :value="old('city', $partner->city)" required />
                             <x-input-error :messages="$errors->get('city')" class="mt-2" />
                         </div>
 
                         <div>
-                            <x-input-label for="postal_code" :value="__('Postal Code')" />
+                            <x-input-label for="postal_code" :value="__('Postal Code *')" />
                             <x-text-input id="postal_code" class="block mt-1 w-full" type="text" name="postal_code" :value="old('postal_code', $partner->postal_code)" required />
                             <x-input-error :messages="$errors->get('postal_code')" class="mt-2" />
                         </div>
 
                         <div>
-                            <x-input-label for="country" :value="__('Country')" />
+                            <x-input-label for="country" :value="__('Country *')" />
                             <x-text-input id="country" class="block mt-1 w-full" type="text" name="country" :value="old('country', $partner->country)" required />
                             <x-input-error :messages="$errors->get('country')" class="mt-2" />
                         </div>
 
                         <div>
-                            <x-input-label for="ico" :value="__('IČO')" />
+                            <x-input-label for="ico" :value="__('IČO *')" />
                             <x-text-input id="ico" class="block mt-1 w-full" type="text" name="ico" :value="old('ico', $partner->ico)" required />
                             <x-input-error :messages="$errors->get('ico')" class="mt-2" />
                         </div>
 
                         <div>
-                            <x-input-label for="dic" :value="__('DIČ')" />
-                            <x-text-input id="dic" class="block mt-1 w-full" type="text" name="dic" :value="old('dic', $partner->dic)" />
+                            <x-input-label for="dic" :value="__('DIČ *')" />
+                            <x-text-input id="dic" class="block mt-1 w-full" type="text" name="dic" :value="old('dic', $partner->dic)" required />
                             <x-input-error :messages="$errors->get('dic')" class="mt-2" />
                         </div>
 
@@ -62,8 +62,8 @@
                         </div>
 
                         <div>
-                            <x-input-label for="company_type" :value="__('Právna forma')" />
-                            <select id="company_type" name="company_type" class="border-gray-300 dark:border-gray-700 dark:bg-gray-900 dark:text-gray-300 focus:border-indigo-500 dark:focus:border-indigo-600 focus:ring-indigo-500 dark:focus:ring-indigo-600 rounded-md shadow-sm block mt-1 w-full">
+                            <x-input-label for="company_type" :value="__('Právna forma *')" />
+                            <select id="company_type" name="company_type" class="border-gray-300 dark:border-gray-700 dark:bg-gray-900 dark:text-gray-300 focus:border-indigo-500 dark:focus:border-indigo-600 focus:ring-indigo-500 dark:focus:ring-indigo-600 rounded-md shadow-sm block mt-1 w-full" required>
                                 <option value="">-- Vyberte právnu formu --</option>
                                 <option value="živnosť" {{ old('company_type', $partner->company_type) == 'živnosť' ? 'selected' : '' }}>Živnosť</option>
                                 <option value="s.r.o." {{ old('company_type', $partner->company_type) == 's.r.o.' ? 'selected' : '' }}>s.r.o.</option>
@@ -72,8 +72,8 @@
                         </div>
 
                         <div>
-                            <x-input-label for="registration_number" :value="__('Registračné číslo')" />
-                            <x-text-input id="registration_number" class="block mt-1 w-full" type="text" name="registration_number" :value="old('registration_number', $partner->registration_number)" placeholder="Obchodný register / Živnostenský register" />
+                            <x-input-label for="registration_number" :value="__('Registračné číslo *')" />
+                            <x-text-input id="registration_number" class="block mt-1 w-full" type="text" name="registration_number" :value="old('registration_number', $partner->registration_number)" placeholder="Obchodný register / Živnostenský register" required />
                             <x-input-error :messages="$errors->get('registration_number')" class="mt-2" />
                         </div>
 

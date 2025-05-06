@@ -24,6 +24,8 @@ class PartnerFactory extends Factory
      */
     public function definition(): array
     {
+        $companyTypes = ['živnosť', 's.r.o.'];
+
         return [
             'name' => $this->faker->company(),
             'ico' => $this->faker->unique()->numerify('########'),
@@ -33,6 +35,8 @@ class PartnerFactory extends Factory
             'country' => $this->faker->country(),
             'dic' => $this->faker->numerify('##########'),
             'ic_dph' => 'SK'.$this->faker->numerify('##########'),
+            'company_type' => $this->faker->randomElement($companyTypes),
+            'registration_number' => 'OR '.$this->faker->randomElement(['Bratislava I', 'Košice', 'Žilina', 'Prešov', 'Banská Bystrica']).', Oddiel: '.$this->faker->randomElement(['Sro', 'Sa']).', Vložka č. '.$this->faker->numerify('######'),
         ];
     }
 
