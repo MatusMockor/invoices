@@ -43,9 +43,9 @@ class PartnerController extends Controller
         return view('partners.show', compact('company'));
     }
 
-    public function edit(Partner $company): View
+    public function edit(Partner $partner): View
     {
-        return view('partners.edit', compact('company'));
+        return view('partners.edit', compact('partner'));
     }
 
     public function update(UpdateCompanyRequest $request, Partner $company): RedirectResponse
