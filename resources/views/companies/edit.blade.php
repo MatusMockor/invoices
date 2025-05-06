@@ -100,6 +100,28 @@
                             </div>
                         </div>
 
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
+                            <!-- Company Type -->
+                            <div>
+                                <x-input-label for="company_type" :value="__('Právna forma')" class="font-semibold" />
+                                <select id="company_type" name="company_type" class="block mt-1 w-full border-gray-300 dark:border-gray-700 dark:bg-gray-900 dark:text-gray-300 focus:border-indigo-500 dark:focus:border-indigo-600 focus:ring-indigo-500 dark:focus:ring-indigo-600 rounded-md shadow-sm">
+                                    <option value="">-- Vyberte právnu formu --</option>
+                                    <option value="živnosť" {{ old('company_type', $company->company_type) == 'živnosť' ? 'selected' : '' }}>Živnosť</option>
+                                    <option value="s.r.o." {{ old('company_type', $company->company_type) == 's.r.o.' ? 'selected' : '' }}>s.r.o.</option>
+                                </select>
+                                <p class="mt-1 text-xs text-gray-500 dark:text-gray-400">{{ __('Legal form of the company') }}</p>
+                                <x-input-error :messages="$errors->get('company_type')" class="mt-2" />
+                            </div>
+                            
+                            <!-- Registration Number -->
+                            <div>
+                                <x-input-label for="registration_number" :value="__('Registračné číslo')" class="font-semibold" />
+                                <x-text-input id="registration_number" class="block mt-1 w-full" type="text" name="registration_number" :value="old('registration_number', $company->registration_number)" placeholder="Obchodný register / Živnostenský register" />
+                                <p class="mt-1 text-xs text-gray-500 dark:text-gray-400">{{ __('Registration number in business or trade register') }}</p>
+                                <x-input-error :messages="$errors->get('registration_number')" class="mt-2" />
+                            </div>
+                        </div>
+
                         <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
                             <!-- IBAN -->
                             <div>

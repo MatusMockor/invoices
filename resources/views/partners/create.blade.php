@@ -81,6 +81,22 @@
                             </div>
                         </div>
                         
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-4">
+                            <div>
+                                <label for="company_type" class="block text-sm font-medium text-gray-700 dark:text-gray-300">Právna forma</label>
+                                <select name="company_type" id="company_type" class="mt-1 border-gray-300 dark:border-gray-700 dark:bg-gray-900 dark:text-gray-300 focus:border-indigo-500 dark:focus:border-indigo-600 focus:ring-indigo-500 dark:focus:ring-indigo-600 block w-full shadow-sm sm:text-sm rounded-md">
+                                    <option value="">-- Vyberte právnu formu --</option>
+                                    <option value="živnosť" {{ old('company_type') == 'živnosť' ? 'selected' : '' }}>Živnosť</option>
+                                    <option value="s.r.o." {{ old('company_type') == 's.r.o.' ? 'selected' : '' }}>s.r.o.</option>
+                                </select>
+                            </div>
+                            
+                            <div>
+                                <label for="registration_number" class="block text-sm font-medium text-gray-700 dark:text-gray-300">Registračné číslo</label>
+                                <input type="text" name="registration_number" id="registration_number" value="{{ old('registration_number') }}" class="mt-1 border-gray-300 dark:border-gray-700 dark:bg-gray-900 dark:text-gray-300 focus:border-indigo-500 dark:focus:border-indigo-600 focus:ring-indigo-500 dark:focus:ring-indigo-600 block w-full shadow-sm sm:text-sm rounded-md" placeholder="Obchodný register / Živnostenský register">
+                            </div>
+                        </div>
+                        
                         <div class="mb-4">
                             <label for="note" class="block text-sm font-medium text-gray-700 dark:text-gray-300">Poznámka</label>
                             <textarea name="note" id="note" rows="3" class="mt-1 border-gray-300 dark:border-gray-700 dark:bg-gray-900 dark:text-gray-300 focus:border-indigo-500 dark:focus:border-indigo-600 focus:ring-indigo-500 dark:focus:ring-indigo-600 block w-full shadow-sm sm:text-sm rounded-md">{{ old('note') }}</textarea>

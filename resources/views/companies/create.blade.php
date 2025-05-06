@@ -99,6 +99,28 @@
                             </div>
                         </div>
 
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
+                            <!-- Company Type -->
+                            <div>
+                                <x-input-label for="company_type" :value="__('Právna forma')" class="font-semibold" />
+                                <select id="company_type" name="company_type" class="block mt-1 w-full border-gray-300 dark:border-gray-700 dark:bg-gray-900 dark:text-gray-300 focus:border-indigo-500 dark:focus:border-indigo-600 focus:ring-indigo-500 dark:focus:ring-indigo-600 rounded-md shadow-sm">
+                                    <option value="">-- Vyberte právnu formu --</option>
+                                    <option value="živnosť" {{ old('company_type') == 'živnosť' ? 'selected' : '' }}>Živnosť</option>
+                                    <option value="s.r.o." {{ old('company_type') == 's.r.o.' ? 'selected' : '' }}>s.r.o.</option>
+                                </select>
+                                <p class="mt-1 text-xs text-gray-500 dark:text-gray-400">{{ __('Legal form of the company') }}</p>
+                                <x-input-error :messages="$errors->get('company_type')" class="mt-2" />
+                            </div>
+                            
+                            <!-- Registration Number -->
+                            <div>
+                                <x-input-label for="registration_number" :value="__('Registračné číslo')" class="font-semibold" />
+                                <x-text-input id="registration_number" class="block mt-1 w-full" type="text" name="registration_number" :value="old('registration_number')" placeholder="Obchodný register / Živnostenský register" />
+                                <p class="mt-1 text-xs text-gray-500 dark:text-gray-400">{{ __('Registration number in business or trade register') }}</p>
+                                <x-input-error :messages="$errors->get('registration_number')" class="mt-2" />
+                            </div>
+                        </div>
+
                         <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
                             <!-- IBAN -->
                             <div>
@@ -138,7 +160,7 @@
                                 <div class="mt-1 flex rounded-md shadow-sm">
                                     <span class="inline-flex items-center px-3 rounded-l-md border border-r-0 border-gray-300 dark:border-gray-700 bg-gray-50 dark:bg-gray-800 text-gray-500 dark:text-gray-400 text-sm">
                                         <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" viewBox="0 0 20 20" fill="currentColor">
-                                            <path d="M2 3a1 1 0 011-1h2.153a1 1 0 01.986.836l.74 4.435a1 1 0 01-.54 1.06l-1.548.773a11.037 11.037 0 006.105 6.105l.774-1.548a1 1 0 011.059-.54l4.435.74a1 1 0 01.836.986V17a1 1 0 01-1 1h-2C7.82 18 2 12.18 2 5V3z" />
+                                            <path fill-rule="evenodd" d="M2 3a1 1 0 011-1h2.153a1 1 0 01.986.836l.74 4.435a1 1 0 01-.54 1.06l-1.548.773a11.037 11.037 0 006.105 6.105l.774-1.548a1 1 0 011.059-.54l4.435.74a1 1 0 01.836.986V17a1 1 0 01-1 1h-2C7.82 18 2 12.18 2 5V3z" />
                                         </svg>
                                     </span>
                                     <x-text-input id="phone" type="text" name="phone" :value="old('phone')" class="flex-1 block w-full rounded-none rounded-r-md" placeholder="+421 901 123 456" />

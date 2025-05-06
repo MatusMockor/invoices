@@ -141,6 +141,22 @@
                         <span style="display: inline-block;">Nie je platiteľ DPH</span>
                     </div>
                     @endif
+                    @if($invoice->supplierCompany->company_type)
+                    <div style="white-space: nowrap;">
+                        <span style="display: inline-block;">Právna forma: {{ $invoice->supplierCompany->company_type }}</span>
+                    </div>
+                    @endif
+                    @if($invoice->supplierCompany->registration_number)
+                    <div style="white-space: nowrap;">
+                        <span style="display: inline-block;">
+                            @if($invoice->supplierCompany->company_type == 's.r.o.')
+                                Zápis v OR: {{ $invoice->supplierCompany->registration_number }}
+                            @else
+                                Zápis v ŽR: {{ $invoice->supplierCompany->registration_number }}
+                            @endif
+                        </span>
+                    </div>
+                    @endif
                 </div>
                 
                 <div style="margin-top: 15px;">
@@ -176,6 +192,22 @@
                             <span style="margin-left: 10px; display: inline-block;">IČ DPH: {{ $invoice->partner->ic_dph }}</span>
                         @endif
                     </div>
+                    @if($invoice->partner->company_type || $invoice->partner->registration_number)
+                    <div style="margin-top: 3px; font-size: 8pt; white-space: nowrap;">
+                        @if($invoice->partner->company_type)
+                            <span style="display: inline-block;">Právna forma: {{ $invoice->partner->company_type }}</span>
+                        @endif
+                        @if($invoice->partner->registration_number)
+                            <span style="margin-left: 10px; display: inline-block;">
+                                @if($invoice->partner->company_type == 's.r.o.')
+                                    Zápis v OR: {{ $invoice->partner->registration_number }}
+                                @else
+                                    Zápis v ŽR: {{ $invoice->partner->registration_number }}
+                                @endif
+                            </span>
+                        @endif
+                    </div>
+                    @endif
                 </div>
                 
                 <div class="payment-box">
