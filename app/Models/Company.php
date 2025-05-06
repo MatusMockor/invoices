@@ -6,6 +6,30 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
+/**
+ * Company model representing the user's company for invoicing
+ *
+ * @property int $id
+ * @property int|null $user_id Owner of the company
+ * @property string $name Company name
+ * @property string $street Street address
+ * @property string $city City
+ * @property string $postal_code Postal code
+ * @property string $country Country
+ * @property string $ico Company identification number
+ * @property string|null $dic Tax identification number
+ * @property string|null $ic_dph VAT identification number
+ * @property string|null $iban Bank account number in IBAN format
+ * @property string|null $swift Bank identifier code
+ * @property string|null $phone Contact phone number
+ * @property string|null $email Contact email address
+ * @property string|null $website Company website
+ * @property string $company_type Legal form of the company
+ * @property string $registration_number Registration number in business register
+ * @property \Illuminate\Support\Carbon|null $created_at
+ * @property \Illuminate\Support\Carbon|null $updated_at
+ * @property-read \App\Models\User|null $user
+ */
 class Company extends Model
 {
     use HasFactory;

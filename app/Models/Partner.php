@@ -6,6 +6,24 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 
+/**
+ * Partner model representing business partners for invoicing
+ *
+ * @property int $id
+ * @property string $name Company name
+ * @property string $ico Company identification number
+ * @property string|null $dic Tax identification number
+ * @property string $street Street address
+ * @property string $city City
+ * @property string $postal_code Postal code
+ * @property string $country Country
+ * @property string|null $ic_dph VAT identification number
+ * @property string $company_type Legal form of the company
+ * @property string $registration_number Registration number in business register
+ * @property \Illuminate\Support\Carbon|null $created_at
+ * @property \Illuminate\Support\Carbon|null $updated_at
+ * @property-read \Illuminate\Database\Eloquent\Collection|\App\Models\Invoice[] $invoices
+ */
 class Partner extends Model
 {
     use HasFactory;
