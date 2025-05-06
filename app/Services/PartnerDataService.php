@@ -59,6 +59,8 @@ class PartnerDataService
                         'country' => $data['address']['country'] ?? 'Slovensko',
                         'dic' => $data['dic'] ?? null,
                         'ic_dph' => $data['ic_dph'] ?? null,
+                        'company_type' => $data['company_type'] ?? null,
+                        'registration_number' => $data['registration_number'] ?? null,
                     ],
                 ];
             }
@@ -109,6 +111,8 @@ class PartnerDataService
             'country' => $companyData['data']['country'],
             'dic' => $companyData['data']['dic'],
             'ic_dph' => $companyData['data']['ic_dph'],
+            'company_type' => $companyData['data']['company_type'] ?? null,
+            'registration_number' => $companyData['data']['registration_number'] ?? null,
         ]);
     }
 }
