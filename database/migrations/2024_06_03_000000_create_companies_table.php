@@ -27,6 +27,8 @@ return new class extends Migration
             $table->string('phone')->nullable();
             $table->string('email')->nullable();
             $table->string('website')->nullable();
+            $table->string('company_type')->nullable()->comment('živnosť or s.r.o.');
+            $table->string('registration_number')->nullable()->comment('Registration number in business or trade register');
             $table->timestamps();
         });
     }

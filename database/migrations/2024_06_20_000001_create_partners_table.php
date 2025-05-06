@@ -18,6 +18,8 @@ return new class extends Migration
             $table->string('country')->nullable()->default('Slovensko');
             $table->string('dic')->nullable();
             $table->string('ic_dph')->nullable();
+            $table->string('company_type')->nullable()->comment('živnosť or s.r.o.');
+            $table->string('registration_number')->nullable()->comment('Registration number in business or trade register');
             $table->timestamps();
         });
     }
