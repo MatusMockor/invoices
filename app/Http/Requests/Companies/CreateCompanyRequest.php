@@ -35,6 +35,8 @@ class CreateCompanyRequest extends FormRequest
             'phone' => 'nullable|string|max:255',
             'email' => 'nullable|email|max:255',
             'website' => 'nullable|url|max:255',
+            'company_type' => 'nullable|string|max:255',
+            'registration_number' => 'nullable|string|max:255',
         ];
     }
 

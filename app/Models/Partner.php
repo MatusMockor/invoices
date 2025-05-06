@@ -19,6 +19,8 @@ class Partner extends Model
         'country',
         'dic',
         'ic_dph',
+        'company_type',
+        'registration_number',
     ];
 
     public function invoices(): HasMany
