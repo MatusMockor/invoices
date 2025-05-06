@@ -54,18 +54,31 @@
             border-collapse: collapse;
             margin-bottom: 20px;
             font-size: 8pt;
+            table-layout: fixed;
         }
         .items-table th {
             border-bottom: 1px solid #ddd;
             padding: 4px;
             text-align: left;
             font-weight: bold;
+            font-size: 7pt;
         }
         .items-table td {
             padding: 4px;
             border-bottom: 1px solid #ddd;
         }
         .number-col {
+            text-align: right;
+        }
+        .quantity-col {
+            text-align: center;
+            padding-right: 5px;
+        }
+        .price-col {
+            text-align: center;
+            padding-right: 5px;
+        }
+        .total-col {
             text-align: right;
         }
         .summary-row {
@@ -211,9 +224,9 @@
             <tr>
                 <th width="5%">Č.</th>
                 <th width="50%">NÁZOV</th>
-                <th width="15%" class="number-col">MNOŽSTVO</th>
-                <th width="15%" class="number-col">JEDN. CENA</th>
-                <th width="15%" class="number-col">SPOLU</th>
+                <th width="15%" style="text-align: center;">MNOŽSTVO</th>
+                <th width="15%" style="text-align: center;">JEDN. CENA</th>
+                <th width="15%" style="text-align: right;">SPOLU</th>
             </tr>
         </thead>
         <tbody>
@@ -221,14 +234,14 @@
             <tr>
                 <td>{{ $index + 1 }}.</td>
                 <td>{{ $item->description }}</td>
-                <td class="number-col">{{ number_format($item->quantity, 2, ',', ' ') }}</td>
-                <td class="number-col">{{ number_format($item->unit_price, 2, ',', ' ') }}</td>
-                <td class="number-col">{{ number_format($item->total_price, 2, ',', ' ') }}</td>
+                <td style="text-align: center;">{{ number_format($item->quantity, 2, ',', ' ') }}</td>
+                <td style="text-align: center;">{{ number_format($item->unit_price, 2, ',', ' ') }}</td>
+                <td style="text-align: right;">{{ number_format($item->total_price, 2, ',', ' ') }}</td>
             </tr>
             @endforeach
             <tr class="summary-row">
-                <td colspan="4" class="number-col">Spolu</td>
-                <td class="number-col">{{ number_format($invoice->total_amount, 2, ',', ' ') }} {{ $invoice->currency }}</td>
+                <td colspan="4" style="text-align: right;">Spolu</td>
+                <td style="text-align: right;">{{ number_format($invoice->total_amount, 2, ',', ' ') }} {{ $invoice->currency }}</td>
             </tr>
         </tbody>
     </table>
