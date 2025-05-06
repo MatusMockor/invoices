@@ -17,18 +17,18 @@ return new class extends Migration
             $table->string('iban')->nullable()->after('ico');
             $table->string('swift')->nullable()->after('iban');
             $table->string('name');
-            $table->string('street')->nullable();
-            $table->string('city')->nullable();
-            $table->string('postal_code')->nullable();
-            $table->string('country')->nullable();
-            $table->string('ico')->nullable();
-            $table->string('dic')->nullable();
+            $table->string('street');
+            $table->string('city');
+            $table->string('postal_code');
+            $table->string('country');
+            $table->string('ico');
+            $table->string('dic');
             $table->string('ic_dph')->nullable();
             $table->string('phone')->nullable();
             $table->string('email')->nullable();
             $table->string('website')->nullable();
-            $table->string('company_type')->nullable()->comment('živnosť or s.r.o.');
-            $table->string('registration_number')->nullable()->comment('Registration number in business or trade register');
+            $table->string('company_type')->comment('živnosť or s.r.o.');
+            $table->string('registration_number')->comment('Registration number in business or trade register');
             $table->timestamps();
         });
     }
