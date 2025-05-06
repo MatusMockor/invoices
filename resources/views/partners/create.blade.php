@@ -70,8 +70,8 @@
                                 </div>
                                 
                                 <div class="mb-4">
-                                    <label for="dic" class="block text-sm font-medium text-gray-700 dark:text-gray-300">DIČ *</label>
-                                    <input type="text" name="dic" id="dic" value="{{ old('dic') }}" class="mt-1 border-gray-300 dark:border-gray-700 dark:bg-gray-900 dark:text-gray-300 focus:border-indigo-500 dark:focus:border-indigo-600 focus:ring-indigo-500 dark:focus:ring-indigo-600 block w-full shadow-sm sm:text-sm rounded-md" required>
+                                    <label for="dic" class="block text-sm font-medium text-gray-700 dark:text-gray-300">DIČ</label>
+                                    <input type="text" name="dic" id="dic" value="{{ old('dic') }}" class="mt-1 border-gray-300 dark:border-gray-700 dark:bg-gray-900 dark:text-gray-300 focus:border-indigo-500 dark:focus:border-indigo-600 focus:ring-indigo-500 dark:focus:ring-indigo-600 block w-full shadow-sm sm:text-sm rounded-md">
                                 </div>
                                 
                                 <div class="mb-4">

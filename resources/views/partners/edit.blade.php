@@ -50,8 +50,8 @@
                         </div>
 
                         <div>
-                            <x-input-label for="dic" :value="__('DIČ *')" />
-                            <x-text-input id="dic" class="block mt-1 w-full" type="text" name="dic" :value="old('dic', $partner->dic)" required />
+                            <x-input-label for="dic" :value="__('DIČ')" />
+                            <x-text-input id="dic" class="block mt-1 w-full" type="text" name="dic" :value="old('dic', $partner->dic)" />
                             <x-input-error :messages="$errors->get('dic')" class="mt-2" />
                         </div>
 

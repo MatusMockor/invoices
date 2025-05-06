@@ -24,7 +24,7 @@ class UpdatePartnerRequest extends FormRequest
         return [
             'name' => ['required', 'string', 'max:255'],
             'ico' => ['required', 'string', 'max:8'],
-            'dic' => ['required', 'string', 'max:10'],
+            'dic' => ['nullable', 'string', 'max:10'],
             'street' => ['required', 'string', 'max:255'],
             'city' => ['required', 'string', 'max:255'],
             'postal_code' => ['required', 'string', 'max:10'],
@@ -45,7 +45,6 @@ class UpdatePartnerRequest extends FormRequest
         return [
             'name.required' => 'Názov spoločnosti je povinný',
             'ico.required' => 'IČO je povinné',
-            'dic.required' => 'DIČ je povinné',
             'street.required' => 'Ulica je povinná',
             'city.required' => 'Mesto je povinné',
             'postal_code.required' => 'PSČ je povinné',

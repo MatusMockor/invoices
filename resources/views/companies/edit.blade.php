@@ -85,8 +85,8 @@
                         
                             <!-- DIC -->
                             <div>
-                                <x-input-label for="dic" :value="__('DIČ *')" class="font-semibold" />
-                                <x-text-input id="dic" class="block mt-1 w-full" type="text" name="dic" :value="old('dic', $company->dic)" required />
+                                <x-input-label for="dic" :value="__('DIČ')" class="font-semibold" />
+                                <x-text-input id="dic" class="block mt-1 w-full" type="text" name="dic" :value="old('dic', $company->dic)" />
                                 <p class="mt-1 text-xs text-gray-500 dark:text-gray-400">{{ __('Tax identification number') }}</p>
                                 <x-input-error :messages="$errors->get('dic')" class="mt-2" />
                             </div>
