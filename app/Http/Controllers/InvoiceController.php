@@ -18,7 +18,7 @@ use Throwable;
 class InvoiceController extends Controller
 {
     public function __construct(
-        protected PartnerDataService $companyDataService,
+        protected PartnerDataService $partnerDataService,
         protected InvoicePdfService $pdfService
     ) {}
 
@@ -41,7 +41,7 @@ class InvoiceController extends Controller
 
     public function store(CreateInvoiceRequest $request): RedirectResponse
     {
-        $partner = $this->companyDataService->findOrCreateCompany($request->ico);
+        $partner = $this->partnerDataService->findOrCreatePartner($request->ico);
 
         if (! $partner) {
             return back()->withErrors(['ico' => 'Spoločnosť s daným IČO sa nepodarilo nájsť.'])->withInput();
@@ -101,9 +101,9 @@ class InvoiceController extends Controller
             DB::beginTransaction();
 
             // Find or create company based on ICO
-            $company = $this->companyDataService->findOrCreateCompany($request->ico);
+            $partner = $this->partnerDataService->findOrCreatePartner($request->ico);
 
-            if (! $company) {
+            if (! $partner) {
                 return back()->withErrors(['ico' => 'Spoločnosť s daným IČO sa nepodarilo nájsť.'])->withInput();
             }
 
@@ -116,8 +116,8 @@ class InvoiceController extends Controller
                 'invoice_number' => $validated['invoice_number'],
                 'issue_date' => $validated['issue_date'],
                 'due_date' => $validated['due_date'],
-                'company_id' => $company->id, // This is the recipient company
-                'supplier_id' => $user->current_company_id, // Keep the active company as supplier
+                'partner_id' => $partner->id, // This is the recipient company
+                'supplier_company_id' => $user->current_company_id, // Keep the active company as supplier
                 'total_amount' => $validated['total_amount'],
                 'currency' => $validated['currency'],
                 'note' => $validated['note'],
