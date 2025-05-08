@@ -30,6 +30,8 @@ class PartnerResource extends JsonResource
                 'country' => $this->country,
                 'dic' => $this->dic,
                 'ic_dph' => $this->ic_dph,
+                'company_type' => $this->company_type,
+                'registration_number' => $this->registration_number,
             ],
         ];
     }
