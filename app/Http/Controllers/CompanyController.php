@@ -3,14 +3,21 @@
 namespace App\Http\Controllers;
 
 use App\Http\Requests\Companies\CreateCompanyRequest;
+use App\Http\Requests\Companies\FetchCompanyByIcoRequest;
 use App\Http\Requests\Companies\UpdateCompanyRequest;
 use App\Models\Company;
+use App\Services\ScraperService;
+use Illuminate\Http\JsonResponse;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\View\View;
 
 class CompanyController extends Controller
 {
+    public function __construct(
+        protected ScraperService $scraperService
+    ) {}
+
     /**
      * Display a listing of the companies.
      */
@@ -99,5 +106,25 @@ class CompanyController extends Controller
 
         return redirect()->back()
             ->with('success', 'Company switched successfully.');
+    }
+
+    /**
+     * Fetch company data by ICO
+     */
+    public function fetchByIco(FetchCompanyByIcoRequest $request): JsonResponse
+    {
+        $companyData = $this->scraperService->fetchCompanyDataByIco($request->input('ico'));
+
+        if (!$companyData['success']) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Údaje spoločnosti sa nenašli',
+            ], 404);
+        }
+
+        return response()->json([
+            'success' => true,
+            'data' => $companyData['data']
+        ]);
     }
 }
