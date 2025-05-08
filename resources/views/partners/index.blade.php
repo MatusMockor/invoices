@@ -56,34 +56,34 @@
                                 </tr>
                             </thead>
                             <tbody class="bg-white dark:bg-gray-800 divide-y divide-gray-200 dark:divide-gray-700">
-                                @forelse($companies as $company)
+                                @forelse($partners as $partner)
                                     <tr>
                                         <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-gray-400">
-                                            {{ $company->ico }}
+                                            {{ $partner->ico }}
                                         </td>
                                         <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900 dark:text-gray-100">
-                                            {{ $company->name }}
+                                            {{ $partner->name }}
                                         </td>
                                         <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-gray-400">
-                                            {{ $company->city }}
+                                            {{ $partner->city }}
                                         </td>
                                         <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-gray-400">
-                                            @if($company->dic)
-                                                DIČ: {{ $company->dic }}<br>
+                                            @if($partner->dic)
+                                                DIČ: {{ $partner->dic }}<br>
                                             @endif
-                                            @if($company->ic_dph)
-                                                IČ DPH: {{ $company->ic_dph }}
+                                            @if($partner->ic_dph)
+                                                IČ DPH: {{ $partner->ic_dph }}
                                             @endif
                                         </td>
                                         <td class="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
                                             <div class="flex space-x-2">
-                                                <a href="{{ route('partners.edit', $company) }}" class="text-indigo-600 dark:text-indigo-400 hover:text-indigo-900 dark:hover:text-indigo-300">Upraviť</a>
-                                                <form action="{{ route('partners.destroy', $company) }}" method="POST" onsubmit="return confirm('Naozaj chcete vymazať túto spoločnosť?');" class="inline">
+                                                <a href="{{ route('partners.edit', $partner) }}" class="text-indigo-600 dark:text-indigo-400 hover:text-indigo-900 dark:hover:text-indigo-300">Upraviť</a>
+                                                <form action="{{ route('partners.destroy', $partner) }}" method="POST" onsubmit="return confirm('Naozaj chcete vymazať túto spoločnosť?');" class="inline">
                                                     @csrf
                                                     @method('DELETE')
                                                     <button type="submit" class="text-red-600 dark:text-red-400 hover:text-red-900 dark:hover:text-red-300">Vymazať</button>
                                                 </form>
-                                                <a href="{{ route('invoices.create', ['company_id' => $company->id]) }}" class="text-green-600 dark:text-green-400 hover:text-green-900 dark:hover:text-green-300">Nová faktúra</a>
+                                                <a href="{{ route('invoices.create', ['company_id' => $partner->id]) }}" class="text-green-600 dark:text-green-400 hover:text-green-900 dark:hover:text-green-300">Nová faktúra</a>
                                             </div>
                                         </td>
                                     </tr>
@@ -99,7 +99,7 @@
                     </div>
                     
                     <div class="mt-4">
-                        {{ $companies->links() }}
+                        {{ $partners->links() }}
                     </div>
                 </div>
             </div>
