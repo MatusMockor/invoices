@@ -302,7 +302,7 @@ export default {
       type: String,
       required: true
     },
-    fetchCompanyRoute: {
+    fetchPartnerRoute: {
       type: String,
       required: true
     },
@@ -343,7 +343,7 @@ export default {
       this.loading = true;
       
       try {
-        const response = await axios.get(`${this.fetchCompanyRoute}?ico=${this.form.ico}`);
+        const response = await axios.get(`${this.fetchPartnerRoute}?ico=${this.form.ico}`);
         
         const data = response.data.data || response.data;
         
