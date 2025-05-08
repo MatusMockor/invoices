@@ -35,4 +35,9 @@ return [
         ],
     ],
 
+    'scraper' => [
+        'url' => env('SCRAPER_URL', 'http://scraper:3000'),
+        'jwt_secret' => env('SCRAPER_JWT_SECRET'),
+        'jwt_algorithm' => 'HS256',
+    ],
 ];
