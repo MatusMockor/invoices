@@ -10,7 +10,6 @@ use App\Models\Partner;
 use App\Services\PartnerDataService;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\RedirectResponse;
-use Illuminate\Http\Request;
 use Illuminate\View\View;
 
 class PartnerController extends Controller

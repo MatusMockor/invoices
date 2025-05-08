@@ -19,7 +19,7 @@ class ScraperService
     {
         return Http::withToken(JwtFacade::generateToken())
             ->post($this->baseUrl.'/scraper/start', [
-                'ico' => $ico
+                'ico' => $ico,
             ])
             ->json(default: []);
     }
@@ -33,13 +33,13 @@ class ScraperService
             $response = Http::withToken(JwtFacade::generateToken())
                 ->timeout(15)
                 ->post($this->baseUrl.'/scraper/company', [
-                    'ico' => $ico
+                    'ico' => $ico,
                 ]);
 
             if ($response->successful()) {
                 $data = $response->json();
-                
-                if (!empty($data) && isset($data['success']) && $data['success']) {
+
+                if (! empty($data) && isset($data['success']) && $data['success']) {
                     return [
                         'success' => true,
                         'data' => [
@@ -57,22 +57,22 @@ class ScraperService
                     ];
                 }
             }
-            
+
             Log::warning('Scraper API response not successful', [
                 'status' => $response->status(),
                 'body' => $response->body(),
             ]);
-            
+
             return [
                 'success' => false,
                 'message' => 'Nepodarilo sa načítať dáta o spoločnosti zo scrapera.',
             ];
         } catch (\Exception $e) {
             Log::error('Error fetching company data from scraper', ['message' => $e->getMessage()]);
-            
+
             return [
                 'success' => false,
-                'message' => 'Chyba pri získavaní údajov spoločnosti zo scrapera: ' . $e->getMessage(),
+                'message' => 'Chyba pri získavaní údajov spoločnosti zo scrapera: '.$e->getMessage(),
             ];
         }
     }

@@ -3,15 +3,11 @@
 namespace App\Services;
 
 use App\Models\Partner;
-use Illuminate\Http\Client\ConnectionException;
-use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Log;
 
 class PartnerDataService
 {
-    public function __construct(protected ScraperService $scraperService)
-    {
-    }
+    public function __construct(protected ScraperService $scraperService) {}
 
     public function fetchPartnerDataByIco(string $ico): array
     {
@@ -54,10 +50,10 @@ class PartnerDataService
             ];
         } catch (\Exception $e) {
             Log::error('Error fetching partner data from scraper', ['message' => $e->getMessage()]);
-            
+
             return [
                 'success' => false,
-                'message' => 'Chyba pri získavaní údajov partnera: ' . $e->getMessage(),
+                'message' => 'Chyba pri získavaní údajov partnera: '.$e->getMessage(),
             ];
         }
     }
