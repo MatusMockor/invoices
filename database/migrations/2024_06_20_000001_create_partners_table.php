@@ -16,7 +16,7 @@ return new class extends Migration
             $table->string('city');
             $table->string('postal_code');
             $table->string('country')->default('Slovensko');
-            $table->string('dic');
+            $table->string('dic')->nullable();
             $table->string('ic_dph')->nullable();
             $table->string('company_type')->comment('živnosť or s.r.o.');
             $table->string('registration_number')->comment('Registration number in business or trade register');

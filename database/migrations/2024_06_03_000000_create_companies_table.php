@@ -22,7 +22,7 @@ return new class extends Migration
             $table->string('postal_code');
             $table->string('country');
             $table->string('ico');
-            $table->string('dic');
+            $table->string('dic')->nullable();
             $table->string('ic_dph')->nullable();
             $table->string('phone')->nullable();
             $table->string('email')->nullable();
