@@ -12,7 +12,7 @@
             <company-form 
                 submit-route="{{ route('companies.store') }}"
                 cancel-route="{{ route('companies.index') }}"
-                fetch-company-route="{{ route('companies.fetch-by-ico') }}"
+                fetch-partner-route="{{ route('partners.fetch-by-ico') }}"
                 submit-button-text="{{ __('Create Company') }}"
                 :errors="{{ Illuminate\Support\Js::from($errors->get('*')) }}"
             ></company-form>
