@@ -217,6 +217,12 @@
 
 <script>
 export default {
+  props: {
+    fetchPartnerRoute: {
+      type: String,
+      required: true
+    }
+  },
   data() {
     return {
       form: {
@@ -245,7 +251,7 @@ export default {
       this.loading = true;
       
       try {
-        const response = await axios.get(`/partners-fetch-by-ico?ico=${this.form.ico}`);
+        const response = await axios.get(`${this.fetchPartnerRoute}?ico=${this.form.ico}`);
         
         const data = response.data.data || response.data;
         
