@@ -10,19 +10,20 @@ use App\Models\Partner;
 use App\Services\PartnerDataService;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\RedirectResponse;
+use Illuminate\Http\Request;
 use Illuminate\View\View;
 
 class PartnerController extends Controller
 {
     public function __construct(
-        protected PartnerDataService $companyDataService
+        protected PartnerDataService $partnerDataService
     ) {}
 
     public function index(): View
     {
-        $companies = Partner::query()->latest()->paginate(10);
+        $partners = Partner::query()->latest()->paginate(10);
 
-        return view('partners.index', compact('companies'));
+        return view('partners.index', compact('partners'));
     }
 
     public function create(): View
@@ -38,9 +39,9 @@ class PartnerController extends Controller
             ->with('success', 'Spoločnosť bola úspešne vytvorená');
     }
 
-    public function show(Partner $company): View
+    public function show(Partner $partner): View
     {
-        return view('partners.show', compact('company'));
+        return view('partners.show', compact('partner'));
     }
 
     public function edit(Partner $partner): View
@@ -56,9 +57,9 @@ class PartnerController extends Controller
             ->with('success', 'Údaje spoločnosti boli úspešne aktualizované');
     }
 
-    public function destroy(Partner $company): RedirectResponse
+    public function destroy(Partner $partner): RedirectResponse
     {
-        $company->delete();
+        $partner->delete();
 
         return redirect()->route('partners.index')
             ->with('success', 'Spoločnosť bola úspešne vymazaná');
@@ -66,15 +67,15 @@ class PartnerController extends Controller
 
     public function fetchByIco(FetchCompanyByIcoRequest $request): JsonResponse|PartnerResource
     {
-        $companyData = $this->companyDataService->findOrCreateCompany($request->ico);
+        $partnerData = $this->partnerDataService->findOrCreatePartner($request->input('ico'));
 
-        if (! $companyData) {
+        if (! $partnerData) {
             return response()->json([
                 'success' => false,
                 'message' => 'Údaje spoločnosti sa nenašli',
             ], 404);
         }
 
-        return new PartnerResource($companyData);
+        return new PartnerResource($partnerData);
     }
 }
