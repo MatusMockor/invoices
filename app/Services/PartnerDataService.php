@@ -3,18 +3,24 @@
 namespace App\Services;
 
 use App\Models\Partner;
+use App\Repositories\Interfaces\PartnerRepository as PartnerRepositoryContract;
+use App\Services\Interfaces\PartnerDataService as PartnerDataServiceContract;
+use App\Services\Interfaces\ScraperService as ScraperServiceContract;
 use Illuminate\Support\Facades\Log;
 
-class PartnerDataService
+class PartnerDataService implements PartnerDataServiceContract
 {
-    public function __construct(protected ScraperService $scraperService) {}
+    public function __construct(
+        protected ScraperServiceContract $scraperService,
+        protected PartnerRepositoryContract $partnerRepository
+    ) {}
 
     public function fetchPartnerDataByIco(string $ico): array
     {
         if (strlen($ico) !== 8 || ! ctype_digit($ico)) {
             return [
                 'success' => false,
-                'message' => 'Neplatné IČO',
+                'message' => 'Invalid ICO',
             ];
         }
 
@@ -29,7 +35,7 @@ class PartnerDataService
             if (empty($data)) {
                 return [
                     'success' => false,
-                    'message' => 'Nepodarilo sa načítať dáta o partnerovi.',
+                    'message' => 'Failed to load partner data.',
                 ];
             }
 
@@ -53,27 +59,27 @@ class PartnerDataService
 
             return [
                 'success' => false,
-                'message' => 'Chyba pri získavaní údajov partnera: '.$e->getMessage(),
+                'message' => 'Error retrieving partner data: '.$e->getMessage(),
             ];
         }
     }
 
     public function findOrCreatePartner(string $ico): ?Partner
     {
-        // Pokus o nalezení v databázi
-        $partner = Partner::where('ico', $ico)->first();
+        // Try to find partner in database
+        $partner = $this->partnerRepository->findByIco($ico);
         if ($partner) {
             return $partner;
         }
 
-        // Načtení z API
+        // Fetch data from API
         $partnerData = $this->fetchPartnerDataByIco($ico);
         if (! $partnerData['success']) {
             return null;
         }
 
-        // Vytvoření nového partnera
-        return Partner::create([
+        // Create new partner
+        return $this->partnerRepository->create([
             'ico' => $partnerData['data']['ico'],
             'name' => $partnerData['data']['name'],
             'street' => $partnerData['data']['street'],
