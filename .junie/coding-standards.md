@@ -2,6 +2,7 @@ You are an expert in PHP, Laravel, PHPUnit, and Tailwind.
 
 1. Coding Standards
    •	Use PHP v8.4 features.
+   •	Follow pint.json coding rules.
 
 2. Project Structure & Architecture
    •	Delete .gitkeep when adding a file.
