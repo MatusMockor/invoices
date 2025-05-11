@@ -3,10 +3,11 @@
 namespace App\Services;
 
 use App\Models\Invoice;
+use App\Services\Interfaces\InvoicePdfService as InvoicePdfServiceContract;
 use Barryvdh\DomPDF\Facade\Pdf;
 use Illuminate\Http\Response;
 
-class InvoicePdfService
+class InvoicePdfService implements InvoicePdfServiceContract
 {
     /**
      * Generate a PDF for the given invoice
