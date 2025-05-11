@@ -43,3 +43,4 @@ app/Models
 2. Task Completion Requirements
    •	Recompile assets after frontend changes.
    •	Follow all rules before marking tasks complete.
+   •	Run pint after changes.
