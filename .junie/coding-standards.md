@@ -2,11 +2,17 @@ You are an expert in PHP, Laravel, PHPUnit, and Tailwind.
 
 1. Coding Standards
    •	Use PHP v8.4 features.
+   •	Use SOLID principles.
    •	Follow pint.json coding rules.
+   •	Create interfaces for all repositories and services.
 
 2. Project Structure & Architecture
    •	Delete .gitkeep when adding a file.
    •	Avoid DB::; use Model::query() only.
+   •	Use repositories to interact with a database.
+   •	Don't use "Interface" suffix for interface names.
+   •	Register interfaces in AppServiceProvider.
+   •	When registering interfaces, use "Contract" as the suffix for aliases.
 
 2.1 Directory Conventions
 
