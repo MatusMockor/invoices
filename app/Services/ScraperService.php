@@ -3,10 +3,11 @@
 namespace App\Services;
 
 use App\Facades\JwtFacade;
+use App\Services\Interfaces\ScraperService as ScraperServiceContract;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Log;
 
-class ScraperService
+class ScraperService implements ScraperServiceContract
 {
     protected string $baseUrl;
 
@@ -66,14 +67,14 @@ class ScraperService
 
             return [
                 'success' => false,
-                'message' => 'Nepodarilo sa načítať dáta o spoločnosti zo scrapera.',
+                'message' => 'Failed to load company data from scraper.',
             ];
         } catch (\Exception $e) {
             Log::error('Error fetching company data from scraper', ['message' => $e->getMessage()]);
 
             return [
                 'success' => false,
-                'message' => 'Chyba pri získavaní údajov spoločnosti zo scrapera: '.$e->getMessage(),
+                'message' => 'Error retrieving company data from scraper: '.$e->getMessage(),
             ];
         }
     }
