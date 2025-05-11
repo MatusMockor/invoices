@@ -11,7 +11,6 @@ use App\Services\InvoicePdfService;
 use App\Services\PartnerDataService;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Response;
-use Illuminate\Support\Facades\DB;
 use Illuminate\View\View;
 use Throwable;
 
@@ -24,19 +23,19 @@ class InvoiceController extends Controller
 
     public function index(): View
     {
-        $invoices = Invoice::with('partner')
+        $invoices = Invoice::query()->with('partner')
             ->where('supplier_company_id', auth()->user()->current_company_id)
             ->latest()
             ->paginate(10);
 
-        return view('invoices.index', compact('invoices'));
+        return view('invoices.index', ['invoices' => $invoices]);
     }
 
     public function create(): View
     {
         $companies = Partner::query()->orderBy('name')->get();
 
-        return view('invoices.create', compact('companies'));
+        return view('invoices.create', ['companies' => $companies]);
     }
 
     public function store(CreateInvoiceRequest $request): RedirectResponse
@@ -51,7 +50,7 @@ class InvoiceController extends Controller
         $user = auth()->user();
 
         // Create invoice
-        $invoice = Invoice::create([
+        $invoice = Invoice::query()->create([
             'invoice_number' => $validated['invoice_number'],
             'user_id' => $user->id,
             'issue_date' => $validated['issue_date'],
@@ -66,7 +65,7 @@ class InvoiceController extends Controller
 
         // Create invoice items
         foreach ($validated['items'] as $item) {
-            InvoiceItem::create([
+            InvoiceItem::query()->create([
                 'invoice_id' => $invoice->id,
                 'description' => $item['description'],
                 'quantity' => $item['quantity'],
@@ -84,7 +83,7 @@ class InvoiceController extends Controller
     {
         $invoice->load(['partner', 'items']);
 
-        return view('invoices.show', compact('invoice'));
+        return view('invoices.show', ['invoice' => $invoice]);
     }
 
     public function edit(Invoice $invoice): View
@@ -92,14 +91,15 @@ class InvoiceController extends Controller
         $invoice->load(['partner', 'items']);
         $companies = Partner::query()->orderBy('name')->get();
 
-        return view('invoices.edit', compact('invoice', 'companies'));
+        return view('invoices.edit', [
+            'invoice' => $invoice,
+            'companies' => $companies,
+        ]);
     }
 
     public function update(UpdateInvoiceRequest $request, Invoice $invoice): RedirectResponse
     {
         try {
-            DB::beginTransaction();
-
             // Find or create company based on ICO
             $partner = $this->partnerDataService->findOrCreatePartner($request->ico);
 
@@ -138,14 +138,10 @@ class InvoiceController extends Controller
                 ]);
             }
 
-            DB::commit();
-
             return redirect()->route('invoices.index')
                 ->with('success', 'Faktúra bola úspešne aktualizovaná');
 
         } catch (Throwable $e) {
-            DB::rollBack();
-
             return back()->withErrors(['message' => 'Nastala chyba pri aktualizácii faktúry: '.$e->getMessage()])->withInput();
         }
     }

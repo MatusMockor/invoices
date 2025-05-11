@@ -18,7 +18,7 @@ class CompanyController extends Controller
     {
         $companies = auth()->user()->companies;
 
-        return view('companies.index', compact('companies'));
+        return view('companies.index', ['companies' => $companies]);
     }
 
     /**
@@ -37,7 +37,7 @@ class CompanyController extends Controller
         $validated = $request->validated();
         $validated['user_id'] = auth()->id();
 
-        $company = Company::create($validated);
+        $company = Company::query()->create($validated);
 
         return redirect()->route('companies.show', $company)
             ->with('success', 'Company was successfully created');
@@ -48,7 +48,7 @@ class CompanyController extends Controller
      */
     public function show(Company $company): View
     {
-        return view('companies.show', compact('company'));
+        return view('companies.show', ['company' => $company]);
     }
 
     /**
@@ -56,7 +56,7 @@ class CompanyController extends Controller
      */
     public function edit(Company $company): View
     {
-        return view('companies.edit', compact('company'));
+        return view('companies.edit', ['company' => $company]);
     }
 
     /**

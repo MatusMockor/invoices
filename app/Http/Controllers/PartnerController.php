@@ -22,7 +22,7 @@ class PartnerController extends Controller
     {
         $partners = Partner::query()->latest()->paginate(10);
 
-        return view('partners.index', compact('partners'));
+        return view('partners.index', ['partners' => $partners]);
     }
 
     public function create(): View
@@ -40,12 +40,12 @@ class PartnerController extends Controller
 
     public function show(Partner $partner): View
     {
-        return view('partners.show', compact('partner'));
+        return view('partners.show', ['partner' => $partner]);
     }
 
     public function edit(Partner $partner): View
     {
-        return view('partners.edit', compact('partner'));
+        return view('partners.edit', ['partner' => $partner]);
     }
 
     public function update(UpdatePartnerRequest $request, Partner $partner): RedirectResponse
