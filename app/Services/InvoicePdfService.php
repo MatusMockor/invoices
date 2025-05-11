@@ -11,7 +11,6 @@ class InvoicePdfService
     /**
      * Generate a PDF for the given invoice
      *
-     * @param Invoice $invoice
      * @return mixed
      */
     public function generatePdf(Invoice $invoice)
