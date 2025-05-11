@@ -10,14 +10,19 @@ class InvoicePdfService
 {
     /**
      * Generate a PDF for the given invoice
+     *
+     * @param Invoice $invoice
+     * @return mixed
      */
-    public function generatePdf(Invoice $invoice): \Barryvdh\DomPDF\PDF
+    public function generatePdf(Invoice $invoice)
     {
         $invoice->load(['partner', 'items', 'supplierCompany']);
 
-        return PDF::loadView('invoices.pdf', [
+        $pdf = PDF::loadView('invoices.pdf', [
             'invoice' => $invoice,
         ]);
+
+        return $pdf;
     }
 
     /**

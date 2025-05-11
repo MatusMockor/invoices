@@ -18,6 +18,7 @@ class ScraperService
     public function startScraper(string $ico): array
     {
         return Http::withToken(JwtFacade::generateToken())
+            ->timeout(5)
             ->post($this->baseUrl.'/scraper/start', [
                 'ico' => $ico,
             ])
