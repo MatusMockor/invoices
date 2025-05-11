@@ -9,9 +9,6 @@ class InvoiceItemRepository implements InvoiceItemRepositoryContract
 {
     /**
      * Create a new invoice item
-     *
-     * @param array $data
-     * @return InvoiceItem
      */
     public function create(array $data): InvoiceItem
     {
@@ -20,9 +17,6 @@ class InvoiceItemRepository implements InvoiceItemRepositoryContract
 
     /**
      * Delete all items for an invoice
-     *
-     * @param int $invoiceId
-     * @return bool
      */
     public function deleteByInvoiceId(int $invoiceId): bool
     {

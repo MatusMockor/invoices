@@ -11,9 +11,6 @@ class PartnerRepository implements PartnerRepositoryContract
 {
     /**
      * Get all partners with pagination
-     *
-     * @param int $perPage
-     * @return LengthAwarePaginator
      */
     public function getAllPaginated(int $perPage = 10): LengthAwarePaginator
     {
@@ -22,8 +19,6 @@ class PartnerRepository implements PartnerRepositoryContract
 
     /**
      * Get all partners ordered by name
-     *
-     * @return Collection
      */
     public function getAllOrderedByName(): Collection
     {
@@ -32,9 +27,6 @@ class PartnerRepository implements PartnerRepositoryContract
 
     /**
      * Find a partner by ID
-     *
-     * @param int $id
-     * @return Partner|null
      */
     public function findById(int $id): ?Partner
     {
@@ -43,9 +35,6 @@ class PartnerRepository implements PartnerRepositoryContract
 
     /**
      * Find a partner by ICO
-     *
-     * @param string $ico
-     * @return Partner|null
      */
     public function findByIco(string $ico): ?Partner
     {
@@ -54,9 +43,6 @@ class PartnerRepository implements PartnerRepositoryContract
 
     /**
      * Create a new partner
-     *
-     * @param array $data
-     * @return Partner
      */
     public function create(array $data): Partner
     {
@@ -65,10 +51,6 @@ class PartnerRepository implements PartnerRepositoryContract
 
     /**
      * Update a partner
-     *
-     * @param Partner $partner
-     * @param array $data
-     * @return bool
      */
     public function update(Partner $partner, array $data): bool
     {
@@ -77,9 +59,6 @@ class PartnerRepository implements PartnerRepositoryContract
 
     /**
      * Delete a partner
-     *
-     * @param Partner $partner
-     * @return bool
      */
     public function delete(Partner $partner): bool
     {
