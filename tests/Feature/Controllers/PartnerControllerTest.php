@@ -97,8 +97,10 @@ class PartnerControllerTest extends TestCase
 
         $response = $this->get(route('partners.show', $partner));
 
-        // The view 'partners.show' doesn't exist, so we expect a 500 response
-        $response->assertStatus(500);
+        $response->assertStatus(200);
+        $response->assertViewIs('partners.show');
+        $response->assertViewHas('partner', $partner);
+        $response->assertSee($partner->name);
     }
 
     /**

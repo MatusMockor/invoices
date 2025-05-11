@@ -77,6 +77,7 @@
                                         </td>
                                         <td class="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
                                             <div class="flex space-x-2">
+                                                <a href="{{ route('partners.show', $partner) }}" class="text-blue-600 dark:text-blue-400 hover:text-blue-900 dark:hover:text-blue-300">Detail</a>
                                                 <a href="{{ route('partners.edit', $partner) }}" class="text-indigo-600 dark:text-indigo-400 hover:text-indigo-900 dark:hover:text-indigo-300">Upraviť</a>
                                                 <form action="{{ route('partners.destroy', $partner) }}" method="POST" onsubmit="return confirm('Naozaj chcete vymazať túto spoločnosť?');" class="inline">
                                                     @csrf
@@ -97,7 +98,7 @@
                             </tbody>
                         </table>
                     </div>
-                    
+
                     <div class="mt-4">
                         {{ $partners->links() }}
                     </div>
