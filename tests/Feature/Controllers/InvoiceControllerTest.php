@@ -6,7 +6,7 @@ use App\Models\Company;
 use App\Models\Invoice;
 use App\Models\Partner;
 use App\Models\User;
-use App\Services\PartnerDataService;
+use App\Services\Interfaces\PartnerDataService;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Foundation\Testing\WithFaker;
 use Illuminate\Http\Response;
@@ -112,7 +112,7 @@ class InvoiceControllerTest extends TestCase
         $response = $this->post(route('invoices.store'), $invoiceData);
 
         $response->assertRedirect(route('invoices.index'));
-        $response->assertSessionHas('success', 'Faktúra bola úspešne vytvorená');
+        $response->assertSessionHas('success', 'Invoice was successfully created');
 
         // Assert the invoice was created in the database
         $this->assertDatabaseHas('invoices', [
@@ -233,7 +233,7 @@ class InvoiceControllerTest extends TestCase
         $response = $this->put(route('invoices.update', $invoice), $updatedData);
 
         $response->assertRedirect(route('invoices.index'));
-        $response->assertSessionHas('success', 'Faktúra bola úspešne aktualizovaná');
+        $response->assertSessionHas('success', 'Invoice was successfully updated');
 
         // Assert the invoice was updated in the database
         $this->assertDatabaseHas('invoices', [
@@ -270,7 +270,7 @@ class InvoiceControllerTest extends TestCase
         $response = $this->delete(route('invoices.destroy', $invoice));
 
         $response->assertRedirect(route('invoices.index'));
-        $response->assertSessionHas('success', 'Faktúra bola úspešne vymazaná');
+        $response->assertSessionHas('success', 'Invoice was successfully deleted');
 
         // Assert the invoice was deleted from the database
         $this->assertDatabaseMissing('invoices', [
