@@ -4,6 +4,7 @@ namespace Tests\Feature\Controllers;
 
 use App\Models\Partner;
 use App\Models\User;
+use App\Services\PartnerDataService;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Foundation\Testing\WithFaker;
 use Tests\TestCase;
@@ -195,16 +196,19 @@ class PartnerControllerTest extends TestCase
      */
     public function test_fetch_by_ico_returns_response_for_nonexistent_ico(): void
     {
-        // This test checks that the endpoint responds successfully
-        // The actual behavior is that it creates a new partner if it doesn't exist
+        // Mock the PartnerDataService to return null for a non-existent ICO
+        $partnerDataService = $this->mock(PartnerDataService::class);
+        $partnerDataService->shouldReceive('findOrCreatePartner')
+            ->once()
+            ->with('99999999')
+            ->andReturn(null);
 
         $response = $this->getJson(route('partners.fetch-by-ico', ['ico' => '99999999']));
 
-        $response->assertStatus(201);
-        $response->assertJsonStructure([
-            'status',
-            'success',
-            'data',
+        $response->assertStatus(404);
+        $response->assertJson([
+            'success' => false,
+            'message' => 'Údaje spoločnosti sa nenašli',
         ]);
     }
 }
