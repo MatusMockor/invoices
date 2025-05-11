@@ -5,10 +5,11 @@ namespace App\Http\Controllers;
 use App\Http\Requests\Invoices\CreateInvoiceRequest;
 use App\Http\Requests\Invoices\UpdateInvoiceRequest;
 use App\Models\Invoice;
-use App\Models\InvoiceItem;
-use App\Models\Partner;
-use App\Services\InvoicePdfService;
-use App\Services\PartnerDataService;
+use App\Repositories\Interfaces\InvoiceItemRepository;
+use App\Repositories\Interfaces\InvoiceRepository;
+use App\Repositories\Interfaces\PartnerRepository;
+use App\Services\Interfaces\InvoicePdfService;
+use App\Services\Interfaces\PartnerDataService;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Response;
 use Illuminate\View\View;
@@ -18,22 +19,24 @@ class InvoiceController extends Controller
 {
     public function __construct(
         protected PartnerDataService $partnerDataService,
-        protected InvoicePdfService $pdfService
+        protected InvoicePdfService $pdfService,
+        protected InvoiceRepository $invoiceRepository,
+        protected InvoiceItemRepository $invoiceItemRepository,
+        protected PartnerRepository $partnerRepository
     ) {}
 
     public function index(): View
     {
-        $invoices = Invoice::query()->with('partner')
-            ->where('supplier_company_id', auth()->user()->current_company_id)
-            ->latest()
-            ->paginate(10);
+        $invoices = $this->invoiceRepository->getAllForCompanyPaginated(
+            auth()->user()->current_company_id
+        );
 
         return view('invoices.index', ['invoices' => $invoices]);
     }
 
     public function create(): View
     {
-        $companies = Partner::query()->orderBy('name')->get();
+        $companies = $this->partnerRepository->getAllOrderedByName();
 
         return view('invoices.create', ['companies' => $companies]);
     }
@@ -43,14 +46,14 @@ class InvoiceController extends Controller
         $partner = $this->partnerDataService->findOrCreatePartner($request->ico);
 
         if (! $partner) {
-            return back()->withErrors(['ico' => 'Spoločnosť s daným IČO sa nepodarilo nájsť.'])->withInput();
+            return back()->withErrors(['ico' => 'Company with the given ICO could not be found.'])->withInput();
         }
 
         $validated = $request->validated();
         $user = auth()->user();
 
         // Create invoice
-        $invoice = Invoice::query()->create([
+        $invoice = $this->invoiceRepository->create([
             'invoice_number' => $validated['invoice_number'],
             'user_id' => $user->id,
             'issue_date' => $validated['issue_date'],
@@ -65,7 +68,7 @@ class InvoiceController extends Controller
 
         // Create invoice items
         foreach ($validated['items'] as $item) {
-            InvoiceItem::query()->create([
+            $this->invoiceItemRepository->create([
                 'invoice_id' => $invoice->id,
                 'description' => $item['description'],
                 'quantity' => $item['quantity'],
@@ -75,21 +78,21 @@ class InvoiceController extends Controller
         }
 
         return redirect()->route('invoices.index')
-            ->with('success', 'Faktúra bola úspešne vytvorená');
+            ->with('success', 'Invoice was successfully created');
 
     }
 
     public function show(Invoice $invoice): View
     {
-        $invoice->load(['partner', 'items']);
+        $this->invoiceRepository->loadRelations($invoice, ['partner', 'items']);
 
         return view('invoices.show', ['invoice' => $invoice]);
     }
 
     public function edit(Invoice $invoice): View
     {
-        $invoice->load(['partner', 'items']);
-        $companies = Partner::query()->orderBy('name')->get();
+        $this->invoiceRepository->loadRelations($invoice, ['partner', 'items']);
+        $companies = $this->partnerRepository->getAllOrderedByName();
 
         return view('invoices.edit', [
             'invoice' => $invoice,
@@ -104,7 +107,7 @@ class InvoiceController extends Controller
             $partner = $this->partnerDataService->findOrCreatePartner($request->ico);
 
             if (! $partner) {
-                return back()->withErrors(['ico' => 'Spoločnosť s daným IČO sa nepodarilo nájsť.'])->withInput();
+                return back()->withErrors(['ico' => 'Company with the given ICO could not be found.'])->withInput();
             }
 
             $validated = $request->validated();
@@ -112,7 +115,7 @@ class InvoiceController extends Controller
             $user = auth()->user();
 
             // Update invoice
-            $invoice->update([
+            $this->invoiceRepository->update($invoice, [
                 'invoice_number' => $validated['invoice_number'],
                 'issue_date' => $validated['issue_date'],
                 'due_date' => $validated['due_date'],
@@ -125,11 +128,11 @@ class InvoiceController extends Controller
             ]);
 
             // Delete old items
-            $invoice->items()->delete();
+            $this->invoiceItemRepository->deleteByInvoiceId($invoice->id);
 
             // Create new invoice items
             foreach ($validated['items'] as $item) {
-                InvoiceItem::query()->create([
+                $this->invoiceItemRepository->create([
                     'invoice_id' => $invoice->id,
                     'description' => $item['description'],
                     'quantity' => $item['quantity'],
@@ -139,19 +142,19 @@ class InvoiceController extends Controller
             }
 
             return redirect()->route('invoices.index')
-                ->with('success', 'Faktúra bola úspešne aktualizovaná');
+                ->with('success', 'Invoice was successfully updated');
 
         } catch (Throwable $e) {
-            return back()->withErrors(['message' => 'Nastala chyba pri aktualizácii faktúry: '.$e->getMessage()])->withInput();
+            return back()->withErrors(['message' => 'Error updating invoice: '.$e->getMessage()])->withInput();
         }
     }
 
     public function destroy(Invoice $invoice): RedirectResponse
     {
-        $invoice->delete();
+        $this->invoiceRepository->delete($invoice);
 
         return redirect()->route('invoices.index')
-            ->with('success', 'Faktúra bola úspešne vymazaná');
+            ->with('success', 'Invoice was successfully deleted');
     }
 
     /**
