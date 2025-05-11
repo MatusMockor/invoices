@@ -84,7 +84,6 @@
                                                     @method('DELETE')
                                                     <button type="submit" class="text-red-600 dark:text-red-400 hover:text-red-900 dark:hover:text-red-300">Vymazať</button>
                                                 </form>
-                                                <a href="{{ route('invoices.create', ['company_id' => $partner->id]) }}" class="text-green-600 dark:text-green-400 hover:text-green-900 dark:hover:text-green-300">Nová faktúra</a>
                                             </div>
                                         </td>
                                     </tr>
