@@ -95,7 +95,7 @@ class PartnerControllerTest extends TestCase
     {
         // Create a partner with a specific name
         $partner = Partner::factory()->create([
-            'name' => 'Test Company Name XYZ'
+            'name' => 'Test Company Name XYZ',
         ]);
 
         // Make a request to the show endpoint

@@ -107,13 +107,13 @@ class CompanyControllerTest extends TestCase
     {
         $company = Company::factory()->create([
             'user_id' => auth()->id(),
-            'name' => 'Test Company Name XYZ'
+            'name' => 'Test Company Name XYZ',
         ]);
 
         // Check if the company was created with the correct name
         $this->assertDatabaseHas('companies', [
             'id' => $company->id,
-            'name' => 'Test Company Name XYZ'
+            'name' => 'Test Company Name XYZ',
         ]);
 
         $response = $this->get(route('companies.show', $company));
