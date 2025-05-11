@@ -82,7 +82,7 @@ class PartnerControllerTest extends TestCase
         $response->assertSessionHas('success', 'Company was successfully created');
 
         // Assert the partner was created in the database
-        $this->assertDatabaseHas('partners', [
+        $this->assertDatabaseHas(Partner::class, [
             'name' => $partnerData['name'],
             'ico' => $partnerData['ico'],
         ]);
@@ -157,7 +157,7 @@ class PartnerControllerTest extends TestCase
         $response->assertSessionHas('success', 'Company data was successfully updated');
 
         // Assert the partner was updated in the database
-        $this->assertDatabaseHas('partners', [
+        $this->assertDatabaseHas(Partner::class, [
             'id' => $partner->id,
             'name' => 'Updated Company Name',
             'street' => 'Updated Address',
@@ -177,7 +177,7 @@ class PartnerControllerTest extends TestCase
         $response->assertSessionHas('success', 'Company was successfully deleted');
 
         // Assert the partner was deleted from the database
-        $this->assertDatabaseMissing('partners', [
+        $this->assertDatabaseMissing(Partner::class, [
             'id' => $partner->id,
         ]);
     }

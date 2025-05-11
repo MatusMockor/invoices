@@ -93,7 +93,7 @@ class CompanyControllerTest extends TestCase
         $response->assertSessionHas('success', 'Company was successfully created');
 
         // Assert the company was created in the database
-        $this->assertDatabaseHas('companies', [
+        $this->assertDatabaseHas(Company::class, [
             'name' => $companyData['name'],
             'ico' => $companyData['ico'],
             'user_id' => auth()->id(),
@@ -111,7 +111,7 @@ class CompanyControllerTest extends TestCase
         ]);
 
         // Check if the company was created with the correct name
-        $this->assertDatabaseHas('companies', [
+        $this->assertDatabaseHas(Company::class, [
             'id' => $company->id,
             'name' => 'Test Company Name XYZ',
         ]);
@@ -174,7 +174,7 @@ class CompanyControllerTest extends TestCase
         $response->assertSessionHas('success', 'Company was successfully updated');
 
         // Assert the company was updated in the database
-        $this->assertDatabaseHas('companies', [
+        $this->assertDatabaseHas(Company::class, [
             'id' => $company->id,
             'name' => 'Updated Company Name',
             'street' => 'Updated Address',
@@ -196,7 +196,7 @@ class CompanyControllerTest extends TestCase
         $response->assertSessionHas('success', 'Company deleted successfully');
 
         // Assert the company was deleted from the database
-        $this->assertDatabaseMissing('companies', [
+        $this->assertDatabaseMissing(Company::class, [
             'id' => $company->id,
         ]);
     }

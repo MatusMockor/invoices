@@ -4,6 +4,7 @@ namespace Tests\Feature\Controllers;
 
 use App\Models\Company;
 use App\Models\Invoice;
+use App\Models\InvoiceItem;
 use App\Models\Partner;
 use App\Models\User;
 use App\Services\Interfaces\PartnerDataService;
@@ -115,14 +116,14 @@ class InvoiceControllerTest extends TestCase
         $response->assertSessionHas('success', 'Invoice was successfully created');
 
         // Assert the invoice was created in the database
-        $this->assertDatabaseHas('invoices', [
+        $this->assertDatabaseHas(Invoice::class, [
             'invoice_number' => $invoiceData['invoice_number'],
             'partner_id' => $partner->id,
             'supplier_company_id' => auth()->user()->current_company_id,
         ]);
 
         // Assert the invoice item was created
-        $this->assertDatabaseHas('invoice_items', [
+        $this->assertDatabaseHas(InvoiceItem::class, [
             'description' => $invoiceData['items'][0]['description'],
             'quantity' => $invoiceData['items'][0]['quantity'],
             'unit_price' => $invoiceData['items'][0]['unit_price'],
@@ -236,7 +237,7 @@ class InvoiceControllerTest extends TestCase
         $response->assertSessionHas('success', 'Invoice was successfully updated');
 
         // Assert the invoice was updated in the database
-        $this->assertDatabaseHas('invoices', [
+        $this->assertDatabaseHas(Invoice::class, [
             'id' => $invoice->id,
             'invoice_number' => 'INV-UPDATED',
             'note' => 'Updated note',
@@ -244,7 +245,7 @@ class InvoiceControllerTest extends TestCase
         ]);
 
         // Assert the invoice item was updated
-        $this->assertDatabaseHas('invoice_items', [
+        $this->assertDatabaseHas(InvoiceItem::class, [
             'invoice_id' => $invoice->id,
             'description' => 'Updated item',
             'quantity' => 5,
@@ -273,7 +274,7 @@ class InvoiceControllerTest extends TestCase
         $response->assertSessionHas('success', 'Invoice was successfully deleted');
 
         // Assert the invoice was deleted from the database
-        $this->assertDatabaseMissing('invoices', [
+        $this->assertDatabaseMissing(Invoice::class, [
             'id' => $invoice->id,
         ]);
     }
