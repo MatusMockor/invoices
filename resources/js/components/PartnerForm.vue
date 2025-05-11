@@ -19,36 +19,38 @@
               id="name" 
               v-model="form.name" 
               type="text" 
-              class="mt-1 block w-full border-gray-300 dark:border-gray-700 dark:bg-gray-900 dark:text-gray-300 focus:border-indigo-500 dark:focus:border-indigo-600 focus:ring-indigo-500 dark:focus:ring-indigo-600 rounded-md shadow-sm" 
-              required 
-              autofocus 
-              placeholder="Partner company name"
-            />
-            <div v-if="errors.name" class="mt-2 text-sm text-red-600">{{ errors.name }}</div>
+              class="mt-1 block w-full rounded-md border-gray-300 dark:border-gray-700 dark:bg-gray-900 dark:text-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500"
+              :class="{ 'border-red-500': errors.name }"
+            >
+            <p v-if="errors.name" class="mt-1 text-sm text-red-600">{{ errors.name[0] }}</p>
           </div>
           
           <div>
             <label for="ico" class="block font-semibold text-sm text-gray-700 dark:text-gray-300">IČO *</label>
-            <div class="flex mt-1">
+            <div class="mt-1 flex rounded-md shadow-sm">
               <input 
                 id="ico" 
                 v-model="form.ico" 
                 type="text" 
-                class="w-full rounded-r-none border-gray-300 dark:border-gray-700 dark:bg-gray-900 dark:text-gray-300 focus:border-indigo-500 dark:focus:border-indigo-600 focus:ring-indigo-500 dark:focus:ring-indigo-600 rounded-md shadow-sm" 
-                required 
-                placeholder="12345678"
-              />
+                class="block w-full rounded-l-md border-gray-300 dark:border-gray-700 dark:bg-gray-900 dark:text-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500"
+                :class="{ 'border-red-500': errors.ico }"
+              >
               <button 
                 type="button" 
                 @click="loadPartnerData" 
-                :disabled="loading" 
-                class="px-4 py-2 bg-blue-600 text-white rounded-r-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                class="inline-flex items-center px-4 py-2 border border-l-0 border-gray-300 dark:border-gray-700 text-sm font-medium rounded-r-md text-gray-700 dark:text-gray-300 bg-gray-50 dark:bg-gray-800 hover:bg-gray-100 dark:hover:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2"
+                :disabled="loading"
               >
-                {{ loading ? 'Loading...' : 'Load' }}
+                <span v-if="loading" class="mr-2">
+                  <svg class="animate-spin h-4 w-4 text-indigo-500" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                    <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                    <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                  </svg>
+                </span>
+                Load
               </button>
             </div>
-            <p class="mt-1 text-xs text-gray-500 dark:text-gray-400">Company identification number</p>
-            <div v-if="errors.ico" class="mt-2 text-sm text-red-600">{{ errors.ico }}</div>
+            <p v-if="errors.ico" class="mt-1 text-sm text-red-600">{{ errors.ico[0] }}</p>
           </div>
         </div>
         
@@ -59,11 +61,10 @@
               id="dic" 
               v-model="form.dic" 
               type="text" 
-              class="mt-1 block w-full border-gray-300 dark:border-gray-700 dark:bg-gray-900 dark:text-gray-300 focus:border-indigo-500 dark:focus:border-indigo-600 focus:ring-indigo-500 dark:focus:ring-indigo-600 rounded-md shadow-sm" 
-              placeholder="1234567890"
-            />
-            <p class="mt-1 text-xs text-gray-500 dark:text-gray-400">Tax identification number</p>
-            <div v-if="errors.dic" class="mt-2 text-sm text-red-600">{{ errors.dic }}</div>
+              class="mt-1 block w-full rounded-md border-gray-300 dark:border-gray-700 dark:bg-gray-900 dark:text-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500"
+              :class="{ 'border-red-500': errors.dic }"
+            >
+            <p v-if="errors.dic" class="mt-1 text-sm text-red-600">{{ errors.dic[0] }}</p>
           </div>
           
           <div>
@@ -72,11 +73,10 @@
               id="ic_dph" 
               v-model="form.ic_dph" 
               type="text" 
-              class="mt-1 block w-full border-gray-300 dark:border-gray-700 dark:bg-gray-900 dark:text-gray-300 focus:border-indigo-500 dark:focus:border-indigo-600 focus:ring-indigo-500 dark:focus:ring-indigo-600 rounded-md shadow-sm" 
-              placeholder="SK1234567890"
-            />
-            <p class="mt-1 text-xs text-gray-500 dark:text-gray-400">VAT identification number</p>
-            <div v-if="errors.ic_dph" class="mt-2 text-sm text-red-600">{{ errors.ic_dph }}</div>
+              class="mt-1 block w-full rounded-md border-gray-300 dark:border-gray-700 dark:bg-gray-900 dark:text-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500"
+              :class="{ 'border-red-500': errors.ic_dph }"
+            >
+            <p v-if="errors.ic_dph" class="mt-1 text-sm text-red-600">{{ errors.ic_dph[0] }}</p>
           </div>
         </div>
       </div>
@@ -94,45 +94,41 @@
         <p class="mt-1 text-sm text-gray-500 dark:text-gray-400">Enter the address details of your partner.</p>
       </div>
       <div class="p-6 bg-white dark:bg-gray-800 space-y-6">
+        <div>
+          <label for="street" class="block font-semibold text-sm text-gray-700 dark:text-gray-300">Street Address *</label>
+          <input 
+            id="street" 
+            v-model="form.street" 
+            type="text" 
+            class="mt-1 block w-full rounded-md border-gray-300 dark:border-gray-700 dark:bg-gray-900 dark:text-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500"
+            :class="{ 'border-red-500': errors.street }"
+          >
+          <p v-if="errors.street" class="mt-1 text-sm text-red-600">{{ errors.street[0] }}</p>
+        </div>
+        
         <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
           <div>
-            <label for="street" class="block font-semibold text-sm text-gray-700 dark:text-gray-300">Street Address *</label>
+            <label for="city" class="block font-semibold text-sm text-gray-700 dark:text-gray-300">City *</label>
             <input 
-              id="street" 
-              v-model="form.street" 
+              id="city" 
+              v-model="form.city" 
               type="text" 
-              class="mt-1 block w-full border-gray-300 dark:border-gray-700 dark:bg-gray-900 dark:text-gray-300 focus:border-indigo-500 dark:focus:border-indigo-600 focus:ring-indigo-500 dark:focus:ring-indigo-600 rounded-md shadow-sm" 
-              required 
-              placeholder="123 Business St."
-            />
-            <div v-if="errors.street" class="mt-2 text-sm text-red-600">{{ errors.street }}</div>
+              class="mt-1 block w-full rounded-md border-gray-300 dark:border-gray-700 dark:bg-gray-900 dark:text-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500"
+              :class="{ 'border-red-500': errors.city }"
+            >
+            <p v-if="errors.city" class="mt-1 text-sm text-red-600">{{ errors.city[0] }}</p>
           </div>
           
-          <div class="grid grid-cols-3 gap-4">
-            <div class="col-span-2">
-              <label for="city" class="block font-semibold text-sm text-gray-700 dark:text-gray-300">City *</label>
-              <input 
-                id="city" 
-                v-model="form.city" 
-                type="text" 
-                class="mt-1 block w-full border-gray-300 dark:border-gray-700 dark:bg-gray-900 dark:text-gray-300 focus:border-indigo-500 dark:focus:border-indigo-600 focus:ring-indigo-500 dark:focus:ring-indigo-600 rounded-md shadow-sm" 
-                required 
-                placeholder="Bratislava"
-              />
-              <div v-if="errors.city" class="mt-2 text-sm text-red-600">{{ errors.city }}</div>
-            </div>
-            <div>
-              <label for="postal_code" class="block font-semibold text-sm text-gray-700 dark:text-gray-300">Postal Code *</label>
-              <input 
-                id="postal_code" 
-                v-model="form.postal_code" 
-                type="text" 
-                class="mt-1 block w-full border-gray-300 dark:border-gray-700 dark:bg-gray-900 dark:text-gray-300 focus:border-indigo-500 dark:focus:border-indigo-600 focus:ring-indigo-500 dark:focus:ring-indigo-600 rounded-md shadow-sm" 
-                required 
-                placeholder="10001"
-              />
-              <div v-if="errors.postal_code" class="mt-2 text-sm text-red-600">{{ errors.postal_code }}</div>
-            </div>
+          <div>
+            <label for="postal_code" class="block font-semibold text-sm text-gray-700 dark:text-gray-300">Postal Code *</label>
+            <input 
+              id="postal_code" 
+              v-model="form.postal_code" 
+              type="text" 
+              class="mt-1 block w-full rounded-md border-gray-300 dark:border-gray-700 dark:bg-gray-900 dark:text-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500"
+              :class="{ 'border-red-500': errors.postal_code }"
+            >
+            <p v-if="errors.postal_code" class="mt-1 text-sm text-red-600">{{ errors.postal_code[0] }}</p>
           </div>
         </div>
         
@@ -142,57 +138,92 @@
             id="country" 
             v-model="form.country" 
             type="text" 
-            class="mt-1 block w-full border-gray-300 dark:border-gray-700 dark:bg-gray-900 dark:text-gray-300 focus:border-indigo-500 dark:focus:border-indigo-600 focus:ring-indigo-500 dark:focus:ring-indigo-600 rounded-md shadow-sm" 
-            required 
-            placeholder="Slovakia"
-          />
-          <div v-if="errors.country" class="mt-2 text-sm text-red-600">{{ errors.country }}</div>
+            class="mt-1 block w-full rounded-md border-gray-300 dark:border-gray-700 dark:bg-gray-900 dark:text-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500"
+            :class="{ 'border-red-500': errors.country }"
+          >
+          <p v-if="errors.country" class="mt-1 text-sm text-red-600">{{ errors.country[0] }}</p>
         </div>
       </div>
     </div>
     
-    <!-- Legal Information Card -->
+    <!-- Additional Information Card -->
     <div class="bg-white dark:bg-gray-800 shadow-md rounded-lg overflow-hidden">
       <div class="p-6 border-b border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-900">
         <h3 class="text-lg font-medium text-gray-900 dark:text-white flex items-center">
           <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-2 text-indigo-500" viewBox="0 0 20 20" fill="currentColor">
             <path fill-rule="evenodd" d="M10 2a1 1 0 00-1 1v1a1 1 0 002 0V3a1 1 0 00-1-1zM4 4h3a3 3 0 006 0h3a2 2 0 012 2v9a2 2 0 01-2 2H4a2 2 0 01-2-2V6a2 2 0 012-2zm2.5 7a1.5 1.5 0 100-3 1.5 1.5 0 000 3zm2.45 4a2.5 2.5 0 10-4.9 0h4.9zM12 9a1 1 0 100 2h3a1 1 0 100-2h-3zm-1 4a1 1 0 011-1h2a1 1 0 110 2h-2a1 1 0 01-1-1z" clip-rule="evenodd" />
           </svg>
-          Legal Information
+          Additional Information
         </h3>
-        <p class="mt-1 text-sm text-gray-500 dark:text-gray-400">Enter the legal details of your partner.</p>
+        <p class="mt-1 text-sm text-gray-500 dark:text-gray-400">Enter any additional details about your partner.</p>
       </div>
       <div class="p-6 bg-white dark:bg-gray-800 space-y-6">
         <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
           <div>
-            <label for="company_type" class="block font-semibold text-sm text-gray-700 dark:text-gray-300">Právna forma *</label>
-            <select 
+            <label for="company_type" class="block font-semibold text-sm text-gray-700 dark:text-gray-300">Company Type</label>
+            <input 
               id="company_type" 
               v-model="form.company_type" 
-              class="border-gray-300 dark:border-gray-700 dark:bg-gray-900 dark:text-gray-300 focus:border-indigo-500 dark:focus:border-indigo-600 focus:ring-indigo-500 dark:focus:ring-indigo-600 rounded-md shadow-sm block mt-1 w-full" 
-              required
+              type="text" 
+              class="mt-1 block w-full rounded-md border-gray-300 dark:border-gray-700 dark:bg-gray-900 dark:text-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500"
+              :class="{ 'border-red-500': errors.company_type }"
             >
-              <option value="">-- Vyberte právnu formu --</option>
-              <option value="živnosť">Živnosť</option>
-              <option value="s.r.o.">s.r.o.</option>
-            </select>
-            <p class="mt-1 text-xs text-gray-500 dark:text-gray-400">Legal form of the company</p>
-            <div v-if="errors.company_type" class="mt-2 text-sm text-red-600">{{ errors.company_type }}</div>
+            <p v-if="errors.company_type" class="mt-1 text-sm text-red-600">{{ errors.company_type[0] }}</p>
           </div>
           
           <div>
-            <label for="registration_number" class="block font-semibold text-sm text-gray-700 dark:text-gray-300">Registračné číslo *</label>
+            <label for="registration_number" class="block font-semibold text-sm text-gray-700 dark:text-gray-300">Registration Number</label>
             <input 
               id="registration_number" 
               v-model="form.registration_number" 
               type="text" 
-              class="mt-1 block w-full border-gray-300 dark:border-gray-700 dark:bg-gray-900 dark:text-gray-300 focus:border-indigo-500 dark:focus:border-indigo-600 focus:ring-indigo-500 dark:focus:ring-indigo-600 rounded-md shadow-sm" 
-              required 
-              placeholder="Obchodný register / Živnostenský register"
-            />
-            <p class="mt-1 text-xs text-gray-500 dark:text-gray-400">Registration number in business or trade register</p>
-            <div v-if="errors.registration_number" class="mt-2 text-sm text-red-600">{{ errors.registration_number }}</div>
+              class="mt-1 block w-full rounded-md border-gray-300 dark:border-gray-700 dark:bg-gray-900 dark:text-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500"
+              :class="{ 'border-red-500': errors.registration_number }"
+            >
+            <p v-if="errors.registration_number" class="mt-1 text-sm text-red-600">{{ errors.registration_number[0] }}</p>
           </div>
+        </div>
+      </div>
+    </div>
+    
+    <!-- Partner Selection Dropdown -->
+    <div v-if="showPartnerModal" class="fixed inset-0 z-50" @click.self="closePartnerModal">
+      <div ref="partnerDropdown" class="fixed bg-white dark:bg-gray-800 rounded-md shadow-lg overflow-hidden" 
+           :style="dropdownStyle">
+        <div class="p-4 border-b border-gray-200 dark:border-gray-700">
+          <h3 class="text-lg font-medium text-gray-900 dark:text-gray-100">Odberateľ</h3>
+        </div>
+        
+        <div class="p-4">
+          <div v-if="partnerLoading" class="flex justify-center items-center py-4">
+            <svg class="animate-spin h-6 w-6 text-indigo-600" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+              <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+              <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+            </svg>
+            <span class="ml-2 text-gray-700 dark:text-gray-300">Načítavam údaje o partnerovi...</span>
+          </div>
+          
+          <div v-else-if="partnerData" 
+               class="bg-gray-50 dark:bg-gray-700 p-4 rounded-md cursor-pointer hover:bg-gray-100 dark:hover:bg-gray-600 transition-colors"
+               @click="selectPartner">
+            <h4 class="font-bold text-gray-900 dark:text-gray-100">{{ partnerData.name }}</h4>
+            <p class="text-sm text-gray-600 dark:text-gray-400">{{ partnerData.street }}, {{ partnerData.postal_code }} {{ partnerData.city }}</p>
+            <div class="mt-2 text-sm">
+              <p class="text-gray-600 dark:text-gray-400">IČO: {{ partnerData.ico }}</p>
+              <p v-if="partnerData.dic" class="text-gray-600 dark:text-gray-400">DIČ: {{ partnerData.dic }}</p>
+              <p v-if="partnerData.ic_dph" class="text-gray-600 dark:text-gray-400">IČ DPH: {{ partnerData.ic_dph }}</p>
+            </div>
+          </div>
+          
+          <div v-else class="text-center py-4">
+            <p class="text-gray-700 dark:text-gray-300">{{ partnerErrorMessage || 'Žiadne údaje o partnerovi neboli nájdené' }}</p>
+          </div>
+        </div>
+        
+        <div class="bg-gray-50 dark:bg-gray-700 px-4 py-3 flex justify-end space-x-2">
+          <button type="button" @click="closePartnerModal" class="px-3 py-1.5 border border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-300 rounded hover:bg-gray-50 dark:hover:bg-gray-700 text-sm">
+            Zavrieť
+          </button>
         </div>
       </div>
     </div>
@@ -201,15 +232,15 @@
     <div class="flex items-center justify-end space-x-4">
       <a 
         href="/partners" 
-        class="inline-flex items-center px-4 py-2 bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 rounded-md font-semibold text-xs text-gray-700 dark:text-gray-300 uppercase tracking-widest shadow-sm hover:bg-gray-50 dark:hover:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 dark:focus:ring-offset-gray-800 disabled:opacity-25 transition ease-in-out duration-150"
+        class="inline-flex items-center px-4 py-2 border border-gray-300 dark:border-gray-700 rounded-md font-semibold text-xs text-gray-700 dark:text-gray-300 uppercase tracking-widest shadow-sm hover:bg-gray-50 dark:hover:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 disabled:opacity-25 transition ease-in-out duration-150"
       >
         Cancel
       </a>
       <button 
         type="submit" 
-        class="inline-flex items-center px-4 py-2 bg-green-600 dark:bg-green-600 border border-transparent rounded-md font-semibold text-xs text-white uppercase tracking-widest hover:bg-green-700 dark:hover:bg-green-700 focus:bg-green-700 dark:focus:bg-green-700 active:bg-green-900 dark:active:bg-green-900 focus:outline-none focus:ring-2 focus:ring-green-500 focus:ring-offset-2 dark:focus:ring-offset-gray-800 transition ease-in-out duration-150"
+        class="inline-flex items-center px-4 py-2 bg-indigo-600 border border-transparent rounded-md font-semibold text-xs text-white uppercase tracking-widest hover:bg-indigo-700 focus:bg-indigo-700 active:bg-indigo-900 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 transition ease-in-out duration-150"
       >
-        Create Partner
+        Save Partner
       </button>
     </div>
   </form>
@@ -238,10 +269,33 @@ export default {
         registration_number: ''
       },
       errors: {},
-      loading: false
+      loading: false,
+      showPartnerModal: false,
+      partnerLoading: false,
+      partnerData: null,
+      partnerErrorMessage: null,
+      dropdownStyle: {
+        top: '0px',
+        left: '0px',
+        width: '500px'
+      }
     }
   },
   methods: {
+    updateDropdownPosition() {
+      if (!this.showPartnerModal) return;
+      
+      const icoInput = document.getElementById('ico');
+      if (icoInput) {
+        const rect = icoInput.getBoundingClientRect();
+        this.dropdownStyle = {
+          top: `${rect.bottom + 5}px`,
+          left: `${rect.left}px`,
+          width: '500px'
+        };
+      }
+    },
+    
     async loadPartnerData() {
       if (!this.form.ico || this.form.ico.length !== 8) {
         alert('Please enter a valid 8-digit ICO');
@@ -249,27 +303,34 @@ export default {
       }
       
       this.loading = true;
+      this.partnerLoading = true;
+      this.showPartnerModal = true;
+      this.partnerData = null;
+      this.partnerErrorMessage = null;
+      
+      // Position the dropdown under the ICO field
+      this.$nextTick(() => {
+        this.updateDropdownPosition();
+        
+        // Add event listeners for scrolling and resizing
+        window.addEventListener('scroll', this.updateDropdownPosition);
+        window.addEventListener('resize', this.updateDropdownPosition);
+      });
       
       try {
         const response = await axios.get(`${this.fetchPartnerRoute}?ico=${this.form.ico}`);
         
         const data = response.data.data || response.data;
         
-        // Fill form fields with the returned data
-        this.form.name = data.name || '';
-        this.form.dic = data.dic || '';
-        this.form.ic_dph = data.ic_dph || '';
-        this.form.street = data.street || '';
-        this.form.city = data.city || '';
-        this.form.postal_code = data.postal_code || '';
-        this.form.country = data.country || 'Slovakia';
-        this.form.company_type = data.company_type || '';
-        this.form.registration_number = data.registration_number || '';
+        // Store the partner data but don't fill the form yet
+        this.partnerData = data;
+        
       } catch (error) {
         console.error('Error:', error);
-        alert('Could not find partner with this ICO. Please enter the details manually.');
+        this.partnerErrorMessage = 'Could not find partner with this ICO. Please enter the details manually.';
       } finally {
         this.loading = false;
+        this.partnerLoading = false;
       }
     },
     
@@ -285,6 +346,33 @@ export default {
           alert('An error occurred while saving the partner. Please try again.');
         }
       }
+    },
+    
+    closePartnerModal() {
+      this.showPartnerModal = false;
+      this.partnerData = null;
+      this.partnerErrorMessage = null;
+      
+      // Remove event listeners when modal is closed
+      window.removeEventListener('scroll', this.updateDropdownPosition);
+      window.removeEventListener('resize', this.updateDropdownPosition);
+    },
+    
+    selectPartner() {
+      // Fill form fields with the selected partner data
+      if (this.partnerData) {
+        this.form.name = this.partnerData.name || '';
+        this.form.dic = this.partnerData.dic || '';
+        this.form.ic_dph = this.partnerData.ic_dph || '';
+        this.form.street = this.partnerData.street || '';
+        this.form.city = this.partnerData.city || '';
+        this.form.postal_code = this.partnerData.postal_code || '';
+        this.form.country = this.partnerData.country || 'Slovakia';
+        this.form.company_type = this.partnerData.company_type || '';
+        this.form.registration_number = this.partnerData.registration_number || '';
+      }
+      
+      this.closePartnerModal();
     }
   }
 }
