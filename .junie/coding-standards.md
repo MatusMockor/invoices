@@ -35,6 +35,7 @@ app/Models
    •	All code must be tested.
    •	Generate a {Model}Factory with each model.
    •	Use laravel faker or fake() helper function instead of hardcoded values
+   •	When using assertDatabase, specify the table using Model::class
 
 3.1 Test Directory Structure
 •	Console: tests/Feature/Console
