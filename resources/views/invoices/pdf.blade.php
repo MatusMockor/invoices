@@ -99,6 +99,11 @@
             color: #666;
             margin-top: 10px;
         }
+        .qr-code {
+            width: 80px;
+            height: 80px;
+            margin-left: auto;
+        }
     </style>
 </head>
 <body>
@@ -224,7 +229,7 @@
                                 </div>
                                 <div class="payment-row">
                                     <span class="payment-label">Variabilný symbol:</span>
-                                    <span class="payment-value">{{ str_replace(['INV-', '-'], '', $invoice->invoice_number) }}</span>
+                                    <span class="payment-value">{{ substr(str_replace(['INV-', '-'], '', $invoice->invoice_number), 0, 10) }}</span>
                                 </div>
                                 <div class="payment-row">
                                     <span class="payment-label">IBAN:</span>
@@ -236,12 +241,21 @@
                                 </div>
                             </td>
                             <td width="35%" valign="top" align="right">
+                                @if($qrCode)
+                                <div>
+                                    <img src="{{ $qrCode }}" class="qr-code" alt="Pay by Square QR kód">
+                                </div>
+                                <div style="text-align: center; font-size: 6pt; color: #666; margin-top: 3px;">
+                                    Pay by Square
+                                </div>
+                                @else
                                 <div style="width: 70px; height: 70px; border: 1px solid #ddd; text-align: center; margin-left: auto;">
                                     <!-- QR kód placeholder -->
                                 </div>
                                 <div style="text-align: center; font-size: 6pt; color: #666; margin-top: 3px;">
                                     Pay by invoice
                                 </div>
+                                @endif
                             </td>
                         </tr>
                     </table>
