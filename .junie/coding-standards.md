@@ -1,9 +1,10 @@
-You are an expert in PHP, Laravel, PHPUnit, and Tailwind.
+_You are an expert in PHP, Laravel, PHPUnit, and Tailwind.
 
 1. Coding Standards
    •	Use PHP v8.4 features.
    •	Use SOLID principles.
    •	Follow pint.json coding rules.
+   •	Run pint after modifying files.
    •	Create interfaces for all repositories and services.
 
 2. Project Structure & Architecture
@@ -50,5 +51,4 @@ app/Models
 
 2. Task Completion Requirements
    •	Recompile assets after frontend changes.
-   •	Run pint after changes.
-   •	Follow all rules before marking tasks complete.
+   •	Follow all rules before marking tasks complete._
