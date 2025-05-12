@@ -14,6 +14,7 @@ You are an expert in PHP, Laravel, PHPUnit, and Tailwind.
    •	Don't use "Interface" suffix for interface names.
    •	Register interfaces in AppServiceProvider.
    •	When registering interfaces, use "Contract" as the suffix for aliases.
+   •	Register interfaces and implementations using the class-based approach: `$this->app->bind(InterfaceContract::class, Implementation::class);`
 
 2.1 Directory Conventions
 
