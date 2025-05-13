@@ -31,7 +31,6 @@ class ScraperService implements ScraperServiceContract
      */
     public function fetchCompanyDataByIco(string $ico): array
     {
-        try {
             $response = Http::withToken(JwtFacade::generateToken())
                 ->timeout(15)
                 ->post($this->baseUrl.'/scraper/company', [
@@ -69,14 +68,6 @@ class ScraperService implements ScraperServiceContract
                 'success' => false,
                 'message' => 'Failed to load company data from scraper.',
             ];
-        } catch (\Exception $e) {
-            Log::error('Error fetching company data from scraper', ['message' => $e->getMessage()]);
-
-            return [
-                'success' => false,
-                'message' => 'Error retrieving company data from scraper: '.$e->getMessage(),
-            ];
-        }
     }
 
     public function validateToken(string $token): bool
