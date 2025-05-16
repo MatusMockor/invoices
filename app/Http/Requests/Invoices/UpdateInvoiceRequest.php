@@ -23,7 +23,7 @@ class UpdateInvoiceRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'ico' => 'required|string|max:12',
+            'ico' => 'required|string|size:8|digits',
             'invoice_number' => [
                 'required',
                 'string',

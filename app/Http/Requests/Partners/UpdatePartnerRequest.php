@@ -23,7 +23,7 @@ class UpdatePartnerRequest extends FormRequest
     {
         return [
             'name' => ['required', 'string', 'max:255'],
-            'ico' => ['required', 'string', 'max:8'],
+            'ico' => ['required', 'string', 'size:8', 'digits'],
             'dic' => ['nullable', 'string', 'max:10'],
             'street' => ['required', 'string', 'max:255'],
             'city' => ['required', 'string', 'max:255'],

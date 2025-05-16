@@ -22,7 +22,7 @@ class FetchCompanyByIcoRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'ico' => 'required|string|max:8',
+            'ico' => 'required|string|size:8|digits',
         ];
     }
 }
