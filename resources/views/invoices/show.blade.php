@@ -52,6 +52,7 @@
                         <div class="mt-4 md:mt-0 text-right">
                             <p class="text-gray-600 dark:text-gray-400">Dátum vystavenia: <span class="font-semibold text-gray-900 dark:text-white">{{ $invoice->issue_date->format('d.m.Y') }}</span></p>
                             <p class="text-gray-600 dark:text-gray-400">Dátum splatnosti: <span class="font-semibold text-gray-900 dark:text-white">{{ $invoice->due_date->format('d.m.Y') }}</span></p>
+                            <p class="text-gray-600 dark:text-gray-400">Dátum dodania: <span class="font-semibold text-gray-900 dark:text-white">{{ $invoice->delivery_date->format('d.m.Y') }}</span></p>
                         </div>
                     </div>
                 </div>

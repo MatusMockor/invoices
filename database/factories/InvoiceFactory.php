@@ -32,6 +32,7 @@ class InvoiceFactory extends Factory
             'invoice_number' => 'INV-'.date('Y').'-'.$this->faker->unique()->randomNumber(3),
             'issue_date' => $this->faker->dateTimeBetween('-30 days', 'now'),
             'due_date' => $this->faker->dateTimeBetween('now', '+30 days'),
+            'delivery_date' => $this->faker->dateTimeBetween('-15 days', '+15 days'),
             'partner_id' => Partner::factory(),
             'supplier_company_id' => Company::factory(),
             'total_amount' => $this->faker->randomFloat(2, 100, 10000),

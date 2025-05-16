@@ -58,6 +58,7 @@ class InvoiceController extends Controller
             'user_id' => $user->id,
             'issue_date' => $validated['issue_date'],
             'due_date' => $validated['due_date'],
+            'delivery_date' => $validated['delivery_date'],
             'partner_id' => $partner->id, // This is the recipient company
             'supplier_company_id' => $user->current_company_id, // Set the active company as supplier
             'total_amount' => $validated['total_amount'],
@@ -118,6 +119,7 @@ class InvoiceController extends Controller
                 'invoice_number' => $validated['invoice_number'],
                 'issue_date' => $validated['issue_date'],
                 'due_date' => $validated['due_date'],
+                'delivery_date' => $validated['delivery_date'],
                 'partner_id' => $partner->id, // This is the recipient company
                 'supplier_company_id' => $user->current_company_id, // Keep the active company as supplier
                 'total_amount' => $validated['total_amount'],
