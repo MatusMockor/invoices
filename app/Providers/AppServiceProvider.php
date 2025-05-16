@@ -2,6 +2,8 @@
 
 namespace App\Providers;
 
+use App\Models\Invoice;
+use App\Policies\InvoicePolicy;
 use App\Repositories\Interfaces\InvoiceItemRepository as InvoiceItemRepositoryContract;
 use App\Repositories\Interfaces\InvoiceRepository as InvoiceRepositoryContract;
 use App\Repositories\Interfaces\PartnerRepository as PartnerRepositoryContract;
@@ -16,6 +18,7 @@ use App\Services\InvoicePdfService as InvoicePdfServiceImpl;
 use App\Services\PartnerDataService as PartnerDataServiceImpl;
 use App\Services\PayBySquareService;
 use App\Services\ScraperService as ScraperServiceImpl;
+use Illuminate\Support\Facades\Gate;
 use Illuminate\Support\ServiceProvider;
 
 class AppServiceProvider extends ServiceProvider
@@ -42,6 +45,7 @@ class AppServiceProvider extends ServiceProvider
      */
     public function boot(): void
     {
-        //
+        // Register the InvoicePolicy for the Invoice model
+        Gate::policy(Invoice::class, InvoicePolicy::class);
     }
 }
