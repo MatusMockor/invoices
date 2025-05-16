@@ -36,6 +36,7 @@ class InvoiceFactory extends Factory
             'supplier_company_id' => Company::factory(),
             'total_amount' => $this->faker->randomFloat(2, 100, 10000),
             'currency' => 'EUR',
+            'constant_symbol' => $this->faker->optional(0.7)->numerify('####'),
             'note' => $this->faker->optional(0.7)->sentence(),
             'status' => $this->faker->randomElement(['draft', 'sent', 'paid', 'cancelled']),
         ];
