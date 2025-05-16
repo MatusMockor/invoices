@@ -18,12 +18,22 @@ class ScraperService implements ScraperServiceContract
 
     public function startScraper(string $ico): array
     {
-        return Http::withToken(JwtFacade::generateToken())
-            ->timeout(5)
+        $response = Http::withToken(JwtFacade::generateToken())
             ->post($this->baseUrl.'/scraper/start', [
                 'ico' => $ico,
-            ])
-            ->json(default: []);
+            ]);
+
+        if ($response->failed()) {
+            Log::error('Error fetching partner data from scraper',
+                ['message' => $response->body(), 'response' => $response]);
+
+            return [
+                'success' => false,
+                'message' => 'Error retrieving partner data: '.$e->getMessage(),
+            ];
+        }
+
+        return $response->json('data', default: []);
     }
 
     /**
@@ -31,43 +41,43 @@ class ScraperService implements ScraperServiceContract
      */
     public function fetchCompanyDataByIco(string $ico): array
     {
-            $response = Http::withToken(JwtFacade::generateToken())
-                ->timeout(15)
-                ->post($this->baseUrl.'/scraper/company', [
-                    'ico' => $ico,
-                ]);
-
-            if ($response->successful()) {
-                $data = $response->json();
-
-                if (! empty($data) && isset($data['success']) && $data['success']) {
-                    return [
-                        'success' => true,
-                        'data' => [
-                            'ico' => $data['data']['ico'] ?? $ico,
-                            'name' => $data['data']['name'] ?? '',
-                            'street' => $data['data']['street'] ?? '',
-                            'city' => $data['data']['city'] ?? '',
-                            'postal_code' => $data['data']['postal_code'] ?? '',
-                            'country' => $data['data']['country'] ?? 'Slovensko',
-                            'dic' => $data['data']['dic'] ?? null,
-                            'ic_dph' => $data['data']['ic_dph'] ?? null,
-                            'company_type' => $data['data']['company_type'] ?? null,
-                            'registration_number' => $data['data']['registration_number'] ?? null,
-                        ],
-                    ];
-                }
-            }
-
-            Log::warning('Scraper API response not successful', [
-                'status' => $response->status(),
-                'body' => $response->body(),
+        $response = Http::withToken(JwtFacade::generateToken())
+            ->timeout(15)
+            ->post($this->baseUrl.'/scraper/company', [
+                'ico' => $ico,
             ]);
 
-            return [
-                'success' => false,
-                'message' => 'Failed to load company data from scraper.',
-            ];
+        if ($response->successful()) {
+            $data = $response->json();
+
+            if (! empty($data) && isset($data['success']) && $data['success']) {
+                return [
+                    'success' => true,
+                    'data' => [
+                        'ico' => $data['data']['ico'] ?? $ico,
+                        'name' => $data['data']['name'] ?? '',
+                        'street' => $data['data']['street'] ?? '',
+                        'city' => $data['data']['city'] ?? '',
+                        'postal_code' => $data['data']['postal_code'] ?? '',
+                        'country' => $data['data']['country'] ?? 'Slovensko',
+                        'dic' => $data['data']['dic'] ?? null,
+                        'ic_dph' => $data['data']['ic_dph'] ?? null,
+                        'company_type' => $data['data']['company_type'] ?? null,
+                        'registration_number' => $data['data']['registration_number'] ?? null,
+                    ],
+                ];
+            }
+        }
+
+        Log::warning('Scraper API response not successful', [
+            'status' => $response->status(),
+            'body' => $response->body(),
+        ]);
+
+        return [
+            'success' => false,
+            'message' => 'Failed to load company data from scraper.',
+        ];
     }
 
     public function validateToken(string $token): bool
