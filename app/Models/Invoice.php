@@ -28,6 +28,7 @@ class Invoice extends Model
         'supplier_company_id',
         'total_amount',
         'currency',
+        'constant_symbol',
         'note',
         'status',
     ];
