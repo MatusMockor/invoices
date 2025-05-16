@@ -24,6 +24,7 @@ class Invoice extends Model
         'invoice_number',
         'issue_date',
         'due_date',
+        'delivery_date',
         'partner_id',
         'supplier_company_id',
         'total_amount',
@@ -36,6 +37,7 @@ class Invoice extends Model
     protected $casts = [
         'issue_date' => 'date',
         'due_date' => 'date',
+        'delivery_date' => 'date',
     ];
 
     public function partner(): BelongsTo

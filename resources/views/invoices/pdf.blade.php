@@ -172,7 +172,7 @@
                         </tr>
                         <tr>
                             <td width="100" style="padding-bottom: 3px;">Dátum dodania:</td>
-                            <td style="padding-bottom: 3px;">{{ \Carbon\Carbon::parse($invoice->issue_date)->format('d.m.Y') }}</td>
+                            <td style="padding-bottom: 3px;">{{ \Carbon\Carbon::parse($invoice->delivery_date)->format('d.m.Y') }}</td>
                         </tr>
                         <tr>
                             <td width="100">Splatnosť:</td>

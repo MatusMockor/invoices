@@ -101,6 +101,11 @@
                     </div>
 
                     <div>
+                        <label for="delivery_date" class="block text-sm font-medium text-gray-700">Dátum dodania</label>
+                        <input type="date" name="delivery_date" id="delivery_date" value="{{ old('delivery_date', $invoice->delivery_date ? $invoice->delivery_date->format('Y-m-d') : '') }}" class="mt-1 focus:ring-indigo-500 focus:border-indigo-500 block w-full shadow-sm sm:text-sm border-gray-300 rounded-md" required>
+                    </div>
+
+                    <div>
                         <label for="status" class="block text-sm font-medium text-gray-700">Stav faktúry</label>
                         <select name="status" id="status" class="mt-1 block w-full py-2 px-3 border border-gray-300 bg-white rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm">
                             <option value="draft" {{ old('status', $invoice->status) == 'draft' ? 'selected' : '' }}>Koncept</option>
@@ -372,6 +377,7 @@
                 const invoiceNumber = document.getElementById('invoice_number').value;
                 const issueDate = document.getElementById('issue_date').value;
                 const dueDate = document.getElementById('due_date').value;
+                const deliveryDate = document.getElementById('delivery_date').value;
 
                 // Check if company data is loaded
                 if (!document.getElementById('company_name').value) {
@@ -381,7 +387,7 @@
                 }
 
                 // Check if all required fields are filled
-                if (!ico || !invoiceNumber || !issueDate || !dueDate) {
+                if (!ico || !invoiceNumber || !issueDate || !dueDate || !deliveryDate) {
                     e.preventDefault();
                     alert('Vyplňte všetky povinné polia faktúry');
                     return;
