@@ -29,7 +29,7 @@ class ScraperService implements ScraperServiceContract
 
             return [
                 'success' => false,
-                'message' => 'Error retrieving partner data: '.$e->getMessage(),
+                'message' => 'Error retrieving partner data: ' . $response->toException()->getMessage(),
             ];
         }
 
