@@ -1,6 +1,6 @@
 import './bootstrap';
 import {createApp} from 'vue';
-import CreateInvoiceForm from './components/Invoice/CreateInvoiceForm.vue';
+import InvoiceForm from './components/Invoice/InvoiceForm.vue';
 import PartnerForm from './components/PartnerForm.vue';
 import CompanyForm from './components/CompanyForm.vue';
 import SettingsDropdown from './components/SettingsDropdown.vue';
@@ -125,7 +125,7 @@ const app = createApp({});
 app.component('settings-dropdown', SettingsDropdown);
 
 // Register Vue components
-app.component('create-invoice-form', CreateInvoiceForm);
+app.component('invoice-form', InvoiceForm);
 app.component('company-switcher', CompanySwitcher);
 app.component('partner-form', PartnerForm);
 app.component('company-form', CompanyForm);
