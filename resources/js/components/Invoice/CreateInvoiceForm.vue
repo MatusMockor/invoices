@@ -212,7 +212,7 @@
               <svg class="-ml-1 mr-2 h-5 w-5 text-indigo-500 dark:text-indigo-400" xmlns="http://www.w3.org/2000/svg"
                    viewBox="0 0 20 20" fill="currentColor">
                 <path fill-rule="evenodd"
-                      d="M10 5a1 1 0 011 1v3h3a1 1 0 110 2h-3v3a1 1 0 11-2 0v-3H6a1 1 0 110-2h3V6a1 1 0 011-1z"
+                      d="M10 5a1 1 0 011 1v3h3a1 1 0 110 2h-3v3a1 1 0 01-1 1h-3a1 1 0 110-2h-3V8a1 1 0 011-1h3V5a1 1 0 011-1z"
                       clip-rule="evenodd"/>
               </svg>
               Pridať položku
@@ -234,11 +234,53 @@
 
       <div class="flex justify-end">
         <button type="submit"
-                class="inline-flex items-center px-4 py-2 bg-indigo-600 border border-transparent rounded-md font-semibold text-xs text-white uppercase tracking-widest hover:bg-indigo-500 focus:bg-indigo-500 active:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 dark:focus:ring-offset-gray-800 transition ease-in-out duration-150">
+                class="inline-flex items-center px-4 py-2 bg-indigo-600 border border-transparent rounded-md font-semibold text-xs text-white uppercase tracking-widest hover:bg-indigo-500 focus:bg-indigo-500 active:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 dark:focus:ring-offset-gray-800 transition ease-in-out duration-150">
           Vytvoriť faktúru
         </button>
       </div>
     </form>
+    
+    <!-- Partner Selection Popup -->
+    <div v-if="showPartnerModal" class="fixed inset-0 z-50" @click.self="closePartnerModal">
+      <div ref="partnerDropdown" class="fixed bg-white dark:bg-gray-800 rounded-md shadow-lg overflow-hidden" 
+           :style="dropdownStyle">
+        <div class="p-4 border-b border-gray-200 dark:border-gray-700">
+          <h3 class="text-lg font-medium text-gray-900 dark:text-gray-100">Odberateľ</h3>
+        </div>
+        
+        <div class="p-4">
+          <div v-if="partnerLoading" class="flex justify-center items-center py-4">
+            <svg class="animate-spin h-6 w-6 text-indigo-600" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+              <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+              <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+            </svg>
+            <span class="ml-2 text-gray-700 dark:text-gray-300">Načítavam údaje o partnerovi...</span>
+          </div>
+          
+          <div v-else-if="partnerData" 
+               class="bg-gray-50 dark:bg-gray-700 p-4 rounded-md cursor-pointer hover:bg-gray-100 dark:hover:bg-gray-600 transition-colors"
+               @click="selectPartner">
+            <h4 class="font-bold text-gray-900 dark:text-gray-100">{{ partnerData.name }}</h4>
+            <p class="text-sm text-gray-600 dark:text-gray-400">{{ partnerData.street }}, {{ partnerData.postal_code }} {{ partnerData.city }}</p>
+            <div class="mt-2 text-sm">
+              <p class="text-gray-600 dark:text-gray-400">IČO: {{ partnerData.ico }}</p>
+              <p v-if="partnerData.dic" class="text-gray-600 dark:text-gray-400">DIČ: {{ partnerData.dic }}</p>
+              <p v-if="partnerData.ic_dph" class="text-gray-600 dark:text-gray-400">IČ DPH: {{ partnerData.ic_dph }}</p>
+            </div>
+          </div>
+          
+          <div v-else class="text-center py-4">
+            <p class="text-gray-700 dark:text-gray-300">{{ partnerErrorMessage || 'Žiadne údaje o partnerovi neboli nájdené' }}</p>
+          </div>
+        </div>
+        
+        <div class="bg-gray-50 dark:bg-gray-700 px-4 py-3 flex justify-end space-x-2">
+          <button type="button" @click="closePartnerModal" class="px-3 py-1.5 border border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-300 rounded hover:bg-gray-50 dark:hover:bg-gray-700 text-sm">
+            Zavrieť
+          </button>
+        </div>
+      </div>
+    </div>
   </div>
 </template>
 
@@ -292,7 +334,18 @@ export default {
       companyMessageClass: '',
       subtotal: 0,
       vat: 0,
-      grandTotal: 0
+      grandTotal: 0,
+      
+      // New properties for partner modal
+      showPartnerModal: false,
+      partnerLoading: false,
+      partnerData: null,
+      partnerErrorMessage: null,
+      dropdownStyle: {
+        top: '0px',
+        left: '0px',
+        width: '500px'
+      }
     };
   },
   created() {
@@ -308,30 +361,83 @@ export default {
 
       this.companyMessage = 'Načítavam údaje...';
       this.companyMessageClass = 'text-gray-600 dark:text-gray-400';
+      
+      // Show the partner modal and set loading state
+      this.partnerLoading = true;
+      this.showPartnerModal = true;
+      this.partnerData = null;
+      this.partnerErrorMessage = null;
+      
+      // Position the dropdown under the ICO field
+      this.$nextTick(() => {
+        this.updateDropdownPosition();
+        
+        // Add event listeners for scrolling and resizing
+        window.addEventListener('scroll', this.updateDropdownPosition);
+        window.addEventListener('resize', this.updateDropdownPosition);
+      });
 
       axios.get(this.fetchCompanyUrl + '?ico=' + this.form.ico)
           .then(response => {
             if (response.data.success) {
               const data = response.data.data;
-              this.form.company_name = data.name;
-              this.form.company_address = data.street;
-              this.form.company_city = data.city;
-              this.form.company_postal_code = data.postal_code;
-              this.form.company_dic = data.dic || '';
-              this.form.company_ic_dph = data.ic_dph || '';
-
+              
+              // Store the partner data but don't fill the form yet
+              this.partnerData = data;
+              this.partnerLoading = false;
+              
               this.companyMessage = 'Údaje úspešne načítané';
               this.companyMessageClass = 'text-green-600 dark:text-green-400';
             } else {
-              this.companyMessage = response.data.message || 'Nepodarilo sa načítať údaje';
+              this.partnerErrorMessage = response.data.message || 'Nepodarilo sa načítať údaje';
+              this.companyMessage = this.partnerErrorMessage;
               this.companyMessageClass = 'text-red-600 dark:text-red-400';
+              this.partnerLoading = false;
             }
           })
           .catch(error => {
-            this.companyMessage = 'Chyba pri načítaní údajov';
+            this.partnerErrorMessage = 'Chyba pri načítaní údajov';
+            this.companyMessage = this.partnerErrorMessage;
             this.companyMessageClass = 'text-red-600 dark:text-red-400';
+            this.partnerLoading = false;
             console.error(error);
           });
+    },
+    
+    updateDropdownPosition() {
+      if (!this.showPartnerModal) return;
+      
+      const icoInput = document.getElementById('ico');
+      if (icoInput) {
+        const rect = icoInput.getBoundingClientRect();
+        this.dropdownStyle = {
+          top: `${rect.bottom + 5}px`,
+          left: `${rect.left}px`,
+          width: '500px'
+        };
+      }
+    },
+    
+    selectPartner() {
+      // Fill form fields with the selected partner data
+      if (this.partnerData) {
+        this.form.company_name = this.partnerData.name || '';
+        this.form.company_address = this.partnerData.street || '';
+        this.form.company_city = this.partnerData.city || '';
+        this.form.company_postal_code = this.partnerData.postal_code || '';
+        this.form.company_dic = this.partnerData.dic || '';
+        this.form.company_ic_dph = this.partnerData.ic_dph || '';
+      }
+      
+      this.closePartnerModal();
+    },
+    
+    closePartnerModal() {
+      this.showPartnerModal = false;
+      
+      // Remove event listeners when modal is closed
+      window.removeEventListener('scroll', this.updateDropdownPosition);
+      window.removeEventListener('resize', this.updateDropdownPosition);
     },
     getItemTotal(index) {
       const item = this.form.items[index];
