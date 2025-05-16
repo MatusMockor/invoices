@@ -101,6 +101,13 @@
             </div>
 
             <div>
+              <label for="delivery_date" class="block text-sm font-medium text-gray-700 dark:text-gray-300">Dátum
+                doručenia</label>
+              <input type="date" v-model="form.delivery_date" name="delivery_date" id="delivery_date"
+                     class="mt-1 block w-full rounded-md border-gray-300 dark:border-gray-700 dark:bg-gray-900 dark:text-gray-300 shadow-sm focus:border-indigo-500 dark:focus:border-indigo-600 focus:ring-indigo-500 dark:focus:ring-indigo-600 sm:text-sm" required>
+            </div>
+
+            <div>
               <label for="status" class="block text-sm font-medium text-gray-700 dark:text-gray-300">Stav
                 faktúry</label>
               <select v-model="form.status" name="status" id="status"
@@ -239,7 +246,7 @@
         </button>
       </div>
     </form>
-    
+
     <!-- Partner Selection Popup -->
     <div v-if="showPartnerModal" class="fixed inset-0 z-50" @click.self="closePartnerModal">
       <div ref="partnerDropdown" class="fixed bg-white dark:bg-gray-800 rounded-md shadow-lg overflow-hidden" 
@@ -247,7 +254,7 @@
         <div class="p-4 border-b border-gray-200 dark:border-gray-700">
           <h3 class="text-lg font-medium text-gray-900 dark:text-gray-100">Odberateľ</h3>
         </div>
-        
+
         <div class="p-4">
           <div v-if="partnerLoading" class="flex justify-center items-center py-4">
             <svg class="animate-spin h-6 w-6 text-indigo-600" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
@@ -256,7 +263,7 @@
             </svg>
             <span class="ml-2 text-gray-700 dark:text-gray-300">Načítavam údaje o partnerovi...</span>
           </div>
-          
+
           <div v-else-if="partnerData" 
                class="bg-gray-50 dark:bg-gray-700 p-4 rounded-md cursor-pointer hover:bg-gray-100 dark:hover:bg-gray-600 transition-colors"
                @click="selectPartner">
@@ -268,12 +275,12 @@
               <p v-if="partnerData.ic_dph" class="text-gray-600 dark:text-gray-400">IČ DPH: {{ partnerData.ic_dph }}</p>
             </div>
           </div>
-          
+
           <div v-else class="text-center py-4">
             <p class="text-gray-700 dark:text-gray-300">{{ partnerErrorMessage || 'Žiadne údaje o partnerovi neboli nájdené' }}</p>
           </div>
         </div>
-        
+
         <div class="bg-gray-50 dark:bg-gray-700 px-4 py-3 flex justify-end space-x-2">
           <button type="button" @click="closePartnerModal" class="px-3 py-1.5 border border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-300 rounded hover:bg-gray-50 dark:hover:bg-gray-700 text-sm">
             Zavrieť
@@ -315,6 +322,7 @@ export default {
         invoice_number: new Date().toISOString().substr(0, 10).replace(/-/g, '') + '-' + Math.floor(1000 + Math.random() * 9000),
         issue_date: new Date().toISOString().substr(0, 10),
         due_date: new Date(new Date().setDate(new Date().getDate() + 14)).toISOString().substr(0, 10),
+        delivery_date: new Date().toISOString().substr(0, 10),
         status: 'draft',
         supplier_company_id: this.currentCompanyId || '',
         currency: 'EUR',
@@ -335,7 +343,7 @@ export default {
       subtotal: 0,
       vat: 0,
       grandTotal: 0,
-      
+
       // New properties for partner modal
       showPartnerModal: false,
       partnerLoading: false,
@@ -361,17 +369,17 @@ export default {
 
       this.companyMessage = 'Načítavam údaje...';
       this.companyMessageClass = 'text-gray-600 dark:text-gray-400';
-      
+
       // Show the partner modal and set loading state
       this.partnerLoading = true;
       this.showPartnerModal = true;
       this.partnerData = null;
       this.partnerErrorMessage = null;
-      
+
       // Position the dropdown under the ICO field
       this.$nextTick(() => {
         this.updateDropdownPosition();
-        
+
         // Add event listeners for scrolling and resizing
         window.addEventListener('scroll', this.updateDropdownPosition);
         window.addEventListener('resize', this.updateDropdownPosition);
@@ -381,11 +389,11 @@ export default {
           .then(response => {
             if (response.data.success) {
               const data = response.data.data;
-              
+
               // Store the partner data but don't fill the form yet
               this.partnerData = data;
               this.partnerLoading = false;
-              
+
               this.companyMessage = 'Údaje úspešne načítané';
               this.companyMessageClass = 'text-green-600 dark:text-green-400';
             } else {
@@ -403,10 +411,10 @@ export default {
             console.error(error);
           });
     },
-    
+
     updateDropdownPosition() {
       if (!this.showPartnerModal) return;
-      
+
       const icoInput = document.getElementById('ico');
       if (icoInput) {
         const rect = icoInput.getBoundingClientRect();
@@ -417,7 +425,7 @@ export default {
         };
       }
     },
-    
+
     selectPartner() {
       // Fill form fields with the selected partner data
       if (this.partnerData) {
@@ -428,13 +436,13 @@ export default {
         this.form.company_dic = this.partnerData.dic || '';
         this.form.company_ic_dph = this.partnerData.ic_dph || '';
       }
-      
+
       this.closePartnerModal();
     },
-    
+
     closePartnerModal() {
       this.showPartnerModal = false;
-      
+
       // Remove event listeners when modal is closed
       window.removeEventListener('scroll', this.updateDropdownPosition);
       window.removeEventListener('resize', this.updateDropdownPosition);
@@ -504,6 +512,10 @@ export default {
 
       if (!this.form.due_date) {
         this.errors.push('Dátum splatnosti je povinný');
+      }
+
+      if (!this.form.delivery_date) {
+        this.errors.push('Dátum dodania je povinný');
       }
 
       // Validate items
