@@ -6,7 +6,6 @@ use App\Models\Partner;
 use App\Repositories\Interfaces\PartnerRepository as PartnerRepositoryContract;
 use App\Services\Interfaces\PartnerDataService as PartnerDataServiceContract;
 use App\Services\Interfaces\ScraperService as ScraperServiceContract;
-use Illuminate\Support\Facades\Log;
 
 class PartnerDataService implements PartnerDataServiceContract
 {
@@ -29,39 +28,30 @@ class PartnerDataService implements PartnerDataServiceContract
 
     protected function fetchFromScraper(string $ico): array
     {
-        try {
-            $data = $this->scraperService->startScraper($ico);
+        $data = $this->scraperService->startScraper($ico);
 
-            if (empty($data)) {
-                return [
-                    'success' => false,
-                    'message' => 'Failed to load partner data.',
-                ];
-            }
-
-            return [
-                'success' => true,
-                'data' => [
-                    'ico' => $data['ico'] ?? $ico,
-                    'name' => $data['nazov'] ?? '',
-                    'street' => $data['ulica'] ?? '',
-                    'city' => $data['mesto'] ?? '',
-                    'postal_code' => $data['psc'] ?? '',
-                    'country' => 'Slovensko',
-                    'dic' => $data['dic'] ?? null,
-                    'ic_dph' => $data['ic_dph'] ?? null,
-                    'company_type' => $data['zdroj'],
-                    'registration_number' => $data[$data['zdroj']] ?? null,
-                ],
-            ];
-        } catch (\Exception $e) {
-            Log::error('Error fetching partner data from scraper', ['message' => $e->getMessage()]);
-
+        if (! $data) {
             return [
                 'success' => false,
-                'message' => 'Error retrieving partner data: '.$e->getMessage(),
+                'message' => 'Failed to load partner data.',
             ];
         }
+
+        return [
+            'success' => true,
+            'data' => [
+                'ico' => $data['ico'] ?? $ico,
+                'name' => $data['nazov'] ?? '',
+                'street' => $data['ulica'] ?? '',
+                'city' => $data['mesto'] ?? '',
+                'postal_code' => $data['psc'] ?? '',
+                'country' => 'Slovensko',
+                'dic' => $data['dic'] ?? null,
+                'ic_dph' => $data['icDph'] ?? null,
+                'company_type' => $data['zdroj'],
+                'registration_number' => $data['registration_number'],
+            ],
+        ];
     }
 
     public function findOrCreatePartner(string $ico): ?Partner
