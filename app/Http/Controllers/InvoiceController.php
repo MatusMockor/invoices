@@ -23,7 +23,9 @@ class InvoiceController extends Controller
         protected InvoiceRepository $invoiceRepository,
         protected InvoiceItemRepository $invoiceItemRepository,
         protected PartnerRepository $partnerRepository
-    ) {}
+    ) {
+        $this->authorizeResource(Invoice::class);
+    }
 
     public function index(): View
     {
@@ -164,6 +166,8 @@ class InvoiceController extends Controller
      */
     public function downloadPdf(Invoice $invoice): Response
     {
+        $this->authorize('view', $invoice);
+
         return $this->pdfService->downloadPdf($invoice);
     }
 
@@ -172,6 +176,8 @@ class InvoiceController extends Controller
      */
     public function viewPdf(Invoice $invoice): Response
     {
+        $this->authorize('view', $invoice);
+
         return $this->pdfService->streamPdf($invoice);
     }
 }
