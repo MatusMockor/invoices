@@ -123,6 +123,12 @@
             </div>
 
             <div>
+              <label for="constant_symbol" class="block text-sm font-medium text-gray-700 dark:text-gray-300">Konštantný symbol</label>
+              <input type="text" v-model="form.constant_symbol" name="constant_symbol" id="constant_symbol"
+                     class="mt-1 block w-full rounded-md border-gray-300 dark:border-gray-700 dark:bg-gray-900 dark:text-gray-300 shadow-sm focus:border-indigo-500 dark:focus:border-indigo-600 focus:ring-indigo-500 dark:focus:ring-indigo-600 sm:text-sm">
+            </div>
+
+            <div>
               <label for="note" class="block text-sm font-medium text-gray-700 dark:text-gray-300">Poznámka</label>
               <textarea v-model="form.note" name="note" id="note" rows="3"
                         class="mt-1 block w-full rounded-md border-gray-300 dark:border-gray-700 dark:bg-gray-900 dark:text-gray-300 shadow-sm focus:border-indigo-500 dark:focus:border-indigo-600 focus:ring-indigo-500 dark:focus:ring-indigo-600 sm:text-sm"></textarea>
@@ -270,6 +276,7 @@ export default {
         status: 'draft',
         supplier_company_id: this.currentCompanyId || '',
         currency: 'EUR',
+        constant_symbol: '',
         note: '',
         items: [
           {
