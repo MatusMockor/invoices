@@ -48,22 +48,22 @@ class ScraperService implements ScraperServiceContract
             ]);
 
         if ($response->successful()) {
-            $data = $response->json();
+            $data = $response->json('data', default: []);
 
             if (! empty($data) && isset($data['success']) && $data['success']) {
                 return [
                     'success' => true,
                     'data' => [
-                        'ico' => $data['data']['ico'] ?? $ico,
-                        'name' => $data['data']['name'] ?? '',
-                        'street' => $data['data']['street'] ?? '',
-                        'city' => $data['data']['city'] ?? '',
-                        'postal_code' => $data['data']['postal_code'] ?? '',
-                        'country' => $data['data']['country'] ?? 'Slovensko',
-                        'dic' => $data['data']['dic'] ?? null,
-                        'ic_dph' => $data['data']['ic_dph'] ?? null,
-                        'company_type' => $data['data']['company_type'] ?? null,
-                        'registration_number' => $data['data']['registration_number'] ?? null,
+                        'ico' => $data['ico'] ?? $ico,
+                        'name' => $data['name'] ?? '',
+                        'street' => $data['street'] ?? '',
+                        'city' => $data['city'] ?? '',
+                        'postal_code' => $data['postal_code'] ?? '',
+                        'country' => $data['country'] ?? 'Slovensko',
+                        'dic' => $data['dic'] ?? null,
+                        'ic_dph' => $data['ic_dph'] ?? null,
+                        'company_type' => $data['company_type'] ?? null,
+                        'registration_number' => $data['registration_number'] ?? null,
                     ],
                 ];
             }
