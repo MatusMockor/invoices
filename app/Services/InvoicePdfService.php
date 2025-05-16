@@ -10,15 +10,10 @@ use Illuminate\Http\Response;
 
 class InvoicePdfService implements InvoicePdfServiceContract
 {
-    private PayBySquareContract $payBySquare;
-
     /**
      * InvoicePdfService constructor
      */
-    public function __construct(PayBySquareContract $payBySquare)
-    {
-        $this->payBySquare = $payBySquare;
-    }
+    public function __construct(protected PayBySquareContract $payBySquare) {}
 
     /**
      * Generate a PDF for the given invoice
