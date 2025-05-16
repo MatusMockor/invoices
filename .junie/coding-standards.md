@@ -30,9 +30,7 @@ app/Models
 •	Use fillable.
 
 1. Testing
-   •	Use Pest PHP for all tests.
-   •	Run composer lint after changes.
-   •	Run composer test before finalizing.
+   •	Use Laravel Sail to run all tests.
    •	Don’t remove tests without approval.
    •	All code must be tested.
    •	Generate a {Model}Factory with each model.
