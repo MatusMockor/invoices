@@ -14,94 +14,177 @@ class InvoicePolicyTest extends TestCase
 {
     use RefreshDatabase;
 
-    protected User $user;
 
-    protected Company $company1;
-
-    protected Company $company2;
-
-    protected Invoice $ownInvoice;
-
-    protected Invoice $otherInvoice;
-
-    protected InvoicePolicy $policy;
-
-    protected function setUp(): void
+    public function test_view_any_allows_access_to_user_with_company(): void
     {
-        parent::setUp();
+        // Create a user with a company
+        $user = User::factory()->create();
+        $company = Company::factory()->create([
+            'user_id' => $user->id,
+        ]);
+        $user->update(['current_company_id' => $company->id]);
 
+        $policy = new InvoicePolicy;
+        $this->assertTrue($policy->viewAny($user));
+    }
+
+    public function test_create_allows_access_to_user_with_company(): void
+    {
+        // Create a user with a company
+        $user = User::factory()->create();
+        $company = Company::factory()->create([
+            'user_id' => $user->id,
+        ]);
+        $user->update(['current_company_id' => $company->id]);
+
+        $policy = new InvoicePolicy;
+        $this->assertTrue($policy->create($user));
+    }
+
+    public function test_view_allows_access_to_own_company_invoice(): void
+    {
         // Create a user with two companies
-        $this->user = User::factory()->create();
-
-        // Create two companies for the user
-        $this->company1 = Company::factory()->create([
-            'user_id' => $this->user->id,
+        $user = User::factory()->create();
+        $company1 = Company::factory()->create([
+            'user_id' => $user->id,
         ]);
-
-        $this->company2 = Company::factory()->create([
-            'user_id' => $this->user->id,
-        ]);
-
-        // Set the first company as the current company
-        $this->user->update(['current_company_id' => $this->company1->id]);
+        $user->update(['current_company_id' => $company1->id]);
 
         // Create a partner for invoices
         $partner = Partner::factory()->create();
 
         // Create an invoice for the current company
-        $this->ownInvoice = Invoice::factory()->create([
-            'user_id' => $this->user->id,
-            'supplier_company_id' => $this->company1->id,
+        $ownInvoice = Invoice::factory()->create([
+            'user_id' => $user->id,
+            'supplier_company_id' => $company1->id,
             'partner_id' => $partner->id,
         ]);
 
-        // Create an invoice for the other company
-        $this->otherInvoice = Invoice::factory()->create([
-            'user_id' => $this->user->id,
-            'supplier_company_id' => $this->company2->id,
-            'partner_id' => $partner->id,
-        ]);
-
-        $this->policy = new InvoicePolicy;
-    }
-
-    public function test_view_any_allows_access_to_user_with_company(): void
-    {
-        $this->assertTrue($this->policy->viewAny($this->user));
-    }
-
-    public function test_create_allows_access_to_user_with_company(): void
-    {
-        $this->assertTrue($this->policy->create($this->user));
-    }
-
-    public function test_view_allows_access_to_own_company_invoice(): void
-    {
-        $this->assertTrue($this->policy->view($this->user, $this->ownInvoice));
+        $policy = new InvoicePolicy;
+        $this->assertTrue($policy->view($user, $ownInvoice));
     }
 
     public function test_view_denies_access_to_other_company_invoice(): void
     {
-        $this->assertFalse($this->policy->view($this->user, $this->otherInvoice));
+        // Create a user with two companies
+        $user = User::factory()->create();
+        $company1 = Company::factory()->create([
+            'user_id' => $user->id,
+        ]);
+        $company2 = Company::factory()->create([
+            'user_id' => $user->id,
+        ]);
+        $user->update(['current_company_id' => $company1->id]);
+
+        // Create a partner for invoices
+        $partner = Partner::factory()->create();
+
+        // Create an invoice for the other company
+        $otherInvoice = Invoice::factory()->create([
+            'user_id' => $user->id,
+            'supplier_company_id' => $company2->id,
+            'partner_id' => $partner->id,
+        ]);
+
+        $policy = new InvoicePolicy;
+        $this->assertFalse($policy->view($user, $otherInvoice));
     }
 
     public function test_update_allows_access_to_own_company_invoice(): void
     {
-        $this->assertTrue($this->policy->update($this->user, $this->ownInvoice));
+        // Create a user with a company
+        $user = User::factory()->create();
+        $company = Company::factory()->create([
+            'user_id' => $user->id,
+        ]);
+        $user->update(['current_company_id' => $company->id]);
+
+        // Create a partner for invoices
+        $partner = Partner::factory()->create();
+
+        // Create an invoice for the current company
+        $ownInvoice = Invoice::factory()->create([
+            'user_id' => $user->id,
+            'supplier_company_id' => $company->id,
+            'partner_id' => $partner->id,
+        ]);
+
+        $policy = new InvoicePolicy;
+        $this->assertTrue($policy->update($user, $ownInvoice));
     }
 
     public function test_update_denies_access_to_other_company_invoice(): void
     {
-        $this->assertFalse($this->policy->update($this->user, $this->otherInvoice));
+        // Create a user with two companies
+        $user = User::factory()->create();
+        $company1 = Company::factory()->create([
+            'user_id' => $user->id,
+        ]);
+        $company2 = Company::factory()->create([
+            'user_id' => $user->id,
+        ]);
+        $user->update(['current_company_id' => $company1->id]);
+
+        // Create a partner for invoices
+        $partner = Partner::factory()->create();
+
+        // Create an invoice for the other company
+        $otherInvoice = Invoice::factory()->create([
+            'user_id' => $user->id,
+            'supplier_company_id' => $company2->id,
+            'partner_id' => $partner->id,
+        ]);
+
+        $policy = new InvoicePolicy;
+        $this->assertFalse($policy->update($user, $otherInvoice));
     }
 
     public function test_delete_allows_access_to_own_company_invoice(): void
     {
-        $this->assertTrue($this->policy->delete($this->user, $this->ownInvoice));
+        // Create a user with a company
+        $user = User::factory()->create();
+        $company = Company::factory()->create([
+            'user_id' => $user->id,
+        ]);
+        $user->update(['current_company_id' => $company->id]);
+
+        // Create a partner for invoices
+        $partner = Partner::factory()->create();
+
+        // Create an invoice for the current company
+        $ownInvoice = Invoice::factory()->create([
+            'user_id' => $user->id,
+            'supplier_company_id' => $company->id,
+            'partner_id' => $partner->id,
+        ]);
+
+        $policy = new InvoicePolicy;
+        $this->assertTrue($policy->delete($user, $ownInvoice));
     }
 
     public function test_delete_denies_access_to_other_company_invoice(): void
     {
-        $this->assertFalse($this->policy->delete($this->user, $this->otherInvoice));
+        // Create a user with two companies
+        $user = User::factory()->create();
+        $company1 = Company::factory()->create([
+            'user_id' => $user->id,
+        ]);
+        $company2 = Company::factory()->create([
+            'user_id' => $user->id,
+        ]);
+        $user->update(['current_company_id' => $company1->id]);
+
+        // Create a partner for invoices
+        $partner = Partner::factory()->create();
+
+        // Create an invoice for the other company
+        $otherInvoice = Invoice::factory()->create([
+            'user_id' => $user->id,
+            'supplier_company_id' => $company2->id,
+            'partner_id' => $partner->id,
+        ]);
+
+        $policy = new InvoicePolicy;
+        $this->assertFalse($policy->delete($user, $otherInvoice));
     }
 }
