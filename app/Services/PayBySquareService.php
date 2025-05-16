@@ -16,6 +16,7 @@ class PayBySquareService implements PayBySquareContract
             return $string;
         }
 
+        //        transliterator_transliterate('Any-Latin; Latin-ASCII', $inputString);
         $chars = [
             // Decompositions for Latin-1 Supplement
             chr(195).chr(128) => 'A', chr(195).chr(129) => 'A',
