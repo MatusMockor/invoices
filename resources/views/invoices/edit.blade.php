@@ -39,7 +39,7 @@
                 <div class="mb-4">
                     <label for="ico" class="block text-sm font-medium text-gray-700">IČO</label>
                     <div class="mt-1 flex rounded-md shadow-sm">
-                        <input type="text" name="ico" id="ico" value="{{ old('ico', $invoice->supplierCompany->ico) }}" class="focus:ring-indigo-500 focus:border-indigo-500 flex-1 block w-full rounded-md sm:text-sm border-gray-300" placeholder="Zadajte IČO">
+                        <input type="text" name="ico" id="ico" value="{{ old('ico', $invoice->partner->ico) }}" class="focus:ring-indigo-500 focus:border-indigo-500 flex-1 block w-full rounded-md sm:text-sm border-gray-300" placeholder="Zadajte IČO">
                         <button type="button" id="fetch-company-btn" class="ml-2 inline-flex items-center px-3 py-2 border border-transparent text-sm leading-4 font-medium rounded-md text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500">
                             Načítať údaje
                         </button>
@@ -50,32 +50,32 @@
                 <div id="company-details" class="space-y-4">
                     <div>
                         <label for="company_name" class="block text-sm font-medium text-gray-700">Názov spoločnosti</label>
-                        <input type="text" id="company_name" name="company_name" value="{{ old('company_name', $invoice->supplierCompany->name) }}" readonly class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm bg-gray-50">
+                        <input type="text" id="company_name" name="company_name" value="{{ old('company_name', $invoice->partner->name) }}" readonly class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm bg-gray-50">
                     </div>
 
                     <div>
                         <label for="company_address" class="block text-sm font-medium text-gray-700">Adresa</label>
-                        <input type="text" id="company_address" name="company_address" value="{{ old('company_address', $invoice->supplierCompany->street) }}" readonly class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm bg-gray-50">
+                        <input type="text" id="company_address" name="company_address" value="{{ old('company_address', $invoice->partner->street) }}" readonly class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm bg-gray-50">
                     </div>
 
                     <div>
                         <label for="company_city" class="block text-sm font-medium text-gray-700">Mesto</label>
-                        <input type="text" id="company_city" name="company_city" value="{{ old('company_city', $invoice->supplierCompany->city) }}" readonly class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm bg-gray-50">
+                        <input type="text" id="company_city" name="company_city" value="{{ old('company_city', $invoice->partner->city) }}" readonly class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm bg-gray-50">
                     </div>
 
                     <div>
                         <label for="company_postal_code" class="block text-sm font-medium text-gray-700">PSČ</label>
-                        <input type="text" id="company_postal_code" name="company_postal_code" value="{{ old('company_postal_code', $invoice->supplierCompany->postal_code) }}" readonly class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm bg-gray-50">
+                        <input type="text" id="company_postal_code" name="company_postal_code" value="{{ old('company_postal_code', $invoice->partner->postal_code) }}" readonly class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm bg-gray-50">
                     </div>
 
                     <div>
                         <label for="company_dic" class="block text-sm font-medium text-gray-700">DIČ</label>
-                        <input type="text" id="company_dic" name="company_dic" value="{{ old('company_dic', $invoice->supplierCompany->dic) }}" readonly class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm bg-gray-50">
+                        <input type="text" id="company_dic" name="company_dic" value="{{ old('company_dic', $invoice->partner->dic) }}" readonly class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm bg-gray-50">
                     </div>
 
                     <div>
                         <label for="company_ic_dph" class="block text-sm font-medium text-gray-700">IČ DPH</label>
-                        <input type="text" id="company_ic_dph" name="company_ic_dph" value="{{ old('company_ic_dph', $invoice->supplierCompany->ic_dph) }}" readonly class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm bg-gray-50">
+                        <input type="text" id="company_ic_dph" name="company_ic_dph" value="{{ old('company_ic_dph', $invoice->partner->ic_dph) }}" readonly class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm bg-gray-50">
                     </div>
                 </div>
             </div>
