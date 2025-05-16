@@ -62,6 +62,7 @@ class InvoiceController extends Controller
             'supplier_company_id' => $user->current_company_id, // Set the active company as supplier
             'total_amount' => $validated['total_amount'],
             'currency' => $validated['currency'],
+            'constant_symbol' => $validated['constant_symbol'] ?? null,
             'note' => $validated['note'],
             'status' => $validated['status'],
         ]);
@@ -121,6 +122,7 @@ class InvoiceController extends Controller
                 'supplier_company_id' => $user->current_company_id, // Keep the active company as supplier
                 'total_amount' => $validated['total_amount'],
                 'currency' => $validated['currency'],
+                'constant_symbol' => $validated['constant_symbol'] ?? null,
                 'note' => $validated['note'],
                 'status' => $validated['status'],
             ]);

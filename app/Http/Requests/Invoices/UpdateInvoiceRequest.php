@@ -34,6 +34,7 @@ class UpdateInvoiceRequest extends FormRequest
             'due_date' => 'required|date|after_or_equal:issue_date',
             'total_amount' => 'required|numeric|min:0',
             'currency' => 'required|string|in:EUR,USD,CZK',
+            'constant_symbol' => 'nullable|string|max:4',
             'note' => 'nullable|string|max:1000',
             'status' => 'required|string|in:draft,sent,paid,overdue',
             'items' => 'required|array|min:1',
