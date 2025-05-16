@@ -16,13 +16,6 @@ class PartnerDataService implements PartnerDataServiceContract
 
     public function fetchPartnerDataByIco(string $ico): array
     {
-        if (strlen($ico) !== 8 || ! ctype_digit($ico)) {
-            return [
-                'success' => false,
-                'message' => 'Invalid ICO',
-            ];
-        }
-
         return $this->fetchFromScraper($ico);
     }
 
