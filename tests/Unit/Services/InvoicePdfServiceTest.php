@@ -49,13 +49,15 @@ class InvoicePdfServiceTest extends TestCase
         }
 
         // Create the service
-        $service = new InvoicePdfService;
+        $service = app()->make(InvoicePdfService::class);
 
         // Call the method
         $result = $service->generatePdf($this->invoice);
 
-        // Assert the result is an object
+        // Assert the result is an object with PDF methods
         $this->assertIsObject($result);
+        $this->assertTrue(method_exists($result, 'download'), 'PDF object should have download method');
+        $this->assertTrue(method_exists($result, 'stream'), 'PDF object should have stream method');
     }
 
     public function test_download_pdf_returns_download_response()

@@ -22,7 +22,7 @@ class CreateInvoiceRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'ico' => 'required|string|size:8|digits',
+            'ico' => 'required|string|max:12',
             'invoice_number' => 'required|string|max:20|unique:invoices,invoice_number',
             'issue_date' => 'required|date',
             'due_date' => 'required|date|after_or_equal:issue_date',
