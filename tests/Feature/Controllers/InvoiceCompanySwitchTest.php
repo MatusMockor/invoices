@@ -13,7 +13,6 @@ class InvoiceCompanySwitchTest extends TestCase
 {
     use RefreshDatabase;
 
-
     /**
      * Test that a user can access invoices from their current company but not from other companies.
      * Then test that after switching companies, they can access invoices from the new current company.

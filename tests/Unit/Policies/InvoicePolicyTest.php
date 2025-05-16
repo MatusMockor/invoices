@@ -14,7 +14,6 @@ class InvoicePolicyTest extends TestCase
 {
     use RefreshDatabase;
 
-
     public function test_view_any_allows_access_to_user_with_company(): void
     {
         // Create a user with a company
