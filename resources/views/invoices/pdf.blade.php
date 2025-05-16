@@ -118,7 +118,7 @@
             </td>
         </tr>
     </table>
-    
+
     <!-- Supplier and Customer -->
     <table class="party-table">
         <tr>
@@ -129,7 +129,7 @@
                     {{ $invoice->supplierCompany->street }}<br>
                     {{ $invoice->supplierCompany->postal_code }} {{ $invoice->supplierCompany->city }}, Slovenská republika<br>
                 </div>
-                
+
                 <div style="margin-bottom: 10px; font-size: 8pt;">
                     <div style="white-space: nowrap;">
                         <span style="display: inline-block;">IČO: {{ $invoice->supplierCompany->ico }}</span>
@@ -163,7 +163,7 @@
                     </div>
                     @endif
                 </div>
-                
+
                 <div style="margin-top: 15px;">
                     <table cellpadding="0" cellspacing="0" style="font-size: 8pt; width: 100%;">
                         <tr>
@@ -214,7 +214,7 @@
                     </div>
                     @endif
                 </div>
-                
+
                 <div class="payment-box">
                     <table width="100%">
                         <tr>
@@ -231,6 +231,12 @@
                                     <span class="payment-label">Variabilný symbol:</span>
                                     <span class="payment-value">{{ substr(str_replace(['INV-', '-'], '', $invoice->invoice_number), 0, 10) }}</span>
                                 </div>
+                                @if($invoice->constant_symbol)
+                                <div class="payment-row">
+                                    <span class="payment-label">Konštantný symbol:</span>
+                                    <span class="payment-value">{{ $invoice->constant_symbol }}</span>
+                                </div>
+                                @endif
                                 <div class="payment-row">
                                     <span class="payment-label">IBAN:</span>
                                     <span class="payment-value" style="font-size: 7pt;">{{ $invoice->supplierCompany->iban ?? 'SK14 0900 0000 0052 7700 4607' }}</span>
@@ -263,7 +269,7 @@
             </td>
         </tr>
     </table>
-    
+
     <!-- Invoice Items -->
     <table class="items-table">
         <thead>
@@ -291,14 +297,14 @@
             </tr>
         </tbody>
     </table>
-    
+
     <!-- Footer -->
     <div class="footer">
         <p>Spoločnosť je zapísaná v Živnostenskom registri Okresného úradu Nové Zámky, registrácia č. 440-46274</p>
         <p>Doklad obsahuje {{ count($invoice->items) }} položky, dátové číslo a importačné ID pridelené do systému.</p>
         <p>www.kros.sk</p>
     </div>
-    
+
     <div class="page-number">
         Strana 1/1
     </div>

@@ -29,7 +29,7 @@
                     <div class="flex flex-col md:flex-row justify-between">
                         <div>
                             <h1 class="text-2xl font-bold text-gray-900 dark:text-white mb-2">FAKTÚRA č. {{ $invoice->invoice_number }}</h1>
-                            
+
                             @php
                                 $statusColors = [
                                     'draft' => 'bg-gray-100 text-gray-800 dark:bg-gray-700 dark:text-gray-300',
@@ -48,7 +48,7 @@
                                 {{ $statusLabels[$invoice->status] }}
                             </span>
                         </div>
-                        
+
                         <div class="mt-4 md:mt-0 text-right">
                             <p class="text-gray-600 dark:text-gray-400">Dátum vystavenia: <span class="font-semibold text-gray-900 dark:text-white">{{ $invoice->issue_date->format('d.m.Y') }}</span></p>
                             <p class="text-gray-600 dark:text-gray-400">Dátum splatnosti: <span class="font-semibold text-gray-900 dark:text-white">{{ $invoice->due_date->format('d.m.Y') }}</span></p>
@@ -56,14 +56,14 @@
                     </div>
                 </div>
             </div>
-            
+
             <!-- Company Information -->
             <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
                 <!-- Supplier (Your Company) -->
                 <div class="bg-white dark:bg-gray-800 overflow-hidden shadow-sm sm:rounded-lg">
                     <div class="p-6">
                         <h3 class="text-lg font-medium text-gray-900 dark:text-white border-b border-gray-200 dark:border-gray-700 pb-2 mb-4">Dodávateľ</h3>
-                        
+
                         <div class="space-y-2 text-gray-700 dark:text-gray-300">
                             <p class="font-bold text-lg text-gray-900 dark:text-white">{{$invoice->supplierCompany->name}}</p>
                             <p>{{$invoice->supplierCompany->street}}</p>
@@ -77,12 +77,12 @@
                         </div>
                     </div>
                 </div>
-                
+
                 <!-- Customer Info -->
                 <div class="bg-white dark:bg-gray-800 overflow-hidden shadow-sm sm:rounded-lg">
                     <div class="p-6">
                         <h3 class="text-lg font-medium text-gray-900 dark:text-white border-b border-gray-200 dark:border-gray-700 pb-2 mb-4">Odberateľ</h3>
-                        
+
                         <div class="space-y-2 text-gray-700 dark:text-gray-300">
                             <p class="font-bold text-lg text-gray-900 dark:text-white">{{ $invoice->partner->name }}</p>
                             <p>{{ $invoice->partner->street }}</p>
@@ -101,12 +101,12 @@
                     </div>
                 </div>
             </div>
-            
+
             <!-- Invoice Items -->
             <div class="bg-white dark:bg-gray-800 overflow-hidden shadow-sm sm:rounded-lg">
                 <div class="p-6">
                     <h3 class="text-lg font-medium text-gray-900 dark:text-white border-b border-gray-200 dark:border-gray-700 pb-2 mb-4">Položky faktúry</h3>
-                    
+
                     <div class="overflow-x-auto">
                         <table class="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
                             <thead>
@@ -121,7 +121,7 @@
                                 @php
                                     $subtotal = 0;
                                 @endphp
-                                
+
                                 @foreach($invoice->items as $item)
                                     @php
                                         $subtotal += $item->total_price;
@@ -172,34 +172,37 @@
                     </div>
                 </div>
             </div>
-            
+
             <!-- Payment Info and Notes -->
             <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
                 <div class="bg-white dark:bg-gray-800 overflow-hidden shadow-sm sm:rounded-lg">
                     <div class="p-6">
                         <h3 class="text-lg font-medium text-gray-900 dark:text-white border-b border-gray-200 dark:border-gray-700 pb-2 mb-4">Platobné údaje</h3>
-                        
+
                         <div class="space-y-3 text-gray-700 dark:text-gray-300">
                             <p><span class="font-medium">Banka:</span> Slovenská sporiteľňa, a.s.</p>
                             <p><span class="font-medium">IBAN:</span> SK12 0900 0000 0001 2345 6789</p>
                             <p><span class="font-medium">SWIFT:</span> GIBASKBX</p>
                             <p><span class="font-medium">Variabilný symbol:</span> {{ preg_replace('/[^0-9]/', '', $invoice->invoice_number) }}</p>
+                            @if($invoice->constant_symbol)
+                            <p><span class="font-medium">Konštantný symbol:</span> {{ $invoice->constant_symbol }}</p>
+                            @endif
                             <p class="mt-4 text-lg font-bold text-gray-900 dark:text-white"><span class="font-medium">Suma na úhradu:</span> {{ number_format($invoice->total_amount, 2, ',', ' ') }} {{ $invoice->currency }}</p>
                         </div>
                     </div>
                 </div>
-                
+
                 <div class="bg-white dark:bg-gray-800 overflow-hidden shadow-sm sm:rounded-lg">
                     <div class="p-6">
                         <h3 class="text-lg font-medium text-gray-900 dark:text-white border-b border-gray-200 dark:border-gray-700 pb-2 mb-4">Dodatočné informácie</h3>
-                        
+
                         @if($invoice->note)
                             <div class="mb-4 p-4 bg-gray-50 dark:bg-gray-700 rounded-lg">
                                 <h4 class="font-medium text-gray-700 dark:text-gray-300 mb-2">Poznámka k faktúre:</h4>
                                 <p class="text-gray-600 dark:text-gray-400">{{ $invoice->note }}</p>
                             </div>
                         @endif
-                        
+
                         <div class="text-sm text-gray-500 dark:text-gray-400 mt-4">
                             <p>Faktúra bola vygenerovaná elektronicky a je platná bez podpisu a pečiatky.</p>
                             <p>Dodávateľ je zapísaný v Obchodnom registri Okresného súdu Bratislava I, oddiel: Sro, vložka č.: 12345/B.</p>
@@ -207,7 +210,7 @@
                     </div>
                 </div>
             </div>
-            
+
             <!-- Actions -->
             <div class="bg-white dark:bg-gray-800 overflow-hidden shadow-sm sm:rounded-lg">
                 <div class="p-6 flex flex-col sm:flex-row justify-between items-center">
@@ -226,7 +229,7 @@
                             Zobraziť PDF
                         </a>
                     </div>
-                    
+
                     <div class="flex space-x-2">
                         <a href="{{ route('invoices.edit', $invoice) }}" class="inline-flex items-center px-4 py-2 bg-green-600 border border-transparent rounded-md font-semibold text-xs text-white uppercase tracking-widest hover:bg-green-500 focus:bg-green-500 active:bg-green-700 focus:outline-none focus:ring-2 focus:ring-green-500 focus:ring-offset-2 dark:focus:ring-offset-gray-800 transition ease-in-out duration-150">
                             <svg xmlns="http://www.w3.org/2000/svg" class="-ml-1 mr-2 h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
