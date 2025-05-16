@@ -84,19 +84,17 @@ class InvoiceController extends Controller
 
     public function show(Invoice $invoice): View
     {
-        $this->invoiceRepository->loadRelations($invoice, ['partner', 'items']);
+        $invoice->load(['partner', 'items']);
 
         return view('invoices.show', ['invoice' => $invoice]);
     }
 
     public function edit(Invoice $invoice): View
     {
-        $this->invoiceRepository->loadRelations($invoice, ['partner', 'items']);
-        $companies = $this->partnerRepository->getAllOrderedByName();
+        $invoice->load(['partner', 'items']);
 
         return view('invoices.edit', [
             'invoice' => $invoice,
-            'companies' => $companies,
         ]);
     }
 
