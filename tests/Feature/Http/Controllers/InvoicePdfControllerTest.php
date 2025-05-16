@@ -33,6 +33,7 @@ class InvoicePdfControllerTest extends TestCase
             'user_id' => $user->id,
             'supplier_company_id' => $company->id,
             'partner_id' => $partner->id,
+            'constant_symbol' => '0308',
         ]);
 
         // Act as the user and try to download the PDF
@@ -65,6 +66,7 @@ class InvoicePdfControllerTest extends TestCase
             'user_id' => $user->id,
             'supplier_company_id' => $company->id,
             'partner_id' => $partner->id,
+            'constant_symbol' => '0308',
         ]);
 
         // Act as the user and try to view the PDF
@@ -96,6 +98,7 @@ class InvoicePdfControllerTest extends TestCase
             'user_id' => $user1->id,
             'supplier_company_id' => $company1->id,
             'partner_id' => $partner->id,
+            'constant_symbol' => '0308',
         ]);
 
         // Create another user

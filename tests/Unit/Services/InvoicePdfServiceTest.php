@@ -33,6 +33,7 @@ class InvoicePdfServiceTest extends TestCase
             'supplier_company_id' => $this->company->id,
             'partner_id' => $this->partner->id,
             'invoice_number' => 'INV-2025-001',
+            'constant_symbol' => '0308',
         ]);
 
         // Create some invoice items

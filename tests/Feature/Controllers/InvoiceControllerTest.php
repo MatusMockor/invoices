@@ -98,6 +98,7 @@ class InvoiceControllerTest extends TestCase
             'due_date' => now()->addDays(14)->format('Y-m-d'),
             'total_amount' => $this->faker->randomFloat(2, 100, 1000),
             'currency' => 'EUR',
+            'constant_symbol' => $this->faker->numerify('####'),
             'note' => $this->faker->sentence,
             'status' => 'draft',
             'ico' => $partner->ico,
@@ -146,6 +147,7 @@ class InvoiceControllerTest extends TestCase
             'due_date' => now()->addDays(14)->format('Y-m-d'),
             'total_amount' => $this->faker->randomFloat(2, 100, 1000),
             'currency' => 'EUR',
+            'constant_symbol' => $this->faker->numerify('####'),
             'note' => $this->faker->sentence,
             'status' => 'draft',
             'ico' => '12345678',
@@ -219,6 +221,7 @@ class InvoiceControllerTest extends TestCase
             'due_date' => now()->addDays(30)->format('Y-m-d'),
             'total_amount' => 500.00,
             'currency' => 'EUR',
+            'constant_symbol' => '0308',
             'note' => 'Updated note',
             'status' => 'paid',
             'ico' => $partner->ico,
@@ -242,6 +245,7 @@ class InvoiceControllerTest extends TestCase
             'invoice_number' => 'INV-UPDATED',
             'note' => 'Updated note',
             'status' => 'paid',
+            'constant_symbol' => '0308',
         ]);
 
         // Assert the invoice item was updated
