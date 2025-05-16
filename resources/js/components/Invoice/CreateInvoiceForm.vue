@@ -6,7 +6,7 @@
       <strong class="font-bold">Chyba!</strong>
       <span class="block sm:inline">Prosím opravte nasledujúce chyby:</span>
       <ul class="mt-3 list-disc list-inside text-sm">
-        <li v-for="(error, index) in errors" :key="index">{{ error }}</li>
+        <li v-for="(error) in errors">{{ error }}</li>
       </ul>
     </div>
 
@@ -36,40 +36,40 @@
               <label for="company_name" class="block text-sm font-medium text-gray-700 dark:text-gray-300">Názov
                 spoločnosti</label>
               <input type="text" v-model="form.company_name" id="company_name" readonly
-                     class="mt-1 block w-full rounded-md border-gray-300 dark:border-gray-700 dark:bg-gray-900 dark:text-gray-300 shadow-sm focus:border-indigo-500 dark:focus:border-indigo-600 focus:ring-indigo-500 dark:focus:ring-indigo-600 sm:text-sm bg-gray-50 dark:bg-gray-800">
+                     class="mt-1 block w-full rounded-md border-gray-300 dark:border-gray-700 dark:bg-gray-900 dark:text-gray-300 shadow-sm focus:border-indigo-500 dark:focus:border-indigo-600 focus:ring-indigo-500 dark:focus:ring-indigo-600 sm:text-sm bg-gray-50">
             </div>
 
             <div>
               <label for="company_address"
                      class="block text-sm font-medium text-gray-700 dark:text-gray-300">Adresa</label>
               <input type="text" v-model="form.company_address" id="company_address" readonly
-                     class="mt-1 block w-full rounded-md border-gray-300 dark:border-gray-700 dark:bg-gray-900 dark:text-gray-300 shadow-sm focus:border-indigo-500 dark:focus:border-indigo-600 focus:ring-indigo-500 dark:focus:ring-indigo-600 sm:text-sm bg-gray-50 dark:bg-gray-800">
+                     class="mt-1 block w-full rounded-md border-gray-300 dark:border-gray-700 dark:bg-gray-900 dark:text-gray-300 shadow-sm focus:border-indigo-500 dark:focus:border-indigo-600 focus:ring-indigo-500 dark:focus:ring-indigo-600 sm:text-sm bg-gray-50">
             </div>
 
             <div>
               <label for="company_city" class="block text-sm font-medium text-gray-700 dark:text-gray-300">Mesto</label>
               <input type="text" v-model="form.company_city" id="company_city" readonly
-                     class="mt-1 block w-full rounded-md border-gray-300 dark:border-gray-700 dark:bg-gray-900 dark:text-gray-300 shadow-sm focus:border-indigo-500 dark:focus:border-indigo-600 focus:ring-indigo-500 dark:focus:ring-indigo-600 sm:text-sm bg-gray-50 dark:bg-gray-800">
+                     class="mt-1 block w-full rounded-md border-gray-300 dark:border-gray-700 dark:bg-gray-900 dark:text-gray-300 shadow-sm focus:border-indigo-500 dark:focus:border-indigo-600 focus:ring-indigo-500 dark:focus:ring-indigo-600 sm:text-sm bg-gray-50">
             </div>
 
             <div>
               <label for="company_postal_code"
                      class="block text-sm font-medium text-gray-700 dark:text-gray-300">PSČ</label>
               <input type="text" v-model="form.company_postal_code" id="company_postal_code" readonly
-                     class="mt-1 block w-full rounded-md border-gray-300 dark:border-gray-700 dark:bg-gray-900 dark:text-gray-300 shadow-sm focus:border-indigo-500 dark:focus:border-indigo-600 focus:ring-indigo-500 dark:focus:ring-indigo-600 sm:text-sm bg-gray-50 dark:bg-gray-800">
+                     class="mt-1 block w-full rounded-md border-gray-300 dark:border-gray-700 dark:bg-gray-900 dark:text-gray-300 shadow-sm focus:border-indigo-500 dark:focus:border-indigo-600 focus:ring-indigo-500 dark:focus:ring-indigo-600 sm:text-sm bg-gray-50">
             </div>
 
             <div>
               <label for="company_dic" class="block text-sm font-medium text-gray-700 dark:text-gray-300">DIČ</label>
               <input type="text" v-model="form.company_dic" id="company_dic" readonly
-                     class="mt-1 block w-full rounded-md border-gray-300 dark:border-gray-700 dark:bg-gray-900 dark:text-gray-300 shadow-sm focus:border-indigo-500 dark:focus:border-indigo-600 focus:ring-indigo-500 dark:focus:ring-indigo-600 sm:text-sm bg-gray-50 dark:bg-gray-800">
+                     class="mt-1 block w-full rounded-md border-gray-300 dark:border-gray-700 dark:bg-gray-900 dark:text-gray-300 shadow-sm focus:border-indigo-500 dark:focus:border-indigo-600 focus:ring-indigo-500 dark:focus:ring-indigo-600 sm:text-sm bg-gray-50">
             </div>
 
             <div>
               <label for="company_ic_dph" class="block text-sm font-medium text-gray-700 dark:text-gray-300">IČ
                 DPH</label>
               <input type="text" v-model="form.company_ic_dph" id="company_ic_dph" readonly
-                     class="mt-1 block w-full rounded-md border-gray-300 dark:border-gray-700 dark:bg-gray-900 dark:text-gray-300 shadow-sm focus:border-indigo-500 dark:focus:border-indigo-600 focus:ring-indigo-500 dark:focus:ring-indigo-600 sm:text-sm bg-gray-50 dark:bg-gray-800">
+                     class="mt-1 block w-full rounded-md border-gray-300 dark:border-gray-700 dark:bg-gray-900 dark:text-gray-300 shadow-sm focus:border-indigo-500 dark:focus:border-indigo-600 focus:ring-indigo-500 dark:focus:ring-indigo-600 sm:text-sm bg-gray-50">
             </div>
           </div>
         </div>
@@ -402,7 +402,7 @@ export default {
 
       // Validate items
       let hasEmptyItems = false;
-      this.form.items.forEach((item, index) => {
+      this.form.items.forEach((item) => {
         if (!item.description) {
           hasEmptyItems = true;
         }
