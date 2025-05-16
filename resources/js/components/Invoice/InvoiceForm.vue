@@ -6,7 +6,7 @@
       <strong class="font-bold">Chyba!</strong>
       <span class="block sm:inline">Prosím opravte nasledujúce chyby:</span>
       <ul class="mt-3 list-disc list-inside text-sm">
-        <li v-for="(error) in errors">{{ error }}</li>
+        <li v-for="(error, index) in errors" :key="index">{{ error }}</li>
       </ul>
     </div>
 
@@ -35,40 +35,41 @@
             <div>
               <label for="company_name" class="block text-sm font-medium text-gray-700 dark:text-gray-300">Názov
                 spoločnosti</label>
-              <input type="text" v-model="form.company_name" id="company_name" readonly
+              <input type="text" v-model="form.company_name" id="company_name" name="company_name" readonly
                      class="mt-1 block w-full rounded-md border-gray-300 dark:border-gray-700 dark:bg-gray-900 dark:text-gray-300 shadow-sm focus:border-indigo-500 dark:focus:border-indigo-600 focus:ring-indigo-500 dark:focus:ring-indigo-600 sm:text-sm bg-gray-50">
             </div>
 
             <div>
               <label for="company_address"
                      class="block text-sm font-medium text-gray-700 dark:text-gray-300">Adresa</label>
-              <input type="text" v-model="form.company_address" id="company_address" readonly
+              <input type="text" v-model="form.company_address" id="company_address" name="company_address" readonly
                      class="mt-1 block w-full rounded-md border-gray-300 dark:border-gray-700 dark:bg-gray-900 dark:text-gray-300 shadow-sm focus:border-indigo-500 dark:focus:border-indigo-600 focus:ring-indigo-500 dark:focus:ring-indigo-600 sm:text-sm bg-gray-50">
             </div>
 
             <div>
               <label for="company_city" class="block text-sm font-medium text-gray-700 dark:text-gray-300">Mesto</label>
-              <input type="text" v-model="form.company_city" id="company_city" readonly
+              <input type="text" v-model="form.company_city" id="company_city" name="company_city" readonly
                      class="mt-1 block w-full rounded-md border-gray-300 dark:border-gray-700 dark:bg-gray-900 dark:text-gray-300 shadow-sm focus:border-indigo-500 dark:focus:border-indigo-600 focus:ring-indigo-500 dark:focus:ring-indigo-600 sm:text-sm bg-gray-50">
             </div>
 
             <div>
               <label for="company_postal_code"
                      class="block text-sm font-medium text-gray-700 dark:text-gray-300">PSČ</label>
-              <input type="text" v-model="form.company_postal_code" id="company_postal_code" readonly
+              <input type="text" v-model="form.company_postal_code" id="company_postal_code" name="company_postal_code"
+                     readonly
                      class="mt-1 block w-full rounded-md border-gray-300 dark:border-gray-700 dark:bg-gray-900 dark:text-gray-300 shadow-sm focus:border-indigo-500 dark:focus:border-indigo-600 focus:ring-indigo-500 dark:focus:ring-indigo-600 sm:text-sm bg-gray-50">
             </div>
 
             <div>
               <label for="company_dic" class="block text-sm font-medium text-gray-700 dark:text-gray-300">DIČ</label>
-              <input type="text" v-model="form.company_dic" id="company_dic" readonly
+              <input type="text" v-model="form.company_dic" id="company_dic" name="company_dic" readonly
                      class="mt-1 block w-full rounded-md border-gray-300 dark:border-gray-700 dark:bg-gray-900 dark:text-gray-300 shadow-sm focus:border-indigo-500 dark:focus:border-indigo-600 focus:ring-indigo-500 dark:focus:ring-indigo-600 sm:text-sm bg-gray-50">
             </div>
 
             <div>
               <label for="company_ic_dph" class="block text-sm font-medium text-gray-700 dark:text-gray-300">IČ
                 DPH</label>
-              <input type="text" v-model="form.company_ic_dph" id="company_ic_dph" readonly
+              <input type="text" v-model="form.company_ic_dph" id="company_ic_dph" name="company_ic_dph" readonly
                      class="mt-1 block w-full rounded-md border-gray-300 dark:border-gray-700 dark:bg-gray-900 dark:text-gray-300 shadow-sm focus:border-indigo-500 dark:focus:border-indigo-600 focus:ring-indigo-500 dark:focus:ring-indigo-600 sm:text-sm bg-gray-50">
             </div>
           </div>
@@ -102,9 +103,10 @@
 
             <div>
               <label for="delivery_date" class="block text-sm font-medium text-gray-700 dark:text-gray-300">Dátum
-                doručenia</label>
+                dodania</label>
               <input type="date" v-model="form.delivery_date" name="delivery_date" id="delivery_date"
-                     class="mt-1 block w-full rounded-md border-gray-300 dark:border-gray-700 dark:bg-gray-900 dark:text-gray-300 shadow-sm focus:border-indigo-500 dark:focus:border-indigo-600 focus:ring-indigo-500 dark:focus:ring-indigo-600 sm:text-sm" required>
+                     class="mt-1 block w-full rounded-md border-gray-300 dark:border-gray-700 dark:bg-gray-900 dark:text-gray-300 shadow-sm focus:border-indigo-500 dark:focus:border-indigo-600 focus:ring-indigo-500 dark:focus:ring-indigo-600 sm:text-sm"
+                     required>
             </div>
 
             <div>
@@ -130,7 +132,8 @@
             </div>
 
             <div>
-              <label for="constant_symbol" class="block text-sm font-medium text-gray-700 dark:text-gray-300">Konštantný symbol</label>
+              <label for="constant_symbol" class="block text-sm font-medium text-gray-700 dark:text-gray-300">Konštantný
+                symbol</label>
               <input type="text" v-model="form.constant_symbol" name="constant_symbol" id="constant_symbol"
                      class="mt-1 block w-full rounded-md border-gray-300 dark:border-gray-700 dark:bg-gray-900 dark:text-gray-300 shadow-sm focus:border-indigo-500 dark:focus:border-indigo-600 focus:ring-indigo-500 dark:focus:ring-indigo-600 sm:text-sm">
             </div>
@@ -183,6 +186,7 @@
                       <input type="text" v-model="item.description" :name="'items['+index+'][description]'"
                              class="item-description border-gray-300 dark:border-gray-700 dark:bg-gray-900 dark:text-gray-300 focus:border-indigo-500 dark:focus:border-indigo-600 focus:ring-indigo-500 dark:focus:ring-indigo-600 rounded-md shadow-sm text-sm"
                              placeholder="Zadajte popis položky" required>
+                      <input v-if="item.id" type="hidden" :name="'items['+index+'][id]'" :value="item.id">
                     </td>
                     <td class="px-6 py-4 whitespace-nowrap">
                       <input type="number" v-model="item.quantity" @input="updateTotal"
@@ -198,12 +202,12 @@
                       <div class="text-xs text-gray-500 dark:text-gray-400 mt-1">Cena s DPH</div>
                     </td>
                     <td class="px-6 py-4 whitespace-nowrap item-total dark:text-gray-300">
-                      {{ getItemTotal(index).toFixed(2) }}
+                      {{ getItemTotal(index).toFixed(2) }} {{ form.currency }}
                     </td>
                     <td class="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
-                      <button type="button"
-                              class="text-red-600 dark:text-red-400 hover:text-red-900 dark:hover:text-red-300 remove-item"
-                              @click="removeItem(index)">Odstrániť
+                      <button type="button" @click="removeItem(index)"
+                              class="text-red-600 dark:text-red-400 hover:text-red-900 dark:hover:text-red-300">
+                        Odstrániť
                       </button>
                     </td>
                   </tr>
@@ -227,14 +231,18 @@
           </div>
 
           <div class="mt-6 text-right">
-            <div class="text-sm text-gray-500 dark:text-gray-400">Cena bez DPH: <span>{{ subtotal.toFixed(2) }}</span>
-              <span>{{ form.currency }}</span></div>
-            <div class="text-sm text-gray-500 dark:text-gray-400">DPH (20%): <span>{{ vat.toFixed(2) }}</span>
-              <span>{{ form.currency }}</span></div>
-            <div class="text-lg font-bold text-gray-900 dark:text-gray-100">Spolu s DPH: <span>{{
-                grandTotal.toFixed(2)
-              }}</span> <span>{{ form.currency }}</span></div>
-            <input type="hidden" v-model="form.total_amount" name="total_amount">
+            <div class="text-sm text-gray-500 dark:text-gray-400">Medzisúčet: <span id="subtotal">{{
+                subtotal.toFixed(2)
+              }}</span> {{ form.currency }}
+            </div>
+            <div class="text-sm text-gray-500 dark:text-gray-400">DPH (20%): <span id="vat">{{ vat.toFixed(2) }}</span>
+              {{ form.currency }}
+            </div>
+            <div class="text-lg font-bold dark:text-gray-300">Spolu: <span id="grand-total">{{
+                total.toFixed(2)
+              }}</span> {{ form.currency }}
+            </div>
+            <input type="hidden" name="total_amount" id="total_amount" :value="total">
           </div>
         </div>
       </div>
@@ -242,52 +250,10 @@
       <div class="flex justify-end">
         <button type="submit"
                 class="inline-flex items-center px-4 py-2 bg-indigo-600 border border-transparent rounded-md font-semibold text-xs text-white uppercase tracking-widest hover:bg-indigo-500 focus:bg-indigo-500 active:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 dark:focus:ring-offset-gray-800 transition ease-in-out duration-150">
-          Vytvoriť faktúru
+          {{ invoiceData ? 'Aktualizovať faktúru' : 'Vytvoriť faktúru' }}
         </button>
       </div>
     </form>
-
-    <!-- Partner Selection Popup -->
-    <div v-if="showPartnerModal" class="fixed inset-0 z-50" @click.self="closePartnerModal">
-      <div ref="partnerDropdown" class="fixed bg-white dark:bg-gray-800 rounded-md shadow-lg overflow-hidden" 
-           :style="dropdownStyle">
-        <div class="p-4 border-b border-gray-200 dark:border-gray-700">
-          <h3 class="text-lg font-medium text-gray-900 dark:text-gray-100">Odberateľ</h3>
-        </div>
-
-        <div class="p-4">
-          <div v-if="partnerLoading" class="flex justify-center items-center py-4">
-            <svg class="animate-spin h-6 w-6 text-indigo-600" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-              <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
-              <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
-            </svg>
-            <span class="ml-2 text-gray-700 dark:text-gray-300">Načítavam údaje o partnerovi...</span>
-          </div>
-
-          <div v-else-if="partnerData" 
-               class="bg-gray-50 dark:bg-gray-700 p-4 rounded-md cursor-pointer hover:bg-gray-100 dark:hover:bg-gray-600 transition-colors"
-               @click="selectPartner">
-            <h4 class="font-bold text-gray-900 dark:text-gray-100">{{ partnerData.name }}</h4>
-            <p class="text-sm text-gray-600 dark:text-gray-400">{{ partnerData.street }}, {{ partnerData.postal_code }} {{ partnerData.city }}</p>
-            <div class="mt-2 text-sm">
-              <p class="text-gray-600 dark:text-gray-400">IČO: {{ partnerData.ico }}</p>
-              <p v-if="partnerData.dic" class="text-gray-600 dark:text-gray-400">DIČ: {{ partnerData.dic }}</p>
-              <p v-if="partnerData.ic_dph" class="text-gray-600 dark:text-gray-400">IČ DPH: {{ partnerData.ic_dph }}</p>
-            </div>
-          </div>
-
-          <div v-else class="text-center py-4">
-            <p class="text-gray-700 dark:text-gray-300">{{ partnerErrorMessage || 'Žiadne údaje o partnerovi neboli nájdené' }}</p>
-          </div>
-        </div>
-
-        <div class="bg-gray-50 dark:bg-gray-700 px-4 py-3 flex justify-end space-x-2">
-          <button type="button" @click="closePartnerModal" class="px-3 py-1.5 border border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-300 rounded hover:bg-gray-50 dark:hover:bg-gray-700 text-sm">
-            Zavrieť
-          </button>
-        </div>
-      </div>
-    </div>
   </div>
 </template>
 
@@ -295,11 +261,8 @@
 import axios from 'axios';
 
 export default {
+  name: 'InvoiceForm',
   props: {
-    fetchCompanyUrl: {
-      type: String,
-      required: true
-    },
     submitUrl: {
       type: String,
       required: true
@@ -308,9 +271,24 @@ export default {
       type: String,
       required: true
     },
+    method: {
+      type: String,
+      default: 'POST'
+    },
+    invoiceData: {
+      type: Object,
+      default: null
+    }
   },
   data() {
     return {
+      errors: [],
+      companyMessage: '',
+      companyMessageClass: '',
+      showPartnerModal: false,
+      partnerSearchQuery: '',
+      partnerSearchResults: [],
+      isLoadingPartners: false,
       form: {
         ico: '',
         company_name: '',
@@ -319,12 +297,11 @@ export default {
         company_postal_code: '',
         company_dic: '',
         company_ic_dph: '',
-        invoice_number: new Date().toISOString().substr(0, 10).replace(/-/g, '') + '-' + Math.floor(1000 + Math.random() * 9000),
-        issue_date: new Date().toISOString().substr(0, 10),
-        due_date: new Date(new Date().setDate(new Date().getDate() + 14)).toISOString().substr(0, 10),
-        delivery_date: new Date().toISOString().substr(0, 10),
+        invoice_number: '',
+        issue_date: this.getCurrentDate(),
+        due_date: this.getDueDate(),
+        delivery_date: this.getCurrentDate(),
         status: 'draft',
-        supplier_company_id: this.currentCompanyId || '',
         currency: 'EUR',
         constant_symbol: '',
         note: '',
@@ -334,132 +311,118 @@ export default {
             quantity: 1,
             unit_price: 0
           }
-        ],
-        total_amount: 0
+        ]
       },
-      errors: [],
-      companyMessage: '',
-      companyMessageClass: '',
       subtotal: 0,
       vat: 0,
-      grandTotal: 0,
-
-      // New properties for partner modal
-      showPartnerModal: false,
-      partnerLoading: false,
-      partnerData: null,
-      partnerErrorMessage: null,
-      dropdownStyle: {
-        top: '0px',
-        left: '0px',
-        width: '500px'
-      }
+      total: 0,
+      vatRate: 0.2
     };
   },
   created() {
-    this.updateTotal();
+    this.initializeForm();
   },
   methods: {
+    initializeForm() {
+      if (this.invoiceData) {
+        // We're in edit mode, populate the form with existing data
+        this.form.ico = this.invoiceData.partner ? this.invoiceData.partner.ico : '';
+        this.form.company_name = this.invoiceData.partner ? this.invoiceData.partner.name : '';
+        this.form.company_address = this.invoiceData.partner ? this.invoiceData.partner.street : '';
+        this.form.company_city = this.invoiceData.partner ? this.invoiceData.partner.city : '';
+        this.form.company_postal_code = this.invoiceData.partner ? this.invoiceData.partner.postal_code : '';
+        this.form.company_dic = this.invoiceData.partner ? this.invoiceData.partner.dic : '';
+        this.form.company_ic_dph = this.invoiceData.partner ? this.invoiceData.partner.ic_dph : '';
+
+        this.form.invoice_number = this.invoiceData.invoice_number || '';
+        this.form.issue_date = this.invoiceData.issue_date || this.getCurrentDate();
+        this.form.due_date = this.invoiceData.due_date || this.getDueDate();
+        this.form.delivery_date = this.invoiceData.delivery_date || this.getCurrentDate();
+        this.form.status = this.invoiceData.status || 'draft';
+        this.form.currency = this.invoiceData.currency || 'EUR';
+        this.form.constant_symbol = this.invoiceData.constant_symbol || '';
+        this.form.note = this.invoiceData.note || '';
+
+        // Clear default items and add existing ones
+        this.form.items = [];
+        if (this.invoiceData.items && this.invoiceData.items.length > 0) {
+          this.invoiceData.items.forEach(item => {
+            this.form.items.push({
+              id: item.id, // Keep track of existing item IDs
+              description: item.description,
+              quantity: item.quantity,
+              unit_price: item.unit_price
+            });
+          });
+        } else {
+          // Add a default empty item if no items exist
+          this.form.items.push({
+            description: '',
+            quantity: 1,
+            unit_price: 0
+          });
+        }
+
+        // Update totals
+        this.updateTotal();
+      }
+    },
+    getCurrentDate() {
+      const now = new Date();
+      return now.toISOString().split('T')[0];
+    },
+    getDueDate() {
+      const now = new Date();
+      now.setDate(now.getDate() + 14); // Default due date is 14 days from now
+      return now.toISOString().split('T')[0];
+    },
     fetchCompanyData() {
-      if (!this.form.ico) {
+      const ico = this.form.ico;
+      if (!ico) {
         this.companyMessage = 'Prosím zadajte IČO';
-        this.companyMessageClass = 'text-red-600 dark:text-red-400';
+        this.companyMessageClass = 'text-red-500';
         return;
       }
 
       this.companyMessage = 'Načítavam údaje...';
-      this.companyMessageClass = 'text-gray-600 dark:text-gray-400';
+      this.companyMessageClass = 'text-gray-500';
 
-      // Show the partner modal and set loading state
-      this.partnerLoading = true;
-      this.showPartnerModal = true;
-      this.partnerData = null;
-      this.partnerErrorMessage = null;
-
-      // Position the dropdown under the ICO field
-      this.$nextTick(() => {
-        this.updateDropdownPosition();
-
-        // Add event listeners for scrolling and resizing
-        window.addEventListener('scroll', this.updateDropdownPosition);
-        window.addEventListener('resize', this.updateDropdownPosition);
-      });
-
-      axios.get(this.fetchCompanyUrl + '?ico=' + this.form.ico)
+      axios.get(`/api/companies/${ico}`)
           .then(response => {
             if (response.data.success) {
-              const data = response.data.data;
-
-              // Store the partner data but don't fill the form yet
-              this.partnerData = data;
-              this.partnerLoading = false;
+              const company = response.data.data;
+              this.form.company_name = company.name;
+              this.form.company_address = company.street;
+              this.form.company_city = company.city;
+              this.form.company_postal_code = company.postal_code;
+              this.form.company_dic = company.dic;
+              this.form.company_ic_dph = company.ic_dph;
 
               this.companyMessage = 'Údaje úspešne načítané';
-              this.companyMessageClass = 'text-green-600 dark:text-green-400';
+              this.companyMessageClass = 'text-green-500';
             } else {
-              this.partnerErrorMessage = response.data.message || 'Nepodarilo sa načítať údaje';
-              this.companyMessage = this.partnerErrorMessage;
-              this.companyMessageClass = 'text-red-600 dark:text-red-400';
-              this.partnerLoading = false;
+              this.companyMessage = response.data.message || 'Nepodarilo sa načítať údaje';
+              this.companyMessageClass = 'text-red-500';
             }
           })
           .catch(error => {
-            this.partnerErrorMessage = 'Chyba pri načítaní údajov';
-            this.companyMessage = this.partnerErrorMessage;
-            this.companyMessageClass = 'text-red-600 dark:text-red-400';
-            this.partnerLoading = false;
-            console.error(error);
+            console.error('Error fetching company data:', error);
+            this.companyMessage = 'Nepodarilo sa načítať údaje';
+            this.companyMessageClass = 'text-red-500';
           });
-    },
-
-    updateDropdownPosition() {
-      if (!this.showPartnerModal) return;
-
-      const icoInput = document.getElementById('ico');
-      if (icoInput) {
-        const rect = icoInput.getBoundingClientRect();
-        this.dropdownStyle = {
-          top: `${rect.bottom + 5}px`,
-          left: `${rect.left}px`,
-          width: '500px'
-        };
-      }
-    },
-
-    selectPartner() {
-      // Fill form fields with the selected partner data
-      if (this.partnerData) {
-        this.form.company_name = this.partnerData.name || '';
-        this.form.company_address = this.partnerData.street || '';
-        this.form.company_city = this.partnerData.city || '';
-        this.form.company_postal_code = this.partnerData.postal_code || '';
-        this.form.company_dic = this.partnerData.dic || '';
-        this.form.company_ic_dph = this.partnerData.ic_dph || '';
-      }
-
-      this.closePartnerModal();
-    },
-
-    closePartnerModal() {
-      this.showPartnerModal = false;
-
-      // Remove event listeners when modal is closed
-      window.removeEventListener('scroll', this.updateDropdownPosition);
-      window.removeEventListener('resize', this.updateDropdownPosition);
     },
     getItemTotal(index) {
       const item = this.form.items[index];
       return item.quantity * item.unit_price;
     },
     updateTotal() {
-      this.grandTotal = this.form.items.reduce((total, item) => {
+      this.total = this.form.items.reduce((total, item) => {
         return total + (item.quantity * item.unit_price);
       }, 0);
 
-      // Calculate subtotal and VAT from the grand total (which now includes VAT)
-      this.subtotal = this.grandTotal / 1.2;
-      this.vat = this.grandTotal - this.subtotal;
-      this.form.total_amount = this.grandTotal;
+      // Calculate subtotal and VAT from the total (which now includes VAT)
+      this.subtotal = this.total / 1.2;
+      this.vat = this.total - this.subtotal;
     },
     addItem() {
       this.form.items.push({
@@ -533,12 +496,21 @@ export default {
       return this.errors.length === 0;
     },
     onSubmit(event) {
-      if (this.validateForm()) {
-        // Form is valid, allow the traditional form submission to proceed
-        return true;
+      if (!this.validateForm()) {
+        event.preventDefault();
+        return false;
       }
-      // Form is invalid, prevent submission
-      event.preventDefault();
+
+      // If we're using PUT method for updates, add the method field
+      if (this.method === 'PUT') {
+        const methodInput = document.createElement('input');
+        methodInput.type = 'hidden';
+        methodInput.name = '_method';
+        methodInput.value = 'PUT';
+        event.target.appendChild(methodInput);
+      }
+
+      return true;
     }
   }
 };
