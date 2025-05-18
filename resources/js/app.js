@@ -1,7 +1,7 @@
 import './bootstrap';
 import {createApp} from 'vue';
 import InvoiceForm from './components/Invoice/InvoiceForm.vue';
-import PartnerForm from './components/PartnerForm.vue';
+import BusinessEntityForm from './components/BusinessEntityForm.vue';
 import CompanyForm from './components/CompanyForm.vue';
 import SettingsDropdown from './components/SettingsDropdown.vue';
 import CompanySwitcher from "./components/CompanySwitcher.vue";
@@ -98,18 +98,18 @@ document.addEventListener('DOMContentLoaded', function() {
     // Toggle sidebar visibility for desktop - persistent preference
     const toggleSidebarDesktopBtn = document.getElementById('toggleSidebarDesktop');
     const mainContent = document.getElementById('main-content');
-    
+
     // Check if sidebar was previously hidden by user
     if (localStorage.getItem('sidebar-hidden') === 'true') {
         sidebar.classList.add('lg:hidden');
         mainContent.classList.remove('lg:ml-64');
     }
-    
+
     if (toggleSidebarDesktopBtn) {
         toggleSidebarDesktopBtn.addEventListener('click', () => {
             sidebar.classList.toggle('lg:hidden');
             mainContent.classList.toggle('lg:ml-64');
-            
+
             // Save preference to localStorage
             if (sidebar.classList.contains('lg:hidden')) {
                 localStorage.setItem('sidebar-hidden', 'true');
@@ -127,7 +127,7 @@ app.component('settings-dropdown', SettingsDropdown);
 // Register Vue components
 app.component('invoice-form', InvoiceForm);
 app.component('company-switcher', CompanySwitcher);
-app.component('partner-form', PartnerForm);
+app.component('business-entity-form', BusinessEntityForm);
 app.component('company-form', CompanyForm);
 
 // Mount Vue app when the DOM is fully loaded

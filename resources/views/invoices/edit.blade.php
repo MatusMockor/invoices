@@ -46,7 +46,7 @@
                         'currency' => $invoice->currency,
                         'constant_symbol' => $invoice->constant_symbol,
                         'note' => $invoice->note,
-                        'partner' => [
+                        'businessEntity' => [
                             'ico' => $invoice->businessEntity->ico,
                             'name' => $invoice->businessEntity->name,
                             'street' => $invoice->businessEntity->street,
@@ -69,4 +69,5 @@
                 </div>
             </div>
         </div>
+    </form>
 </x-app-layout>

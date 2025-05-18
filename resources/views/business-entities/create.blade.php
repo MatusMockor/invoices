@@ -12,7 +12,7 @@
 
     <div class="py-12">
         <div class="max-w-7xl mx-auto sm:px-6 lg:px-8">
-            <business-entity-form fetch-partner-route="{{ route('business-entities.fetch-by-ico') }}"></business-entity-form>
+            <business-entity-form fetch-business-entity-route="{{ route('business-entities.fetch-by-ico') }}"></business-entity-form>
         </div>
     </div>
 </x-app-layout>
