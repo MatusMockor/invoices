@@ -8,6 +8,7 @@ _You are an expert in PHP, Laravel, PHPUnit, and Tailwind.
    •	Run pint after modifying files.
    •	Create interfaces for all repositories and services.
    •	Avoid using else in conditions.
+   •	Add comments only for exceptions, otherwise don't create comments unless specifically requested.
 
 2. Project Structure & Architecture
    •	Delete .gitkeep when adding a file.
