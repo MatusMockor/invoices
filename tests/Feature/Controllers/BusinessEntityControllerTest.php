@@ -2,14 +2,14 @@
 
 namespace Feature\Controllers;
 
-use App\Models\Partner;
+use App\Models\BusinessEntity;
 use App\Models\User;
-use App\Services\Interfaces\PartnerDataService;
+use App\Services\Interfaces\BusinessEntityDataService;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Foundation\Testing\WithFaker;
 use Tests\TestCase;
 
-class PartnerControllerTest extends TestCase
+class BusinessEntityControllerTest extends TestCase
 {
     use RefreshDatabase, WithFaker;
 
@@ -23,12 +23,12 @@ class PartnerControllerTest extends TestCase
     }
 
     /**
-     * Test the index method displays a list of partners.
+     * Test the index method displays a list of business entities.
      */
-    public function test_index_displays_partners_list(): void
+    public function test_index_displays_business_entities_list(): void
     {
-        // Create some partners
-        $partners = Partner::factory()->count(3)->create();
+        // Create some business entities
+        $businessEntities = BusinessEntity::factory()->count(3)->create();
 
         // Make a request to the index endpoint
         $response = $this->get(route('partners.index'));
@@ -39,9 +39,9 @@ class PartnerControllerTest extends TestCase
         // Assert the view has the partners variable
         $response->assertViewHas('partners');
 
-        // Assert the partners are displayed in the response
-        foreach ($partners as $partner) {
-            $response->assertSee($partner->name);
+        // Assert the business entities are displayed in the response
+        foreach ($businessEntities as $businessEntity) {
+            $response->assertSee($businessEntity->name);
         }
     }
 
@@ -57,11 +57,11 @@ class PartnerControllerTest extends TestCase
     }
 
     /**
-     * Test the store method creates a new partner.
+     * Test the store method creates a new business entity.
      */
-    public function test_store_creates_new_partner(): void
+    public function test_store_creates_new_business_entity(): void
     {
-        $partnerData = [
+        $businessEntityData = [
             'name' => $this->faker->company,
             'ico' => $this->faker->numerify('########'),
             'dic' => $this->faker->numerify('##########'),
@@ -76,15 +76,15 @@ class PartnerControllerTest extends TestCase
             'company_type' => 'LLC',
         ];
 
-        $response = $this->post(route('partners.store'), $partnerData);
+        $response = $this->post(route('partners.store'), $businessEntityData);
 
         $response->assertRedirect(route('partners.index'));
         $response->assertSessionHas('success', 'Company was successfully created');
 
-        // Assert the partner was created in the database
-        $this->assertDatabaseHas(Partner::class, [
-            'name' => $partnerData['name'],
-            'ico' => $partnerData['ico'],
+        // Assert the business entity was created in the database
+        $this->assertDatabaseHas(BusinessEntity::class, [
+            'name' => $businessEntityData['name'],
+            'ico' => $businessEntityData['ico'],
         ]);
     }
 
@@ -120,76 +120,76 @@ class PartnerControllerTest extends TestCase
      */
     public function test_edit_displays_form(): void
     {
-        $partner = Partner::factory()->create();
+        $businessEntity = BusinessEntity::factory()->create();
 
-        $response = $this->get(route('partners.edit', $partner));
+        $response = $this->get(route('partners.edit', $businessEntity));
 
         $response->assertStatus(200);
         $response->assertViewIs('partners.edit');
-        $response->assertViewHas('partner', $partner);
+        $response->assertViewHas('partner', $businessEntity);
     }
 
     /**
-     * Test the update method updates a partner.
+     * Test the update method updates a business entity.
      */
-    public function test_update_updates_partner(): void
+    public function test_update_updates_business_entity(): void
     {
-        $partner = Partner::factory()->create();
+        $businessEntity = BusinessEntity::factory()->create();
 
         $updatedData = [
             'name' => 'Updated Company Name',
-            'ico' => $partner->ico,
-            'dic' => $partner->dic,
-            'ic_dph' => $partner->ic_dph,
+            'ico' => $businessEntity->ico,
+            'dic' => $businessEntity->dic,
+            'ic_dph' => $businessEntity->ic_dph,
             'street' => 'Updated Address',
-            'city' => $partner->city,
-            'postal_code' => $partner->postal_code,
-            'country' => $partner->country,
-            'email' => $partner->email,
-            'phone' => $partner->phone,
-            'registration_number' => $partner->registration_number,
-            'company_type' => $partner->company_type,
+            'city' => $businessEntity->city,
+            'postal_code' => $businessEntity->postal_code,
+            'country' => $businessEntity->country,
+            'email' => $businessEntity->email,
+            'phone' => $businessEntity->phone,
+            'registration_number' => $businessEntity->registration_number,
+            'company_type' => $businessEntity->company_type,
         ];
 
-        $response = $this->put(route('partners.update', $partner), $updatedData);
+        $response = $this->put(route('partners.update', $businessEntity), $updatedData);
 
         $response->assertRedirect(route('partners.index'));
         $response->assertSessionHas('success', 'Company data was successfully updated');
 
-        // Assert the partner was updated in the database
-        $this->assertDatabaseHas(Partner::class, [
-            'id' => $partner->id,
+        // Assert the business entity was updated in the database
+        $this->assertDatabaseHas(BusinessEntity::class, [
+            'id' => $businessEntity->id,
             'name' => 'Updated Company Name',
             'street' => 'Updated Address',
         ]);
     }
 
     /**
-     * Test the destroy method deletes a partner.
+     * Test the destroy method deletes a business entity.
      */
-    public function test_destroy_deletes_partner(): void
+    public function test_destroy_deletes_business_entity(): void
     {
-        $partner = Partner::factory()->create();
+        $businessEntity = BusinessEntity::factory()->create();
 
-        $response = $this->delete(route('partners.destroy', $partner));
+        $response = $this->delete(route('partners.destroy', $businessEntity));
 
         $response->assertRedirect(route('partners.index'));
         $response->assertSessionHas('success', 'Company was successfully deleted');
 
-        // Assert the partner was deleted from the database
-        $this->assertDatabaseMissing(Partner::class, [
-            'id' => $partner->id,
+        // Assert the business entity was deleted from the database
+        $this->assertDatabaseMissing(BusinessEntity::class, [
+            'id' => $businessEntity->id,
         ]);
     }
 
     /**
-     * Test the fetchByIco method returns partner data.
+     * Test the fetchByIco method returns business entity data.
      */
-    public function test_fetch_by_ico_returns_partner_data(): void
+    public function test_fetch_by_ico_returns_business_entity_data(): void
     {
-        $partner = Partner::factory()->create();
+        $businessEntity = BusinessEntity::factory()->create();
 
-        $response = $this->getJson(route('partners.fetch-by-ico', ['ico' => $partner->ico]));
+        $response = $this->getJson(route('partners.fetch-by-ico', ['ico' => $businessEntity->ico]));
 
         $response->assertStatus(200);
         $response->assertJsonStructure([
@@ -200,8 +200,8 @@ class PartnerControllerTest extends TestCase
             ],
         ]);
         $response->assertJsonFragment([
-            'name' => $partner->name,
-            'ico' => $partner->ico,
+            'name' => $businessEntity->name,
+            'ico' => $businessEntity->ico,
         ]);
     }
 
@@ -210,9 +210,9 @@ class PartnerControllerTest extends TestCase
      */
     public function test_fetch_by_ico_returns_response_for_nonexistent_ico(): void
     {
-        // Mock the PartnerDataService to return null for a non-existent ICO
-        $partnerDataService = $this->mock(PartnerDataService::class);
-        $partnerDataService->shouldReceive('findOrCreatePartner')
+        // Mock the BusinessEntityDataService to return null for a non-existent ICO
+        $businessEntityDataService = $this->mock(BusinessEntityDataService::class);
+        $businessEntityDataService->shouldReceive('findOrCreateBusinessEntity')
             ->once()
             ->with('99999999')
             ->andReturn(null);

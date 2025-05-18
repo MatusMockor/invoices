@@ -2,21 +2,21 @@
 
 namespace Database\Seeders;
 
-use App\Models\Partner;
+use App\Models\BusinessEntity;
 use Illuminate\Database\Seeder;
 
-class PartnerSeeder extends Seeder
+class BusinessEntitySeeder extends Seeder
 {
     /**
      * Run the database seeds.
      */
     public function run(): void
     {
-        // Create some partners with Slovak data
-        Partner::factory(3)->slovak()->create();
+        // Create some business entities with Slovak data
+        BusinessEntity::factory(3)->slovak()->create();
 
-        // Create a specific partner with known data
-        Partner::factory()->create([
+        // Create a specific business entity with known data
+        BusinessEntity::factory()->create([
             'name' => 'ABC Corporation',
             'ico' => '87654321',
             'dic' => '2023987654',
@@ -27,7 +27,7 @@ class PartnerSeeder extends Seeder
             'country' => 'Slovakia',
         ]);
 
-        // Create some random partners
-        Partner::factory(5)->create();
+        // Create some random business entities
+        BusinessEntity::factory(5)->create();
     }
 }
