@@ -34,8 +34,8 @@ Route::middleware('auth')->group(function () {
     Route::resource('companies', CompanyController::class);
     Route::post('/companies/{company}/switch', [CompanyController::class, 'switchCompany'])->name('companies.switch');
 
-    Route::resource('partners', BusinessEntityController::class);
-    Route::get('/partners-fetch-by-ico', [BusinessEntityController::class, 'fetchByIco'])->name('partners.fetch-by-ico');
+    Route::resource('business-entities', BusinessEntityController::class);
+    Route::get('/business-entities-fetch-by-ico', [BusinessEntityController::class, 'fetchByIco'])->name('business-entities.fetch-by-ico');
 });
 
 require __DIR__.'/auth.php';

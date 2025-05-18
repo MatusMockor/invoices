@@ -1,10 +1,10 @@
 <?php
 
-namespace App\Http\Requests\Partners;
+namespace App\Http\Requests\BusinessEntities;
 
 use Illuminate\Foundation\Http\FormRequest;
 
-class UpdatePartnerRequest extends FormRequest
+class UpdateBusinessEntityRequest extends FormRequest
 {
     /**
      * Determine if the user is authorized to make this request.

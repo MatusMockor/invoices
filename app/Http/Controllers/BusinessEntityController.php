@@ -2,9 +2,9 @@
 
 namespace App\Http\Controllers;
 
+use App\Http\Requests\BusinessEntities\CreateBusinessEntityRequest;
+use App\Http\Requests\BusinessEntities\UpdateBusinessEntityRequest;
 use App\Http\Requests\Companies\FetchCompanyByIcoRequest;
-use App\Http\Requests\Partners\CreatePartnerRequest;
-use App\Http\Requests\Partners\UpdatePartnerRequest;
 use App\Http\Resources\BusinessEntityResource;
 use App\Models\BusinessEntity;
 use App\Repositories\Interfaces\BusinessEntityRepository;
@@ -24,15 +24,15 @@ class BusinessEntityController extends Controller
     {
         $businessEntities = $this->businessEntityRepository->getAllPaginated();
 
-        return view('partners.index', ['partners' => $businessEntities]);
+        return view('business-entities.index', ['businessEntities' => $businessEntities]);
     }
 
     public function create(): View
     {
-        return view('partners.create');
+        return view('business-entities.create');
     }
 
-    public function store(CreatePartnerRequest $request): RedirectResponse
+    public function store(CreateBusinessEntityRequest $request): RedirectResponse
     {
         $this->businessEntityRepository->create($request->validated());
 
@@ -40,21 +40,21 @@ class BusinessEntityController extends Controller
             ->with('success', 'Company was successfully created');
     }
 
-    public function show(BusinessEntity $partner): View
+    public function show(BusinessEntity $businessEntity): View
     {
-        return view('partners.show', ['partner' => $partner]);
+        return view('business-entities.show', ['businessEntity' => $businessEntity]);
     }
 
-    public function edit(BusinessEntity $partner): View
+    public function edit(BusinessEntity $businessEntity): View
     {
-        return view('partners.edit', ['partner' => $partner]);
+        return view('business-entities.edit', ['businessEntity' => $businessEntity]);
     }
 
-    public function update(UpdatePartnerRequest $request, BusinessEntity $partner): RedirectResponse
+    public function update(UpdateBusinessEntityRequest $request, BusinessEntity $businessEntity): RedirectResponse
     {
-        $this->businessEntityRepository->update($partner, $request->validated());
+        $this->businessEntityRepository->update($businessEntity, $request->validated());
 
-        return redirect()->route('partners.index')
+        return redirect()->route('business-entities.index')
             ->with('success', 'Company data was successfully updated');
     }
 
@@ -62,7 +62,7 @@ class BusinessEntityController extends Controller
     {
         $this->businessEntityRepository->delete($partner);
 
-        return redirect()->route('partners.index')
+        return redirect()->route('business-entities.index')
             ->with('success', 'Company was successfully deleted');
     }
 
