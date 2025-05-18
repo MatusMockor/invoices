@@ -17,22 +17,22 @@ class InvoiceItemRepositoryTest extends TestCase
     protected function setUp(): void
     {
         parent::setUp();
-        $this->repository = new InvoiceItemRepository();
+        $this->repository = new InvoiceItemRepository;
     }
 
     public function test_delete_items_not_in_ids_with_empty_array_deletes_all_items(): void
     {
         // Create an invoice
         $invoice = Invoice::factory()->create();
-        
+
         // Create some invoice items
         $item1 = InvoiceItem::factory()->create(['invoice_id' => $invoice->id]);
         $item2 = InvoiceItem::factory()->create(['invoice_id' => $invoice->id]);
         $item3 = InvoiceItem::factory()->create(['invoice_id' => $invoice->id]);
-        
+
         // Call the method with an empty array
         $result = $this->repository->deleteItemsNotInIds($invoice->id, []);
-        
+
         // Assert that all items were deleted
         $this->assertTrue($result);
         $this->assertDatabaseMissing(InvoiceItem::class, ['id' => $item1->id]);
@@ -44,15 +44,15 @@ class InvoiceItemRepositoryTest extends TestCase
     {
         // Create an invoice
         $invoice = Invoice::factory()->create();
-        
+
         // Create some invoice items
         $item1 = InvoiceItem::factory()->create(['invoice_id' => $invoice->id]);
         $item2 = InvoiceItem::factory()->create(['invoice_id' => $invoice->id]);
         $item3 = InvoiceItem::factory()->create(['invoice_id' => $invoice->id]);
-        
+
         // Call the method with some IDs
         $result = $this->repository->deleteItemsNotInIds($invoice->id, [$item1->id, $item3->id]);
-        
+
         // Assert that only the items not in the list were deleted
         $this->assertTrue($result);
         $this->assertDatabaseHas(InvoiceItem::class, ['id' => $item1->id]);
