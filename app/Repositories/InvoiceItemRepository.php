@@ -33,9 +33,9 @@ class InvoiceItemRepository implements InvoiceItemRepositoryContract
     {
         $query = InvoiceItem::query()->where('invoice_id', $invoiceId);
 
-        if (! empty($itemIds)) {
-            $query->whereNotIn('id', $itemIds);
-        }
+        // Always apply whereNotIn condition, even if $itemIds is empty
+        // This will delete all items for the invoice if no IDs are provided
+        $query->whereNotIn('id', $itemIds);
 
         return $query->delete();
     }
