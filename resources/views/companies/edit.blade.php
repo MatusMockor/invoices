@@ -13,7 +13,7 @@
                 :initial-data="{{ Illuminate\Support\Js::from($company) }}"
                 submit-route="{{ route('companies.update', $company) }}"
                 cancel-route="{{ route('companies.index') }}"
-                fetch-partner-route="{{ route('business-entities.fetch-by-ico') }}"
+                fetch-business-entity-route="{{ route('business-entities.fetch-by-ico') }}"
                 submit-button-text="{{ __('Update Company') }}"
                 :errors="{{ Illuminate\Support\Js::from($errors->get('*')) }}"
             ></company-form>

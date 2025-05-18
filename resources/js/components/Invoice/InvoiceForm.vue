@@ -285,10 +285,10 @@ export default {
       errors: [],
       companyMessage: '',
       companyMessageClass: '',
-      showPartnerModal: false,
-      partnerSearchQuery: '',
-      partnerSearchResults: [],
-      isLoadingPartners: false,
+      showBusinessEntityModal: false,
+      businessEntitySearchQuery: '',
+      businessEntitySearchResults: [],
+      isLoadingBusinessEntities: false,
       form: {
         ico: '',
         company_name: '',
@@ -326,13 +326,13 @@ export default {
     initializeForm() {
       if (this.invoiceData) {
         // We're in edit mode, populate the form with existing data
-        this.form.ico = this.invoiceData.partner ? this.invoiceData.partner.ico : '';
-        this.form.company_name = this.invoiceData.partner ? this.invoiceData.partner.name : '';
-        this.form.company_address = this.invoiceData.partner ? this.invoiceData.partner.street : '';
-        this.form.company_city = this.invoiceData.partner ? this.invoiceData.partner.city : '';
-        this.form.company_postal_code = this.invoiceData.partner ? this.invoiceData.partner.postal_code : '';
-        this.form.company_dic = this.invoiceData.partner ? this.invoiceData.partner.dic : '';
-        this.form.company_ic_dph = this.invoiceData.partner ? this.invoiceData.partner.ic_dph : '';
+        this.form.ico = this.invoiceData.businessEntity ? this.invoiceData.businessEntity.ico : '';
+        this.form.company_name = this.invoiceData.businessEntity ? this.invoiceData.businessEntity.name : '';
+        this.form.company_address = this.invoiceData.businessEntity ? this.invoiceData.businessEntity.street : '';
+        this.form.company_city = this.invoiceData.businessEntity ? this.invoiceData.businessEntity.city : '';
+        this.form.company_postal_code = this.invoiceData.businessEntity ? this.invoiceData.businessEntity.postal_code : '';
+        this.form.company_dic = this.invoiceData.businessEntity ? this.invoiceData.businessEntity.dic : '';
+        this.form.company_ic_dph = this.invoiceData.businessEntity ? this.invoiceData.businessEntity.ic_dph : '';
 
         this.form.invoice_number = this.invoiceData.invoice_number || '';
         this.form.issue_date = this.invoiceData.issue_date || this.getCurrentDate();
