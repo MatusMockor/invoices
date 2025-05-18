@@ -2,20 +2,20 @@
     <x-slot name="header">
         <div class="flex justify-between items-center">
             <h2 class="font-semibold text-xl text-gray-800 dark:text-gray-200 leading-tight">
-                {{ __('Edit Partner') }}: {{ $partner->name }}
+                {{ __('Edit Business Entity') }}: {{ $businessEntity->name }}
             </h2>
-            <a href="{{ route('partners.index') }}" class="inline-flex items-center px-4 py-2 bg-gray-800 dark:bg-gray-200 border border-transparent rounded-md font-semibold text-xs text-white dark:text-gray-800 uppercase tracking-widest hover:bg-gray-700 dark:hover:bg-white focus:bg-gray-700 dark:focus:bg-white active:bg-gray-900 dark:active:bg-gray-300 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 dark:focus:ring-offset-gray-800 transition ease-in-out duration-150">
-                {{ __('Back to Partners') }}
+            <a href="{{ route('business-entities.index') }}" class="inline-flex items-center px-4 py-2 bg-gray-800 dark:bg-gray-200 border border-transparent rounded-md font-semibold text-xs text-white dark:text-gray-800 uppercase tracking-widest hover:bg-gray-700 dark:hover:bg-white focus:bg-gray-700 dark:focus:bg-white active:bg-gray-900 dark:active:bg-gray-300 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 dark:focus:ring-offset-gray-800 transition ease-in-out duration-150">
+                {{ __('Back to Business Entities') }}
             </a>
         </div>
     </x-slot>
 
     <div class="py-12">
         <div class="max-w-7xl mx-auto sm:px-6 lg:px-8">
-            <form method="POST" action="{{ route('partners.update', $partner) }}" class="space-y-8">
+            <form method="POST" action="{{ route('business-entities.update', $businessEntity) }}" class="space-y-8">
                 @csrf
                 @method('PUT')
-                
+
                 <!-- Basic Information Card -->
                 <div class="bg-white dark:bg-gray-800 shadow-md rounded-lg overflow-hidden">
                     <div class="p-6 border-b border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-900">
@@ -23,26 +23,26 @@
                             <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-2 text-indigo-500" viewBox="0 0 20 20" fill="currentColor">
                                 <path d="M13 6a3 3 0 11-6 0 3 3 0 016 0zM18 8a2 2 0 11-4 0 2 2 0 014 0zM14 15a4 4 0 00-8 0v3h8v-3zM6 8a2 2 0 11-4 0 2 2 0 014 0zM16 18v-3a5.972 5.972 0 00-.75-2.906A3.005 3.005 0 0119 15v3h-3zM4.75 12.094A5.973 5.973 0 004 15v3H1v-3a3 3 0 013.75-2.906z" />
                             </svg>
-                            {{ __('Partner Basic Information') }}
+                            {{ __('Business Entity Basic Information') }}
                         </h3>
-                        <p class="mt-1 text-sm text-gray-500 dark:text-gray-400">{{ __('Update the basic details of your partner.') }}</p>
+                        <p class="mt-1 text-sm text-gray-500 dark:text-gray-400">{{ __('Update the basic details of your business entity.') }}</p>
                     </div>
                     <div class="p-6 bg-white dark:bg-gray-800 space-y-6">
                         <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
                             <div>
                                 <x-input-label for="name" :value="__('Company Name *')" class="font-semibold" />
-                                <x-text-input id="name" class="block mt-1 w-full" type="text" name="name" :value="old('name', $partner->name)" required autofocus />
+                                <x-text-input id="name" class="block mt-1 w-full" type="text" name="name" :value="old('name', $businessEntity->name)" required autofocus />
                                 <x-input-error :messages="$errors->get('name')" class="mt-2" />
                             </div>
-                            
+
                             <div>
                                 <x-input-label for="ico" :value="__('IČO *')" class="font-semibold" />
-                                <x-text-input id="ico" class="block mt-1 w-full" type="text" name="ico" :value="old('ico', $partner->ico)" required />
+                                <x-text-input id="ico" class="block mt-1 w-full" type="text" name="ico" :value="old('ico', $businessEntity->ico)" required />
                                 <p class="mt-1 text-xs text-gray-500 dark:text-gray-400">{{ __('Company identification number') }}</p>
                                 <x-input-error :messages="$errors->get('ico')" class="mt-2" />
                             </div>
                         </div>
-                        
+
                         <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
                             <div>
                                 <x-input-label for="dic" :value="__('DIČ')" class="font-semibold" />
@@ -50,7 +50,7 @@
                                 <p class="mt-1 text-xs text-gray-500 dark:text-gray-400">{{ __('Tax identification number') }}</p>
                                 <x-input-error :messages="$errors->get('dic')" class="mt-2" />
                             </div>
-                            
+
                             <div>
                                 <x-input-label for="ic_dph" :value="__('IČ DPH')" class="font-semibold" />
                                 <x-text-input id="ic_dph" class="block mt-1 w-full" type="text" name="ic_dph" :value="old('ic_dph', $partner->ic_dph)" />
@@ -60,7 +60,7 @@
                         </div>
                     </div>
                 </div>
-                
+
                 <!-- Address Card -->
                 <div class="bg-white dark:bg-gray-800 shadow-md rounded-lg overflow-hidden">
                     <div class="p-6 border-b border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-900">
@@ -70,7 +70,7 @@
                             </svg>
                             {{ __('Address Information') }}
                         </h3>
-                        <p class="mt-1 text-sm text-gray-500 dark:text-gray-400">{{ __('Update the address details of your partner.') }}</p>
+                        <p class="mt-1 text-sm text-gray-500 dark:text-gray-400">{{ __('Update the address details of your business entity.') }}</p>
                     </div>
                     <div class="p-6 bg-white dark:bg-gray-800 space-y-6">
                         <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
@@ -79,7 +79,7 @@
                                 <x-text-input id="street" class="block mt-1 w-full" type="text" name="street" :value="old('street', $partner->street)" required />
                                 <x-input-error :messages="$errors->get('street')" class="mt-2" />
                             </div>
-                            
+
                             <div class="grid grid-cols-3 gap-4">
                                 <div class="col-span-2">
                                     <x-input-label for="city" :value="__('City *')" class="font-semibold" />
@@ -93,7 +93,7 @@
                                 </div>
                             </div>
                         </div>
-                        
+
                         <div>
                             <x-input-label for="country" :value="__('Country *')" class="font-semibold" />
                             <x-text-input id="country" class="block mt-1 w-full" type="text" name="country" :value="old('country', $partner->country)" required />
@@ -101,7 +101,7 @@
                         </div>
                     </div>
                 </div>
-                
+
                 <!-- Legal Information Card -->
                 <div class="bg-white dark:bg-gray-800 shadow-md rounded-lg overflow-hidden">
                     <div class="p-6 border-b border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-900">
@@ -111,7 +111,7 @@
                             </svg>
                             {{ __('Legal Information') }}
                         </h3>
-                        <p class="mt-1 text-sm text-gray-500 dark:text-gray-400">{{ __('Update the legal details of your partner.') }}</p>
+                        <p class="mt-1 text-sm text-gray-500 dark:text-gray-400">{{ __('Update the legal details of your business entity.') }}</p>
                     </div>
                     <div class="p-6 bg-white dark:bg-gray-800 space-y-6">
                         <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
@@ -125,7 +125,7 @@
                                 <p class="mt-1 text-xs text-gray-500 dark:text-gray-400">{{ __('Legal form of the company') }}</p>
                                 <x-input-error :messages="$errors->get('company_type')" class="mt-2" />
                             </div>
-                            
+
                             <div>
                                 <x-input-label for="registration_number" :value="__('Registračné číslo *')" class="font-semibold" />
                                 <x-text-input id="registration_number" class="block mt-1 w-full" type="text" name="registration_number" :value="old('registration_number', $partner->registration_number)" required />
@@ -135,7 +135,7 @@
                         </div>
                     </div>
                 </div>
-                
+
                 <!-- Submit Button -->
                 <div class="flex items-center justify-end space-x-4">
                     <a href="{{ route('partners.index') }}" class="inline-flex items-center px-4 py-2 bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 rounded-md font-semibold text-xs text-gray-700 dark:text-gray-300 uppercase tracking-widest shadow-sm hover:bg-gray-50 dark:hover:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 dark:focus:ring-offset-gray-800 disabled:opacity-25 transition ease-in-out duration-150">
