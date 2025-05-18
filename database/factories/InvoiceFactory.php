@@ -2,9 +2,9 @@
 
 namespace Database\Factories;
 
+use App\Models\BusinessEntity;
 use App\Models\Company;
 use App\Models\Invoice;
-use App\Models\Partner;
 use App\Models\User;
 use Illuminate\Database\Eloquent\Factories\Factory;
 
@@ -33,7 +33,7 @@ class InvoiceFactory extends Factory
             'issue_date' => $this->faker->dateTimeBetween('-30 days', 'now'),
             'due_date' => $this->faker->dateTimeBetween('now', '+30 days'),
             'delivery_date' => $this->faker->dateTimeBetween('-15 days', '+15 days'),
-            'partner_id' => Partner::factory(),
+            'partner_id' => BusinessEntity::factory(),
             'supplier_company_id' => Company::factory(),
             'total_amount' => $this->faker->randomFloat(2, 100, 10000),
             'currency' => 'EUR',

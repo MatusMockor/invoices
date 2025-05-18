@@ -5,11 +5,11 @@ namespace App\Http\Controllers;
 use App\Http\Requests\Invoices\CreateInvoiceRequest;
 use App\Http\Requests\Invoices\UpdateInvoiceRequest;
 use App\Models\Invoice;
+use App\Repositories\Interfaces\BusinessEntityRepository;
 use App\Repositories\Interfaces\InvoiceItemRepository;
 use App\Repositories\Interfaces\InvoiceRepository;
-use App\Repositories\Interfaces\PartnerRepository;
+use App\Services\Interfaces\BusinessEntityDataService;
 use App\Services\Interfaces\InvoicePdfService;
-use App\Services\Interfaces\PartnerDataService;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Response;
 use Illuminate\Support\Arr;
@@ -19,11 +19,11 @@ use Throwable;
 class InvoiceController extends Controller
 {
     public function __construct(
-        protected PartnerDataService $partnerDataService,
+        protected BusinessEntityDataService $businessEntityDataService,
         protected InvoicePdfService $pdfService,
         protected InvoiceRepository $invoiceRepository,
         protected InvoiceItemRepository $invoiceItemRepository,
-        protected PartnerRepository $partnerRepository
+        protected BusinessEntityRepository $businessEntityRepository
     ) {
         $this->authorizeResource(Invoice::class);
     }
@@ -39,14 +39,14 @@ class InvoiceController extends Controller
 
     public function create(): View
     {
-        $companies = $this->partnerRepository->getAllOrderedByName();
+        $companies = $this->businessEntityRepository->getAllOrderedByName();
 
         return view('invoices.create', ['companies' => $companies]);
     }
 
     public function store(CreateInvoiceRequest $request): RedirectResponse
     {
-        $partner = $this->partnerDataService->findOrCreatePartner($request->ico);
+        $partner = $this->businessEntityDataService->findOrCreateBusinessEntity($request->ico);
 
         if (! $partner) {
             return back()->withErrors(['ico' => 'Company with the given ICO could not be found.'])->withInput();
@@ -99,7 +99,7 @@ class InvoiceController extends Controller
     {
         try {
             // Find or create company based on ICO
-            $partner = $this->partnerDataService->findOrCreatePartner($request->ico);
+            $partner = $this->businessEntityDataService->findOrCreateBusinessEntity($request->ico);
 
             if (! $partner) {
                 return back()->withErrors(['ico' => 'Company with the given ICO could not be found.'])->withInput();

@@ -4,18 +4,18 @@ namespace App\Providers;
 
 use App\Models\Invoice;
 use App\Policies\InvoicePolicy;
+use App\Repositories\BusinessEntityRepository;
+use App\Repositories\Interfaces\BusinessEntityRepository as BusinessEntityRepositoryContract;
 use App\Repositories\Interfaces\InvoiceItemRepository as InvoiceItemRepositoryContract;
 use App\Repositories\Interfaces\InvoiceRepository as InvoiceRepositoryContract;
-use App\Repositories\Interfaces\PartnerRepository as PartnerRepositoryContract;
 use App\Repositories\InvoiceItemRepository as InvoiceItemRepositoryImpl;
 use App\Repositories\InvoiceRepository as InvoiceRepositoryImpl;
-use App\Repositories\PartnerRepository;
 use App\Services\Interfaces\InvoicePdfService as InvoicePdfServiceContract;
-use App\Services\Interfaces\PartnerDataService as PartnerDataServiceContract;
+use App\Services\Interfaces\PartnerDataService as BusinessEntityDataServiceContract;
 use App\Services\Interfaces\PayBySquare as PayBySquareContract;
 use App\Services\Interfaces\ScraperService as ScraperServiceContract;
 use App\Services\InvoicePdfService as InvoicePdfServiceImpl;
-use App\Services\PartnerDataService as PartnerDataServiceImpl;
+use App\Services\PartnerDataService as BusinessEntityDataServiceImpl;
 use App\Services\PayBySquareService;
 use App\Services\ScraperService as ScraperServiceImpl;
 use Illuminate\Support\Facades\Gate;
@@ -29,12 +29,12 @@ class AppServiceProvider extends ServiceProvider
     public function register(): void
     {
         // Register repository interfaces with Contract suffix for aliases
-        $this->app->bind(PartnerRepositoryContract::class, PartnerRepository::class);
+        $this->app->bind(BusinessEntityRepositoryContract::class, BusinessEntityRepository::class);
         $this->app->bind(InvoiceRepositoryContract::class, InvoiceRepositoryImpl::class);
         $this->app->bind(InvoiceItemRepositoryContract::class, InvoiceItemRepositoryImpl::class);
 
         // Register service interfaces with Contract suffix for aliases
-        $this->app->bind(PartnerDataServiceContract::class, PartnerDataServiceImpl::class);
+        $this->app->bind(BusinessEntityDataServiceContract::class, BusinessEntityDataServiceImpl::class);
         $this->app->bind(InvoicePdfServiceContract::class, InvoicePdfServiceImpl::class);
         $this->app->bind(ScraperServiceContract::class, ScraperServiceImpl::class);
         $this->app->bind(PayBySquareContract::class, PayBySquareService::class);

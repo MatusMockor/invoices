@@ -6,25 +6,25 @@ use App\Http\Requests\Companies\FetchCompanyByIcoRequest;
 use App\Http\Requests\Partners\CreatePartnerRequest;
 use App\Http\Requests\Partners\UpdatePartnerRequest;
 use App\Http\Resources\PartnerResource;
-use App\Models\Partner;
-use App\Repositories\Interfaces\PartnerRepository;
-use App\Services\Interfaces\PartnerDataService;
+use App\Models\BusinessEntity;
+use App\Repositories\Interfaces\BusinessEntityRepository;
+use App\Services\Interfaces\BusinessEntityDataService;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\View\View;
 
-class PartnerController extends Controller
+class BusinessEntityController extends Controller
 {
     public function __construct(
-        protected PartnerDataService $partnerDataService,
-        protected PartnerRepository $partnerRepository
+        protected BusinessEntityDataService $businessEntityDataService,
+        protected BusinessEntityRepository $businessEntityRepository
     ) {}
 
     public function index(): View
     {
-        $partners = $this->partnerRepository->getAllPaginated();
+        $businessEntities = $this->businessEntityRepository->getAllPaginated();
 
-        return view('partners.index', ['partners' => $partners]);
+        return view('partners.index', ['partners' => $businessEntities]);
     }
 
     public function create(): View
@@ -34,33 +34,33 @@ class PartnerController extends Controller
 
     public function store(CreatePartnerRequest $request): RedirectResponse
     {
-        $this->partnerRepository->create($request->validated());
+        $this->businessEntityRepository->create($request->validated());
 
         return redirect()->route('partners.index')
             ->with('success', 'Company was successfully created');
     }
 
-    public function show(Partner $partner): View
+    public function show(BusinessEntity $partner): View
     {
         return view('partners.show', ['partner' => $partner]);
     }
 
-    public function edit(Partner $partner): View
+    public function edit(BusinessEntity $partner): View
     {
         return view('partners.edit', ['partner' => $partner]);
     }
 
-    public function update(UpdatePartnerRequest $request, Partner $partner): RedirectResponse
+    public function update(UpdatePartnerRequest $request, BusinessEntity $partner): RedirectResponse
     {
-        $this->partnerRepository->update($partner, $request->validated());
+        $this->businessEntityRepository->update($partner, $request->validated());
 
         return redirect()->route('partners.index')
             ->with('success', 'Company data was successfully updated');
     }
 
-    public function destroy(Partner $partner): RedirectResponse
+    public function destroy(BusinessEntity $partner): RedirectResponse
     {
-        $this->partnerRepository->delete($partner);
+        $this->businessEntityRepository->delete($partner);
 
         return redirect()->route('partners.index')
             ->with('success', 'Company was successfully deleted');
@@ -68,15 +68,15 @@ class PartnerController extends Controller
 
     public function fetchByIco(FetchCompanyByIcoRequest $request): JsonResponse|PartnerResource
     {
-        $partnerData = $this->partnerDataService->findOrCreatePartner($request->input('ico'));
+        $businessEntityData = $this->businessEntityDataService->findOrCreateBusinessEntity($request->input('ico'));
 
-        if (! $partnerData) {
+        if (! $businessEntityData) {
             return response()->json([
                 'success' => false,
                 'message' => 'Company data not found',
             ], 404);
         }
 
-        return new PartnerResource($partnerData);
+        return new PartnerResource($businessEntityData);
     }
 }
