@@ -19,16 +19,37 @@
             <nav class="bg-white border-gray-200 px-4 lg:px-6 py-4 dark:bg-gray-800">
                 <div class="flex flex-wrap justify-between items-center mx-auto max-w-screen-xl">
                     <a href="/" class="flex items-center">
+                        <svg class="h-8 w-8 mr-2 text-gray-800 dark:text-white" viewBox="0 0 50 50" xmlns="http://www.w3.org/2000/svg">
+                            <!-- Invoice document -->
+                            <rect x="10" y="5" width="30" height="40" rx="2" fill="currentColor" fill-opacity="0.2" />
+                            <rect x="15" y="15" width="20" height="2" rx="1" fill="currentColor" />
+                            <rect x="15" y="20" width="20" height="2" rx="1" fill="currentColor" />
+                            <rect x="15" y="25" width="20" height="2" rx="1" fill="currentColor" />
+                            <rect x="15" y="30" width="10" height="2" rx="1" fill="currentColor" />
+
+                            <!-- Dollar sign -->
+                            <path d="M30 35 C30 32, 25 32, 25 35 C25 38, 30 38, 30 41 C30 44, 25 44, 25 41 M27.5 30 L27.5 45" stroke="currentColor" stroke-width="2" stroke-linecap="round" />
+                        </svg>
                         <span class="self-center text-xl font-semibold whitespace-nowrap dark:text-white">Invoice System</span>
                     </a>
                     <div class="flex items-center lg:order-2">
+                        <!-- Dark mode switcher -->
+                        <button id="theme-toggle" data-tooltip-target="tooltip-toggle" type="button" class="text-gray-500 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-700 focus:outline-none focus:ring-4 focus:ring-gray-200 dark:focus:ring-gray-700 rounded-lg text-sm p-2.5 mr-2">
+                            <svg id="theme-toggle-dark-icon" class="hidden w-5 h-5" fill="currentColor" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg"><path d="M17.293 13.293A8 8 0 016.707 2.707a8.001 8.001 0 1010.586 10.586z"></path></svg>
+                            <svg id="theme-toggle-light-icon" class="hidden w-5 h-5" fill="currentColor" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg"><path d="M10 2a1 1 0 011 1v1a1 1 0 11-2 0V3a1 1 0 011-1zm4 8a4 4 0 11-8 0 4 4 0 018 0zm-.464 4.95l.707.707a1 1 0 001.414-1.414l-.707-.707a1 1 0 00-1.414 1.414zm2.12-10.607a1 1 0 010 1.414l-.706.707a1 1 0 11-1.414-1.414l.707-.707a1 1 0 011.414 0zM17 11a1 1 0 100-2h-1a1 1 0 100 2h1zm-7 4a1 1 0 011 1v1a1 1 0 11-2 0v-1a1 1 0 011-1zM5.05 6.464A1 1 0 106.465 5.05l-.708-.707a1 1 0 00-1.414 1.414l.707.707zm1.414 8.486l-.707.707a1 1 0 01-1.414-1.414l.707-.707a1 1 0 011.414 1.414zM4 11a1 1 0 100-2H3a1 1 0 000 2h1z" fill-rule="evenodd" clip-rule="evenodd"></path></svg>
+                        </button>
+                        <div id="tooltip-toggle" role="tooltip" class="absolute z-10 invisible inline-block px-3 py-2 text-sm font-medium text-white transition-opacity duration-300 bg-gray-900 rounded-lg shadow-sm opacity-0 tooltip">
+                            Toggle dark mode
+                            <div class="tooltip-arrow" data-popper-arrow></div>
+                        </div>
+
                         @if (Route::has('login'))
                             @auth
                                 <a href="{{ url('/dashboard') }}" class="text-white bg-primary-700 hover:bg-primary-800 focus:ring-4 focus:ring-primary-300 font-medium rounded-lg text-sm px-5 py-2.5 mr-2 dark:bg-primary-600 dark:hover:bg-primary-700 focus:outline-none dark:focus:ring-primary-800">Dashboard</a>
                             @else
                                 <a href="{{ route('login') }}" class="text-gray-800 dark:text-white hover:bg-gray-50 focus:ring-4 focus:ring-gray-300 font-medium rounded-lg text-sm px-5 py-2.5 mr-2 dark:hover:bg-gray-700 focus:outline-none dark:focus:ring-gray-800">Log in</a>
                                 @if (Route::has('register'))
-                                    <a href="{{ route('register') }}" class="text-white bg-primary-700 hover:bg-primary-800 focus:ring-4 focus:ring-primary-300 font-medium rounded-lg text-sm px-5 py-2.5 mr-2 dark:bg-primary-600 dark:hover:bg-primary-700 focus:outline-none dark:focus:ring-primary-800">Register</a>
+                                    <a href="{{ route('register') }}" class="text-white bg-primary-600 hover:bg-primary-800 focus:ring-4 focus:ring-primary-300 font-medium rounded-lg text-sm px-5 py-2.5 mr-2 shadow-lg border-2 border-primary-600 dark:bg-primary-500 dark:hover:bg-primary-700 dark:border-primary-500 focus:outline-none dark:focus:ring-primary-800">Register</a>
                                 @endif
                             @endauth
                         @endif
@@ -302,7 +323,7 @@
                         <label for="message" class="block mb-2 text-sm font-medium text-gray-900 dark:text-gray-400">Your message</label>
                         <textarea id="message" rows="6" class="block p-2.5 w-full text-sm text-gray-900 bg-gray-50 rounded-lg shadow-sm border border-gray-300 focus:ring-primary-500 focus:border-primary-500 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-primary-500 dark:focus:border-primary-500" placeholder="Leave a comment..."></textarea>
                     </div>
-                    <button type="submit" class="py-3 px-5 text-sm font-medium text-center text-white rounded-lg bg-primary-700 sm:w-fit hover:bg-primary-800 focus:ring-4 focus:outline-none focus:ring-primary-300 dark:bg-primary-600 dark:hover:bg-primary-700 dark:focus:ring-primary-800">Send message</button>
+                    <button type="submit" class="py-3 px-5 text-sm font-medium text-center text-white rounded-lg bg-primary-600 sm:w-fit hover:bg-primary-800 focus:ring-4 focus:outline-none focus:ring-primary-300 shadow-lg border-2 border-primary-600 dark:bg-primary-500 dark:hover:bg-primary-700 dark:border-primary-500 dark:focus:ring-primary-800">Send message</button>
                 </form>
             </div>
         </section>
@@ -313,6 +334,17 @@
                 <div class="md:flex md:justify-between">
                     <div class="mb-6 md:mb-0">
                         <a href="/" class="flex items-center">
+                            <svg class="h-8 w-8 mr-2 text-gray-800 dark:text-white" viewBox="0 0 50 50" xmlns="http://www.w3.org/2000/svg">
+                                <!-- Invoice document -->
+                                <rect x="10" y="5" width="30" height="40" rx="2" fill="currentColor" fill-opacity="0.2" />
+                                <rect x="15" y="15" width="20" height="2" rx="1" fill="currentColor" />
+                                <rect x="15" y="20" width="20" height="2" rx="1" fill="currentColor" />
+                                <rect x="15" y="25" width="20" height="2" rx="1" fill="currentColor" />
+                                <rect x="15" y="30" width="10" height="2" rx="1" fill="currentColor" />
+
+                                <!-- Dollar sign -->
+                                <path d="M30 35 C30 32, 25 32, 25 35 C25 38, 30 38, 30 41 C30 44, 25 44, 25 41 M27.5 30 L27.5 45" stroke="currentColor" stroke-width="2" stroke-linecap="round" />
+                            </svg>
                             <span class="self-center text-2xl font-semibold whitespace-nowrap dark:text-white">Invoice System</span>
                         </a>
                     </div>
@@ -368,6 +400,46 @@
             } else {
                 document.documentElement.classList.remove('dark')
             }
+
+            // Theme toggle button functionality
+            document.addEventListener('DOMContentLoaded', function() {
+                var themeToggleBtn = document.getElementById('theme-toggle');
+                var themeToggleDarkIcon = document.getElementById('theme-toggle-dark-icon');
+                var themeToggleLightIcon = document.getElementById('theme-toggle-light-icon');
+
+                // Change the icons inside the button based on previous settings
+                if (localStorage.getItem('color-theme') === 'dark' || (!('color-theme' in localStorage) && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
+                    themeToggleLightIcon.classList.remove('hidden');
+                } else {
+                    themeToggleDarkIcon.classList.remove('hidden');
+                }
+
+                themeToggleBtn.addEventListener('click', function() {
+                    // Toggle icons inside button
+                    themeToggleDarkIcon.classList.toggle('hidden');
+                    themeToggleLightIcon.classList.toggle('hidden');
+
+                    // If set via local storage previously
+                    if (localStorage.getItem('color-theme')) {
+                        if (localStorage.getItem('color-theme') === 'light') {
+                            document.documentElement.classList.add('dark');
+                            localStorage.setItem('color-theme', 'dark');
+                        } else {
+                            document.documentElement.classList.remove('dark');
+                            localStorage.setItem('color-theme', 'light');
+                        }
+                    } else {
+                        // If NOT set via local storage previously
+                        if (document.documentElement.classList.contains('dark')) {
+                            document.documentElement.classList.remove('dark');
+                            localStorage.setItem('color-theme', 'light');
+                        } else {
+                            document.documentElement.classList.add('dark');
+                            localStorage.setItem('color-theme', 'dark');
+                        }
+                    }
+                });
+            });
         </script>
     </body>
 </html>
