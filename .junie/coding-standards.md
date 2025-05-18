@@ -30,6 +30,7 @@ app/Http/Requests
 
 app/Models
 •	Use fillable.
+•	Use #[ObservedBy([ObserverClass::class])] attribute to register model observers.
 
 1. Testing
    •	Use Laravel Sail to run all tests.
