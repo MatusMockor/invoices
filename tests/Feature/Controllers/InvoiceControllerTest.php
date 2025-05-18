@@ -275,6 +275,11 @@ class InvoiceControllerTest extends TestCase
             'user_id' => auth()->id(),
         ]);
 
+        // Create invoice items
+        $invoiceItems = InvoiceItem::factory()->count(3)->create([
+            'invoice_id' => $invoice->id,
+        ]);
+
         $response = $this->delete(route('invoices.destroy', $invoice));
 
         $response->assertRedirect(route('invoices.index'));
@@ -284,6 +289,13 @@ class InvoiceControllerTest extends TestCase
         $this->assertDatabaseMissing(Invoice::class, [
             'id' => $invoice->id,
         ]);
+
+        // Assert all invoice items were deleted from the database
+        foreach ($invoiceItems as $item) {
+            $this->assertDatabaseMissing(InvoiceItem::class, [
+                'id' => $item->id,
+            ]);
+        }
     }
 
     /**
