@@ -33,7 +33,7 @@
                 <div class="bg-white dark:bg-gray-800 overflow-hidden shadow-sm sm:rounded-lg">
                     <div class="p-6 bg-white dark:bg-gray-800 border-b border-gray-200 dark:border-gray-700">
                         <invoice-form
-                                :fetch-company-url="'{{ route('partners.fetch-by-ico') }}'"
+                                :fetch-company-url="'{{ route('business-entities.fetch-by-ico') }}'"
                                 submit-url="{{ route('invoices.update', $invoice) }}"
                                 csrf-token="{{ csrf_token() }}"
                                 method="PUT"
@@ -47,13 +47,13 @@
                         'constant_symbol' => $invoice->constant_symbol,
                         'note' => $invoice->note,
                         'partner' => [
-                            'ico' => $invoice->partner->ico,
-                            'name' => $invoice->partner->name,
-                            'street' => $invoice->partner->street,
-                            'city' => $invoice->partner->city,
-                            'postal_code' => $invoice->partner->postal_code,
-                            'dic' => $invoice->partner->dic,
-                            'ic_dph' => $invoice->partner->ic_dph
+                            'ico' => $invoice->businessEntity->ico,
+                            'name' => $invoice->businessEntity->name,
+                            'street' => $invoice->businessEntity->street,
+                            'city' => $invoice->businessEntity->city,
+                            'postal_code' => $invoice->businessEntity->postal_code,
+                            'dic' => $invoice->businessEntity->dic,
+                            'ic_dph' => $invoice->businessEntity->ic_dph
                         ],
                         'items' => $invoice->items->map(function($item) {
                             return [

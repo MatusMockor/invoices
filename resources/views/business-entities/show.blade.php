@@ -2,16 +2,16 @@
     <x-slot name="header">
         <div class="flex justify-between items-center">
             <h2 class="font-semibold text-xl text-gray-800 dark:text-gray-200 leading-tight">
-                {{ $partner->name }}
+                {{ $businessEntity->name }}
             </h2>
             <div class="flex space-x-2">
-                <a href="{{ route('partners.edit', $partner) }}" class="inline-flex items-center px-4 py-2 bg-indigo-600 border border-transparent rounded-md font-semibold text-xs text-white uppercase tracking-widest hover:bg-indigo-700 focus:bg-indigo-700 active:bg-indigo-900 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 dark:focus:ring-offset-gray-800 transition ease-in-out duration-150">
+                <a href="{{ route('business-entities.edit', $businessEntity) }}" class="inline-flex items-center px-4 py-2 bg-indigo-600 border border-transparent rounded-md font-semibold text-xs text-white uppercase tracking-widest hover:bg-indigo-700 focus:bg-indigo-700 active:bg-indigo-900 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 dark:focus:ring-offset-gray-800 transition ease-in-out duration-150">
                     <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 mr-1" viewBox="0 0 20 20" fill="currentColor">
                         <path d="M13.586 3.586a2 2 0 112.828 2.828l-.793.793-2.828-2.828.793-.793zM11.379 5.793L3 14.172V17h2.828l8.38-8.379-2.83-2.828z" />
                     </svg>
                     {{ __('Edit') }}
                 </a>
-                <form method="POST" action="{{ route('partners.destroy', $partner) }}" class="inline" onsubmit="return confirm('{{ __('Are you sure you want to delete this partner?') }}');">
+                <form method="POST" action="{{ route('business-entities.destroy', $businessEntity) }}" class="inline" onsubmit="return confirm('{{ __('Are you sure you want to delete this business entity?') }}');">
                     @csrf
                     @method('DELETE')
                     <button type="submit" class="inline-flex items-center px-4 py-2 bg-red-600 border border-transparent rounded-md font-semibold text-xs text-white uppercase tracking-widest hover:bg-red-500 active:bg-red-700 focus:outline-none focus:ring-2 focus:ring-red-500 focus:ring-offset-2 dark:focus:ring-offset-gray-800 transition ease-in-out duration-150">
@@ -21,7 +21,7 @@
                         {{ __('Delete') }}
                     </button>
                 </form>
-                <a href="{{ route('invoices.create', ['company_id' => $partner->id]) }}" class="inline-flex items-center px-4 py-2 bg-green-600 border border-transparent rounded-md font-semibold text-xs text-white uppercase tracking-widest hover:bg-green-500 active:bg-green-700 focus:outline-none focus:ring-2 focus:ring-green-500 focus:ring-offset-2 dark:focus:ring-offset-gray-800 transition ease-in-out duration-150">
+                <a href="{{ route('invoices.create', ['company_id' => $businessEntity->id]) }}" class="inline-flex items-center px-4 py-2 bg-green-600 border border-transparent rounded-md font-semibold text-xs text-white uppercase tracking-widest hover:bg-green-500 active:bg-green-700 focus:outline-none focus:ring-2 focus:ring-green-500 focus:ring-offset-2 dark:focus:ring-offset-gray-800 transition ease-in-out duration-150">
                     <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 mr-1" viewBox="0 0 20 20" fill="currentColor">
                         <path fill-rule="evenodd" d="M10 3a1 1 0 011 1v5h5a1 1 0 110 2h-5v5a1 1 0 11-2 0v-5H4a1 1 0 110-2h5V4a1 1 0 011-1z" clip-rule="evenodd" />
                     </svg>
@@ -39,14 +39,14 @@
                 </div>
             @endif
 
-            <!-- Partner Basic Information -->
+            <!-- Business Entity Basic Information -->
             <div class="bg-white dark:bg-gray-800 shadow-md rounded-lg overflow-hidden mb-6">
                 <div class="px-6 py-4 border-b border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-900">
                     <h3 class="text-lg font-medium text-gray-900 dark:text-white flex items-center">
                         <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-2 text-indigo-500" viewBox="0 0 20 20" fill="currentColor">
                             <path fill-rule="evenodd" d="M4 4a2 2 0 012-2h8a2 2 0 012 2v12a1 1 0 110 2h-3a1 1 0 01-1-1v-2a1 1 0 00-1-1H9a1 1 0 00-1 1v2a1 1 0 01-1 1H4a1 1 0 110-2V4zm3 1h2v2H7V5zm2 4H7v2h2V9zm2-4h2v2h-2V5zm2 4h-2v2h2V9z" clip-rule="evenodd" />
                         </svg>
-                        {{ __('Partner Information') }}
+                        {{ __('Business Entity Information') }}
                     </h3>
                 </div>
                 <div class="p-6">
@@ -56,11 +56,11 @@
                             <h4 class="font-semibold text-base mb-3 text-gray-700 dark:text-gray-300">{{ __('Address') }}</h4>
                             <div class="bg-gray-50 dark:bg-gray-700 p-4 rounded-lg">
                                 <address class="not-italic text-gray-900 dark:text-gray-100">
-                                    @if($partner->street)<div>{{ $partner->street }}</div>@endif
-                                    @if($partner->city || $partner->postal_code)
-                                        <div>{{ $partner->city }} {{ $partner->postal_code }}</div>
+                                    @if($businessEntity->street)<div>{{ $businessEntity->street }}</div>@endif
+                                    @if($businessEntity->city || $businessEntity->postal_code)
+                                        <div>{{ $businessEntity->city }} {{ $businessEntity->postal_code }}</div>
                                     @endif
-                                    @if($partner->country)<div>{{ $partner->country }}</div>@endif
+                                    @if($businessEntity->country)<div>{{ $businessEntity->country }}</div>@endif
                                 </address>
                             </div>
                         </div>
@@ -70,19 +70,19 @@
                             <h4 class="font-semibold text-base mb-3 text-gray-700 dark:text-gray-300">{{ __('Registration Information') }}</h4>
                             <div class="bg-gray-50 dark:bg-gray-700 p-4 rounded-lg">
                                 <dl class="grid grid-cols-2 gap-x-6 gap-y-2">
-                                    @if($partner->ico)
+                                    @if($businessEntity->ico)
                                         <dt class="text-sm font-medium text-gray-500 dark:text-gray-400">{{ __('IČO') }}:</dt>
-                                        <dd class="text-gray-900 dark:text-gray-100">{{ $partner->ico }}</dd>
+                                        <dd class="text-gray-900 dark:text-gray-100">{{ $businessEntity->ico }}</dd>
                                     @endif
 
-                                    @if($partner->dic)
+                                    @if($businessEntity->dic)
                                         <dt class="text-sm font-medium text-gray-500 dark:text-gray-400">{{ __('DIČ') }}:</dt>
-                                        <dd class="text-gray-900 dark:text-gray-100">{{ $partner->dic }}</dd>
+                                        <dd class="text-gray-900 dark:text-gray-100">{{ $businessEntity->dic }}</dd>
                                     @endif
 
-                                    @if($partner->ic_dph)
+                                    @if($businessEntity->ic_dph)
                                         <dt class="text-sm font-medium text-gray-500 dark:text-gray-400">{{ __('IČ DPH') }}:</dt>
-                                        <dd class="text-gray-900 dark:text-gray-100">{{ $partner->ic_dph }}</dd>
+                                        <dd class="text-gray-900 dark:text-gray-100">{{ $businessEntity->ic_dph }}</dd>
                                     @endif
                                 </dl>
                             </div>
@@ -106,13 +106,13 @@
                         <div>
                             <h4 class="font-semibold text-base mb-3 text-gray-700 dark:text-gray-300">{{ __('Company Type') }}</h4>
                             <div class="bg-gray-50 dark:bg-gray-700 p-4 rounded-lg">
-                                <p class="text-gray-900 dark:text-gray-100">{{ $partner->company_type }}</p>
+                                <p class="text-gray-900 dark:text-gray-100">{{ $businessEntity->company_type }}</p>
                             </div>
                         </div>
                         <div>
                             <h4 class="font-semibold text-base mb-3 text-gray-700 dark:text-gray-300">{{ __('Registration Number') }}</h4>
                             <div class="bg-gray-50 dark:bg-gray-700 p-4 rounded-lg">
-                                <p class="text-gray-900 dark:text-gray-100">{{ $partner->registration_number }}</p>
+                                <p class="text-gray-900 dark:text-gray-100">{{ $businessEntity->registration_number }}</p>
                             </div>
                         </div>
                     </div>
@@ -130,7 +130,7 @@
                     </h3>
                 </div>
                 <div class="p-6">
-                    @if($partner->invoices->count() > 0)
+                    @if($businessEntity->invoices->count() > 0)
                         <div class="overflow-x-auto">
                             <table class="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
                                 <thead class="bg-gray-50 dark:bg-gray-700">
@@ -156,7 +156,7 @@
                                     </tr>
                                 </thead>
                                 <tbody class="bg-white dark:bg-gray-800 divide-y divide-gray-200 dark:divide-gray-700">
-                                    @foreach($partner->invoices as $invoice)
+                                    @foreach($businessEntity->invoices as $invoice)
                                         <tr>
                                             <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900 dark:text-gray-100">
                                                 {{ $invoice->invoice_number }}
@@ -191,7 +191,7 @@
                         </div>
                     @else
                         <div class="text-center py-4 text-gray-500 dark:text-gray-400">
-                            {{ __('No invoices found for this partner.') }}
+                            {{ __('No invoices found for this business entity.') }}
                         </div>
                     @endif
                 </div>
