@@ -85,17 +85,17 @@
                         <h3 class="text-lg font-medium text-gray-900 dark:text-white border-b border-gray-200 dark:border-gray-700 pb-2 mb-4">Odberateľ</h3>
 
                         <div class="space-y-2 text-gray-700 dark:text-gray-300">
-                            <p class="font-bold text-lg text-gray-900 dark:text-white">{{ $invoice->partner->name }}</p>
-                            <p>{{ $invoice->partner->street }}</p>
-                            <p>{{ $invoice->partner->postal_code }} {{ $invoice->partner->city }}</p>
-                            <p>{{ $invoice->partner->country }}</p>
+                            <p class="font-bold text-lg text-gray-900 dark:text-white">{{ $invoice->businessEntity->name }}</p>
+                            <p>{{ $invoice->businessEntity->street }}</p>
+                            <p>{{ $invoice->businessEntity->postal_code }} {{ $invoice->businessEntity->city }}</p>
+                            <p>{{ $invoice->businessEntity->country }}</p>
                             <div class="pt-4 border-t border-gray-200 dark:border-gray-700 mt-4">
-                                <p>IČO: {{ $invoice->partner->ico }}</p>
-                                @if($invoice->partner->dic)
-                                    <p>DIČ: {{ $invoice->partner->dic }}</p>
+                                <p>IČO: {{ $invoice->businessEntity->ico }}</p>
+                                @if($invoice->businessEntity->dic)
+                                    <p>DIČ: {{ $invoice->businessEntity->dic }}</p>
                                 @endif
-                                @if($invoice->partner->ic_dph)
-                                    <p>IČ DPH: {{ $invoice->partner->ic_dph }}</p>
+                                @if($invoice->businessEntity->ic_dph)
+                                    <p>IČ DPH: {{ $invoice->businessEntity->ic_dph }}</p>
                                 @endif
                             </div>
                         </div>

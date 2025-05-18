@@ -185,29 +185,29 @@
             <td width="48%" valign="top">
                 <div class="party-title">Odberateľ</div>
                 <div>
-                    <strong>{{ $invoice->partner->name }}</strong><br>
-                    {{ $invoice->partner->street }}<br>
-                    {{ $invoice->partner->postal_code }} {{ $invoice->partner->city }}<br>
+                    <strong>{{ $invoice->businessEntity->name }}</strong><br>
+                    {{ $invoice->businessEntity->street }}<br>
+                    {{ $invoice->businessEntity->postal_code }} {{ $invoice->businessEntity->city }}<br>
                     Slovenská republika<br>
                     <br>
                     <div style="margin-top: 5px; font-size: 8pt; white-space: nowrap;">
-                        <span style="display: inline-block;">IČO: {{ $invoice->partner->ico }}</span>
-                        <span style="margin-left: 10px; display: inline-block;">DIČ: {{ $invoice->partner->dic }}</span>
-                        @if($invoice->partner->ic_dph)
-                            <span style="margin-left: 10px; display: inline-block;">IČ DPH: {{ $invoice->partner->ic_dph }}</span>
+                        <span style="display: inline-block;">IČO: {{ $invoice->businessEntity->ico }}</span>
+                        <span style="margin-left: 10px; display: inline-block;">DIČ: {{ $invoice->businessEntity->dic }}</span>
+                        @if($invoice->businessEntity->ic_dph)
+                            <span style="margin-left: 10px; display: inline-block;">IČ DPH: {{ $invoice->businessEntity->ic_dph }}</span>
                         @endif
                     </div>
-                    @if($invoice->partner->company_type || $invoice->partner->registration_number)
+                    @if($invoice->businessEntity->company_type || $invoice->businessEntity->registration_number)
                     <div style="margin-top: 3px; font-size: 8pt; white-space: nowrap;">
-                        @if($invoice->partner->company_type)
-                            <span style="display: inline-block;">Právna forma: {{ $invoice->partner->company_type }}</span>
+                        @if($invoice->businessEntity->company_type)
+                            <span style="display: inline-block;">Právna forma: {{ $invoice->businessEntity->company_type }}</span>
                         @endif
-                        @if($invoice->partner->registration_number)
+                        @if($invoice->businessEntity->registration_number)
                             <span style="margin-left: 10px; display: inline-block;">
-                                @if($invoice->partner->company_type == 's.r.o.')
-                                    Zápis v OR: {{ $invoice->partner->registration_number }}
+                                @if($invoice->businessEntity->company_type == 's.r.o.')
+                                    Zápis v OR: {{ $invoice->businessEntity->registration_number }}
                                 @else
-                                    Zápis v ŽR: {{ $invoice->partner->registration_number }}
+                                    Zápis v ŽR: {{ $invoice->businessEntity->registration_number }}
                                 @endif
                             </span>
                         @endif

@@ -32,7 +32,7 @@ class InvoicePdfControllerTest extends TestCase
         $invoice = Invoice::factory()->create([
             'user_id' => $user->id,
             'supplier_company_id' => $company->id,
-            'partner_id' => $businessEntity->id,
+            'business_entity_id' => $businessEntity->id,
             'constant_symbol' => '0308',
             'delivery_date' => now(),
         ]);
@@ -66,7 +66,7 @@ class InvoicePdfControllerTest extends TestCase
         $invoice = Invoice::factory()->create([
             'user_id' => $user->id,
             'supplier_company_id' => $company->id,
-            'partner_id' => $businessEntity->id,
+            'business_entity_id' => $businessEntity->id,
             'constant_symbol' => '0308',
             'delivery_date' => now(),
         ]);
@@ -99,7 +99,7 @@ class InvoicePdfControllerTest extends TestCase
         $invoice = Invoice::factory()->create([
             'user_id' => $user1->id,
             'supplier_company_id' => $company1->id,
-            'partner_id' => $businessEntity->id,
+            'business_entity_id' => $businessEntity->id,
             'constant_symbol' => '0308',
             'delivery_date' => now(),
         ]);
