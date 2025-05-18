@@ -36,7 +36,7 @@ class BusinessEntityController extends Controller
     {
         $this->businessEntityRepository->create($request->validated());
 
-        return redirect()->route('partners.index')
+        return redirect()->route('business-entities.index')
             ->with('success', 'Company was successfully created');
     }
 
@@ -58,9 +58,9 @@ class BusinessEntityController extends Controller
             ->with('success', 'Company data was successfully updated');
     }
 
-    public function destroy(BusinessEntity $partner): RedirectResponse
+    public function destroy(BusinessEntity $businessEntity): RedirectResponse
     {
-        $this->businessEntityRepository->delete($partner);
+        $this->businessEntityRepository->delete($businessEntity);
 
         return redirect()->route('business-entities.index')
             ->with('success', 'Company was successfully deleted');
