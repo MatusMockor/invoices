@@ -96,9 +96,68 @@
                         Learn more
                     </a> 
                 </div>
-                <div class="hidden lg:mt-0 lg:col-span-5 lg:flex">
-                    <img src="https://flowbite.s3.amazonaws.com/blocks/marketing-ui/hero/phone-mockup.png" alt="mockup">
-                </div>                
+                <div class="hidden lg:mt-0 lg:col-span-5 lg:flex justify-center items-center">
+                    <!-- Invoice Dashboard Illustration -->
+                    <svg class="w-full h-auto max-w-lg" viewBox="0 0 600 400" xmlns="http://www.w3.org/2000/svg">
+                        <!-- Background -->
+                        <rect x="50" y="50" width="500" height="300" rx="15" fill="#f3f4f6" class="dark:fill-gray-700" />
+
+                        <!-- Dashboard Header -->
+                        <rect x="70" y="70" width="460" height="50" rx="8" fill="#e5e7eb" class="dark:fill-gray-600" />
+                        <circle cx="95" cy="95" r="10" fill="#4f46e5" class="dark:fill-indigo-500" />
+                        <rect x="115" y="90" width="100" height="10" rx="2" fill="#9ca3af" class="dark:fill-gray-400" />
+                        <rect x="400" y="90" width="100" height="10" rx="2" fill="#9ca3af" class="dark:fill-gray-400" />
+
+                        <!-- Left Panel - Invoice List -->
+                        <rect x="70" y="140" width="220" height="190" rx="8" fill="white" class="dark:fill-gray-800" />
+                        <rect x="90" y="160" width="180" height="20" rx="2" fill="#e5e7eb" class="dark:fill-gray-600" />
+
+                        <!-- Invoice Items -->
+                        <rect x="90" y="190" width="180" height="30" rx="4" fill="#f9fafb" class="dark:fill-gray-700" />
+                        <rect x="100" y="200" width="80" height="10" rx="2" fill="#6366f1" class="dark:fill-indigo-400" />
+                        <rect x="190" y="200" width="40" height="10" rx="2" fill="#9ca3af" class="dark:fill-gray-500" />
+
+                        <rect x="90" y="230" width="180" height="30" rx="4" fill="#f9fafb" class="dark:fill-gray-700" />
+                        <rect x="100" y="240" width="80" height="10" rx="2" fill="#6366f1" class="dark:fill-indigo-400" />
+                        <rect x="190" y="240" width="40" height="10" rx="2" fill="#9ca3af" class="dark:fill-gray-500" />
+
+                        <rect x="90" y="270" width="180" height="30" rx="4" fill="#f9fafb" class="dark:fill-gray-700" />
+                        <rect x="100" y="280" width="80" height="10" rx="2" fill="#6366f1" class="dark:fill-indigo-400" />
+                        <rect x="190" y="280" width="40" height="10" rx="2" fill="#9ca3af" class="dark:fill-gray-500" />
+
+                        <!-- Right Panel - Charts & Stats -->
+                        <rect x="310" y="140" width="220" height="90" rx="8" fill="white" class="dark:fill-gray-800" />
+
+                        <!-- Bar Chart -->
+                        <rect x="330" y="160" width="20" height="50" rx="2" fill="#818cf8" class="dark:fill-indigo-400" />
+                        <rect x="360" y="180" width="20" height="30" rx="2" fill="#818cf8" class="dark:fill-indigo-400" />
+                        <rect x="390" y="170" width="20" height="40" rx="2" fill="#818cf8" class="dark:fill-indigo-400" />
+                        <rect x="420" y="150" width="20" height="60" rx="2" fill="#818cf8" class="dark:fill-indigo-400" />
+                        <rect x="450" y="190" width="20" height="20" rx="2" fill="#818cf8" class="dark:fill-indigo-400" />
+                        <rect x="480" y="160" width="20" height="50" rx="2" fill="#818cf8" class="dark:fill-indigo-400" />
+
+                        <!-- Bottom Stats Panels -->
+                        <rect x="310" y="240" width="105" height="90" rx="8" fill="white" class="dark:fill-gray-800" />
+                        <circle cx="362" cy="270" r="20" fill="#f3f4f6" stroke="#4f46e5" stroke-width="4" class="dark:fill-gray-700 dark:stroke-indigo-500" />
+                        <rect x="340" y="300" width="45" height="10" rx="2" fill="#9ca3af" class="dark:fill-gray-500" />
+
+                        <rect x="425" y="240" width="105" height="90" rx="8" fill="white" class="dark:fill-gray-800" />
+                        <rect x="445" y="260" width="65" height="10" rx="2" fill="#9ca3af" class="dark:fill-gray-500" />
+                        <rect x="445" y="280" width="65" height="10" rx="2" fill="#9ca3af" class="dark:fill-gray-500" />
+                        <rect x="445" y="300" width="65" height="10" rx="2" fill="#9ca3af" class="dark:fill-gray-500" />
+
+                        <!-- Floating Invoice -->
+                        <g transform="translate(400, 100) rotate(10)">
+                            <rect x="0" y="0" width="120" height="150" rx="8" fill="white" stroke="#e5e7eb" stroke-width="2" class="dark:fill-gray-800 dark:stroke-gray-600" />
+                            <rect x="10" y="10" width="100" height="15" rx="2" fill="#e5e7eb" class="dark:fill-gray-600" />
+                            <rect x="10" y="35" width="100" height="10" rx="2" fill="#e5e7eb" class="dark:fill-gray-600" />
+                            <rect x="10" y="55" width="100" height="10" rx="2" fill="#e5e7eb" class="dark:fill-gray-600" />
+                            <rect x="10" y="75" width="100" height="10" rx="2" fill="#e5e7eb" class="dark:fill-gray-600" />
+                            <rect x="10" y="95" width="50" height="10" rx="2" fill="#e5e7eb" class="dark:fill-gray-600" />
+                            <rect x="70" y="115" width="40" height="25" rx="4" fill="#4f46e5" class="dark:fill-indigo-500" />
+                        </g>
+                    </svg>
+                </div>
             </div>
         </section>
 
