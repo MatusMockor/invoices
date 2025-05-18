@@ -39,6 +39,7 @@ class UpdateInvoiceRequest extends FormRequest
             'note' => 'nullable|string|max:1000',
             'status' => 'required|string|in:draft,sent,paid,overdue',
             'items' => 'required|array|min:1',
+            'items.*.id' => 'nullable|integer|exists:invoice_items,id',
             'items.*.description' => 'required|string|max:255',
             'items.*.quantity' => 'required|numeric|min:1',
             'items.*.unit_price' => 'required|numeric|min:0',
