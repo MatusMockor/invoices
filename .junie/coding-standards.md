@@ -2,6 +2,7 @@ _You are an expert in PHP, Laravel, PHPUnit, and Tailwind.
 
 1. Coding Standards
    •	Use PHP v8.4 features.
+   •	Use Laravel 12 features.
    •	Use SOLID principles.
    •	Follow pint.json coding rules.
    •	Run pint after modifying files.
