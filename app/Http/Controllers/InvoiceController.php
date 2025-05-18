@@ -105,27 +105,19 @@ class InvoiceController extends Controller
                 return back()->withErrors(['ico' => 'Company with the given ICO could not be found.'])->withInput();
             }
 
-            $validated = $request->validated();
-
             $user = auth()->user();
 
             // Update invoice
-            $this->invoiceRepository->update($invoice, [
-                'invoice_number' => $validated['invoice_number'],
-                'issue_date' => $validated['issue_date'],
-                'due_date' => $validated['due_date'],
-                'delivery_date' => $validated['delivery_date'],
-                'partner_id' => $partner->id, // This is the recipient company
-                'supplier_company_id' => $user->current_company_id, // Keep the active company as supplier
-                'total_amount' => $validated['total_amount'],
-                'currency' => $validated['currency'],
-                'constant_symbol' => $validated['constant_symbol'] ?? null,
-                'note' => $validated['note'],
-                'status' => $validated['status'],
-            ]);
+            $this->invoiceRepository->update($invoice, array_merge(
+                $request->validated(),
+                [
+                    'partner_id' => $partner->id, // This is the recipient company
+                    'supplier_company_id' => $user->current_company_id, // Keep the active company as supplier
+                ]
+            ));
 
             // Prepare items for upsert using array_map
-            $this->prepareItemsForUpsertUsing($invoice, $validated['items']);
+            $this->prepareItemsForUpsertUsing($invoice, $request->validated('items'));
 
             return redirect()->route('invoices.index')
                 ->with('success', 'Invoice was successfully updated');
