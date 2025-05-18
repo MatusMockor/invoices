@@ -2,9 +2,9 @@
 
 namespace Tests\Feature\Http\Controllers;
 
+use App\Models\BusinessEntity;
 use App\Models\Company;
 use App\Models\Invoice;
-use App\Models\Partner;
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
@@ -25,14 +25,14 @@ class InvoicePdfControllerTest extends TestCase
         $user->current_company_id = $company->id;
         $user->save();
 
-        // Create a partner
-        $partner = Partner::factory()->create();
+        // Create a business entity
+        $businessEntity = BusinessEntity::factory()->create();
 
         // Create an invoice
         $invoice = Invoice::factory()->create([
             'user_id' => $user->id,
             'supplier_company_id' => $company->id,
-            'partner_id' => $partner->id,
+            'partner_id' => $businessEntity->id,
             'constant_symbol' => '0308',
             'delivery_date' => now(),
         ]);
@@ -59,14 +59,14 @@ class InvoicePdfControllerTest extends TestCase
         $user->current_company_id = $company->id;
         $user->save();
 
-        // Create a partner
-        $partner = Partner::factory()->create();
+        // Create a business entity
+        $businessEntity = BusinessEntity::factory()->create();
 
         // Create an invoice
         $invoice = Invoice::factory()->create([
             'user_id' => $user->id,
             'supplier_company_id' => $company->id,
-            'partner_id' => $partner->id,
+            'partner_id' => $businessEntity->id,
             'constant_symbol' => '0308',
             'delivery_date' => now(),
         ]);
@@ -92,14 +92,14 @@ class InvoicePdfControllerTest extends TestCase
         $user1->current_company_id = $company1->id;
         $user1->save();
 
-        // Create a partner
-        $partner = Partner::factory()->create();
+        // Create a business entity
+        $businessEntity = BusinessEntity::factory()->create();
 
         // Create an invoice for user1
         $invoice = Invoice::factory()->create([
             'user_id' => $user1->id,
             'supplier_company_id' => $company1->id,
-            'partner_id' => $partner->id,
+            'partner_id' => $businessEntity->id,
             'constant_symbol' => '0308',
             'delivery_date' => now(),
         ]);

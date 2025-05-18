@@ -2,9 +2,9 @@
 
 namespace Feature\Controllers;
 
+use App\Models\BusinessEntity;
 use App\Models\Company;
 use App\Models\Invoice;
-use App\Models\Partner;
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
@@ -23,7 +23,7 @@ class InvoiceAuthorizationTest extends TestCase
 
     protected Invoice $otherInvoice;
 
-    protected Partner $partner;
+    protected BusinessEntity $businessEntity;
 
     protected function setUp(): void
     {
@@ -44,21 +44,21 @@ class InvoiceAuthorizationTest extends TestCase
         // Set the first company as the current company
         $this->user->update(['current_company_id' => $this->company1->id]);
 
-        // Create a partner for invoices
-        $this->partner = Partner::factory()->create();
+        // Create a business entity for invoices
+        $this->businessEntity = BusinessEntity::factory()->create();
 
         // Create an invoice for the current company
         $this->ownInvoice = Invoice::factory()->create([
             'user_id' => $this->user->id,
             'supplier_company_id' => $this->company1->id,
-            'partner_id' => $this->partner->id,
+            'business_entity_id' => $this->businessEntity->id,
         ]);
 
         // Create an invoice for the other company
         $this->otherInvoice = Invoice::factory()->create([
             'user_id' => $this->user->id,
             'supplier_company_id' => $this->company2->id,
-            'partner_id' => $this->partner->id,
+            'business_entity_id' => $this->businessEntity->id,
         ]);
 
         // Authenticate the user
@@ -125,7 +125,7 @@ class InvoiceAuthorizationTest extends TestCase
             'constant_symbol' => '0308',
             'note' => 'Updated note',
             'status' => 'paid',
-            'ico' => $this->partner->ico,
+            'ico' => $this->businessEntity->ico,
             'items' => [
                 [
                     'description' => 'Updated item',
@@ -135,9 +135,9 @@ class InvoiceAuthorizationTest extends TestCase
             ],
         ];
 
-        // Mock the PartnerDataService to return the partner
-        $this->mock(\App\Services\Interfaces\PartnerDataService::class, function ($mock) {
-            $mock->shouldReceive('findOrCreatePartner')->andReturn($this->partner);
+        // Mock the BusinessEntityDataService to return the business entity
+        $this->mock(\App\Services\Interfaces\BusinessEntityDataService::class, function ($mock) {
+            $mock->shouldReceive('findOrCreateBusinessEntity')->andReturn($this->businessEntity);
         });
 
         $response = $this->put(route('invoices.update', $this->ownInvoice), $updatedData);
@@ -161,7 +161,7 @@ class InvoiceAuthorizationTest extends TestCase
             'constant_symbol' => '0308',
             'note' => 'Updated note',
             'status' => 'paid',
-            'ico' => $this->partner->ico,
+            'ico' => $this->businessEntity->ico,
             'items' => [
                 [
                     'description' => 'Updated item',

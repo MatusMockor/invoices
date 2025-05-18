@@ -2,12 +2,12 @@
 
 namespace Feature\Controllers;
 
+use App\Models\BusinessEntity;
 use App\Models\Company;
 use App\Models\Invoice;
 use App\Models\InvoiceItem;
-use App\Models\Partner;
 use App\Models\User;
-use App\Services\Interfaces\PartnerDataService;
+use App\Services\Interfaces\BusinessEntityDataService;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Foundation\Testing\WithFaker;
 use Illuminate\Http\Response;
@@ -41,13 +41,13 @@ class InvoiceControllerTest extends TestCase
      */
     public function test_index_displays_invoices_list(): void
     {
-        // Create a partner
-        $partner = Partner::factory()->create();
+        // Create a business entity
+        $businessEntity = BusinessEntity::factory()->create();
 
         // Create some invoices
         $invoices = Invoice::factory()->count(3)->create([
             'supplier_company_id' => auth()->user()->current_company_id,
-            'partner_id' => $partner->id,
+            'business_entity_id' => $businessEntity->id,
             'user_id' => auth()->id(),
         ]);
 
@@ -71,8 +71,7 @@ class InvoiceControllerTest extends TestCase
      */
     public function test_create_displays_form(): void
     {
-        // Create some partners
-        Partner::factory()->count(3)->create();
+        BusinessEntity::factory()->count(3)->create();
 
         $response = $this->get(route('invoices.create'));
 
@@ -86,11 +85,11 @@ class InvoiceControllerTest extends TestCase
      */
     public function test_store_creates_new_invoice(): void
     {
-        // Mock the PartnerDataService
-        $partnerDataService = Mockery::mock(PartnerDataService::class);
-        $partner = Partner::factory()->create();
-        $partnerDataService->shouldReceive('findOrCreatePartner')->once()->andReturn($partner);
-        $this->app->instance(PartnerDataService::class, $partnerDataService);
+        // Mock the BusinessEntityDataService
+        $businessEntityDataService = Mockery::mock(BusinessEntityDataService::class);
+        $businessEntity = BusinessEntity::factory()->create();
+        $businessEntityDataService->shouldReceive('findOrCreateBusinessEntity')->once()->andReturn($businessEntity);
+        $this->app->instance(BusinessEntityDataService::class, $businessEntityDataService);
 
         $invoiceData = [
             'invoice_number' => 'INV-'.$this->faker->numerify('######'),
@@ -102,7 +101,7 @@ class InvoiceControllerTest extends TestCase
             'constant_symbol' => $this->faker->numerify('####'),
             'note' => $this->faker->sentence,
             'status' => 'draft',
-            'ico' => $partner->ico,
+            'ico' => $businessEntity->ico,
             'items' => [
                 [
                     'description' => $this->faker->sentence,
@@ -120,7 +119,7 @@ class InvoiceControllerTest extends TestCase
         // Assert the invoice was created in the database
         $this->assertDatabaseHas(Invoice::class, [
             'invoice_number' => $invoiceData['invoice_number'],
-            'partner_id' => $partner->id,
+            'business_entity_id' => $businessEntity->id,
             'supplier_company_id' => auth()->user()->current_company_id,
         ]);
 
@@ -137,10 +136,10 @@ class InvoiceControllerTest extends TestCase
      */
     public function test_store_returns_error_for_invalid_partner(): void
     {
-        // Mock the PartnerDataService to return null (partner not found)
-        $partnerDataService = Mockery::mock(PartnerDataService::class);
-        $partnerDataService->shouldReceive('findOrCreatePartner')->once()->andReturn(null);
-        $this->app->instance(PartnerDataService::class, $partnerDataService);
+        // Mock the BusinessEntityDataService to return null (partner not found)
+        $businessEntityDataService = Mockery::mock(BusinessEntityDataService::class);
+        $businessEntityDataService->shouldReceive('findOrCreateBusinessEntity')->once()->andReturn(null);
+        $this->app->instance(BusinessEntityDataService::class, $businessEntityDataService);
 
         $invoiceData = [
             'invoice_number' => 'INV-'.$this->faker->numerify('######'),
@@ -173,13 +172,13 @@ class InvoiceControllerTest extends TestCase
      */
     public function test_show_displays_invoice(): void
     {
-        // Create a partner
-        $partner = Partner::factory()->create();
+        // Create a business entity
+        $businessEntity = BusinessEntity::factory()->create();
 
         // Create an invoice
         $invoice = Invoice::factory()->create([
             'supplier_company_id' => auth()->user()->current_company_id,
-            'partner_id' => $partner->id,
+            'business_entity_id' => $businessEntity->id,
             'user_id' => auth()->id(),
         ]);
 
@@ -204,16 +203,16 @@ class InvoiceControllerTest extends TestCase
      */
     public function test_update_updates_invoice(): void
     {
-        // Mock the PartnerDataService
-        $partnerDataService = Mockery::mock(PartnerDataService::class);
-        $partner = Partner::factory()->create();
-        $partnerDataService->shouldReceive('findOrCreatePartner')->once()->andReturn($partner);
-        $this->app->instance(PartnerDataService::class, $partnerDataService);
+        // Mock the BusinessEntityDataService
+        $businessEntityDataService = Mockery::mock(BusinessEntityDataService::class);
+        $businessEntity = BusinessEntity::factory()->create();
+        $businessEntityDataService->shouldReceive('findOrCreateBusinessEntity')->once()->andReturn($businessEntity);
+        $this->app->instance(BusinessEntityDataService::class, $businessEntityDataService);
 
         // Create an invoice
         $invoice = Invoice::factory()->create([
             'supplier_company_id' => auth()->user()->current_company_id,
-            'partner_id' => $partner->id,
+            'business_entity_id' => $businessEntity->id,
             'user_id' => auth()->id(),
         ]);
 
@@ -227,7 +226,7 @@ class InvoiceControllerTest extends TestCase
             'constant_symbol' => '0308',
             'note' => 'Updated note',
             'status' => 'paid',
-            'ico' => $partner->ico,
+            'ico' => $businessEntity->ico,
             'items' => [
                 [
                     'description' => 'Updated item',
@@ -265,13 +264,13 @@ class InvoiceControllerTest extends TestCase
      */
     public function test_destroy_deletes_invoice(): void
     {
-        // Create a partner
-        $partner = Partner::factory()->create();
+        // Create a business entity
+        $businessEntity = BusinessEntity::factory()->create();
 
         // Create an invoice
         $invoice = Invoice::factory()->create([
             'supplier_company_id' => auth()->user()->current_company_id,
-            'partner_id' => $partner->id,
+            'business_entity_id' => $businessEntity->id,
             'user_id' => auth()->id(),
         ]);
 

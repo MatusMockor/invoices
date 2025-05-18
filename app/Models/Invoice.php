@@ -42,9 +42,9 @@ class Invoice extends Model
         'delivery_date' => 'date',
     ];
 
-    public function partner(): BelongsTo
+    public function businessEntity(): BelongsTo
     {
-        return $this->belongsTo(BusinessEntity::class, 'business_entity_id');
+        return $this->belongsTo(BusinessEntity::class);
     }
 
     public function supplierCompany(): BelongsTo

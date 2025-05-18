@@ -2,9 +2,9 @@
 
 namespace Tests\Feature\Controllers;
 
+use App\Models\BusinessEntity;
 use App\Models\Company;
 use App\Models\Invoice;
-use App\Models\Partner;
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
@@ -34,21 +34,21 @@ class InvoiceCompanySwitchTest extends TestCase
         // Set the first company as the current company
         $user->update(['current_company_id' => $company1->id]);
 
-        // Create a partner for invoices
-        $partner = Partner::factory()->create();
+        // Create a business entity for invoices
+        $businessEntity = BusinessEntity::factory()->create();
 
         // Create an invoice for the first company
         $invoice1 = Invoice::factory()->create([
             'user_id' => $user->id,
             'supplier_company_id' => $company1->id,
-            'partner_id' => $partner->id,
+            'business_entity_id' => $businessEntity->id,
         ]);
 
         // Create an invoice for the second company
         $invoice2 = Invoice::factory()->create([
             'user_id' => $user->id,
             'supplier_company_id' => $company2->id,
-            'partner_id' => $partner->id,
+            'business_entity_id' => $businessEntity->id,
         ]);
 
         // Authenticate the user
@@ -94,21 +94,21 @@ class InvoiceCompanySwitchTest extends TestCase
         // Set the first company as the current company
         $user->update(['current_company_id' => $company1->id]);
 
-        // Create a partner for invoices
-        $partner = Partner::factory()->create();
+        // Create a business entity for invoices
+        $businessEntity = BusinessEntity::factory()->create();
 
         // Create an invoice for the first company
         $invoice1 = Invoice::factory()->create([
             'user_id' => $user->id,
             'supplier_company_id' => $company1->id,
-            'partner_id' => $partner->id,
+            'business_entity_id' => $businessEntity->id,
         ]);
 
         // Create an invoice for the second company
         $invoice2 = Invoice::factory()->create([
             'user_id' => $user->id,
             'supplier_company_id' => $company2->id,
-            'partner_id' => $partner->id,
+            'business_entity_id' => $businessEntity->id,
         ]);
 
         // Authenticate the user
@@ -154,21 +154,21 @@ class InvoiceCompanySwitchTest extends TestCase
         // Set the first company as the current company
         $user->update(['current_company_id' => $company1->id]);
 
-        // Create a partner for invoices
-        $partner = Partner::factory()->create();
+        // Create a business entity for invoices
+        $businessEntity = BusinessEntity::factory()->create();
 
         // Create an invoice for the first company
         $invoice1 = Invoice::factory()->create([
             'user_id' => $user->id,
             'supplier_company_id' => $company1->id,
-            'partner_id' => $partner->id,
+            'business_entity_id' => $businessEntity->id,
         ]);
 
         // Create an invoice for the second company
         $invoice2 = Invoice::factory()->create([
             'user_id' => $user->id,
             'supplier_company_id' => $company2->id,
-            'partner_id' => $partner->id,
+            'business_entity_id' => $businessEntity->id,
         ]);
 
         // Authenticate the user
