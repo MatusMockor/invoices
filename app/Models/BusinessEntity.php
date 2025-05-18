@@ -7,7 +7,7 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 
 /**
- * Partner model representing business partners for invoicing
+ * BusinessEntity model representing business partners for invoicing
  *
  * @property int $id
  * @property string $name Company name
@@ -24,7 +24,7 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
  * @property \Illuminate\Support\Carbon|null $updated_at
  * @property-read \Illuminate\Database\Eloquent\Collection|\App\Models\Invoice[] $invoices
  */
-class Partner extends Model
+class BusinessEntity extends Model
 {
     use HasFactory;
 

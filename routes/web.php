@@ -1,8 +1,8 @@
 <?php
 
+use App\Http\Controllers\BusinessEntityController;
 use App\Http\Controllers\CompanyController;
 use App\Http\Controllers\InvoiceController;
-use App\Http\Controllers\PartnerController;
 use App\Http\Controllers\ProfileController;
 use App\Http\Middleware\EnsureCompanySelected;
 use Illuminate\Support\Facades\Route;
@@ -34,8 +34,8 @@ Route::middleware('auth')->group(function () {
     Route::resource('companies', CompanyController::class);
     Route::post('/companies/{company}/switch', [CompanyController::class, 'switchCompany'])->name('companies.switch');
 
-    Route::resource('partners', PartnerController::class);
-    Route::get('/partners-fetch-by-ico', [PartnerController::class, 'fetchByIco'])->name('partners.fetch-by-ico');
+    Route::resource('partners', BusinessEntityController::class);
+    Route::get('/partners-fetch-by-ico', [BusinessEntityController::class, 'fetchByIco'])->name('partners.fetch-by-ico');
 });
 
 require __DIR__.'/auth.php';

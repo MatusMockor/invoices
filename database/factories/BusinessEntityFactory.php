@@ -2,20 +2,20 @@
 
 namespace Database\Factories;
 
-use App\Models\Partner;
+use App\Models\BusinessEntity;
 use Illuminate\Database\Eloquent\Factories\Factory;
 
 /**
- * @extends \Illuminate\Database\Eloquent\Factories\Factory<\App\Models\Partner>
+ * @extends \Illuminate\Database\Eloquent\Factories\Factory<\App\Models\BusinessEntity>
  */
-class PartnerFactory extends Factory
+class BusinessEntityFactory extends Factory
 {
     /**
      * The name of the factory's corresponding model.
      *
      * @var string
      */
-    protected $model = Partner::class;
+    protected $model = BusinessEntity::class;
 
     /**
      * Define the model's default state.
@@ -41,7 +41,7 @@ class PartnerFactory extends Factory
     }
 
     /**
-     * Indicate that the partner is from Slovakia.
+     * Indicate that the business entity is from Slovakia.
      */
     public function slovak(): Factory
     {
