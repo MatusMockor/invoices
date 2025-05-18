@@ -2,9 +2,9 @@
 
 namespace Tests\Unit\Policies;
 
+use App\Models\BusinessEntity;
 use App\Models\Company;
 use App\Models\Invoice;
-use App\Models\Partner;
 use App\Models\User;
 use App\Policies\InvoicePolicy;
 use Illuminate\Foundation\Testing\RefreshDatabase;
@@ -49,14 +49,14 @@ class InvoicePolicyTest extends TestCase
         ]);
         $user->update(['current_company_id' => $company1->id]);
 
-        // Create a partner for invoices
-        $partner = Partner::factory()->create();
+        // Create a business entity for invoices
+        $partner = BusinessEntity::factory()->create();
 
         // Create an invoice for the current company
         $ownInvoice = Invoice::factory()->create([
             'user_id' => $user->id,
             'supplier_company_id' => $company1->id,
-            'partner_id' => $partner->id,
+            'business_entity_id' => $partner->id,
         ]);
 
         $policy = new InvoicePolicy;
@@ -75,14 +75,14 @@ class InvoicePolicyTest extends TestCase
         ]);
         $user->update(['current_company_id' => $company1->id]);
 
-        // Create a partner for invoices
-        $partner = Partner::factory()->create();
+        // Create a business entity for invoices
+        $partner = BusinessEntity::factory()->create();
 
         // Create an invoice for the other company
         $otherInvoice = Invoice::factory()->create([
             'user_id' => $user->id,
             'supplier_company_id' => $company2->id,
-            'partner_id' => $partner->id,
+            'business_entity_id' => $partner->id,
         ]);
 
         $policy = new InvoicePolicy;
@@ -98,14 +98,14 @@ class InvoicePolicyTest extends TestCase
         ]);
         $user->update(['current_company_id' => $company->id]);
 
-        // Create a partner for invoices
-        $partner = Partner::factory()->create();
+        // Create a business entity for invoices
+        $partner = BusinessEntity::factory()->create();
 
         // Create an invoice for the current company
         $ownInvoice = Invoice::factory()->create([
             'user_id' => $user->id,
             'supplier_company_id' => $company->id,
-            'partner_id' => $partner->id,
+            'business_entity_id' => $partner->id,
         ]);
 
         $policy = new InvoicePolicy;
@@ -124,14 +124,14 @@ class InvoicePolicyTest extends TestCase
         ]);
         $user->update(['current_company_id' => $company1->id]);
 
-        // Create a partner for invoices
-        $partner = Partner::factory()->create();
+        // Create a business entity for invoices
+        $partner = BusinessEntity::factory()->create();
 
         // Create an invoice for the other company
         $otherInvoice = Invoice::factory()->create([
             'user_id' => $user->id,
             'supplier_company_id' => $company2->id,
-            'partner_id' => $partner->id,
+            'business_entity_id' => $partner->id,
         ]);
 
         $policy = new InvoicePolicy;
@@ -147,14 +147,14 @@ class InvoicePolicyTest extends TestCase
         ]);
         $user->update(['current_company_id' => $company->id]);
 
-        // Create a partner for invoices
-        $partner = Partner::factory()->create();
+        // Create a business entity for invoices
+        $partner = BusinessEntity::factory()->create();
 
         // Create an invoice for the current company
         $ownInvoice = Invoice::factory()->create([
             'user_id' => $user->id,
             'supplier_company_id' => $company->id,
-            'partner_id' => $partner->id,
+            'business_entity_id' => $partner->id,
         ]);
 
         $policy = new InvoicePolicy;
@@ -173,14 +173,14 @@ class InvoicePolicyTest extends TestCase
         ]);
         $user->update(['current_company_id' => $company1->id]);
 
-        // Create a partner for invoices
-        $partner = Partner::factory()->create();
+        // Create a business entity for invoices
+        $partner = BusinessEntity::factory()->create();
 
         // Create an invoice for the other company
         $otherInvoice = Invoice::factory()->create([
             'user_id' => $user->id,
             'supplier_company_id' => $company2->id,
-            'partner_id' => $partner->id,
+            'business_entity_id' => $partner->id,
         ]);
 
         $policy = new InvoicePolicy;

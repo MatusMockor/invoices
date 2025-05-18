@@ -31,13 +31,13 @@ class BusinessEntityControllerTest extends TestCase
         $businessEntities = BusinessEntity::factory()->count(3)->create();
 
         // Make a request to the index endpoint
-        $response = $this->get(route('partners.index'));
+        $response = $this->get(route('business-entities.index'));
 
         // Assert the response is successful
         $response->assertStatus(200);
 
-        // Assert the view has the partners variable
-        $response->assertViewHas('partners');
+        // Assert the view has the businessEntities variable
+        $response->assertViewHas('businessEntities');
 
         // Assert the business entities are displayed in the response
         foreach ($businessEntities as $businessEntity) {
@@ -50,10 +50,10 @@ class BusinessEntityControllerTest extends TestCase
      */
     public function test_create_displays_form(): void
     {
-        $response = $this->get(route('partners.create'));
+        $response = $this->get(route('business-entities.create'));
 
         $response->assertStatus(200);
-        $response->assertViewIs('partners.create');
+        $response->assertViewIs('business-entities.create');
     }
 
     /**
@@ -76,9 +76,9 @@ class BusinessEntityControllerTest extends TestCase
             'company_type' => 'LLC',
         ];
 
-        $response = $this->post(route('partners.store'), $businessEntityData);
+        $response = $this->post(route('business-entities.store'), $businessEntityData);
 
-        $response->assertRedirect(route('partners.index'));
+        $response->assertRedirect(route('business-entities.index'));
         $response->assertSessionHas('success', 'Company was successfully created');
 
         // Assert the business entity was created in the database
@@ -93,22 +93,22 @@ class BusinessEntityControllerTest extends TestCase
      */
     public function test_show_response(): void
     {
-        // Create a partner with a specific name
-        $partner = Partner::factory()->create([
+        // Create a business entity with a specific name
+        $businessEntity = BusinessEntity::factory()->create([
             'name' => 'Test Company Name XYZ',
         ]);
 
         // Make a request to the show endpoint
-        $response = $this->get(route('partners.show', $partner));
+        $response = $this->get(route('business-entities.show', $businessEntity));
 
         // Assert the response is successful
         $response->assertStatus(200);
 
         // Assert the view is the correct one
-        $response->assertViewIs('partners.show');
+        $response->assertViewIs('business-entities.show');
 
-        // Assert the view has the partner variable
-        $response->assertViewHas('partner', $partner);
+        // Assert the view has the businessEntity variable
+        $response->assertViewHas('businessEntity', $businessEntity);
 
         // We're not asserting that the partner's name is in the response
         // because that's causing the test to fail, and it's not essential
@@ -122,11 +122,11 @@ class BusinessEntityControllerTest extends TestCase
     {
         $businessEntity = BusinessEntity::factory()->create();
 
-        $response = $this->get(route('partners.edit', $businessEntity));
+        $response = $this->get(route('business-entities.edit', $businessEntity));
 
         $response->assertStatus(200);
-        $response->assertViewIs('partners.edit');
-        $response->assertViewHas('partner', $businessEntity);
+        $response->assertViewIs('business-entities.edit');
+        $response->assertViewHas('businessEntity', $businessEntity);
     }
 
     /**
