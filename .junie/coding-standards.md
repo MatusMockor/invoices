@@ -34,12 +34,13 @@ app/Models
 •	Use #[ObservedBy([ObserverClass::class])] attribute to register model observers.
 
 1. Testing
-   •	Use Laravel Sail to run all tests.
+   •	Use Laravel Sail to run all tests: `./vendor/bin/sail test` or `./vendor/bin/sail artisan test`.
+   •	For specific test files: `./vendor/bin/sail test tests/path/to/TestFile.php`.
    •	Don’t remove tests without approval.
    •	All code must be tested.
    •	Generate a {Model}Factory with each model.
-   •	Use laravel faker or fake() helper function instead of hardcoded values
-   •	When using assertDatabase, specify the table using Model::class
+   •	Use laravel faker or fake() helper function instead of hardcoded values.
+   •	When using assertDatabase, specify the table using Model::class.
 
 2.1 Test Directory Structure
 •	Console: tests/Feature/Console
