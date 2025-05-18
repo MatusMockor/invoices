@@ -70,16 +70,8 @@ class InvoiceController extends Controller
             'status' => $validated['status'],
         ]);
 
-        // Create invoice items
-        foreach ($validated['items'] as $item) {
-            $this->invoiceItemRepository->create([
-                'invoice_id' => $invoice->id,
-                'description' => $item['description'],
-                'quantity' => $item['quantity'],
-                'unit_price' => $item['unit_price'],
-                'total_price' => $item['quantity'] * $item['unit_price'],
-            ]);
-        }
+        // Prepare items for upsert using array_map
+        $this->prepareItemsForUpsertUsing($invoice, $validated['items']);
 
         return redirect()->route('invoices.index')
             ->with('success', 'Invoice was successfully created');
@@ -131,19 +123,8 @@ class InvoiceController extends Controller
                 'status' => $validated['status'],
             ]);
 
-            // Delete old items
-            $this->invoiceItemRepository->deleteByInvoiceId($invoice->id);
-
-            // Create new invoice items
-            foreach ($validated['items'] as $item) {
-                $this->invoiceItemRepository->create([
-                    'invoice_id' => $invoice->id,
-                    'description' => $item['description'],
-                    'quantity' => $item['quantity'],
-                    'unit_price' => $item['unit_price'],
-                    'total_price' => $item['quantity'] * $item['unit_price'],
-                ]);
-            }
+            // Prepare items for upsert using array_map
+            $this->prepareItemsForUpsertUsing($invoice, $validated['items']);
 
             return redirect()->route('invoices.index')
                 ->with('success', 'Invoice was successfully updated');
@@ -179,5 +160,30 @@ class InvoiceController extends Controller
         $this->authorize('view', $invoice);
 
         return $this->pdfService->streamPdf($invoice);
+    }
+
+    protected function prepareItemsForUpsertUsing(Invoice $invoice, $items1): void
+    {
+        $items = array_map(static function ($item) use ($invoice) {
+            $itemData = [
+                'invoice_id' => $invoice->id,
+                'description' => $item['description'],
+                'quantity' => $item['quantity'],
+                'unit_price' => $item['unit_price'],
+                'total_price' => $item['quantity'] * $item['unit_price'],
+            ];
+
+            if (isset($item['id'])) {
+                $itemData['id'] = $item['id'];
+            }
+
+            return $itemData;
+        }, $items1);
+
+        $this->invoiceItemRepository->upsert(
+            $items,
+            ['id'],
+            ['description', 'quantity', 'unit_price', 'total_price']
+        );
     }
 }
