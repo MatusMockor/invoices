@@ -12,6 +12,7 @@ use App\Services\Interfaces\InvoicePdfService;
 use App\Services\Interfaces\PartnerDataService;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Response;
+use Illuminate\Support\Arr;
 use Illuminate\View\View;
 use Throwable;
 
@@ -164,6 +165,15 @@ class InvoiceController extends Controller
 
     protected function prepareItemsForUpsertUsing(Invoice $invoice, $items1): void
     {
+        $itemIds = Arr::pluck(
+            Arr::where($items1, static function (array $item) {
+                return isset($item['id']);
+            }),
+            'id'
+        );
+
+        $this->invoiceItemRepository->deleteItemsNotInIds($invoice->id, $itemIds);
+
         $items = array_map(static function ($item) use ($invoice) {
             $itemData = [
                 'invoice_id' => $invoice->id,
