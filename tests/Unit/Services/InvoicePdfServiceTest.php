@@ -2,10 +2,10 @@
 
 namespace Tests\Unit\Services;
 
+use App\Models\BusinessEntity;
 use App\Models\Company;
 use App\Models\Invoice;
 use App\Models\InvoiceItem;
-use App\Models\Partner;
 use App\Models\User;
 use App\Services\InvoicePdfService;
 use Barryvdh\DomPDF\PDF;
@@ -27,11 +27,11 @@ class InvoicePdfServiceTest extends TestCase
         $this->company = Company::factory()->create([
             'user_id' => $this->user->id,
         ]);
-        $this->partner = Partner::factory()->create();
+        $this->partner = BusinessEntity::factory()->create();
         $this->invoice = Invoice::factory()->create([
             'user_id' => $this->user->id,
             'supplier_company_id' => $this->company->id,
-            'partner_id' => $this->partner->id,
+            'business_entity_id' => $this->partner->id,
             'invoice_number' => 'INV-2025-001',
             'constant_symbol' => '0308',
             'delivery_date' => now(),

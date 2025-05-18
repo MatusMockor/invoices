@@ -151,9 +151,9 @@ class BusinessEntityControllerTest extends TestCase
             'company_type' => $businessEntity->company_type,
         ];
 
-        $response = $this->put(route('partners.update', $businessEntity), $updatedData);
+        $response = $this->put(route('business-entities.update', $businessEntity), $updatedData);
 
-        $response->assertRedirect(route('partners.index'));
+        $response->assertRedirect(route('business-entities.index'));
         $response->assertSessionHas('success', 'Company data was successfully updated');
 
         // Assert the business entity was updated in the database
@@ -171,9 +171,9 @@ class BusinessEntityControllerTest extends TestCase
     {
         $businessEntity = BusinessEntity::factory()->create();
 
-        $response = $this->delete(route('partners.destroy', $businessEntity));
+        $response = $this->delete(route('business-entities.destroy', $businessEntity));
 
-        $response->assertRedirect(route('partners.index'));
+        $response->assertRedirect(route('business-entities.index'));
         $response->assertSessionHas('success', 'Company was successfully deleted');
 
         // Assert the business entity was deleted from the database
@@ -189,7 +189,7 @@ class BusinessEntityControllerTest extends TestCase
     {
         $businessEntity = BusinessEntity::factory()->create();
 
-        $response = $this->getJson(route('partners.fetch-by-ico', ['ico' => $businessEntity->ico]));
+        $response = $this->getJson(route('business-entities.fetch-by-ico', ['ico' => $businessEntity->ico]));
 
         $response->assertStatus(200);
         $response->assertJsonStructure([
@@ -217,7 +217,7 @@ class BusinessEntityControllerTest extends TestCase
             ->with('99999999')
             ->andReturn(null);
 
-        $response = $this->getJson(route('partners.fetch-by-ico', ['ico' => '99999999']));
+        $response = $this->getJson(route('business-entities.fetch-by-ico', ['ico' => '99999999']));
 
         $response->assertStatus(404);
         $response->assertJson([
