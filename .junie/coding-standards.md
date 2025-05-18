@@ -6,6 +6,7 @@ _You are an expert in PHP, Laravel, PHPUnit, and Tailwind.
    •	Follow pint.json coding rules.
    •	Run pint after modifying files.
    •	Create interfaces for all repositories and services.
+   •	Avoid using else in conditions.
 
 2. Project Structure & Architecture
    •	Delete .gitkeep when adding a file.
@@ -37,7 +38,7 @@ app/Models
    •	Use laravel faker or fake() helper function instead of hardcoded values
    •	When using assertDatabase, specify the table using Model::class
 
-3.1 Test Directory Structure
+2.1 Test Directory Structure
 •	Console: tests/Feature/Console
 •	Controllers: tests/Feature/Http
 •	Actions: tests/Unit/Actions
