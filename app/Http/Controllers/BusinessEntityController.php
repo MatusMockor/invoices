@@ -5,7 +5,7 @@ namespace App\Http\Controllers;
 use App\Http\Requests\Companies\FetchCompanyByIcoRequest;
 use App\Http\Requests\Partners\CreatePartnerRequest;
 use App\Http\Requests\Partners\UpdatePartnerRequest;
-use App\Http\Resources\PartnerResource;
+use App\Http\Resources\BusinessEntityResource;
 use App\Models\BusinessEntity;
 use App\Repositories\Interfaces\BusinessEntityRepository;
 use App\Services\Interfaces\BusinessEntityDataService;
@@ -66,7 +66,7 @@ class BusinessEntityController extends Controller
             ->with('success', 'Company was successfully deleted');
     }
 
-    public function fetchByIco(FetchCompanyByIcoRequest $request): JsonResponse|PartnerResource
+    public function fetchByIco(FetchCompanyByIcoRequest $request): JsonResponse|BusinessEntityResource
     {
         $businessEntityData = $this->businessEntityDataService->findOrCreateBusinessEntity($request->input('ico'));
 
@@ -77,6 +77,6 @@ class BusinessEntityController extends Controller
             ], 404);
         }
 
-        return new PartnerResource($businessEntityData);
+        return new BusinessEntityResource($businessEntityData);
     }
 }

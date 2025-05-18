@@ -10,12 +10,12 @@ use App\Repositories\Interfaces\InvoiceItemRepository as InvoiceItemRepositoryCo
 use App\Repositories\Interfaces\InvoiceRepository as InvoiceRepositoryContract;
 use App\Repositories\InvoiceItemRepository as InvoiceItemRepositoryImpl;
 use App\Repositories\InvoiceRepository as InvoiceRepositoryImpl;
+use App\Services\BusinessEntityDataService as BusinessEntityDataServiceImpl;
+use App\Services\Interfaces\BusinessEntityDataService as BusinessEntityDataServiceContract;
 use App\Services\Interfaces\InvoicePdfService as InvoicePdfServiceContract;
-use App\Services\Interfaces\PartnerDataService as BusinessEntityDataServiceContract;
 use App\Services\Interfaces\PayBySquare as PayBySquareContract;
 use App\Services\Interfaces\ScraperService as ScraperServiceContract;
 use App\Services\InvoicePdfService as InvoicePdfServiceImpl;
-use App\Services\PartnerDataService as BusinessEntityDataServiceImpl;
 use App\Services\PayBySquareService;
 use App\Services\ScraperService as ScraperServiceImpl;
 use Illuminate\Support\Facades\Gate;

@@ -16,7 +16,7 @@ return new class extends Migration
             $table->date('issue_date');
             $table->date('due_date');
             $table->date('delivery_date');
-            $table->foreignId('partner_id')->constrained()->onDelete('cascade');
+            $table->foreignId('business_entity_id')->constrained()->onDelete('cascade');
             $table->decimal('total_amount', 10, 2);
             $table->string('currency')->default('EUR');
             $table->string('constant_symbol')->nullable();
