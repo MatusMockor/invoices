@@ -3,6 +3,7 @@
 namespace Database\Seeders;
 
 use App\Models\BusinessEntity;
+use App\Models\Company;
 use Illuminate\Database\Seeder;
 
 class BusinessEntitySeeder extends Seeder
@@ -29,5 +30,27 @@ class BusinessEntitySeeder extends Seeder
 
         // Create some random business entities
         BusinessEntity::factory(5)->create();
+
+        // Add user companies to business entities
+        $companies = Company::all();
+        foreach ($companies as $company) {
+            // Check if a business entity with the same ICO already exists
+            $existingEntity = BusinessEntity::where('ico', $company->ico)->first();
+            if (! $existingEntity) {
+                // Create a new business entity from the company data
+                BusinessEntity::create([
+                    'name' => $company->name,
+                    'ico' => $company->ico,
+                    'dic' => $company->dic,
+                    'ic_dph' => $company->ic_dph,
+                    'street' => $company->street,
+                    'city' => $company->city,
+                    'postal_code' => $company->postal_code,
+                    'country' => $company->country,
+                    'company_type' => $company->company_type,
+                    'registration_number' => $company->registration_number,
+                ]);
+            }
+        }
     }
 }
