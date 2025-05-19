@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Controllers\BusinessEntityController;
+use App\Http\Controllers\CompanyAnalyticsController;
 use App\Http\Controllers\CompanyController;
 use App\Http\Controllers\InvoiceController;
 use App\Http\Controllers\ProfileController;
@@ -36,6 +37,9 @@ Route::middleware('auth')->group(function () {
 
     Route::resource('business-entities', BusinessEntityController::class);
     Route::get('/business-entities-fetch-by-ico', [BusinessEntityController::class, 'fetchByIco'])->name('business-entities.fetch-by-ico');
+
+    // Company Analytics routes
+    Route::get('/company-analytics', [CompanyAnalyticsController::class, 'index'])->name('company-analytics.index');
 });
 
 require __DIR__.'/auth.php';
