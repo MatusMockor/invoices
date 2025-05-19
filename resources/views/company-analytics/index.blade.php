@@ -7,10 +7,9 @@
         </div>
     </x-slot>
 
-    <!-- Add Chart.js and Chart.js plugins from CDN -->
+    <!-- Add Chart.js for Flowbite charts -->
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-datalabels@2.0.0"></script>
-    <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-gradient@0.5.1"></script>
 
     <div class="py-12">
         <div class="max-w-7xl mx-auto sm:px-6 lg:px-8">
@@ -135,91 +134,7 @@
                 };
             };
 
-            // Common chart options
-            const chartOptions = {
-                responsive: true,
-                maintainAspectRatio: false,
-                animation: {
-                    duration: 1500,
-                    easing: 'easeOutQuart'
-                },
-                plugins: {
-                    legend: {
-                        labels: {
-                            color: getChartColors().textColor,
-                            font: {
-                                weight: 'bold'
-                            },
-                            padding: 20
-                        }
-                    },
-                    tooltip: {
-                        backgroundColor: 'rgba(0, 0, 0, 0.8)',
-                        titleFont: {
-                            size: 14,
-                            weight: 'bold'
-                        },
-                        bodyFont: {
-                            size: 13
-                        },
-                        padding: 15,
-                        cornerRadius: 8,
-                        displayColors: true,
-                        usePointStyle: true,
-                        callbacks: {
-                            title: function(tooltipItems) {
-                                return tooltipItems[0].label;
-                            },
-                            label: function(context) {
-                                return '€' + context.parsed.y.toLocaleString();
-                            }
-                        }
-                    },
-                    datalabels: {
-                        color: '#fff',
-                        anchor: 'center',
-                        align: 'center',
-                        font: {
-                            weight: 'bold',
-                            size: 14
-                        },
-                        formatter: (value) => {
-                            return '€' + value.toLocaleString();
-                        }
-                    }
-                },
-                scales: {
-                    x: {
-                        ticks: {
-                            color: getChartColors().textColor,
-                            font: {
-                                weight: 'bold'
-                            }
-                        },
-                        grid: {
-                            display: false
-                        }
-                    },
-                    y: {
-                        ticks: {
-                            color: getChartColors().textColor,
-                            font: {
-                                weight: 'bold'
-                            },
-                            callback: function(value) {
-                                return '€' + value.toLocaleString();
-                            }
-                        },
-                        grid: {
-                            color: getChartColors().gridColor,
-                            drawBorder: false
-                        },
-                        beginAtZero: true
-                    }
-                }
-            };
-
-            // Initialize Financial Chart if it exists
+            // Initialize Financial Chart if it exists - using Flowbite column chart style
             @if(isset($statistics['current_company_income']))
             const financialChartEl = document.getElementById('financialChart');
             if (financialChartEl) {
@@ -228,47 +143,91 @@
                 // Set up the chart context
                 ctx.canvas.height = 400;
 
+                // Prepare data for Flowbite column chart
                 const financialData = {
                     labels: {!! isset($monthlyData) ? json_encode($monthlyData['labels']) : '["Income", "Expenses"]' !!},
                     datasets: [
                         {
                             label: 'Income (€)',
-                            data: {!! isset($monthlyData) ? json_encode($monthlyData['income']) : '[' . $statistics['current_company_income'] . ', 0]' !!},
+                            data: {!! isset($monthlyData) ? json_encode($monthlyData['income']) : '[' . $statistics['current_company_income'] . ']' !!},
                             backgroundColor: 'rgba(16, 185, 129, 0.8)',  // Green for income
                             borderColor: 'rgba(16, 185, 129, 1)',
                             borderWidth: 2,
-                            borderRadius: 6,
+                            borderRadius: 4,
                             borderSkipped: false,
                             hoverBackgroundColor: 'rgba(16, 185, 129, 1)',
-                            hoverBorderWidth: 3
+                            hoverBorderWidth: 3,
+                            barPercentage: 0.6,
+                            categoryPercentage: 0.8
                         },
                         {
                             label: 'Expenses (€)',
-                            data: {!! isset($monthlyData) ? json_encode($monthlyData['expenses']) : '[0, ' . $statistics['current_company_expenses'] . ']' !!},
+                            data: {!! isset($monthlyData) ? json_encode($monthlyData['expenses']) : '[' . $statistics['current_company_expenses'] . ']' !!},
                             backgroundColor: 'rgba(239, 68, 68, 0.8)',  // Red for expenses
                             borderColor: 'rgba(239, 68, 68, 1)',
                             borderWidth: 2,
-                            borderRadius: 6,
+                            borderRadius: 4,
                             borderSkipped: false,
                             hoverBackgroundColor: 'rgba(239, 68, 68, 1)',
-                            hoverBorderWidth: 3
+                            hoverBorderWidth: 3,
+                            barPercentage: 0.6,
+                            categoryPercentage: 0.8
                         }
                     ]
                 };
 
+                // Create the Flowbite column chart
                 new Chart(financialChartEl, {
-                    type: 'bar',
+                    type: 'bar',  // Column chart in Flowbite is a bar chart with vertical orientation
                     data: financialData,
                     options: {
-                        ...chartOptions,
-                        indexAxis: 'x',
-                        barPercentage: 0.8,
-                        categoryPercentage: 0.7,
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        indexAxis: 'x',  // Vertical bars (columns)
                         plugins: {
-                            ...chartOptions.plugins,
                             legend: {
-                                ...chartOptions.plugins.legend,
                                 position: 'top',
+                                labels: {
+                                    color: getChartColors().textColor,
+                                    font: {
+                                        weight: 'bold'
+                                    },
+                                    usePointStyle: true
+                                }
+                            },
+                            tooltip: {
+                                backgroundColor: 'rgba(0, 0, 0, 0.8)',
+                                titleFont: {
+                                    size: 14,
+                                    weight: 'bold'
+                                },
+                                bodyFont: {
+                                    size: 13
+                                },
+                                padding: 15,
+                                cornerRadius: 8,
+                                displayColors: true,
+                                usePointStyle: true,
+                                callbacks: {
+                                    label: function(context) {
+                                        return context.dataset.label + ': €' + context.parsed.y.toLocaleString();
+                                    }
+                                }
+                            },
+                            datalabels: {
+                                color: '#fff',
+                                anchor: 'center',
+                                align: 'center',
+                                font: {
+                                    weight: 'bold',
+                                    size: 12
+                                },
+                                formatter: (value) => {
+                                    return '€' + value.toLocaleString();
+                                },
+                                display: function(context) {
+                                    return context.dataset.data[context.dataIndex] > 0;
+                                }
                             },
                             title: {
                                 display: true,
@@ -286,10 +245,6 @@
                         },
                         scales: {
                             x: {
-                                ...chartOptions.scales.x,
-                                grid: {
-                                    display: false
-                                },
                                 title: {
                                     display: true,
                                     text: 'Month',
@@ -297,16 +252,18 @@
                                     font: {
                                         weight: 'bold'
                                     }
+                                },
+                                ticks: {
+                                    color: getChartColors().textColor,
+                                    font: {
+                                        weight: 'bold'
+                                    }
+                                },
+                                grid: {
+                                    display: false
                                 }
                             },
                             y: {
-                                ...chartOptions.scales.y,
-                                grid: {
-                                    color: getChartColors().gridColor,
-                                    borderDash: [2, 4],
-                                    drawBorder: false
-                                },
-                                beginAtZero: true,
                                 title: {
                                     display: true,
                                     text: 'Amount (€)',
@@ -314,7 +271,22 @@
                                     font: {
                                         weight: 'bold'
                                     }
-                                }
+                                },
+                                ticks: {
+                                    color: getChartColors().textColor,
+                                    font: {
+                                        weight: 'bold'
+                                    },
+                                    callback: function(value) {
+                                        return '€' + value.toLocaleString();
+                                    }
+                                },
+                                grid: {
+                                    color: getChartColors().gridColor,
+                                    borderDash: [2, 4],
+                                    drawBorder: false
+                                },
+                                beginAtZero: true
                             }
                         }
                     }
