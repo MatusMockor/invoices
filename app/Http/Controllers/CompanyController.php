@@ -37,7 +37,7 @@ class CompanyController extends Controller
         $validated = $request->validated();
         $validated['user_id'] = auth()->id();
 
-        $company = Company::query()->create($validated);
+        $company = Company::create($validated);
 
         return redirect()->route('companies.show', $company)
             ->with('success', 'Company was successfully created');

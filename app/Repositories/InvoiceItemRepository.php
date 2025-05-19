@@ -12,7 +12,7 @@ class InvoiceItemRepository implements InvoiceItemRepositoryContract
      */
     public function create(array $data): InvoiceItem
     {
-        return InvoiceItem::query()->create($data);
+        return InvoiceItem::create($data);
     }
 
     /**
@@ -20,7 +20,7 @@ class InvoiceItemRepository implements InvoiceItemRepositoryContract
      */
     public function deleteByInvoiceId(int $invoiceId): bool
     {
-        return InvoiceItem::query()->where('invoice_id', $invoiceId)->delete();
+        return InvoiceItem::where('invoice_id', $invoiceId)->delete();
     }
 
     /**
@@ -31,13 +31,9 @@ class InvoiceItemRepository implements InvoiceItemRepositoryContract
      */
     public function deleteItemsNotInIds(int $invoiceId, array $itemIds): bool
     {
-        $query = InvoiceItem::query()->where('invoice_id', $invoiceId);
-
-        // Always apply whereNotIn condition, even if $itemIds is empty
-        // This will delete all items for the invoice if no IDs are provided
-        $query->whereNotIn('id', $itemIds);
-
-        return $query->delete();
+        return InvoiceItem::where('invoice_id', $invoiceId)
+            ->whereNotIn('id', $itemIds)
+            ->delete();
     }
 
     /**

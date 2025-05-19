@@ -14,7 +14,7 @@ class BusinessEntityRepository implements BusinessEntityRepositoryContract
      */
     public function getAllPaginated(int $perPage = 10): LengthAwarePaginator
     {
-        return BusinessEntity::query()->latest()->paginate($perPage);
+        return BusinessEntity::latest()->paginate($perPage);
     }
 
     /**
@@ -22,7 +22,7 @@ class BusinessEntityRepository implements BusinessEntityRepositoryContract
      */
     public function getAllOrderedByName(): Collection
     {
-        return BusinessEntity::query()->orderBy('name')->get();
+        return BusinessEntity::orderBy('name')->get();
     }
 
     /**
@@ -30,7 +30,7 @@ class BusinessEntityRepository implements BusinessEntityRepositoryContract
      */
     public function findById(int $id): ?BusinessEntity
     {
-        return BusinessEntity::query()->find($id);
+        return BusinessEntity::find($id);
     }
 
     /**
@@ -38,7 +38,7 @@ class BusinessEntityRepository implements BusinessEntityRepositoryContract
      */
     public function findByIco(string $ico): ?BusinessEntity
     {
-        return BusinessEntity::query()->where('ico', $ico)->first();
+        return BusinessEntity::where('ico', $ico)->first();
     }
 
     /**
@@ -46,7 +46,7 @@ class BusinessEntityRepository implements BusinessEntityRepositoryContract
      */
     public function create(array $data): BusinessEntity
     {
-        return BusinessEntity::query()->create($data);
+        return BusinessEntity::create($data);
     }
 
     /**
