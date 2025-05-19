@@ -16,9 +16,13 @@ class CompanyAnalyticsServiceTest extends TestCase
     use RefreshDatabase;
 
     protected CompanyAnalyticsService $service;
+
     protected User $user;
+
     protected Company $companyA;
+
     protected Company $companyB;
+
     protected Company $companyC;
 
     protected function setUp(): void
