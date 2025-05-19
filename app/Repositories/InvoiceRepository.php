@@ -23,7 +23,7 @@ class InvoiceRepository implements InvoiceRepositoryContract
      */
     public function create(array $data): Invoice
     {
-        return Invoice::query()->create($data);
+        return Invoice::create($data);
     }
 
     /**
