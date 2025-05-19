@@ -14,16 +14,16 @@ return new class extends Migration
         Schema::create('companies', static function (Blueprint $table) {
             $table->id();
             $table->foreignId('user_id')->constrained()->onDelete('cascade');
-            $table->string('iban')->nullable()->after('ico');
-            $table->string('swift')->nullable()->after('iban');
-            $table->string('name');
-            $table->string('street');
-            $table->string('city');
-            $table->string('postal_code');
-            $table->string('country');
             $table->string('ico');
             $table->string('dic')->nullable();
             $table->string('ic_dph')->nullable();
+            $table->string('name');
+            $table->string('city');
+            $table->string('street');
+            $table->string('postal_code');
+            $table->string('country');
+            $table->string('iban')->nullable()->after('ico');
+            $table->string('swift')->nullable()->after('iban');
             $table->string('phone')->nullable();
             $table->string('email')->nullable();
             $table->string('website')->nullable();
