@@ -116,7 +116,7 @@
                     redBorderColor: isDarkMode ? 'rgb(239, 68, 68)' : 'rgb(220, 38, 38)',
                     tooltipBackground: isDarkMode ? '#374151' : '#ffffff',
                     tooltipBorderColor: isDarkMode ? 'rgba(255, 255, 255, 0.1)' : 'rgba(0, 0, 0, 0.1)',
-                    dataLabelColor: isDarkMode ? '#ffffff' : '#000000'
+                    dataLabelColor: '#ffffff'
                 };
             };
 
@@ -254,7 +254,10 @@
                                 },
                                 display: function(context) {
                                     return context.dataset.data[context.dataIndex] > 0;
-                                }
+                                },
+                                textShadow: '0px 0px 2px rgba(0, 0, 0, 0.7)',
+                                textStrokeColor: 'rgba(0, 0, 0, 0.7)',
+                                textStrokeWidth: 3
                             }
                         },
                         scales: {
