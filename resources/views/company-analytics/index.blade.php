@@ -109,15 +109,56 @@
                 return {
                     textColor: isDarkMode ? '#f3f4f6' : '#1f2937', // Flowbite text colors
                     gridColor: isDarkMode ? 'rgba(243, 244, 246, 0.1)' : 'rgba(17, 24, 39, 0.1)', // Flowbite grid colors
-                    backgroundColor: isDarkMode ? '#374151' : '#ffffff' // Flowbite background colors
+                    backgroundColor: isDarkMode ? '#374151' : '#ffffff', // Flowbite background colors
+                    greenColor: isDarkMode ? 'rgba(34, 197, 94, 0.7)' : 'rgba(22, 163, 74, 0.7)', // Green with dark mode adaptation
+                    greenBorderColor: isDarkMode ? 'rgb(34, 197, 94)' : 'rgb(22, 163, 74)',
+                    redColor: isDarkMode ? 'rgba(239, 68, 68, 0.7)' : 'rgba(220, 38, 38, 0.7)', // Red with dark mode adaptation
+                    redBorderColor: isDarkMode ? 'rgb(239, 68, 68)' : 'rgb(220, 38, 38)',
+                    tooltipBackground: isDarkMode ? '#374151' : '#ffffff',
+                    tooltipBorderColor: isDarkMode ? 'rgba(255, 255, 255, 0.1)' : 'rgba(0, 0, 0, 0.1)',
+                    dataLabelColor: isDarkMode ? '#ffffff' : '#000000'
                 };
+            };
+
+            // Function to update chart colors on theme change
+            const updateChartColors = (chart) => {
+                if (!chart) return;
+                
+                const colors = getFlowbiteChartColors();
+                
+                // Update dataset colors
+                chart.data.datasets[0].backgroundColor = colors.greenColor;
+                chart.data.datasets[0].borderColor = colors.greenBorderColor;
+                chart.data.datasets[0].hoverBackgroundColor = colors.greenBorderColor;
+                
+                chart.data.datasets[1].backgroundColor = colors.redColor;
+                chart.data.datasets[1].borderColor = colors.redBorderColor;
+                chart.data.datasets[1].hoverBackgroundColor = colors.redBorderColor;
+                
+                // Update scales
+                chart.options.scales.x.ticks.color = colors.textColor;
+                chart.options.scales.y.ticks.color = colors.textColor;
+                chart.options.scales.y.grid.color = colors.gridColor;
+                
+                // Update legend
+                chart.options.plugins.legend.labels.color = colors.textColor;
+                
+                // Update tooltip
+                chart.options.plugins.tooltip.backgroundColor = colors.tooltipBackground;
+                chart.options.plugins.tooltip.titleColor = colors.textColor;
+                chart.options.plugins.tooltip.bodyColor = colors.textColor;
+                chart.options.plugins.tooltip.borderColor = colors.tooltipBorderColor;
+                
+                chart.update();
             };
 
             // Initialize Financial Chart if it exists - using Flowbite column chart style
             @if(isset($statistics['current_company_income']))
+            let financialChart;
             const financialChartEl = document.getElementById('financialChart');
             if (financialChartEl) {
                 const ctx = financialChartEl.getContext('2d');
+                const colors = getFlowbiteChartColors();
 
                 // Set up the chart context
                 ctx.canvas.height = 400;
@@ -129,24 +170,24 @@
                         {
                             label: 'Income (€)',
                             data: {!! isset($monthlyData) ? json_encode($monthlyData['income']) : '[' . $statistics['current_company_income'] . ']' !!},
-                            backgroundColor: 'rgba(22, 163, 74, 0.7)',  // Flowbite green
-                            borderColor: 'rgb(22, 163, 74)',
+                            backgroundColor: colors.greenColor,
+                            borderColor: colors.greenBorderColor,
                             borderWidth: 1,
                             borderRadius: 6,
                             borderSkipped: false,
-                            hoverBackgroundColor: 'rgb(22, 163, 74)',
+                            hoverBackgroundColor: colors.greenBorderColor,
                             barPercentage: 0.5,
                             categoryPercentage: 0.7
                         },
                         {
                             label: 'Expenses (€)',
                             data: {!! isset($monthlyData) ? json_encode($monthlyData['expenses']) : '[' . $statistics['current_company_expenses'] . ']' !!},
-                            backgroundColor: 'rgba(220, 38, 38, 0.7)',  // Flowbite red
-                            borderColor: 'rgb(220, 38, 38)',
+                            backgroundColor: colors.redColor,
+                            borderColor: colors.redBorderColor,
                             borderWidth: 1,
                             borderRadius: 6,
                             borderSkipped: false,
-                            hoverBackgroundColor: 'rgb(220, 38, 38)',
+                            hoverBackgroundColor: colors.redBorderColor,
                             barPercentage: 0.5,
                             categoryPercentage: 0.7
                         }
@@ -154,7 +195,7 @@
                 };
 
                 // Create the Flowbite column chart
-                new Chart(financialChartEl, {
+                financialChart = new Chart(financialChartEl, {
                     type: 'bar',  // Column chart in Flowbite is a bar chart with vertical orientation
                     data: financialData,
                     options: {
@@ -166,7 +207,7 @@
                                 position: 'top',
                                 align: 'start',
                                 labels: {
-                                    color: document.documentElement.classList.contains('dark') ? '#ffffff' : '#1f2937',
+                                    color: colors.textColor,
                                     usePointStyle: true,
                                     pointStyleWidth: 10,
                                     boxWidth: 10,
@@ -179,9 +220,9 @@
                             },
                             tooltip: {
                                 enabled: true,
-                                backgroundColor: document.documentElement.classList.contains('dark') ? '#374151' : '#ffffff',
-                                titleColor: document.documentElement.classList.contains('dark') ? '#ffffff' : '#1f2937',
-                                bodyColor: document.documentElement.classList.contains('dark') ? '#ffffff' : '#1f2937',
+                                backgroundColor: colors.tooltipBackground,
+                                titleColor: colors.textColor,
+                                bodyColor: colors.textColor,
                                 titleFont: {
                                     size: 14
                                 },
@@ -192,7 +233,7 @@
                                 cornerRadius: 4,
                                 displayColors: true,
                                 usePointStyle: true,
-                                borderColor: document.documentElement.classList.contains('dark') ? 'rgba(255, 255, 255, 0.1)' : 'rgba(0, 0, 0, 0.1)',
+                                borderColor: colors.tooltipBorderColor,
                                 borderWidth: 1,
                                 callbacks: {
                                     label: function(context) {
@@ -201,15 +242,7 @@
                                 }
                             },
                             datalabels: {
-                                color: function(context) {
-                                    // Use high contrast colors that will be visible in both light and dark modes
-                                    const isDarkMode = document.documentElement.classList.contains('dark');
-                                    if (isDarkMode) {
-                                        return '#ffffff'; // White text for dark mode
-                                    } else {
-                                        return '#000000'; // Black text for light mode
-                                    }
-                                },
+                                color: colors.dataLabelColor,
                                 anchor: 'center',
                                 align: 'center',
                                 font: {
@@ -231,7 +264,7 @@
                                     drawBorder: false
                                 },
                                 ticks: {
-                                    color: getFlowbiteChartColors().textColor,
+                                    color: colors.textColor,
                                     font: {
                                         size: 12
                                     },
@@ -240,12 +273,12 @@
                             },
                             y: {
                                 grid: {
-                                    color: getFlowbiteChartColors().gridColor,
+                                    color: colors.gridColor,
                                     borderDash: [4],
                                     drawBorder: false
                                 },
                                 ticks: {
-                                    color: getFlowbiteChartColors().textColor,
+                                    color: colors.textColor,
                                     font: {
                                         size: 12
                                     },
@@ -259,6 +292,18 @@
                         }
                     }
                 });
+                
+                // Listen for theme changes
+                const observer = new MutationObserver(function(mutations) {
+                    mutations.forEach(function(mutation) {
+                        if (mutation.attributeName === 'class' && 
+                            mutation.target === document.documentElement) {
+                            updateChartColors(financialChart);
+                        }
+                    });
+                });
+                
+                observer.observe(document.documentElement, { attributes: true });
             }
             @endif
         });
