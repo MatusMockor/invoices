@@ -103,7 +103,7 @@
 
                             <!-- Financial Chart -->
                             <div class="bg-white dark:bg-gray-800 overflow-hidden shadow rounded-lg p-4">
-                                <h4 class="text-md font-medium text-gray-900 dark:text-gray-100 mb-4">{{ __('Income vs Expenses') }}</h4>
+                                <h4 class="text-md font-medium text-gray-900 dark:text-gray-100 mb-4">{{ __('Monthly Income vs Expenses') }} ({{ $currentYear }})</h4>
                                 <div class="w-full h-80">
                                     <canvas id="financialChart"></canvas>
                                 </div>
@@ -131,17 +131,7 @@
                 const isDarkMode = document.documentElement.classList.contains('dark');
                 return {
                     textColor: isDarkMode ? '#e5e7eb' : '#374151',
-                    gridColor: isDarkMode ? 'rgba(255, 255, 255, 0.1)' : 'rgba(0, 0, 0, 0.1)',
-                    gradients: {
-                        income: {
-                            start: isDarkMode ? 'rgba(16, 185, 129, 0.8)' : 'rgba(16, 185, 129, 0.8)',
-                            end: isDarkMode ? 'rgba(16, 185, 129, 0.2)' : 'rgba(16, 185, 129, 0.2)'
-                        },
-                        expenses: {
-                            start: isDarkMode ? 'rgba(239, 68, 68, 0.8)' : 'rgba(239, 68, 68, 0.8)',
-                            end: isDarkMode ? 'rgba(239, 68, 68, 0.2)' : 'rgba(239, 68, 68, 0.2)'
-                        }
-                    }
+                    gridColor: isDarkMode ? 'rgba(255, 255, 255, 0.1)' : 'rgba(0, 0, 0, 0.1)'
                 };
             };
 
@@ -177,15 +167,11 @@
                         displayColors: true,
                         usePointStyle: true,
                         callbacks: {
+                            title: function(tooltipItems) {
+                                return tooltipItems[0].label;
+                            },
                             label: function(context) {
-                                let label = context.dataset.label || '';
-                                if (label) {
-                                    label += ': ';
-                                }
-                                label += context.parsed.y !== undefined 
-                                    ? '€' + context.parsed.y.toLocaleString() 
-                                    : context.parsed;
-                                return label;
+                                return '€' + context.parsed.y.toLocaleString();
                             }
                         }
                     },
@@ -239,40 +225,32 @@
             if (financialChartEl) {
                 const ctx = financialChartEl.getContext('2d');
 
-                // Create gradients
-                const incomeGradient = ctx.createLinearGradient(0, 0, 0, 400);
-                incomeGradient.addColorStop(0, getChartColors().gradients.income.start);
-                incomeGradient.addColorStop(1, getChartColors().gradients.income.end);
-
-                const expensesGradient = ctx.createLinearGradient(0, 0, 0, 400);
-                expensesGradient.addColorStop(0, getChartColors().gradients.expenses.start);
-                expensesGradient.addColorStop(1, getChartColors().gradients.expenses.end);
+                // Set up the chart context
+                ctx.canvas.height = 400;
 
                 const financialData = {
-                    labels: ['Financial Summary'],
+                    labels: {!! isset($monthlyData) ? json_encode($monthlyData['labels']) : '["Income", "Expenses"]' !!},
                     datasets: [
                         {
-                            label: 'Income',
-                            data: [{{ $statistics['current_company_income'] }}],
-                            backgroundColor: incomeGradient,
+                            label: 'Income (€)',
+                            data: {!! isset($monthlyData) ? json_encode($monthlyData['income']) : '[' . $statistics['current_company_income'] . ', 0]' !!},
+                            backgroundColor: 'rgba(16, 185, 129, 0.8)',  // Green for income
                             borderColor: 'rgba(16, 185, 129, 1)',
                             borderWidth: 2,
-                            borderRadius: 8,
+                            borderRadius: 6,
                             borderSkipped: false,
-                            hoverBackgroundColor: 'rgba(16, 185, 129, 0.9)',
-                            hoverBorderColor: 'rgba(16, 185, 129, 1)',
+                            hoverBackgroundColor: 'rgba(16, 185, 129, 1)',
                             hoverBorderWidth: 3
                         },
                         {
-                            label: 'Expenses',
-                            data: [{{ $statistics['current_company_expenses'] }}],
-                            backgroundColor: expensesGradient,
+                            label: 'Expenses (€)',
+                            data: {!! isset($monthlyData) ? json_encode($monthlyData['expenses']) : '[0, ' . $statistics['current_company_expenses'] . ']' !!},
+                            backgroundColor: 'rgba(239, 68, 68, 0.8)',  // Red for expenses
                             borderColor: 'rgba(239, 68, 68, 1)',
                             borderWidth: 2,
-                            borderRadius: 8,
+                            borderRadius: 6,
                             borderSkipped: false,
-                            hoverBackgroundColor: 'rgba(239, 68, 68, 0.9)',
-                            hoverBorderColor: 'rgba(239, 68, 68, 1)',
+                            hoverBackgroundColor: 'rgba(239, 68, 68, 1)',
                             hoverBorderWidth: 3
                         }
                     ]
@@ -281,7 +259,65 @@
                 new Chart(financialChartEl, {
                     type: 'bar',
                     data: financialData,
-                    options: chartOptions
+                    options: {
+                        ...chartOptions,
+                        indexAxis: 'x',
+                        barPercentage: 0.8,
+                        categoryPercentage: 0.7,
+                        plugins: {
+                            ...chartOptions.plugins,
+                            legend: {
+                                ...chartOptions.plugins.legend,
+                                position: 'top',
+                            },
+                            title: {
+                                display: true,
+                                text: 'Monthly Income vs Expenses ({{ $currentYear }})',
+                                font: {
+                                    size: 16,
+                                    weight: 'bold'
+                                },
+                                padding: {
+                                    top: 10,
+                                    bottom: 20
+                                },
+                                color: getChartColors().textColor
+                            }
+                        },
+                        scales: {
+                            x: {
+                                ...chartOptions.scales.x,
+                                grid: {
+                                    display: false
+                                },
+                                title: {
+                                    display: true,
+                                    text: 'Month',
+                                    color: getChartColors().textColor,
+                                    font: {
+                                        weight: 'bold'
+                                    }
+                                }
+                            },
+                            y: {
+                                ...chartOptions.scales.y,
+                                grid: {
+                                    color: getChartColors().gridColor,
+                                    borderDash: [2, 4],
+                                    drawBorder: false
+                                },
+                                beginAtZero: true,
+                                title: {
+                                    display: true,
+                                    text: 'Amount (€)',
+                                    color: getChartColors().textColor,
+                                    font: {
+                                        weight: 'bold'
+                                    }
+                                }
+                            }
+                        }
+                    }
                 });
             }
             @endif

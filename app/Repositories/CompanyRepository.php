@@ -162,4 +162,66 @@ class CompanyRepository implements CompanyRepositoryContract
             ->whereIn('business_entity_id', $businessEntityIds)
             ->sum('total_amount');
     }
+
+    /**
+     * Get monthly income for a company for the current year
+     */
+    public function getMonthlyIncome(int $companyId, int $year): array
+    {
+        $result = array_fill(1, 12, 0.0);
+
+        // Get all invoices for the company in the specified year
+        $invoices = Invoice::query()
+            ->where('supplier_company_id', $companyId)
+            ->whereYear('issue_date', $year)
+            ->get();
+
+        // Group invoices by month and sum the total amounts
+        foreach ($invoices as $invoice) {
+            $month = (int) date('n', strtotime($invoice->issue_date));
+            $result[$month] += (float) $invoice->total_amount;
+        }
+
+        return $result;
+    }
+
+    /**
+     * Get monthly expenses for a company for the current year
+     */
+    public function getMonthlyExpenses(int $companyId, int $year): array
+    {
+        $result = array_fill(1, 12, 0.0);
+
+        // Get the company's ICO
+        $company = Company::query()->find($companyId);
+        if (! $company) {
+            return $result;
+        }
+
+        $ico = $company->ico;
+
+        // Find business entities with the same ICO
+        $businessEntityIds = BusinessEntity::query()
+            ->where('ico', $ico)
+            ->pluck('id')
+            ->toArray();
+
+        if (empty($businessEntityIds)) {
+            return $result;
+        }
+
+        // Get all invoices where these business entities are recipients in the specified year
+        $invoices = Invoice::query()
+            ->whereIn('business_entity_id', $businessEntityIds)
+            ->whereYear('issue_date', $year)
+            ->get();
+
+        // Group invoices by month and sum the total amounts
+        foreach ($invoices as $invoice) {
+            $month = (int) date('n', strtotime($invoice->issue_date));
+            $result[$month] += (float) $invoice->total_amount;
+        }
+
+        return $result;
+    }
 }

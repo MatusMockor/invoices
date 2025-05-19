@@ -82,4 +82,14 @@ interface CompanyRepository
      * Get total expenses for a company
      */
     public function getTotalExpenses(int $companyId): float;
+
+    /**
+     * Get monthly income for a company for the current year
+     */
+    public function getMonthlyIncome(int $companyId, int $year): array;
+
+    /**
+     * Get monthly expenses for a company for the current year
+     */
+    public function getMonthlyExpenses(int $companyId, int $year): array;
 }

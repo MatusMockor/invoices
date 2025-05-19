@@ -174,4 +174,38 @@ class CompanyAnalyticsService implements CompanyAnalyticsServiceContract
     {
         return $this->companyRepository->getTotalExpenses($companyId);
     }
+
+    /**
+     * Get monthly financial data for a specific company
+     *
+     * Returns an array with monthly income and expenses data
+     */
+    public function getMonthlyFinancialData(int $companyId, int $year): array
+    {
+        $monthlyIncome = $this->companyRepository->getMonthlyIncome($companyId, $year);
+        $monthlyExpenses = $this->companyRepository->getMonthlyExpenses($companyId, $year);
+
+        $monthNames = [
+            1 => 'January',
+            2 => 'February',
+            3 => 'March',
+            4 => 'April',
+            5 => 'May',
+            6 => 'June',
+            7 => 'July',
+            8 => 'August',
+            9 => 'September',
+            10 => 'October',
+            11 => 'November',
+            12 => 'December',
+        ];
+
+        $result = [
+            'labels' => array_values($monthNames),
+            'income' => array_values($monthlyIncome),
+            'expenses' => array_values($monthlyExpenses),
+        ];
+
+        return $result;
+    }
 }

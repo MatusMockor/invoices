@@ -25,8 +25,17 @@ class CompanyAnalyticsController extends Controller
         // Get statistics with income and expense information for the current company
         $statistics = $this->companyAnalyticsService->getStatisticsSummary($currentCompanyId);
 
+        // Get monthly financial data for the current year
+        $monthlyData = null;
+        if ($currentCompanyId) {
+            $currentYear = date('Y');
+            $monthlyData = $this->companyAnalyticsService->getMonthlyFinancialData($currentCompanyId, $currentYear);
+        }
+
         return view('company-analytics.index', [
             'statistics' => $statistics,
+            'monthlyData' => $monthlyData,
+            'currentYear' => date('Y'),
         ]);
     }
 }

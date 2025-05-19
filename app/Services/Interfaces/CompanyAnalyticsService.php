@@ -52,4 +52,11 @@ interface CompanyAnalyticsService
      * Get total expenses for a specific company
      */
     public function getTotalExpensesForCompany(int $companyId): float;
+
+    /**
+     * Get monthly financial data for a specific company
+     *
+     * Returns an array with monthly income and expenses data
+     */
+    public function getMonthlyFinancialData(int $companyId, int $year): array;
 }
