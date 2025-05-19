@@ -1,7 +1,7 @@
 <x-app-layout>
     <x-slot name="header">
         <div class="flex justify-between items-center">
-            <h2 class="font-semibold text-xl text-gray-800 dark:text-gray-200 leading-tight">
+            <h2 class="text-xl font-semibold leading-tight text-gray-800 dark:text-white">
                 {{ __('Company Analytics') }}
             </h2>
         </div>
@@ -12,105 +12,83 @@
     <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-datalabels@2.0.0"></script>
 
     <div class="py-12">
-        <div class="max-w-7xl mx-auto sm:px-6 lg:px-8">
-            <div class="bg-white dark:bg-gray-800 overflow-hidden shadow-sm rounded-lg">
+        <div class="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+            <div class="bg-white border border-gray-200 rounded-lg shadow-sm dark:border-gray-700 dark:bg-gray-800">
                 <div class="p-6">
 
                     @if(isset($statistics['current_company_income']))
                     <!-- Current Company Financial Summary -->
-                    <div class="bg-white dark:bg-gray-700 overflow-hidden shadow rounded-lg">
-                        <div class="px-5 py-4 border-b border-gray-200 dark:border-gray-600">
-                            <h3 class="text-lg font-medium text-gray-900 dark:text-gray-200">{{ __('Current Company Financial Summary') }}</h3>
-                        </div>
-                        <div class="p-5">
-                            <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
-                                <!-- Income -->
-                                <div class="bg-white dark:bg-gray-800 overflow-hidden shadow rounded-lg">
-                                    <div class="p-5">
-                                        <div class="flex items-center">
-                                            <div class="flex-shrink-0 bg-green-500 rounded-md p-3">
-                                                <svg class="h-6 w-6 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-                                                </svg>
-                                            </div>
-                                            <div class="ml-5 w-0 flex-1">
-                                                <dl>
-                                                    <dt class="text-sm font-medium text-gray-500 dark:text-gray-400 truncate">
-                                                        {{ __('Total Income') }}
-                                                    </dt>
-                                                    <dd>
-                                                        <div class="text-lg font-medium text-green-600 dark:text-green-400">
-                                                            {{ number_format($statistics['current_company_income'], 2) }} €
-                                                        </div>
-                                                    </dd>
-                                                </dl>
-                                            </div>
-                                        </div>
+                    <div class="p-4 bg-white border border-gray-200 rounded-lg shadow-sm dark:border-gray-700 dark:bg-gray-800 sm:p-6">
+                        <h3 class="mb-4 text-xl font-semibold text-gray-900 dark:text-white">{{ __('Current Company Financial Summary') }}</h3>
+                        <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
+                            <!-- Income -->
+                            <div class="p-4 bg-white border border-gray-200 rounded-lg shadow-sm dark:border-gray-700 dark:bg-gray-800 sm:p-6">
+                                <div class="flex items-center">
+                                    <div class="inline-flex items-center justify-center flex-shrink-0 w-12 h-12 text-green-500 bg-green-100 rounded-lg dark:bg-green-800 dark:text-green-200">
+                                        <svg class="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                                        </svg>
                                     </div>
-                                </div>
-
-                                <!-- Expenses -->
-                                <div class="bg-white dark:bg-gray-800 overflow-hidden shadow rounded-lg">
-                                    <div class="p-5">
-                                        <div class="flex items-center">
-                                            <div class="flex-shrink-0 bg-red-500 rounded-md p-3">
-                                                <svg class="h-6 w-6 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12H9m12 0a9 9 0 11-18 0 9 9 0 0118 0z" />
-                                                </svg>
-                                            </div>
-                                            <div class="ml-5 w-0 flex-1">
-                                                <dl>
-                                                    <dt class="text-sm font-medium text-gray-500 dark:text-gray-400 truncate">
-                                                        {{ __('Total Expenses') }}
-                                                    </dt>
-                                                    <dd>
-                                                        <div class="text-lg font-medium text-red-600 dark:text-red-400">
-                                                            {{ number_format($statistics['current_company_expenses'], 2) }} €
-                                                        </div>
-                                                    </dd>
-                                                </dl>
-                                            </div>
-                                        </div>
-                                    </div>
-                                </div>
-
-                                <!-- Balance -->
-                                <div class="bg-white dark:bg-gray-800 overflow-hidden shadow rounded-lg">
-                                    <div class="p-5">
-                                        <div class="flex items-center">
-                                            <div class="flex-shrink-0 bg-blue-500 rounded-md p-3">
-                                                <svg class="h-6 w-6 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 6l3 1m0 0l-3 9a5.002 5.002 0 006.001 0M6 7l3 9M6 7l6-2m6 2l3-1m-3 1l-3 9a5.002 5.002 0 006.001 0M18 7l3 9m-3-9l-6-2m0-2v2m0 16V5m0 16H9m3 0h3" />
-                                                </svg>
-                                            </div>
-                                            <div class="ml-5 w-0 flex-1">
-                                                <dl>
-                                                    <dt class="text-sm font-medium text-gray-500 dark:text-gray-400 truncate">
-                                                        {{ __('Balance') }}
-                                                    </dt>
-                                                    <dd>
-                                                        <div class="text-lg font-medium {{ $statistics['current_company_balance'] >= 0 ? 'text-green-600 dark:text-green-400' : 'text-red-600 dark:text-red-400' }}">
-                                                            {{ number_format($statistics['current_company_balance'], 2) }} €
-                                                        </div>
-                                                    </dd>
-                                                </dl>
-                                            </div>
+                                    <div class="ms-4">
+                                        <h3 class="mb-1 text-lg font-medium text-gray-900 dark:text-white">{{ __('Total Income') }}</h3>
+                                        <div class="text-2xl font-bold text-green-600 dark:text-green-400">
+                                            {{ number_format($statistics['current_company_income'], 2) }} €
                                         </div>
                                     </div>
                                 </div>
                             </div>
 
-                            <!-- Financial Chart -->
-                            <div class="bg-white dark:bg-gray-800 overflow-hidden shadow rounded-lg p-4">
-                                <h4 class="text-md font-medium text-gray-900 dark:text-gray-100 mb-4">{{ __('Monthly Income vs Expenses') }} ({{ $currentYear }})</h4>
-                                <div class="w-full h-80">
-                                    <canvas id="financialChart"></canvas>
+                            <!-- Expenses -->
+                            <div class="p-4 bg-white border border-gray-200 rounded-lg shadow-sm dark:border-gray-700 dark:bg-gray-800 sm:p-6">
+                                <div class="flex items-center">
+                                    <div class="inline-flex items-center justify-center flex-shrink-0 w-12 h-12 text-red-500 bg-red-100 rounded-lg dark:bg-red-800 dark:text-red-200">
+                                        <svg class="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12H9m12 0a9 9 0 11-18 0 9 9 0 0118 0z" />
+                                        </svg>
+                                    </div>
+                                    <div class="ms-4">
+                                        <h3 class="mb-1 text-lg font-medium text-gray-900 dark:text-white">{{ __('Total Expenses') }}</h3>
+                                        <div class="text-2xl font-bold text-red-600 dark:text-red-400">
+                                            {{ number_format($statistics['current_company_expenses'], 2) }} €
+                                        </div>
+                                    </div>
                                 </div>
+                            </div>
+
+                            <!-- Balance -->
+                            <div class="p-4 bg-white border border-gray-200 rounded-lg shadow-sm dark:border-gray-700 dark:bg-gray-800 sm:p-6">
+                                <div class="flex items-center">
+                                    <div class="inline-flex items-center justify-center flex-shrink-0 w-12 h-12 text-blue-500 bg-blue-100 rounded-lg dark:bg-blue-800 dark:text-blue-200">
+                                        <svg class="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 6l3 1m0 0l-3 9a5.002 5.002 0 006.001 0M6 7l3 9M6 7l6-2m6 2l3-1m-3 1l-3 9a5.002 5.002 0 006.001 0M18 7l3 9m-3-9l-6-2m0-2v2m0 16V5m0 16H9m3 0h3" />
+                                        </svg>
+                                    </div>
+                                    <div class="ms-4">
+                                        <h3 class="mb-1 text-lg font-medium text-gray-900 dark:text-white">{{ __('Balance') }}</h3>
+                                        <div class="text-2xl font-bold {{ $statistics['current_company_balance'] >= 0 ? 'text-green-600 dark:text-green-400' : 'text-red-600 dark:text-red-400' }}">
+                                            {{ number_format($statistics['current_company_balance'], 2) }} €
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Financial Chart -->
+                        <div class="p-4 bg-white border border-gray-200 rounded-lg shadow-sm dark:border-gray-700 dark:bg-gray-800">
+                            <h4 class="mb-4 text-xl font-semibold text-gray-900 dark:text-white">{{ __('Monthly Income vs Expenses') }} ({{ $currentYear }})</h4>
+                            <div class="w-full h-80">
+                                <canvas id="financialChart"></canvas>
                             </div>
                         </div>
                     </div>
                     @else
-                    <div class="bg-white dark:bg-gray-700 overflow-hidden shadow rounded-lg p-6 text-center">
+                    <div class="p-4 bg-white border border-gray-200 rounded-lg shadow-sm dark:border-gray-700 dark:bg-gray-800 sm:p-6 text-center">
+                        <div class="flex items-center justify-center">
+                            <svg class="w-10 h-10 text-gray-400 dark:text-gray-500 mb-3.5 mx-auto" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" fill="currentColor" viewBox="0 0 24 24">
+                                <path fill-rule="evenodd" d="M2 12C2 6.477 6.477 2 12 2s10 4.477 10 10-4.477 10-10 10S2 17.523 2 12zm11-4a1 1 0 1 0-2 0v4a1 1 0 0 0 .293.707l2.828 2.829a1 1 0 1 0 1.415-1.415L13 11.586V8z" clip-rule="evenodd"/>
+                            </svg>
+                        </div>
+                        <p class="mb-2 text-lg font-semibold text-gray-900 dark:text-white">{{ __('No Data Available') }}</p>
                         <p class="text-gray-500 dark:text-gray-400">{{ __('No financial data available for the current company.') }}</p>
                     </div>
                     @endif
@@ -119,18 +97,19 @@
         </div>
     </div>
 
-    <!-- Chart Initialization Scripts -->
+    <!-- Chart Initialization Scripts - Flowbite Style -->
     <script>
         document.addEventListener('DOMContentLoaded', function() {
             // Register the plugins
             Chart.register(ChartDataLabels);
 
-            // Set default Chart.js colors that work with dark mode
-            const getChartColors = () => {
+            // Set Flowbite chart colors that work with dark mode
+            const getFlowbiteChartColors = () => {
                 const isDarkMode = document.documentElement.classList.contains('dark');
                 return {
-                    textColor: isDarkMode ? '#e5e7eb' : '#374151',
-                    gridColor: isDarkMode ? 'rgba(255, 255, 255, 0.1)' : 'rgba(0, 0, 0, 0.1)'
+                    textColor: isDarkMode ? '#f3f4f6' : '#1f2937', // Flowbite text colors
+                    gridColor: isDarkMode ? 'rgba(243, 244, 246, 0.1)' : 'rgba(17, 24, 39, 0.1)', // Flowbite grid colors
+                    backgroundColor: isDarkMode ? '#374151' : '#ffffff' // Flowbite background colors
                 };
             };
 
@@ -150,28 +129,26 @@
                         {
                             label: 'Income (€)',
                             data: {!! isset($monthlyData) ? json_encode($monthlyData['income']) : '[' . $statistics['current_company_income'] . ']' !!},
-                            backgroundColor: 'rgba(16, 185, 129, 0.8)',  // Green for income
-                            borderColor: 'rgba(16, 185, 129, 1)',
-                            borderWidth: 2,
-                            borderRadius: 4,
+                            backgroundColor: 'rgba(22, 163, 74, 0.7)',  // Flowbite green
+                            borderColor: 'rgb(22, 163, 74)',
+                            borderWidth: 1,
+                            borderRadius: 6,
                             borderSkipped: false,
-                            hoverBackgroundColor: 'rgba(16, 185, 129, 1)',
-                            hoverBorderWidth: 3,
-                            barPercentage: 0.6,
-                            categoryPercentage: 0.8
+                            hoverBackgroundColor: 'rgb(22, 163, 74)',
+                            barPercentage: 0.5,
+                            categoryPercentage: 0.7
                         },
                         {
                             label: 'Expenses (€)',
                             data: {!! isset($monthlyData) ? json_encode($monthlyData['expenses']) : '[' . $statistics['current_company_expenses'] . ']' !!},
-                            backgroundColor: 'rgba(239, 68, 68, 0.8)',  // Red for expenses
-                            borderColor: 'rgba(239, 68, 68, 1)',
-                            borderWidth: 2,
-                            borderRadius: 4,
+                            backgroundColor: 'rgba(220, 38, 38, 0.7)',  // Flowbite red
+                            borderColor: 'rgb(220, 38, 38)',
+                            borderWidth: 1,
+                            borderRadius: 6,
                             borderSkipped: false,
-                            hoverBackgroundColor: 'rgba(239, 68, 68, 1)',
-                            hoverBorderWidth: 3,
-                            barPercentage: 0.6,
-                            categoryPercentage: 0.8
+                            hoverBackgroundColor: 'rgb(220, 38, 38)',
+                            barPercentage: 0.5,
+                            categoryPercentage: 0.7
                         }
                     ]
                 };
@@ -187,27 +164,36 @@
                         plugins: {
                             legend: {
                                 position: 'top',
+                                align: 'start',
                                 labels: {
-                                    color: getChartColors().textColor,
+                                    color: getFlowbiteChartColors().textColor,
+                                    usePointStyle: true,
+                                    pointStyleWidth: 10,
+                                    boxWidth: 10,
+                                    boxHeight: 10,
+                                    padding: 20,
                                     font: {
-                                        weight: 'bold'
-                                    },
-                                    usePointStyle: true
+                                        size: 14
+                                    }
                                 }
                             },
                             tooltip: {
-                                backgroundColor: 'rgba(0, 0, 0, 0.8)',
+                                enabled: true,
+                                backgroundColor: getFlowbiteChartColors().backgroundColor,
+                                titleColor: getFlowbiteChartColors().textColor,
+                                bodyColor: getFlowbiteChartColors().textColor,
                                 titleFont: {
-                                    size: 14,
-                                    weight: 'bold'
+                                    size: 14
                                 },
                                 bodyFont: {
-                                    size: 13
+                                    size: 14
                                 },
-                                padding: 15,
-                                cornerRadius: 8,
+                                padding: 12,
+                                cornerRadius: 4,
                                 displayColors: true,
                                 usePointStyle: true,
+                                borderColor: document.documentElement.classList.contains('dark') ? 'rgba(255, 255, 255, 0.1)' : 'rgba(0, 0, 0, 0.1)',
+                                borderWidth: 1,
                                 callbacks: {
                                     label: function(context) {
                                         return context.dataset.label + ': €' + context.parsed.y.toLocaleString();
@@ -228,63 +214,37 @@
                                 display: function(context) {
                                     return context.dataset.data[context.dataIndex] > 0;
                                 }
-                            },
-                            title: {
-                                display: true,
-                                text: 'Monthly Income vs Expenses ({{ $currentYear }})',
-                                font: {
-                                    size: 16,
-                                    weight: 'bold'
-                                },
-                                padding: {
-                                    top: 10,
-                                    bottom: 20
-                                },
-                                color: getChartColors().textColor
                             }
                         },
                         scales: {
                             x: {
-                                title: {
-                                    display: true,
-                                    text: 'Month',
-                                    color: getChartColors().textColor,
-                                    font: {
-                                        weight: 'bold'
-                                    }
+                                grid: {
+                                    display: false,
+                                    drawBorder: false
                                 },
                                 ticks: {
-                                    color: getChartColors().textColor,
+                                    color: getFlowbiteChartColors().textColor,
                                     font: {
-                                        weight: 'bold'
-                                    }
-                                },
-                                grid: {
-                                    display: false
+                                        size: 12
+                                    },
+                                    padding: 10
                                 }
                             },
                             y: {
-                                title: {
-                                    display: true,
-                                    text: 'Amount (€)',
-                                    color: getChartColors().textColor,
-                                    font: {
-                                        weight: 'bold'
-                                    }
+                                grid: {
+                                    color: getFlowbiteChartColors().gridColor,
+                                    borderDash: [4],
+                                    drawBorder: false
                                 },
                                 ticks: {
-                                    color: getChartColors().textColor,
+                                    color: getFlowbiteChartColors().textColor,
                                     font: {
-                                        weight: 'bold'
+                                        size: 12
                                     },
+                                    padding: 10,
                                     callback: function(value) {
                                         return '€' + value.toLocaleString();
                                     }
-                                },
-                                grid: {
-                                    color: getChartColors().gridColor,
-                                    borderDash: [2, 4],
-                                    drawBorder: false
                                 },
                                 beginAtZero: true
                             }
