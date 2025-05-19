@@ -387,7 +387,7 @@ export default {
       this.companyMessage = 'Načítavam údaje...';
       this.companyMessageClass = 'text-gray-500';
 
-      axios.get(`/api/companies/${ico}`)
+      axios.get(`/business-entities-fetch-by-ico?ico=${ico}`)
           .then(response => {
             if (response.data.success) {
               const company = response.data.data;
