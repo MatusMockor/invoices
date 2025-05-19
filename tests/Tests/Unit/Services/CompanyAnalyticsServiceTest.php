@@ -204,7 +204,7 @@ class CompanyAnalyticsServiceTest extends TestCase
 
         // Verify that the count for the month where we created Company C is correct
         $companyCreationMonth = Carbon::parse($this->companyC->created_at)->month;
-        if ($companyCreationMonth === Carbon::now()->month && Carbon::now()->year == $currentYear) {
+        if ($companyCreationMonth === Carbon::now()->month && Carbon::now()->year === $currentYear) {
             $this->assertEquals(1, $result[$companyCreationMonth]);
         }
     }
