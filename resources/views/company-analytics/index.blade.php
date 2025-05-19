@@ -166,7 +166,7 @@
                                 position: 'top',
                                 align: 'start',
                                 labels: {
-                                    color: getFlowbiteChartColors().textColor,
+                                    color: document.documentElement.classList.contains('dark') ? '#ffffff' : '#1f2937',
                                     usePointStyle: true,
                                     pointStyleWidth: 10,
                                     boxWidth: 10,
@@ -179,9 +179,9 @@
                             },
                             tooltip: {
                                 enabled: true,
-                                backgroundColor: getFlowbiteChartColors().backgroundColor,
-                                titleColor: getFlowbiteChartColors().textColor,
-                                bodyColor: getFlowbiteChartColors().textColor,
+                                backgroundColor: document.documentElement.classList.contains('dark') ? '#374151' : '#ffffff',
+                                titleColor: document.documentElement.classList.contains('dark') ? '#ffffff' : '#1f2937',
+                                bodyColor: document.documentElement.classList.contains('dark') ? '#ffffff' : '#1f2937',
                                 titleFont: {
                                     size: 14
                                 },
@@ -201,7 +201,15 @@
                                 }
                             },
                             datalabels: {
-                                color: '#fff',
+                                color: function(context) {
+                                    // Use high contrast colors that will be visible in both light and dark modes
+                                    const isDarkMode = document.documentElement.classList.contains('dark');
+                                    if (isDarkMode) {
+                                        return '#ffffff'; // White text for dark mode
+                                    } else {
+                                        return '#000000'; // Black text for light mode
+                                    }
+                                },
                                 anchor: 'center',
                                 align: 'center',
                                 font: {
