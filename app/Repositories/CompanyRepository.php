@@ -16,7 +16,7 @@ class CompanyRepository implements CompanyRepositoryContract
      */
     public function getAllPaginated(int $perPage = 10): LengthAwarePaginator
     {
-        return Company::query()->latest()->paginate($perPage);
+        return Company::latest()->paginate($perPage);
     }
 
     /**
@@ -24,7 +24,7 @@ class CompanyRepository implements CompanyRepositoryContract
      */
     public function getAllOrderedByName(): Collection
     {
-        return Company::query()->orderBy('name')->get();
+        return Company::orderBy('name')->get();
     }
 
     /**
@@ -32,7 +32,7 @@ class CompanyRepository implements CompanyRepositoryContract
      */
     public function findById(int $id): ?Company
     {
-        return Company::query()->find($id);
+        return Company::find($id);
     }
 
     /**
@@ -40,7 +40,7 @@ class CompanyRepository implements CompanyRepositoryContract
      */
     public function findByIco(string $ico): ?Company
     {
-        return Company::query()->where('ico', $ico)->first();
+        return Company::where('ico', $ico)->first();
     }
 
     /**
@@ -48,7 +48,7 @@ class CompanyRepository implements CompanyRepositoryContract
      */
     public function getByCountry(string $country): Collection
     {
-        return Company::query()->where('country', $country)->get();
+        return Company::where('country', $country)->get();
     }
 
     /**
@@ -56,8 +56,7 @@ class CompanyRepository implements CompanyRepositoryContract
      */
     public function getByYear(int $year): Collection
     {
-        return Company::query()
-            ->whereYear('created_at', $year)
+        return Company::whereYear('created_at', $year)
             ->get();
     }
 
@@ -66,8 +65,7 @@ class CompanyRepository implements CompanyRepositoryContract
      */
     public function getByMonth(int $year, int $month): Collection
     {
-        return Company::query()
-            ->whereYear('created_at', $year)
+        return Company::whereYear('created_at', $year)
             ->whereMonth('created_at', $month)
             ->get();
     }
@@ -77,8 +75,7 @@ class CompanyRepository implements CompanyRepositoryContract
      */
     public function getWithVatNumber(): Collection
     {
-        return Company::query()
-            ->whereNotNull('ic_dph')
+        return Company::whereNotNull('ic_dph')
             ->get();
     }
 
@@ -87,8 +84,7 @@ class CompanyRepository implements CompanyRepositoryContract
      */
     public function getWithoutVatNumber(): Collection
     {
-        return Company::query()
-            ->whereNull('ic_dph')
+        return Company::whereNull('ic_dph')
             ->get();
     }
 
@@ -97,7 +93,7 @@ class CompanyRepository implements CompanyRepositoryContract
      */
     public function count(): int
     {
-        return Company::query()->count();
+        return Company::count();
     }
 
     /**
@@ -105,7 +101,7 @@ class CompanyRepository implements CompanyRepositoryContract
      */
     public function create(array $data): Company
     {
-        return Company::query()->create($data);
+        return Company::create($data);
     }
 
     /**
@@ -129,8 +125,7 @@ class CompanyRepository implements CompanyRepositoryContract
      */
     public function getTotalIncome(int $companyId): float
     {
-        return (float) Invoice::query()
-            ->where('supplier_company_id', $companyId)
+        return (float) Invoice::where('supplier_company_id', $companyId)
             ->sum('total_amount');
     }
 
@@ -140,7 +135,7 @@ class CompanyRepository implements CompanyRepositoryContract
     public function getTotalExpenses(int $companyId): float
     {
         // Get the company's ICO
-        $company = Company::query()->find($companyId);
+        $company = Company::find($companyId);
         if (! $company) {
             return 0.0;
         }
@@ -148,8 +143,7 @@ class CompanyRepository implements CompanyRepositoryContract
         $ico = $company->ico;
 
         // Find business entities with the same ICO
-        $businessEntityIds = BusinessEntity::query()
-            ->where('ico', $ico)
+        $businessEntityIds = BusinessEntity::where('ico', $ico)
             ->pluck('id')
             ->toArray();
 
@@ -158,8 +152,7 @@ class CompanyRepository implements CompanyRepositoryContract
         }
 
         // Calculate total amount of invoices where these business entities are recipients
-        return (float) Invoice::query()
-            ->whereIn('business_entity_id', $businessEntityIds)
+        return (float) Invoice::whereIn('business_entity_id', $businessEntityIds)
             ->sum('total_amount');
     }
 
@@ -171,8 +164,7 @@ class CompanyRepository implements CompanyRepositoryContract
         $result = array_fill(1, 12, 0.0);
 
         // Get all invoices for the company in the specified year
-        $invoices = Invoice::query()
-            ->where('supplier_company_id', $companyId)
+        $invoices = Invoice::where('supplier_company_id', $companyId)
             ->whereYear('issue_date', $year)
             ->get();
 
@@ -193,7 +185,7 @@ class CompanyRepository implements CompanyRepositoryContract
         $result = array_fill(1, 12, 0.0);
 
         // Get the company's ICO
-        $company = Company::query()->find($companyId);
+        $company = Company::find($companyId);
         if (! $company) {
             return $result;
         }
@@ -201,8 +193,7 @@ class CompanyRepository implements CompanyRepositoryContract
         $ico = $company->ico;
 
         // Find business entities with the same ICO
-        $businessEntityIds = BusinessEntity::query()
-            ->where('ico', $ico)
+        $businessEntityIds = BusinessEntity::where('ico', $ico)
             ->pluck('id')
             ->toArray();
 
@@ -211,8 +202,7 @@ class CompanyRepository implements CompanyRepositoryContract
         }
 
         // Get all invoices where these business entities are recipients in the specified year
-        $invoices = Invoice::query()
-            ->whereIn('business_entity_id', $businessEntityIds)
+        $invoices = Invoice::whereIn('business_entity_id', $businessEntityIds)
             ->whereYear('issue_date', $year)
             ->get();
 
