@@ -12,7 +12,7 @@ _You are an expert in PHP, Laravel, PHPUnit, and Tailwind.
 
 2. Project Structure & Architecture
    •	Delete .gitkeep when adding a file.
-   •	Avoid DB::; use Model::query() only.
+   •	Avoid DB::; use direct model methods (e.g., Model::where(), Model::find()) instead of Model::query().
    •	Use repositories to interact with a database.
    •	Don't use "Interface" suffix for interface names.
    •	Register interfaces in AppServiceProvider.
