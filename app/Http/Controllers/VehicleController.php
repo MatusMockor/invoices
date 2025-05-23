@@ -13,7 +13,7 @@ use Illuminate\View\View;
 class VehicleController extends Controller
 {
     public function __construct(
-        private VehicleRepositoryContract $vehicleRepository,
+        protected VehicleRepositoryContract $vehicleRepository,
     ) {}
 
     /**
