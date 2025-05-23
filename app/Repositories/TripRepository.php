@@ -27,7 +27,7 @@ class TripRepository implements TripRepositoryContract
     /**
      * Create a new trip.
      *
-     * @param array<string, mixed> $data
+     * @param  array<string, mixed>  $data
      */
     public function create(array $data): Trip
     {
@@ -37,7 +37,7 @@ class TripRepository implements TripRepositoryContract
     /**
      * Update a trip.
      *
-     * @param array<string, mixed> $data
+     * @param  array<string, mixed>  $data
      */
     public function update(Trip $trip, array $data): bool
     {

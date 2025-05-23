@@ -27,7 +27,7 @@ class VehicleRepository implements VehicleRepositoryContract
     /**
      * Create a new vehicle.
      *
-     * @param array<string, mixed> $data
+     * @param  array<string, mixed>  $data
      */
     public function create(array $data): Vehicle
     {
@@ -37,7 +37,7 @@ class VehicleRepository implements VehicleRepositoryContract
     /**
      * Update a vehicle.
      *
-     * @param array<string, mixed> $data
+     * @param  array<string, mixed>  $data
      */
     public function update(Vehicle $vehicle, array $data): bool
     {
