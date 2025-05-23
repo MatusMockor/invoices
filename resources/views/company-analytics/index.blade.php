@@ -17,80 +17,88 @@
                 <div class="p-6">
 
                     @if(isset($statistics['current_company_income']))
-                    <!-- Current Company Financial Summary -->
-                    <div class="p-4 bg-white border border-gray-200 rounded-lg shadow-sm dark:border-gray-700 dark:bg-gray-800 sm:p-6">
-                        <h3 class="mb-4 text-xl font-semibold text-gray-900 dark:text-white">{{ __('Current Company Financial Summary') }}</h3>
-                        <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
-                            <!-- Income -->
-                            <div class="p-4 bg-white border border-gray-200 rounded-lg shadow-sm dark:border-gray-700 dark:bg-gray-800 sm:p-6">
-                                <div class="flex items-center">
-                                    <div class="inline-flex items-center justify-center flex-shrink-0 w-12 h-12 text-green-500 bg-green-100 rounded-lg dark:bg-green-800 dark:text-green-200">
-                                        <svg class="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-                                        </svg>
+                        <!-- Current Company Financial Summary -->
+                        <div class="p-4 bg-white border border-gray-200 rounded-lg shadow-sm dark:border-gray-700 dark:bg-gray-800 sm:p-6">
+                            <h3 class="mb-4 text-xl font-semibold text-gray-900 dark:text-white">{{ __('Current Company Financial Summary') }}</h3>
+                            <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
+                                <!-- Income -->
+                                <div class="p-4 bg-white border border-gray-200 rounded-lg shadow-sm dark:border-gray-700 dark:bg-gray-800 sm:p-6">
+                                    <div class="flex items-center">
+                                        <div class="inline-flex items-center justify-center flex-shrink-0 w-12 h-12 text-green-500 bg-green-100 rounded-lg dark:bg-green-800 dark:text-green-200">
+                                            <svg class="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                                      d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
+                                            </svg>
+                                        </div>
+                                        <div class="ms-4">
+                                            <h3 class="mb-1 text-lg font-medium text-gray-900 dark:text-white">{{ __('Total Income') }}</h3>
+                                            <div class="text-2xl font-bold text-green-600 dark:text-green-400">
+                                                {{ number_format($statistics['current_company_income'], 2) }} €
+                                            </div>
+                                        </div>
                                     </div>
-                                    <div class="ms-4">
-                                        <h3 class="mb-1 text-lg font-medium text-gray-900 dark:text-white">{{ __('Total Income') }}</h3>
-                                        <div class="text-2xl font-bold text-green-600 dark:text-green-400">
-                                            {{ number_format($statistics['current_company_income'], 2) }} €
+                                </div>
+
+                                <!-- Expenses -->
+                                <div class="p-4 bg-white border border-gray-200 rounded-lg shadow-sm dark:border-gray-700 dark:bg-gray-800 sm:p-6">
+                                    <div class="flex items-center">
+                                        <div class="inline-flex items-center justify-center flex-shrink-0 w-12 h-12 text-red-500 bg-red-100 rounded-lg dark:bg-red-800 dark:text-red-200">
+                                            <svg class="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                                      d="M15 12H9m12 0a9 9 0 11-18 0 9 9 0 0118 0z"/>
+                                            </svg>
+                                        </div>
+                                        <div class="ms-4">
+                                            <h3 class="mb-1 text-lg font-medium text-gray-900 dark:text-white">{{ __('Total Expenses') }}</h3>
+                                            <div class="text-2xl font-bold text-red-600 dark:text-red-400">
+                                                {{ number_format($statistics['current_company_expenses'], 2) }} €
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <!-- Balance -->
+                                <div class="p-4 bg-white border border-gray-200 rounded-lg shadow-sm dark:border-gray-700 dark:bg-gray-800 sm:p-6">
+                                    <div class="flex items-center">
+                                        <div class="inline-flex items-center justify-center flex-shrink-0 w-12 h-12 text-blue-500 bg-blue-100 rounded-lg dark:bg-blue-800 dark:text-blue-200">
+                                            <svg class="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                                      d="M3 6l3 1m0 0l-3 9a5.002 5.002 0 006.001 0M6 7l3 9M6 7l6-2m6 2l3-1m-3 1l-3 9a5.002 5.002 0 006.001 0M18 7l3 9m-3-9l-6-2m0-2v2m0 16V5m0 16H9m3 0h3"/>
+                                            </svg>
+                                        </div>
+                                        <div class="ms-4">
+                                            <h3 class="mb-1 text-lg font-medium text-gray-900 dark:text-white">{{ __('Balance') }}</h3>
+                                            <div class="text-2xl font-bold {{ $statistics['current_company_balance'] >= 0 ? 'text-green-600 dark:text-green-400' : 'text-red-600 dark:text-red-400' }}">
+                                                {{ number_format($statistics['current_company_balance'], 2) }} €
+                                            </div>
                                         </div>
                                     </div>
                                 </div>
                             </div>
 
-                            <!-- Expenses -->
-                            <div class="p-4 bg-white border border-gray-200 rounded-lg shadow-sm dark:border-gray-700 dark:bg-gray-800 sm:p-6">
-                                <div class="flex items-center">
-                                    <div class="inline-flex items-center justify-center flex-shrink-0 w-12 h-12 text-red-500 bg-red-100 rounded-lg dark:bg-red-800 dark:text-red-200">
-                                        <svg class="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12H9m12 0a9 9 0 11-18 0 9 9 0 0118 0z" />
-                                        </svg>
-                                    </div>
-                                    <div class="ms-4">
-                                        <h3 class="mb-1 text-lg font-medium text-gray-900 dark:text-white">{{ __('Total Expenses') }}</h3>
-                                        <div class="text-2xl font-bold text-red-600 dark:text-red-400">
-                                            {{ number_format($statistics['current_company_expenses'], 2) }} €
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-
-                            <!-- Balance -->
-                            <div class="p-4 bg-white border border-gray-200 rounded-lg shadow-sm dark:border-gray-700 dark:bg-gray-800 sm:p-6">
-                                <div class="flex items-center">
-                                    <div class="inline-flex items-center justify-center flex-shrink-0 w-12 h-12 text-blue-500 bg-blue-100 rounded-lg dark:bg-blue-800 dark:text-blue-200">
-                                        <svg class="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 6l3 1m0 0l-3 9a5.002 5.002 0 006.001 0M6 7l3 9M6 7l6-2m6 2l3-1m-3 1l-3 9a5.002 5.002 0 006.001 0M18 7l3 9m-3-9l-6-2m0-2v2m0 16V5m0 16H9m3 0h3" />
-                                        </svg>
-                                    </div>
-                                    <div class="ms-4">
-                                        <h3 class="mb-1 text-lg font-medium text-gray-900 dark:text-white">{{ __('Balance') }}</h3>
-                                        <div class="text-2xl font-bold {{ $statistics['current_company_balance'] >= 0 ? 'text-green-600 dark:text-green-400' : 'text-red-600 dark:text-red-400' }}">
-                                            {{ number_format($statistics['current_company_balance'], 2) }} €
-                                        </div>
-                                    </div>
+                            <!-- Financial Chart -->
+                            <div class="p-4 bg-white border border-gray-200 rounded-lg shadow-sm dark:border-gray-700 dark:bg-gray-800">
+                                <h4 class="mb-4 text-xl font-semibold text-gray-900 dark:text-white">{{ __('Monthly Income vs Expenses') }}
+                                    ({{ $currentYear }})</h4>
+                                <div class="w-full h-80">
+                                    <canvas id="financialChart"></canvas>
                                 </div>
                             </div>
                         </div>
-
-                        <!-- Financial Chart -->
-                        <div class="p-4 bg-white border border-gray-200 rounded-lg shadow-sm dark:border-gray-700 dark:bg-gray-800">
-                            <h4 class="mb-4 text-xl font-semibold text-gray-900 dark:text-white">{{ __('Monthly Income vs Expenses') }} ({{ $currentYear }})</h4>
-                            <div class="w-full h-80">
-                                <canvas id="financialChart"></canvas>
-                            </div>
-                        </div>
-                    </div>
                     @else
-                    <div class="p-4 bg-white border border-gray-200 rounded-lg shadow-sm dark:border-gray-700 dark:bg-gray-800 sm:p-6 text-center">
-                        <div class="flex items-center justify-center">
-                            <svg class="w-10 h-10 text-gray-400 dark:text-gray-500 mb-3.5 mx-auto" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" fill="currentColor" viewBox="0 0 24 24">
-                                <path fill-rule="evenodd" d="M2 12C2 6.477 6.477 2 12 2s10 4.477 10 10-4.477 10-10 10S2 17.523 2 12zm11-4a1 1 0 1 0-2 0v4a1 1 0 0 0 .293.707l2.828 2.829a1 1 0 1 0 1.415-1.415L13 11.586V8z" clip-rule="evenodd"/>
-                            </svg>
+                        <div class="p-4 bg-white border border-gray-200 rounded-lg shadow-sm dark:border-gray-700 dark:bg-gray-800 sm:p-6 text-center">
+                            <div class="flex items-center justify-center">
+                                <svg class="w-10 h-10 text-gray-400 dark:text-gray-500 mb-3.5 mx-auto"
+                                     aria-hidden="true" xmlns="http://www.w3.org/2000/svg" fill="currentColor"
+                                     viewBox="0 0 24 24">
+                                    <path fill-rule="evenodd"
+                                          d="M2 12C2 6.477 6.477 2 12 2s10 4.477 10 10-4.477 10-10 10S2 17.523 2 12zm11-4a1 1 0 1 0-2 0v4a1 1 0 0 0 .293.707l2.828 2.829a1 1 0 1 0 1.415-1.415L13 11.586V8z"
+                                          clip-rule="evenodd"/>
+                                </svg>
+                            </div>
+                            <p class="mb-2 text-lg font-semibold text-gray-900 dark:text-white">{{ __('No Data Available') }}</p>
+                            <p class="text-gray-500 dark:text-gray-400">{{ __('No financial data available for the current company.') }}</p>
                         </div>
-                        <p class="mb-2 text-lg font-semibold text-gray-900 dark:text-white">{{ __('No Data Available') }}</p>
-                        <p class="text-gray-500 dark:text-gray-400">{{ __('No financial data available for the current company.') }}</p>
-                    </div>
                     @endif
                 </div>
             </div>
@@ -99,7 +107,7 @@
 
     <!-- Chart Initialization Scripts - Flowbite Style -->
     <script>
-        document.addEventListener('DOMContentLoaded', function() {
+        document.addEventListener('DOMContentLoaded', function () {
             // Register the plugins
             Chart.register(ChartDataLabels);
 
@@ -123,32 +131,32 @@
             // Function to update chart colors on theme change
             const updateChartColors = (chart) => {
                 if (!chart) return;
-                
+
                 const colors = getFlowbiteChartColors();
-                
+
                 // Update dataset colors
                 chart.data.datasets[0].backgroundColor = colors.greenColor;
                 chart.data.datasets[0].borderColor = colors.greenBorderColor;
                 chart.data.datasets[0].hoverBackgroundColor = colors.greenBorderColor;
-                
+
                 chart.data.datasets[1].backgroundColor = colors.redColor;
                 chart.data.datasets[1].borderColor = colors.redBorderColor;
                 chart.data.datasets[1].hoverBackgroundColor = colors.redBorderColor;
-                
+
                 // Update scales
                 chart.options.scales.x.ticks.color = colors.textColor;
                 chart.options.scales.y.ticks.color = colors.textColor;
                 chart.options.scales.y.grid.color = colors.gridColor;
-                
+
                 // Update legend
                 chart.options.plugins.legend.labels.color = colors.textColor;
-                
+
                 // Update tooltip
                 chart.options.plugins.tooltip.backgroundColor = colors.tooltipBackground;
                 chart.options.plugins.tooltip.titleColor = colors.textColor;
                 chart.options.plugins.tooltip.bodyColor = colors.textColor;
                 chart.options.plugins.tooltip.borderColor = colors.tooltipBorderColor;
-                
+
                 chart.update();
             };
 
@@ -165,7 +173,7 @@
 
                 // Prepare data for Flowbite column chart
                 const financialData = {
-                    labels: {!! isset($monthlyData) ? json_encode($monthlyData['labels']) : '["Income", "Expenses"]' !!},
+                    labels: {!! isset($monthlyData) ? json_encode($monthlyData['labels'], JSON_THROW_ON_ERROR) : '["Income", "Expenses"]' !!},
                     datasets: [
                         {
                             label: 'Income (€)',
@@ -236,7 +244,7 @@
                                 borderColor: colors.tooltipBorderColor,
                                 borderWidth: 1,
                                 callbacks: {
-                                    label: function(context) {
+                                    label: function (context) {
                                         return context.dataset.label + ': €' + context.parsed.y.toLocaleString();
                                     }
                                 }
@@ -252,7 +260,7 @@
                                 formatter: (value) => {
                                     return '€' + value.toLocaleString();
                                 },
-                                display: function(context) {
+                                display: function (context) {
                                     return context.dataset.data[context.dataIndex] > 0;
                                 },
                                 textShadow: '0px 0px 2px rgba(0, 0, 0, 0.7)',
@@ -286,7 +294,7 @@
                                         size: 12
                                     },
                                     padding: 10,
-                                    callback: function(value) {
+                                    callback: function (value) {
                                         return '€' + value.toLocaleString();
                                     }
                                 },
@@ -295,18 +303,18 @@
                         }
                     }
                 });
-                
+
                 // Listen for theme changes
-                const observer = new MutationObserver(function(mutations) {
-                    mutations.forEach(function(mutation) {
-                        if (mutation.attributeName === 'class' && 
+                const observer = new MutationObserver(function (mutations) {
+                    mutations.forEach(function (mutation) {
+                        if (mutation.attributeName === 'class' &&
                             mutation.target === document.documentElement) {
                             updateChartColors(financialChart);
                         }
                     });
                 });
-                
-                observer.observe(document.documentElement, { attributes: true });
+
+                observer.observe(document.documentElement, {attributes: true});
             }
             @endif
         });

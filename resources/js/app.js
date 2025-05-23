@@ -5,6 +5,7 @@ import BusinessEntityForm from './components/BusinessEntityForm.vue';
 import CompanyForm from './components/CompanyForm.vue';
 import SettingsDropdown from './components/SettingsDropdown.vue';
 import CompanySwitcher from "./components/CompanySwitcher.vue";
+import TripForm from './components/TripForm.vue';
 
 // Import Flowbite for initialization
 import 'flowbite';
@@ -129,6 +130,7 @@ app.component('invoice-form', InvoiceForm);
 app.component('company-switcher', CompanySwitcher);
 app.component('business-entity-form', BusinessEntityForm);
 app.component('company-form', CompanyForm);
+app.component('trip-form', TripForm);
 
 // Mount Vue app when the DOM is fully loaded
 app.mount('#app');
