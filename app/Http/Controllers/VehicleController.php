@@ -6,7 +6,6 @@ use App\Http\Requests\CreateVehicleRequest;
 use App\Http\Requests\UpdateVehicleRequest;
 use App\Models\Vehicle;
 use App\Repositories\Interfaces\VehicleRepository as VehicleRepositoryContract;
-use Illuminate\Http\JsonResponse;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\View\View;
@@ -15,8 +14,7 @@ class VehicleController extends Controller
 {
     public function __construct(
         private VehicleRepositoryContract $vehicleRepository,
-    ) {
-    }
+    ) {}
 
     /**
      * Display a listing of the vehicles.

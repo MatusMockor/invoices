@@ -9,7 +9,6 @@ use App\Models\Vehicle;
 use App\Repositories\Interfaces\TripRepository as TripRepositoryContract;
 use App\Repositories\Interfaces\VehicleRepository as VehicleRepositoryContract;
 use Illuminate\Http\RedirectResponse;
-use Illuminate\Http\Request;
 use Illuminate\View\View;
 
 class TripController extends Controller
@@ -17,8 +16,7 @@ class TripController extends Controller
     public function __construct(
         private TripRepositoryContract $tripRepository,
         private VehicleRepositoryContract $vehicleRepository,
-    ) {
-    }
+    ) {}
 
     /**
      * Show the form for creating a new trip directly (without pre-selected vehicle).
@@ -41,7 +39,7 @@ class TripController extends Controller
         // Get the vehicle
         $vehicle = $this->vehicleRepository->find($data['vehicle_id']);
 
-        if (!$vehicle) {
+        if (! $vehicle) {
             return redirect()->back()->withErrors(['vehicle_id' => 'Vehicle not found.'])->withInput();
         }
 
