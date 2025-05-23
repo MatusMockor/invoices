@@ -3,11 +3,36 @@
 namespace App\Models;
 
 use App\Observers\InvoiceObserver;
+use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Support\Carbon;
 
+/**
+ * Invoice model representing an invoice in the system.
+ *
+ * @property int $id
+ * @property int $user_id
+ * @property string $invoice_number
+ * @property Carbon $issue_date
+ * @property Carbon $due_date
+ * @property Carbon $delivery_date
+ * @property int $business_entity_id
+ * @property int $supplier_company_id
+ * @property float $total_amount
+ * @property string $currency
+ * @property string|null $constant_symbol
+ * @property string|null $note
+ * @property string $status
+ * @property Carbon $created_at
+ * @property Carbon $updated_at
+ * @property-read User $user
+ * @property-read BusinessEntity $businessEntity
+ * @property-read Company $supplierCompany
+ * @property-read Collection|InvoiceItem[] $items
+ */
 #[ObservedBy([InvoiceObserver::class])]
 class Invoice extends Model
 {
