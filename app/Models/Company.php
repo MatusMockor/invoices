@@ -30,6 +30,7 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
  * @property \Illuminate\Support\Carbon|null $created_at
  * @property \Illuminate\Support\Carbon|null $updated_at
  * @property-read \App\Models\User|null $user
+ * @property-read \Illuminate\Database\Eloquent\Collection|\App\Models\Vehicle[] $vehicles
  */
 class Company extends Model
 {

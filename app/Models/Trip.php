@@ -5,7 +5,28 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Support\Carbon;
 
+/**
+ * Trip model representing a vehicle trip in the system.
+ *
+ * @property int $id
+ * @property int $vehicle_id
+ * @property Carbon $date
+ * @property string $start_location
+ * @property string $end_location
+ * @property string $purpose
+ * @property int $start_odometer
+ * @property int $end_odometer
+ * @property int $distance
+ * @property string $driver_name
+ * @property float|null $fuel_amount
+ * @property float|null $fuel_cost
+ * @property string|null $fuel_receipt_number
+ * @property Carbon $created_at
+ * @property Carbon $updated_at
+ * @property-read Vehicle $vehicle
+ */
 class Trip extends Model
 {
     use HasFactory;
