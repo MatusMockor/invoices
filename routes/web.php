@@ -5,6 +5,8 @@ use App\Http\Controllers\CompanyAnalyticsController;
 use App\Http\Controllers\CompanyController;
 use App\Http\Controllers\InvoiceController;
 use App\Http\Controllers\ProfileController;
+use App\Http\Controllers\TripController;
+use App\Http\Controllers\VehicleController;
 use App\Http\Middleware\EnsureCompanySelected;
 use Illuminate\Support\Facades\Route;
 
@@ -40,6 +42,12 @@ Route::middleware('auth')->group(function () {
 
     // Company Analytics routes
     Route::get('/company-analytics', [CompanyAnalyticsController::class, 'index'])->name('company-analytics.index');
+
+    // Vehicle Logbook routes
+    Route::resource('vehicles', VehicleController::class)->middleware(EnsureCompanySelected::class);
+
+    // Trip routes
+    Route::resource('trips', TripController::class)->middleware(EnsureCompanySelected::class);
 });
 
 require __DIR__.'/auth.php';
