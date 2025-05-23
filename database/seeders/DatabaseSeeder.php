@@ -24,6 +24,8 @@ class DatabaseSeeder extends Seeder
             CompanySeeder::class,
             BusinessEntitySeeder::class,
             InvoiceSeeder::class,
+            VehicleSeeder::class,
+            TripSeeder::class,
         ]);
     }
 }
