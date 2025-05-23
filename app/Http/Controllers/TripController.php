@@ -44,9 +44,7 @@ class TripController extends Controller
         $vehicle = $vehicles->first();
 
         if (! $vehicle) {
-            // If no vehicles are available, redirect to vehicles index with an error
-            return redirect()->route('vehicles.index')
-                ->with('error', 'You need to create a vehicle first before adding a trip.');
+            abort(404, 'You need to create a vehicle first before adding a trip.');
         }
 
         return view('trips.create')
