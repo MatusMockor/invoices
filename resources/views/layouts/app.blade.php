@@ -55,6 +55,24 @@
                                         <span class="ml-3" sidebar-toggle-item>{{ __('Business Entities') }}</span>
                                     </a>
                                 </li>
+                                <li>
+                                    <a href="{{ route('vehicles.index') }}" class="flex items-center p-2 text-base text-gray-900 rounded-lg hover:bg-gray-100 group dark:text-gray-200 dark:hover:bg-gray-700 {{ request()->routeIs('vehicles.*') && !request()->routeIs('vehicles.create') ? 'bg-gray-100 dark:bg-gray-700' : '' }}">
+                                        <svg class="w-6 h-6 text-gray-500 transition duration-75 group-hover:text-gray-900 dark:text-gray-400 dark:group-hover:text-white" fill="currentColor" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg"><path d="M8 16.5a1.5 1.5 0 11-3 0 1.5 1.5 0 013 0zM15 16.5a1.5 1.5 0 11-3 0 1.5 1.5 0 013 0z" /><path d="M3 4a1 1 0 00-1 1v10a1 1 0 001 1h1.05a2.5 2.5 0 014.9 0H10a1 1 0 001-1v-5h2a1 1 0 00.9-.5l1.5-2A1 1 0 0015 7h-3V4a1 1 0 00-1-1H3zM14 7l-1.5 2h-2.05A2.5 2.5 0 008 10.5H5V5h8v2z" /></svg>
+                                        <span class="ml-3" sidebar-toggle-item>{{ __('Vehicle Logbook') }}</span>
+                                    </a>
+                                </li>
+                                <li>
+                                    <a href="{{ route('vehicles.create') }}" class="flex items-center p-2 text-base text-gray-900 rounded-lg hover:bg-gray-100 group dark:text-gray-200 dark:hover:bg-gray-700 {{ request()->routeIs('vehicles.create') ? 'bg-gray-100 dark:bg-gray-700' : '' }}">
+                                        <svg class="w-6 h-6 text-gray-500 transition duration-75 group-hover:text-gray-900 dark:text-gray-400 dark:group-hover:text-white" fill="currentColor" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg"><path d="M11 17a1 1 0 001.447.894l4-2A1 1 0 0017 15V9.236a1 1 0 00-1.447-.894l-4 2a1 1 0 00-.553.894V17zM15.211 6.276a1 1 0 000-1.788l-4.764-2.382a1 1 0 00-.894 0L4.789 4.488a1 1 0 000 1.788l4.764 2.382a1 1 0 00.894 0l4.764-2.382zM4.447 8.342A1 1 0 003 9.236V15a1 1 0 00.553.894l4 2A1 1 0 009 17v-5.764a1 1 0 00-.553-.894l-4-2z" /></svg>
+                                        <span class="ml-3" sidebar-toggle-item>{{ __('Add Vehicle') }}</span>
+                                    </a>
+                                </li>
+                                <li>
+                                    <a href="{{ route('trips.create') }}" class="flex items-center p-2 text-base text-gray-900 rounded-lg hover:bg-gray-100 group dark:text-gray-200 dark:hover:bg-gray-700 {{ request()->routeIs('trips.*') || request()->routeIs('vehicles.trips.*') ? 'bg-gray-100 dark:bg-gray-700' : '' }}">
+                                        <svg class="w-6 h-6 text-gray-500 transition duration-75 group-hover:text-gray-900 dark:text-gray-400 dark:group-hover:text-white" fill="currentColor" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg"><path d="M4 3a2 2 0 100 4h12a2 2 0 100-4H4z"></path><path fill-rule="evenodd" d="M3 8h14v7a2 2 0 01-2 2H5a2 2 0 01-2-2V8zm5 3a1 1 0 011-1h2a1 1 0 110 2H9a1 1 0 01-1-1z" clip-rule="evenodd"></path></svg>
+                                        <span class="ml-3" sidebar-toggle-item>{{ __('Add Trip') }}</span>
+                                    </a>
+                                </li>
                             </ul>
                         </div>
                     </div>
