@@ -14,8 +14,8 @@ use Illuminate\View\View;
 class TripController extends Controller
 {
     public function __construct(
-        private TripRepositoryContract $tripRepository,
-        private VehicleRepositoryContract $vehicleRepository,
+        protected TripRepositoryContract $tripRepository,
+        protected VehicleRepositoryContract $vehicleRepository,
     ) {}
 
     /**
