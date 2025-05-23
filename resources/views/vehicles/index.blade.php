@@ -46,6 +46,9 @@
                                                     <a href="{{ route('vehicles.show', $vehicle) }}" class="text-indigo-600 hover:text-indigo-900 dark:text-indigo-400 dark:hover:text-indigo-300">
                                                         {{ __('View') }}
                                                     </a>
+                                                    <a href="{{ route('vehicles.trips.create', $vehicle) }}" class="text-green-600 hover:text-green-900 dark:text-green-400 dark:hover:text-green-300">
+                                                        {{ __('Add Trip') }}
+                                                    </a>
                                                     <a href="{{ route('vehicles.edit', $vehicle) }}" class="text-yellow-600 hover:text-yellow-900 dark:text-yellow-400 dark:hover:text-yellow-300">
                                                         {{ __('Edit') }}
                                                     </a>
