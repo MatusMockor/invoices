@@ -186,7 +186,11 @@
 </template>
 
 <script>
-import Chart from 'chart.js/auto';
+import { Chart } from 'chart.js';
+import { LineController, LineElement, PointElement, LinearScale, CategoryScale, Tooltip, Legend, Filler } from 'chart.js';
+
+// Register the required components
+Chart.register(LineController, LineElement, PointElement, LinearScale, CategoryScale, Tooltip, Legend, Filler);
 
 export default {
   props: {
@@ -218,7 +222,8 @@ export default {
   },
   data() {
     return {
-      chart: null
+      chart: null,
+      isDarkMode: document.documentElement.classList.contains('dark')
     }
   },
   computed: {
@@ -261,6 +266,48 @@ export default {
   },
   mounted() {
     this.initChart();
+
+    // Use MutationObserver to detect theme changes
+    const observer = new MutationObserver((mutations) => {
+      for (const mutation of mutations) {
+        if (mutation.attributeName === 'class') {
+          const newIsDarkMode = document.documentElement.classList.contains('dark');
+          if (newIsDarkMode !== this.isDarkMode) {
+            // Theme has changed, update the isDarkMode flag
+            this.isDarkMode = newIsDarkMode;
+            console.log('Theme changed to:', this.isDarkMode ? 'dark' : 'light');
+
+            // Use a longer delay to ensure all DOM updates have been applied
+            setTimeout(() => {
+              this.cleanupChart();
+
+              // Add another delay after destroying the chart before creating a new one
+              setTimeout(() => {
+                // Update isDarkMode again right before initializing the chart
+                this.isDarkMode = document.documentElement.classList.contains('dark');
+                this.safeInitChart();
+              }, 200);
+            }, 200);
+          }
+        }
+      }
+    });
+
+    // Start observing document.documentElement for class changes
+    observer.observe(document.documentElement, { attributes: true });
+
+    // Store for cleanup
+    this.observer = observer;
+  },
+
+  beforeUnmount() {
+    // Clean up the observer when component is destroyed
+    if (this.observer) {
+      this.observer.disconnect();
+    }
+
+    // Clean up the chart
+    this.cleanupChart();
   },
   methods: {
     formatCurrency(value) {
@@ -281,92 +328,146 @@ export default {
           return 'px-2 py-1 text-xs font-medium text-gray-700 bg-gray-100 rounded-full dark:bg-gray-700 dark:text-gray-300';
       }
     },
-    initChart() {
-      const ctx = this.$refs.revenueChart.getContext('2d');
-
-      // Destroy existing chart if it exists
+    cleanupChart() {
+      // Safely destroy the chart if it exists
       if (this.chart) {
-        this.chart.destroy();
+        try {
+          this.chart.destroy();
+        } catch (e) {
+          console.warn('Error destroying chart:', e);
+        }
+        // Important: set chart to null after destroying
+        this.chart = null;
       }
+    },
+    safeInitChart() {
+      try {
+        this.initChart();
+      } catch (e) {
+        console.error('Error initializing chart:', e);
+        // If there's an error, try once more after a longer delay
+        setTimeout(() => {
+          try {
+            // Update isDarkMode again right before retrying
+            this.isDarkMode = document.documentElement.classList.contains('dark');
+            this.initChart();
+          } catch (e2) {
+            console.error('Error on second attempt to initialize chart:', e2);
+          }
+        }, 500);
+      }
+    },
+    initChart() {
+      console.log('Initializing chart, isDarkMode:', this.isDarkMode);
+
+      // Check if the canvas element is available
+      if (!this.$refs.revenueChart) {
+        console.warn('Canvas element not available, skipping chart initialization');
+        return;
+      }
+
+      // Get the 2D context from the canvas
+      const ctx = this.$refs.revenueChart.getContext('2d');
+      if (!ctx) {
+        console.warn('Could not get 2D context from canvas, skipping chart initialization');
+        return;
+      }
+
+      // Clean up any existing chart
+      this.cleanupChart();
 
       const labels = this.analyticsData.revenueData?.labels || ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun'];
       const incomeValues = this.analyticsData.revenueData?.values || [1500, 2500, 2000, 3000, 2800, 3500];
       const expenseValues = this.analyticsData.expenseData?.values || [1000, 1800, 1500, 2200, 2000, 2800];
 
-      // Determine if dark mode is active
-      const isDarkMode = document.documentElement.classList.contains('dark');
-      const textColor = isDarkMode ? '#e5e7eb' : '#374151';
-      const gridColor = isDarkMode ? 'rgba(255, 255, 255, 0.1)' : 'rgba(0, 0, 0, 0.1)';
+      // Ensure we're using the most up-to-date theme state
+      this.isDarkMode = document.documentElement.classList.contains('dark');
+      const textColor = this.isDarkMode ? '#e5e7eb' : '#374151';
+      const gridColor = this.isDarkMode ? 'rgba(255, 255, 255, 0.1)' : 'rgba(0, 0, 0, 0.1)';
 
-      this.chart = new Chart(ctx, {
-        type: 'line',
-        data: {
-          labels: labels,
-          datasets: [
-            {
-              label: 'Income',
-              data: incomeValues,
-              fill: true,
-              backgroundColor: 'rgba(16, 185, 129, 0.2)',  // Emerald color for income
-              borderColor: 'rgba(16, 185, 129, 1)',
-              tension: 0.4,
-              pointBackgroundColor: 'rgba(16, 185, 129, 1)',
-              pointBorderColor: '#fff',
-              pointHoverBackgroundColor: '#fff',
-              pointHoverBorderColor: 'rgba(16, 185, 129, 1)'
-            },
-            {
-              label: 'Expenses',
-              data: expenseValues,
-              fill: true,
-              backgroundColor: 'rgba(244, 63, 94, 0.2)',  // Rose color for expenses
-              borderColor: 'rgba(244, 63, 94, 1)',
-              tension: 0.4,
-              pointBackgroundColor: 'rgba(244, 63, 94, 1)',
-              pointBorderColor: '#fff',
-              pointHoverBackgroundColor: '#fff',
-              pointHoverBorderColor: 'rgba(244, 63, 94, 1)'
-            }
-          ]
-        },
-        options: {
-          responsive: true,
-          maintainAspectRatio: false,
-          scales: {
-            y: {
-              beginAtZero: true,
-              grid: {
-                color: gridColor
+      try {
+        // Create a very simple chart configuration to avoid issues
+        const config = {
+          type: 'line',
+          data: {
+            labels: labels,
+            datasets: [
+              {
+                label: 'Income',
+                data: incomeValues,
+                // No fill to avoid Filler plugin issues
+                fill: false,
+                backgroundColor: 'rgba(16, 185, 129, 0.2)', // Emerald color for income
+                borderColor: 'rgba(16, 185, 129, 1)',
+                tension: 0.4,
+                pointBackgroundColor: 'rgba(16, 185, 129, 1)',
+                pointBorderColor: '#fff',
+                pointHoverBackgroundColor: '#fff',
+                pointHoverBorderColor: 'rgba(16, 185, 129, 1)'
               },
-              ticks: {
-                color: textColor
+              {
+                label: 'Expenses',
+                data: expenseValues,
+                // No fill to avoid Filler plugin issues
+                fill: false,
+                backgroundColor: 'rgba(244, 63, 94, 0.2)', // Rose color for expenses
+                borderColor: 'rgba(244, 63, 94, 1)',
+                tension: 0.4,
+                pointBackgroundColor: 'rgba(244, 63, 94, 1)',
+                pointBorderColor: '#fff',
+                pointHoverBackgroundColor: '#fff',
+                pointHoverBorderColor: 'rgba(244, 63, 94, 1)'
               }
-            },
-            x: {
-              grid: {
-                color: gridColor
-              },
-              ticks: {
-                color: textColor
-              }
-            }
+            ]
           },
-          plugins: {
-            legend: {
-              labels: {
-                color: textColor
+          options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            scales: {
+              y: {
+                beginAtZero: true,
+                grid: {
+                  color: gridColor
+                },
+                ticks: {
+                  color: textColor
+                }
+              },
+              x: {
+                grid: {
+                  color: gridColor
+                },
+                ticks: {
+                  color: textColor
+                }
+              }
+            },
+            plugins: {
+              legend: {
+                labels: {
+                  color: textColor
+                }
+              },
+              tooltip: {
+                enabled: true
               }
             }
           }
-        }
-      });
+        };
+
+        // Initialize the chart with the configuration
+        this.chart = new Chart(ctx, config);
+      } catch (e) {
+        console.error('Error creating chart:', e);
+        this.chart = null;
+      }
     }
   },
   watch: {
     analyticsData: {
       handler() {
         this.$nextTick(() => {
-          this.initChart();
+          this.safeInitChart();
         });
       },
       deep: true
