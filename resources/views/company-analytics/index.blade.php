@@ -13,6 +13,9 @@
                         :analytics-data="{
                             totalRevenue: {{ $statistics['total_income'] ?? 0 }},
                             revenueChange: {{ $statistics['income_change_percentage'] ?? 0 }},
+                            totalEarnings: {{ $statistics['current_company_income'] ?? 0 }},
+                            totalExpenses: {{ $statistics['current_company_expenses'] ?? 0 }},
+                            totalBalance: {{ $statistics['current_company_balance'] ?? 0 }},
                             invoicesPaid: {{ $statistics['paid_invoices_count'] ?? 0 }},
                             invoicesPaidChange: {{ $statistics['paid_invoices_change_percentage'] ?? 0 }},
                             invoicesPending: {{ $statistics['pending_invoices_count'] ?? 0 }},
@@ -20,8 +23,12 @@
                             invoicesOverdue: {{ $statistics['overdue_invoices_count'] ?? 0 }},
                             invoicesOverdueChange: {{ $statistics['overdue_invoices_change_percentage'] ?? 0 }},
                             revenueData: {
-                                labels: {{ json_encode(array_column($monthlyData ?? [], 'month_name')) }},
-                                values: {{ json_encode(array_column($monthlyData ?? [], 'income')) }}
+                                labels: {{ json_encode($monthlyData['labels'] ?? []) }},
+                                values: {{ json_encode($monthlyData['income'] ?? []) }}
+                            },
+                            expenseData: {
+                                labels: {{ json_encode($monthlyData['labels'] ?? []) }},
+                                values: {{ json_encode($monthlyData['expenses'] ?? []) }}
                             },
                             topClients: {{ json_encode($statistics['top_clients'] ?? []) }}
                         }"

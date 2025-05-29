@@ -35,7 +35,52 @@
               </div>
             </div>
           </div>
-          
+
+          <!-- Earnings Card -->
+          <div class="bg-emerald-50 dark:bg-emerald-900 rounded-lg p-4 shadow-sm">
+            <div class="flex items-center">
+              <div class="p-3 rounded-full bg-emerald-200 dark:bg-emerald-800 text-emerald-600 dark:text-emerald-200 mr-4">
+                <svg class="w-6 h-6" fill="currentColor" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg">
+                  <path fill-rule="evenodd" d="M5 2a1 1 0 011 1v1h1a1 1 0 010 2H6v1a1 1 0 01-2 0V6H3a1 1 0 010-2h1V3a1 1 0 011-1zm0 10a1 1 0 011 1v1h1a1 1 0 110 2H6v1a1 1 0 11-2 0v-1H3a1 1 0 110-2h1v-1a1 1 0 011-1zM12 2a1 1 0 01.967.744L14.146 7.2 17.5 9.134a1 1 0 010 1.732l-3.354 1.935-1.18 4.455a1 1 0 01-1.933 0L9.854 12.8 6.5 10.866a1 1 0 010-1.732l3.354-1.935 1.18-4.455A1 1 0 0112 2z" clip-rule="evenodd"></path>
+                </svg>
+              </div>
+              <div>
+                <p class="text-sm font-medium text-emerald-600 dark:text-emerald-200">Total Earnings</p>
+                <p class="text-2xl font-semibold text-gray-700 dark:text-white">{{ formatCurrency(totalEarnings) }}</p>
+              </div>
+            </div>
+          </div>
+
+          <!-- Expenses Card -->
+          <div class="bg-rose-50 dark:bg-rose-900 rounded-lg p-4 shadow-sm">
+            <div class="flex items-center">
+              <div class="p-3 rounded-full bg-rose-200 dark:bg-rose-800 text-rose-600 dark:text-rose-200 mr-4">
+                <svg class="w-6 h-6" fill="currentColor" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg">
+                  <path fill-rule="evenodd" d="M3 10a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1z" clip-rule="evenodd"></path>
+                </svg>
+              </div>
+              <div>
+                <p class="text-sm font-medium text-rose-600 dark:text-rose-200">Total Expenses</p>
+                <p class="text-2xl font-semibold text-gray-700 dark:text-white">{{ formatCurrency(totalExpenses) }}</p>
+              </div>
+            </div>
+          </div>
+
+          <!-- Balance Card -->
+          <div class="bg-purple-50 dark:bg-purple-900 rounded-lg p-4 shadow-sm">
+            <div class="flex items-center">
+              <div class="p-3 rounded-full bg-purple-200 dark:bg-purple-800 text-purple-600 dark:text-purple-200 mr-4">
+                <svg class="w-6 h-6" fill="currentColor" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg">
+                  <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm1-11a1 1 0 10-2 0v2H7a1 1 0 100 2h2v2a1 1 0 102 0v-2h2a1 1 0 100-2h-2V7z" clip-rule="evenodd"></path>
+                </svg>
+              </div>
+              <div>
+                <p class="text-sm font-medium text-purple-600 dark:text-purple-200">Balance</p>
+                <p class="text-2xl font-semibold text-gray-700 dark:text-white">{{ formatCurrency(totalBalance) }}</p>
+              </div>
+            </div>
+          </div>
+
           <div class="bg-green-50 dark:bg-green-900 rounded-lg p-4 shadow-sm">
             <div class="flex items-center">
               <div class="p-3 rounded-full bg-green-200 dark:bg-green-800 text-green-600 dark:text-green-200 mr-4">
@@ -55,7 +100,7 @@
               </div>
             </div>
           </div>
-          
+
           <div class="bg-yellow-50 dark:bg-yellow-900 rounded-lg p-4 shadow-sm">
             <div class="flex items-center">
               <div class="p-3 rounded-full bg-yellow-200 dark:bg-yellow-800 text-yellow-600 dark:text-yellow-200 mr-4">
@@ -75,7 +120,7 @@
               </div>
             </div>
           </div>
-          
+
           <div class="bg-red-50 dark:bg-red-900 rounded-lg p-4 shadow-sm">
             <div class="flex items-center">
               <div class="p-3 rounded-full bg-red-200 dark:bg-red-800 text-red-600 dark:text-red-200 mr-4">
@@ -96,15 +141,15 @@
             </div>
           </div>
         </div>
-        
+
         <!-- Chart Section -->
         <div class="bg-white dark:bg-gray-800 rounded-lg shadow-sm p-4 mb-6">
-          <h4 class="text-lg font-medium text-gray-900 dark:text-white mb-4">Revenue Trend</h4>
+          <h4 class="text-lg font-medium text-gray-900 dark:text-white mb-4">Income & Expenses Trend</h4>
           <div class="relative" style="height: 300px;">
             <canvas ref="revenueChart" class="w-full h-full"></canvas>
           </div>
         </div>
-        
+
         <!-- Top Clients Table -->
         <div class="bg-white dark:bg-gray-800 rounded-lg shadow-sm p-4">
           <h4 class="text-lg font-medium text-gray-900 dark:text-white mb-4">Top Clients</h4>
@@ -150,6 +195,9 @@ export default {
       default: () => ({
         totalRevenue: 0,
         revenueChange: 0,
+        totalEarnings: 0,
+        totalExpenses: 0,
+        totalBalance: 0,
         invoicesPaid: 0,
         invoicesPaidChange: 0,
         invoicesPending: 0,
@@ -157,6 +205,10 @@ export default {
         invoicesOverdue: 0,
         invoicesOverdueChange: 0,
         revenueData: {
+          labels: [],
+          values: []
+        },
+        expenseData: {
           labels: [],
           values: []
         },
@@ -175,6 +227,15 @@ export default {
     },
     revenueChange() {
       return this.analyticsData.revenueChange || 0;
+    },
+    totalEarnings() {
+      return this.analyticsData.totalEarnings || 0;
+    },
+    totalExpenses() {
+      return this.analyticsData.totalExpenses || 0;
+    },
+    totalBalance() {
+      return this.analyticsData.totalBalance || 0;
     },
     invoicesPaid() {
       return this.analyticsData.invoicesPaid || 0;
@@ -222,36 +283,51 @@ export default {
     },
     initChart() {
       const ctx = this.$refs.revenueChart.getContext('2d');
-      
+
       // Destroy existing chart if it exists
       if (this.chart) {
         this.chart.destroy();
       }
-      
+
       const labels = this.analyticsData.revenueData?.labels || ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun'];
-      const values = this.analyticsData.revenueData?.values || [1500, 2500, 2000, 3000, 2800, 3500];
-      
+      const incomeValues = this.analyticsData.revenueData?.values || [1500, 2500, 2000, 3000, 2800, 3500];
+      const expenseValues = this.analyticsData.expenseData?.values || [1000, 1800, 1500, 2200, 2000, 2800];
+
       // Determine if dark mode is active
       const isDarkMode = document.documentElement.classList.contains('dark');
       const textColor = isDarkMode ? '#e5e7eb' : '#374151';
       const gridColor = isDarkMode ? 'rgba(255, 255, 255, 0.1)' : 'rgba(0, 0, 0, 0.1)';
-      
+
       this.chart = new Chart(ctx, {
         type: 'line',
         data: {
           labels: labels,
-          datasets: [{
-            label: 'Revenue',
-            data: values,
-            fill: true,
-            backgroundColor: 'rgba(79, 70, 229, 0.2)',
-            borderColor: 'rgba(79, 70, 229, 1)',
-            tension: 0.4,
-            pointBackgroundColor: 'rgba(79, 70, 229, 1)',
-            pointBorderColor: '#fff',
-            pointHoverBackgroundColor: '#fff',
-            pointHoverBorderColor: 'rgba(79, 70, 229, 1)'
-          }]
+          datasets: [
+            {
+              label: 'Income',
+              data: incomeValues,
+              fill: true,
+              backgroundColor: 'rgba(16, 185, 129, 0.2)',  // Emerald color for income
+              borderColor: 'rgba(16, 185, 129, 1)',
+              tension: 0.4,
+              pointBackgroundColor: 'rgba(16, 185, 129, 1)',
+              pointBorderColor: '#fff',
+              pointHoverBackgroundColor: '#fff',
+              pointHoverBorderColor: 'rgba(16, 185, 129, 1)'
+            },
+            {
+              label: 'Expenses',
+              data: expenseValues,
+              fill: true,
+              backgroundColor: 'rgba(244, 63, 94, 0.2)',  // Rose color for expenses
+              borderColor: 'rgba(244, 63, 94, 1)',
+              tension: 0.4,
+              pointBackgroundColor: 'rgba(244, 63, 94, 1)',
+              pointBorderColor: '#fff',
+              pointHoverBackgroundColor: '#fff',
+              pointHoverBorderColor: 'rgba(244, 63, 94, 1)'
+            }
+          ]
         },
         options: {
           responsive: true,
