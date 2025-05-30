@@ -56,22 +56,31 @@
                                     </a>
                                 </li>
                                 <li>
-                                    <a href="{{ route('vehicles.index') }}" class="flex items-center p-2 text-base text-gray-900 rounded-lg hover:bg-gray-100 group dark:text-gray-200 dark:hover:bg-gray-700 {{ request()->routeIs('vehicles.*') && !request()->routeIs('vehicles.create') ? 'bg-gray-100 dark:bg-gray-700' : '' }}">
+                                    <button type="button" class="flex items-center w-full p-2 text-base text-gray-900 transition duration-75 rounded-lg group hover:bg-gray-100 dark:text-gray-200 dark:hover:bg-gray-700" aria-controls="dropdown-trip" data-collapse-toggle="dropdown-trip" {{ request()->routeIs('trips.*') || request()->routeIs('vehicles.*') ? 'aria-expanded="true"' : 'aria-expanded="false"' }}>
                                         <svg class="w-6 h-6 text-gray-500 transition duration-75 group-hover:text-gray-900 dark:text-gray-400 dark:group-hover:text-white" fill="currentColor" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg"><path d="M8 16.5a1.5 1.5 0 11-3 0 1.5 1.5 0 013 0zM15 16.5a1.5 1.5 0 11-3 0 1.5 1.5 0 013 0z" /><path d="M3 4a1 1 0 00-1 1v10a1 1 0 001 1h1.05a2.5 2.5 0 014.9 0H10a1 1 0 001-1v-5h2a1 1 0 00.9-.5l1.5-2A1 1 0 0015 7h-3V4a1 1 0 00-1-1H3zM14 7l-1.5 2h-2.05A2.5 2.5 0 008 10.5H5V5h8v2z" /></svg>
-                                        <span class="ml-3" sidebar-toggle-item>{{ __('Vehicle Logbook') }}</span>
-                                    </a>
-                                </li>
-                                <li>
-                                    <a href="{{ route('vehicles.create') }}" class="flex items-center p-2 text-base text-gray-900 rounded-lg hover:bg-gray-100 group dark:text-gray-200 dark:hover:bg-gray-700 {{ request()->routeIs('vehicles.create') ? 'bg-gray-100 dark:bg-gray-700' : '' }}">
-                                        <svg class="w-6 h-6 text-gray-500 transition duration-75 group-hover:text-gray-900 dark:text-gray-400 dark:group-hover:text-white" fill="currentColor" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg"><path d="M11 17a1 1 0 001.447.894l4-2A1 1 0 0017 15V9.236a1 1 0 00-1.447-.894l-4 2a1 1 0 00-.553.894V17zM15.211 6.276a1 1 0 000-1.788l-4.764-2.382a1 1 0 00-.894 0L4.789 4.488a1 1 0 000 1.788l4.764 2.382a1 1 0 00.894 0l4.764-2.382zM4.447 8.342A1 1 0 003 9.236V15a1 1 0 00.553.894l4 2A1 1 0 009 17v-5.764a1 1 0 00-.553-.894l-4-2z" /></svg>
-                                        <span class="ml-3" sidebar-toggle-item>{{ __('Add Vehicle') }}</span>
-                                    </a>
-                                </li>
-                                <li>
-                                    <a href="{{ route('trips.create') }}" class="flex items-center p-2 text-base text-gray-900 rounded-lg hover:bg-gray-100 group dark:text-gray-200 dark:hover:bg-gray-700 {{ request()->routeIs('trips.*') || request()->routeIs('vehicles.trips.*') ? 'bg-gray-100 dark:bg-gray-700' : '' }}">
-                                        <svg class="w-6 h-6 text-gray-500 transition duration-75 group-hover:text-gray-900 dark:text-gray-400 dark:group-hover:text-white" fill="currentColor" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg"><path d="M4 3a2 2 0 100 4h12a2 2 0 100-4H4z"></path><path fill-rule="evenodd" d="M3 8h14v7a2 2 0 01-2 2H5a2 2 0 01-2-2V8zm5 3a1 1 0 011-1h2a1 1 0 110 2H9a1 1 0 01-1-1z" clip-rule="evenodd"></path></svg>
-                                        <span class="ml-3" sidebar-toggle-item>{{ __('Add Trip') }}</span>
-                                    </a>
+                                        <span class="flex-1 ml-3 text-left whitespace-nowrap" sidebar-toggle-item>{{ __('Trip') }}</span>
+                                        <svg sidebar-toggle-item class="w-6 h-6" fill="currentColor" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg"><path fill-rule="evenodd" d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z" clip-rule="evenodd"></path></svg>
+                                    </button>
+                                    <ul id="dropdown-trip" class="{{ request()->routeIs('trips.*') || request()->routeIs('vehicles.*') ? '' : 'hidden' }} py-2 space-y-2">
+                                        <li>
+                                            <a href="{{ route('trips.create') }}" class="flex items-center p-2 pl-11 w-full text-base text-gray-900 rounded-lg transition duration-75 group hover:bg-gray-100 dark:text-gray-200 dark:hover:bg-gray-700 {{ request()->routeIs('trips.create') ? 'bg-gray-100 dark:bg-gray-700' : '' }}">
+                                                <svg class="w-5 h-5 text-gray-500 transition duration-75 group-hover:text-gray-900 dark:text-gray-400 dark:group-hover:text-white" fill="currentColor" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg"><path fill-rule="evenodd" d="M6 2a1 1 0 00-1 1v1H4a2 2 0 00-2 2v10a2 2 0 002 2h12a2 2 0 002-2V6a2 2 0 00-2-2h-1V3a1 1 0 10-2 0v1H7V3a1 1 0 00-1-1zm0 5a1 1 0 000 2h8a1 1 0 100-2H6z" clip-rule="evenodd"></path></svg>
+                                                <span class="ml-3">{{ __('Add Trip') }}</span>
+                                            </a>
+                                        </li>
+                                        <li>
+                                            <a href="{{ route('vehicles.create') }}" class="flex items-center p-2 pl-11 w-full text-base text-gray-900 rounded-lg transition duration-75 group hover:bg-gray-100 dark:text-gray-200 dark:hover:bg-gray-700 {{ request()->routeIs('vehicles.create') ? 'bg-gray-100 dark:bg-gray-700' : '' }}">
+                                                <svg class="w-5 h-5 text-gray-500 transition duration-75 group-hover:text-gray-900 dark:text-gray-400 dark:group-hover:text-white" fill="currentColor" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg"><path d="M8 16.5a1.5 1.5 0 11-3 0 1.5 1.5 0 013 0zM15 16.5a1.5 1.5 0 11-3 0 1.5 1.5 0 013 0z" /><path d="M3 4a1 1 0 00-1 1v10a1 1 0 001 1h1.05a2.5 2.5 0 014.9 0H10a1 1 0 001-1v-5h2a1 1 0 00.9-.5l1.5-2A1 1 0 0015 7h-3V4a1 1 0 00-1-1H3zM14 7l-1.5 2h-2.05A2.5 2.5 0 008 10.5H5V5h8v2z" /></svg>
+                                                <span class="ml-3">{{ __('Add Vehicle') }}</span>
+                                            </a>
+                                        </li>
+                                        <li>
+                                            <a href="{{ route('vehicles.index') }}" class="flex items-center p-2 pl-11 w-full text-base text-gray-900 rounded-lg transition duration-75 group hover:bg-gray-100 dark:text-gray-200 dark:hover:bg-gray-700 {{ request()->routeIs('vehicles.index') ? 'bg-gray-100 dark:bg-gray-700' : '' }}">
+                                                <svg class="w-5 h-5 text-gray-500 transition duration-75 group-hover:text-gray-900 dark:text-gray-400 dark:group-hover:text-white" fill="currentColor" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg"><path d="M9 4.804A7.968 7.968 0 005.5 4c-1.255 0-2.443.29-3.5.804v10A7.969 7.969 0 015.5 14c1.669 0 3.218.51 4.5 1.385A7.962 7.962 0 0114.5 14c1.255 0 2.443.29 3.5.804v-10A7.968 7.968 0 0014.5 4c-1.255 0-2.443.29-3.5.804V12a1 1 0 11-2 0V4.804z"></path></svg>
+                                                <span class="ml-3">{{ __('Vehicle Logbook') }}</span>
+                                            </a>
+                                        </li>
+                                    </ul>
                                 </li>
                             </ul>
                         </div>
