@@ -4,7 +4,8 @@ namespace Tests\Unit\Repositories;
 
 use App\Models\Invoice;
 use App\Models\InvoiceItem;
-use App\Repositories\InvoiceItemRepository;
+use App\Repositories\Interfaces\InvoiceItemRepository;
+use Illuminate\Contracts\Container\BindingResolutionException;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
 
@@ -14,10 +15,13 @@ class InvoiceItemRepositoryTest extends TestCase
 
     protected InvoiceItemRepository $repository;
 
+    /**
+     * @throws BindingResolutionException
+     */
     protected function setUp(): void
     {
         parent::setUp();
-        $this->repository = new InvoiceItemRepository;
+        $this->repository = $this->app->make(InvoiceItemRepository::class);
     }
 
     public function test_delete_items_not_in_ids_with_empty_array_deletes_all_items(): void
