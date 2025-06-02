@@ -1,12 +1,12 @@
 <?php
 
-namespace Tests\Unit\Repositories;
+namespace App\Modules\VehicleLogbook\tests\Repositories;
 
 use App\Models\Company;
-use App\Models\Trip;
 use App\Models\User;
-use App\Models\Vehicle;
-use App\Repositories\TripRepository;
+use App\Modules\VehicleLogbook\Models\Trip;
+use App\Modules\VehicleLogbook\Models\Vehicle;
+use App\Modules\VehicleLogbook\Repositories\Interfaces\TripRepository;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
 
@@ -25,7 +25,7 @@ class TripRepositoryTest extends TestCase
     protected function setUp(): void
     {
         parent::setUp();
-        $this->repository = new TripRepository;
+        $this->repository = $this->app->make(TripRepository::class);
 
         // Create a user
         $this->user = User::factory()->create();
