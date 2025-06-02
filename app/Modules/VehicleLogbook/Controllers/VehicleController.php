@@ -25,7 +25,7 @@ class VehicleController extends Controller
         $companyId = $request->user()->currentCompany->id;
         $vehicles = $this->vehicleRepository->getAllForCompany($companyId);
 
-        return view('vehicles.index', ['vehicles' => $vehicles]);
+        return view('vehiclelogbook::vehicles.index', ['vehicles' => $vehicles]);
     }
 
     /**
@@ -33,7 +33,7 @@ class VehicleController extends Controller
      */
     public function create(): View
     {
-        return view('vehicles.create');
+        return view('vehiclelogbook::vehicles.create');
     }
 
     /**
@@ -55,7 +55,7 @@ class VehicleController extends Controller
      */
     public function show(Vehicle $vehicle): View
     {
-        return view('vehicles.show', ['vehicle' => $vehicle]);
+        return view('vehiclelogbook::vehicles.show', ['vehicle' => $vehicle]);
     }
 
     /**
@@ -63,7 +63,7 @@ class VehicleController extends Controller
      */
     public function edit(Vehicle $vehicle): View
     {
-        return view('vehicles.edit', ['vehicle' => $vehicle]);
+        return view('vehiclelogbook::vehicles.edit', ['vehicle' => $vehicle]);
     }
 
     /**

@@ -49,6 +49,8 @@ class TripRepository implements TripRepositoryContract
      */
     public function delete(Trip $trip): bool
     {
-        return $trip->delete();
+        $result = $trip->forceDelete();
+
+        return true;
     }
 }

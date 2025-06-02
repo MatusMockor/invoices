@@ -2,12 +2,12 @@
 
 namespace Database\Factories;
 
-use App\Models\Trip;
-use App\Models\Vehicle;
+use App\Modules\VehicleLogbook\Models\Trip;
+use App\Modules\VehicleLogbook\Models\Vehicle;
 use Illuminate\Database\Eloquent\Factories\Factory;
 
 /**
- * @extends \Illuminate\Database\Eloquent\Factories\Factory<\App\Models\Trip>
+ * @extends \Illuminate\Database\Eloquent\Factories\Factory<\App\Modules\VehicleLogbook\Models\Trip>
  */
 class TripFactory extends Factory
 {

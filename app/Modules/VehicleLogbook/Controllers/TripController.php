@@ -29,7 +29,7 @@ class TripController extends Controller
     {
         $trips = Trip::with('vehicle')->get();
 
-        return view('trips.index')
+        return view('vehiclelogbook::trips.index')
             ->with('trips', $trips);
     }
 
@@ -48,7 +48,7 @@ class TripController extends Controller
             abort(404, 'You need to create a vehicle first before adding a trip.');
         }
 
-        return view('trips.create')
+        return view('vehiclelogbook::trips.create')
             ->with('vehicle', $vehicle)
             ->with('vehicles', $vehicles);
     }
@@ -85,7 +85,7 @@ class TripController extends Controller
     {
         $vehicle = $trip->vehicle;
 
-        return view('trips.show')
+        return view('vehiclelogbook::trips.show')
             ->with('trip', $trip)
             ->with('vehicle', $vehicle);
     }
@@ -98,7 +98,7 @@ class TripController extends Controller
         $vehicle = $trip->vehicle;
         $vehicles = $this->vehicleRepository->getAllForCompany(auth()->user()->current_company_id);
 
-        return view('trips.edit', [
+        return view('vehiclelogbook::trips.edit', [
             'trip' => $trip,
             'vehicle' => $vehicle,
             'vehicles' => $vehicles,
