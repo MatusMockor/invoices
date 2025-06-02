@@ -1,6 +1,6 @@
 <?php
 
-namespace Tests\Feature\Controllers;
+namespace App\Modules\VehicleLogbook\tests\Feature;
 
 use App\Models\Company;
 use App\Models\User;
