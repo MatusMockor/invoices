@@ -55,7 +55,7 @@ class TripControllerTest extends TestCase
         ]);
 
         // Make a request to the index endpoint
-        $response = $this->get(route('trips.index'));
+        $response = $this->get(route('vehiclelogbook.trips.index'));
 
         // Assert the response is successful
         $response->assertStatus(200);
@@ -75,7 +75,7 @@ class TripControllerTest extends TestCase
      */
     public function test_create_displays_form(): void
     {
-        $response = $this->get(route('trips.create'));
+        $response = $this->get(route('vehiclelogbook.trips.create'));
 
         $response->assertStatus(200);
         $response->assertViewIs('vehiclelogbook::trips.create');
@@ -106,7 +106,7 @@ class TripControllerTest extends TestCase
             'fuel_receipt_number' => 'REC-12345',
         ];
 
-        $response = $this->post(route('trips.store'), $tripData);
+        $response = $this->post(route('vehiclelogbook.trips.store'), $tripData);
 
         // Find the trip that was just created
         $trip = Trip::where('start_location', $tripData['start_location'])
@@ -116,7 +116,7 @@ class TripControllerTest extends TestCase
 
         $this->assertNotNull($trip, 'Trip was not created in the database');
 
-        $response->assertRedirect(route('trips.show', $trip));
+        $response->assertRedirect(route('vehiclelogbook.trips.show', $trip));
         $response->assertSessionHas('success', 'Trip created successfully.');
 
         // Assert the trip was created in the database
@@ -147,7 +147,7 @@ class TripControllerTest extends TestCase
             'purpose' => 'Test Purpose',
         ]);
 
-        $response = $this->get(route('trips.show', $trip));
+        $response = $this->get(route('vehiclelogbook.trips.show', $trip));
 
         $response->assertStatus(200);
         $response->assertViewIs('vehiclelogbook::trips.show');
@@ -167,7 +167,7 @@ class TripControllerTest extends TestCase
             'vehicle_id' => $this->vehicle->id,
         ]);
 
-        $response = $this->get(route('trips.edit', $trip));
+        $response = $this->get(route('vehiclelogbook.trips.edit', $trip));
 
         $response->assertStatus(200);
         $response->assertViewIs('vehiclelogbook::trips.edit');
@@ -199,9 +199,9 @@ class TripControllerTest extends TestCase
             'fuel_receipt_number' => 'REC-UPDATED',
         ];
 
-        $response = $this->put(route('trips.update', $trip), $updatedData);
+        $response = $this->put(route('vehiclelogbook.trips.update', $trip), $updatedData);
 
-        $response->assertRedirect(route('trips.show', $trip));
+        $response->assertRedirect(route('vehiclelogbook.trips.show', $trip));
         $response->assertSessionHas('success', 'Trip updated successfully.');
 
         // Assert the trip was updated in the database
@@ -223,9 +223,9 @@ class TripControllerTest extends TestCase
             'vehicle_id' => $this->vehicle->id,
         ]);
 
-        $response = $this->delete(route('trips.destroy', $trip));
+        $response = $this->delete(route('vehiclelogbook.trips.destroy', $trip));
 
-        $response->assertRedirect(route('trips.index'));
+        $response->assertRedirect(route('vehiclelogbook.trips.index'));
         $response->assertSessionHas('success', 'Trip deleted successfully.');
 
         // Assert the trip was deleted from the database
