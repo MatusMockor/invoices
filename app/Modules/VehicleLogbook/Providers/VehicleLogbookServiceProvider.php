@@ -36,5 +36,12 @@ class VehicleLogbookServiceProvider extends ServiceProvider
 
         // Load views
         $this->loadViewsFrom(__DIR__.'/../resources/views', 'vehiclelogbook');
+
+        // Register seeders
+        if ($this->app->runningInConsole()) {
+            $this->publishes([
+                __DIR__.'/../Database/Seeders/' => database_path('seeders'),
+            ], 'vehiclelogbook-seeders');
+        }
     }
 }

@@ -1,9 +1,9 @@
 <?php
 
-namespace Database\Seeders;
+namespace App\Modules\VehicleLogbook\Database\Seeders;
 
 use App\Models\Company;
-use App\Models\Vehicle;
+use App\Modules\VehicleLogbook\Models\Vehicle;
 use Illuminate\Database\Seeder;
 
 class VehicleSeeder extends Seeder

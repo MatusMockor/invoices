@@ -1,9 +1,9 @@
 <?php
 
-namespace Database\Seeders;
+namespace App\Modules\VehicleLogbook\Database\Seeders;
 
-use App\Models\Trip;
-use App\Models\Vehicle;
+use App\Modules\VehicleLogbook\Models\Trip;
+use App\Modules\VehicleLogbook\Models\Vehicle;
 use Illuminate\Database\Seeder;
 
 class TripSeeder extends Seeder
