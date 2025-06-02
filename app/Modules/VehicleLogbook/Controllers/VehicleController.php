@@ -46,7 +46,7 @@ class VehicleController extends Controller
 
         $vehicle = $this->vehicleRepository->create($data);
 
-        return redirect()->route('vehicles.show', $vehicle)
+        return redirect()->route('vehiclelogbook.vehicles.show', $vehicle)
             ->with('success', 'Vehicle created successfully.');
     }
 
@@ -73,7 +73,7 @@ class VehicleController extends Controller
     {
         $this->vehicleRepository->update($vehicle, $request->validated());
 
-        return redirect()->route('vehicles.show', $vehicle)
+        return redirect()->route('vehiclelogbook.vehicles.show', $vehicle)
             ->with('success', 'Vehicle updated successfully.');
     }
 
@@ -84,7 +84,7 @@ class VehicleController extends Controller
     {
         $this->vehicleRepository->delete($vehicle);
 
-        return redirect()->route('vehicles.index')
+        return redirect()->route('vehiclelogbook.vehicles.index')
             ->with('success', 'Vehicle deleted successfully.');
     }
 }

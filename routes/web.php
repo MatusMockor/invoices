@@ -40,7 +40,6 @@ Route::middleware('auth')->group(function () {
 
     // Company Analytics routes
     Route::get('/company-analytics', [CompanyAnalyticsController::class, 'index'])->name('company-analytics.index');
-
 });
 
 require __DIR__.'/auth.php';

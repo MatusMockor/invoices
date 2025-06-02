@@ -74,7 +74,7 @@ class TripController extends Controller
 
         $trip = $this->tripRepository->create($data);
 
-        return redirect()->route('trips.show', $trip)
+        return redirect()->route('vehiclelogbook.trips.show', $trip)
             ->with('success', 'Trip created successfully.');
     }
 
@@ -119,7 +119,7 @@ class TripController extends Controller
 
         $this->tripRepository->update($trip, $data);
 
-        return redirect()->route('trips.show', $trip)
+        return redirect()->route('vehiclelogbook.trips.show', $trip)
             ->with('success', 'Trip updated successfully.');
     }
 
@@ -130,7 +130,7 @@ class TripController extends Controller
     {
         $this->tripRepository->delete($trip);
 
-        return redirect()->route('trips.index')
+        return redirect()->route('vehiclelogbook.trips.index')
             ->with('success', 'Trip deleted successfully.');
     }
 }
