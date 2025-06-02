@@ -67,7 +67,7 @@ class VehicleControllerTest extends TestCase
         $response = $this->get(route('vehicles.create'));
 
         $response->assertStatus(200);
-        $response->assertViewIs('vehicles.create');
+        $response->assertViewIs('vehiclelogbook::vehicles.create');
     }
 
     /**
@@ -114,7 +114,7 @@ class VehicleControllerTest extends TestCase
         $response = $this->get(route('vehicles.show', $vehicle));
 
         $response->assertStatus(200);
-        $response->assertViewIs('vehicles.show');
+        $response->assertViewIs('vehiclelogbook::vehicles.show');
         $response->assertViewHas('vehicle', $vehicle);
         $response->assertSee('Test Vehicle Type');
         $response->assertSee('TEST456');
@@ -132,7 +132,7 @@ class VehicleControllerTest extends TestCase
         $response = $this->get(route('vehicles.edit', $vehicle));
 
         $response->assertStatus(200);
-        $response->assertViewIs('vehicles.edit');
+        $response->assertViewIs('vehiclelogbook::vehicles.edit');
         $response->assertViewHas('vehicle', $vehicle);
     }
 

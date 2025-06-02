@@ -3,9 +3,9 @@
 namespace Tests\Feature\Controllers;
 
 use App\Models\Company;
-use App\Models\Trip;
 use App\Models\User;
-use App\Models\Vehicle;
+use App\Modules\VehicleLogbook\Models\Trip;
+use App\Modules\VehicleLogbook\Models\Vehicle;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Foundation\Testing\WithFaker;
 use Tests\TestCase;
@@ -78,7 +78,7 @@ class TripControllerTest extends TestCase
         $response = $this->get(route('trips.create'));
 
         $response->assertStatus(200);
-        $response->assertViewIs('trips.create');
+        $response->assertViewIs('vehiclelogbook::trips.create');
         $response->assertViewHas('vehicles');
     }
 
@@ -150,7 +150,7 @@ class TripControllerTest extends TestCase
         $response = $this->get(route('trips.show', $trip));
 
         $response->assertStatus(200);
-        $response->assertViewIs('trips.show');
+        $response->assertViewIs('vehiclelogbook::trips.show');
         $response->assertViewHas('trip', $trip);
         $response->assertViewHas('vehicle', $this->vehicle);
         $response->assertSee('Test Start Location');
@@ -170,7 +170,7 @@ class TripControllerTest extends TestCase
         $response = $this->get(route('trips.edit', $trip));
 
         $response->assertStatus(200);
-        $response->assertViewIs('trips.edit');
+        $response->assertViewIs('vehiclelogbook::trips.edit');
         $response->assertViewHas('trip', $trip);
         $response->assertViewHas('vehicle', $this->vehicle);
         $response->assertViewHas('vehicles');

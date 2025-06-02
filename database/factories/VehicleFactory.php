@@ -3,11 +3,11 @@
 namespace Database\Factories;
 
 use App\Models\Company;
-use App\Models\Vehicle;
+use App\Modules\VehicleLogbook\Models\Vehicle;
 use Illuminate\Database\Eloquent\Factories\Factory;
 
 /**
- * @extends \Illuminate\Database\Eloquent\Factories\Factory<\App\Models\Vehicle>
+ * @extends \Illuminate\Database\Eloquent\Factories\Factory<\App\Modules\VehicleLogbook\Models\Vehicle>
  */
 class VehicleFactory extends Factory
 {
