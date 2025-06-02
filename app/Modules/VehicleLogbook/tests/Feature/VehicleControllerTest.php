@@ -4,7 +4,7 @@ namespace App\Modules\VehicleLogbook\tests\Feature;
 
 use App\Models\Company;
 use App\Models\User;
-use App\Models\Vehicle;
+use App\Modules\VehicleLogbook\Models\Vehicle;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Foundation\Testing\WithFaker;
 use Tests\TestCase;
@@ -45,7 +45,7 @@ class VehicleControllerTest extends TestCase
         ]);
 
         // Make a request to the index endpoint
-        $response = $this->get(route('vehicles.index'));
+        $response = $this->get(route('vehiclelogbook.vehicles.index'));
 
         // Assert the response is successful
         $response->assertStatus(200);
@@ -64,7 +64,7 @@ class VehicleControllerTest extends TestCase
      */
     public function test_create_displays_form(): void
     {
-        $response = $this->get(route('vehicles.create'));
+        $response = $this->get(route('vehiclelogbook.vehicles.create'));
 
         $response->assertStatus(200);
         $response->assertViewIs('vehiclelogbook::vehicles.create');
@@ -80,7 +80,7 @@ class VehicleControllerTest extends TestCase
             'license_plate' => 'TEST123',
         ];
 
-        $response = $this->post(route('vehicles.store'), $vehicleData);
+        $response = $this->post(route('vehiclelogbook.vehicles.store'), $vehicleData);
 
         // Find the vehicle that was just created
         $vehicle = Vehicle::where('license_plate', $vehicleData['license_plate'])
@@ -89,7 +89,7 @@ class VehicleControllerTest extends TestCase
 
         $this->assertNotNull($vehicle, 'Vehicle was not created in the database');
 
-        $response->assertRedirect(route('vehicles.show', $vehicle));
+        $response->assertRedirect(route('vehiclelogbook.vehicles.show', $vehicle));
         $response->assertSessionHas('success', 'Vehicle created successfully.');
 
         // Assert the vehicle was created in the database
@@ -111,7 +111,7 @@ class VehicleControllerTest extends TestCase
             'license_plate' => 'TEST456',
         ]);
 
-        $response = $this->get(route('vehicles.show', $vehicle));
+        $response = $this->get(route('vehiclelogbook.vehicles.show', $vehicle));
 
         $response->assertStatus(200);
         $response->assertViewIs('vehiclelogbook::vehicles.show');
@@ -129,7 +129,7 @@ class VehicleControllerTest extends TestCase
             'company_id' => $this->company->id,
         ]);
 
-        $response = $this->get(route('vehicles.edit', $vehicle));
+        $response = $this->get(route('vehiclelogbook.vehicles.edit', $vehicle));
 
         $response->assertStatus(200);
         $response->assertViewIs('vehiclelogbook::vehicles.edit');
@@ -150,9 +150,9 @@ class VehicleControllerTest extends TestCase
             'license_plate' => 'UPD789',
         ];
 
-        $response = $this->put(route('vehicles.update', $vehicle), $updatedData);
+        $response = $this->put(route('vehiclelogbook.vehicles.update', $vehicle), $updatedData);
 
-        $response->assertRedirect(route('vehicles.show', $vehicle));
+        $response->assertRedirect(route('vehiclelogbook.vehicles.show', $vehicle));
         $response->assertSessionHas('success', 'Vehicle updated successfully.');
 
         // Assert the vehicle was updated in the database
@@ -172,9 +172,9 @@ class VehicleControllerTest extends TestCase
             'company_id' => $this->company->id,
         ]);
 
-        $response = $this->delete(route('vehicles.destroy', $vehicle));
+        $response = $this->delete(route('vehiclelogbook.vehicles.destroy', $vehicle));
 
-        $response->assertRedirect(route('vehicles.index'));
+        $response->assertRedirect(route('vehiclelogbook.vehicles.index'));
         $response->assertSessionHas('success', 'Vehicle deleted successfully.');
 
         // Assert the vehicle was deleted from the database
