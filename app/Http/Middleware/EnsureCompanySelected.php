@@ -14,7 +14,7 @@ class EnsureCompanySelected
      */
     public function handle(Request $request, Closure $next): Response
     {
-        if (Auth::check() && Auth::user()->current_company_id === null) {
+        if (!Auth::user()->current_company_id) {
             // If the user doesn't have a current company selected
             $userCompanies = Auth::user()->companies;
 
