@@ -1,11 +1,11 @@
 <?php
 
-namespace Tests\Unit\Repositories;
+namespace App\Modules\VehicleLogbook\tests\Repositories;
 
 use App\Models\Company;
 use App\Models\User;
-use App\Models\Vehicle;
-use App\Repositories\VehicleRepository;
+use App\Modules\VehicleLogbook\Models\Vehicle;
+use App\Modules\VehicleLogbook\Repositories\Interfaces\VehicleRepository;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
 
@@ -22,7 +22,7 @@ class VehicleRepositoryTest extends TestCase
     protected function setUp(): void
     {
         parent::setUp();
-        $this->repository = new VehicleRepository;
+        $this->repository = $this->app->make(VehicleRepository::class);
 
         // Create a user
         $this->user = User::factory()->create();
