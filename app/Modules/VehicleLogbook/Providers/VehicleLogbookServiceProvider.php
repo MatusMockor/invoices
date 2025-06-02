@@ -6,6 +6,7 @@ use App\Modules\VehicleLogbook\Repositories\Interfaces\TripRepository as TripRep
 use App\Modules\VehicleLogbook\Repositories\Interfaces\VehicleRepository as VehicleRepositoryContract;
 use App\Modules\VehicleLogbook\Repositories\TripRepository;
 use App\Modules\VehicleLogbook\Repositories\VehicleRepository;
+use Illuminate\Support\Facades\Route;
 use Illuminate\Support\ServiceProvider;
 
 class VehicleLogbookServiceProvider extends ServiceProvider
@@ -25,8 +26,10 @@ class VehicleLogbookServiceProvider extends ServiceProvider
      */
     public function boot(): void
     {
-        // Load routes
-        $this->loadRoutesFrom(__DIR__.'/../routes/web.php');
+        // Register routes with a name prefix to match view expectations
+        Route::middleware(['web'])
+            ->name('vehiclelogbook.')
+            ->group(__DIR__.'/../routes/web.php');
 
         // Load migrations
         $this->loadMigrationsFrom(__DIR__.'/../database/migrations');
