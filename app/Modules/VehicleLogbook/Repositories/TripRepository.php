@@ -4,10 +4,31 @@ namespace App\Modules\VehicleLogbook\Repositories;
 
 use App\Modules\VehicleLogbook\Models\Trip;
 use App\Modules\VehicleLogbook\Repositories\Interfaces\TripRepository as TripRepositoryContract;
+use Illuminate\Contracts\Pagination\LengthAwarePaginator;
 use Illuminate\Database\Eloquent\Collection;
 
 class TripRepository implements TripRepositoryContract
 {
+    /**
+     * Get all trips for a company.
+     */
+    public function getAllForCompany(int $companyId): Collection
+    {
+        return Trip::whereHas('vehicle', function ($query) use ($companyId) {
+            $query->where('company_id', $companyId);
+        })->with('vehicle')->orderBy('date', 'desc')->get();
+    }
+
+    /**
+     * Get all trips for a company with pagination.
+     */
+    public function getAllForCompanyPaginated(int $companyId, int $perPage = 10): LengthAwarePaginator
+    {
+        return Trip::whereHas('vehicle', function ($query) use ($companyId) {
+            $query->where('company_id', $companyId);
+        })->with('vehicle')->orderBy('date', 'desc')->paginate($perPage);
+    }
+
     /**
      * Get all trips for a vehicle.
      */

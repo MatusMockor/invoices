@@ -10,6 +10,7 @@ use App\Modules\VehicleLogbook\Models\Vehicle;
 use App\Modules\VehicleLogbook\Repositories\Interfaces\TripRepository as TripRepositoryContract;
 use App\Modules\VehicleLogbook\Repositories\Interfaces\VehicleRepository as VehicleRepositoryContract;
 use Illuminate\Http\RedirectResponse;
+use Illuminate\Http\Request;
 use Illuminate\View\View;
 
 class TripController extends Controller
@@ -25,12 +26,12 @@ class TripController extends Controller
     /**
      * Display a listing of the trips.
      */
-    public function index(): View
+    public function index(Request $request): View
     {
-        $trips = Trip::with('vehicle')->get();
+        $companyId = $request->user()->current_company_id;
+        $trips = $this->tripRepository->getAllForCompanyPaginated($companyId);
 
-        return view('vehiclelogbook::trips.index')
-            ->with('trips', $trips);
+        return view('vehiclelogbook::trips.index', ['trips' => $trips]);
     }
 
     /**

@@ -3,10 +3,21 @@
 namespace App\Modules\VehicleLogbook\Repositories\Interfaces;
 
 use App\Modules\VehicleLogbook\Models\Trip;
+use Illuminate\Contracts\Pagination\LengthAwarePaginator;
 use Illuminate\Database\Eloquent\Collection;
 
 interface TripRepository
 {
+    /**
+     * Get all trips for a company.
+     */
+    public function getAllForCompany(int $companyId): Collection;
+
+    /**
+     * Get all trips for a company with pagination.
+     */
+    public function getAllForCompanyPaginated(int $companyId, int $perPage = 10): LengthAwarePaginator;
+
     /**
      * Get all trips for a vehicle.
      */
