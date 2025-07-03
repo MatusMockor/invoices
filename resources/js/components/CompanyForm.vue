@@ -302,9 +302,9 @@ export default {
       type: String,
       required: true
     },
-    fetchPartnerRoute: {
+    fetchBusinessEntityRoute: {
       type: String,
-      required: true
+      required: false
     },
     submitButtonText: {
       type: String,
@@ -343,8 +343,10 @@ export default {
       this.loading = true;
       
       try {
-        const response = await axios.get(`${this.fetchPartnerRoute}?ico=${this.form.ico}`);
-        
+        // Use fetchBusinessEntityRoute if provided, otherwise fall back to fetchPartnerRoute
+        const endpoint = this.fetchBusinessEntityRoute;
+        const response = await axios.get(`${endpoint}?ico=${this.form.ico}`);
+
         const data = response.data.data || response.data;
         
         // Fill form fields with the returned data
