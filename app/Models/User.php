@@ -31,7 +31,7 @@ use Illuminate\Support\Carbon;
 class User extends Authenticatable
 {
     /** @use HasFactory<\Database\Factories\UserFactory> */
-    use HasFactory, Notifiable;
+    use HasFactory, Notifiable, \Spatie\Permission\Traits\HasRoles;
 
     /**
      * The attributes that are mass assignable.

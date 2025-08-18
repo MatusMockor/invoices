@@ -1,0 +1,15 @@
+<?php
+
+namespace App\Enums;
+
+enum Roles: string
+{
+    case ADMIN = 'admin';
+    case ACCOUNTANT = 'accountant';
+    case MANAGER = 'manager';
+
+    public static function values(): array
+    {
+        return array_map(static fn(self $r) => $r->value, self::cases());
+    }
+}

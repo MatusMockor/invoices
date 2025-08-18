@@ -24,6 +24,7 @@ class DatabaseSeeder extends Seeder
             CompanySeeder::class,
             BusinessEntitySeeder::class,
             InvoiceSeeder::class,
+            RolesSeeder::class,
             \App\Modules\VehicleLogbook\Database\Seeders\VehicleSeeder::class,
             \App\Modules\VehicleLogbook\Database\Seeders\TripSeeder::class,
         ]);
