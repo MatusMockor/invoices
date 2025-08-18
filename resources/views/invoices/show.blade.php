@@ -190,6 +190,22 @@
                             @endif
                             <p class="mt-4 text-lg font-bold text-gray-900 dark:text-white"><span class="font-medium">Suma na úhradu:</span> {{ number_format($invoice->total_amount, 2, ',', ' ') }} {{ $invoice->currency }}</p>
                         </div>
+
+                        @if($invoice->contact)
+                            <div class="mt-6 border-t border-gray-200 dark:border-gray-700 pt-4">
+                                <h4 class="text-md font-medium text-gray-900 dark:text-white mb-2">Kontakt</h4>
+                                <p class="text-gray-700 dark:text-gray-300">
+                                    {{ $invoice->contact->full_name }}
+                                    @if($invoice->contact->position) · {{ $invoice->contact->position }} @endif
+                                </p>
+                                @if($invoice->contact->email)
+                                    <p class="text-gray-600 dark:text-gray-400">Email: {{ $invoice->contact->email }}</p>
+                                @endif
+                                @if($invoice->contact->phone)
+                                    <p class="text-gray-600 dark:text-gray-400">Tel.: {{ $invoice->contact->phone }}</p>
+                                @endif
+                            </div>
+                        @endif
                     </div>
                 </div>
 
@@ -204,7 +220,12 @@
                             </div>
                         @endif
 
-                        <div class="text-sm text-gray-500 dark:text-gray-400 mt-4">
+                        <div class="mt-6">
+                            <h4 class="font-medium text-gray-700 dark:text-gray-300 mb-2">Poznámky (CRM)</h4>
+                            <contact-notes noteable-type="App\\Models\\Invoice" noteable-id="{{ $invoice->id }}"></contact-notes>
+                        </div>
+
+                        <div class="text-sm text-gray-500 dark:text-gray-400 mt-6">
                             <p>Faktúra bola vygenerovaná elektronicky a je platná bez podpisu a pečiatky.</p>
                             <p>Dodávateľ je zapísaný v Obchodnom registri Okresného súdu Bratislava I, oddiel: Sro, vložka č.: 12345/B.</p>
                         </div>
