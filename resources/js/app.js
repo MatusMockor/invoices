@@ -7,6 +7,8 @@ import SettingsDropdown from './components/SettingsDropdown.vue';
 import CompanySwitcher from "./components/CompanySwitcher.vue";
 import TripForm from './components/TripForm.vue';
 import AnalyticsComponent from './components/Analytics/AnalyticsComponent.vue';
+import ContactNotes from './components/CRM/ContactNotes.vue';
+
 
 // Import Flowbite for initialization
 import 'flowbite';
@@ -133,6 +135,9 @@ app.component('business-entity-form', BusinessEntityForm);
 app.component('company-form', CompanyForm);
 app.component('trip-form', TripForm);
 app.component('analytics-component', AnalyticsComponent);
+
+// CRM components
+app.component('contact-notes', ContactNotes);
 
 // Mount Vue app when the DOM is fully loaded
 app.mount('#app');

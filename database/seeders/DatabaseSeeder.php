@@ -27,6 +27,7 @@ class DatabaseSeeder extends Seeder
             RolesSeeder::class,
             \App\Modules\VehicleLogbook\Database\Seeders\VehicleSeeder::class,
             \App\Modules\VehicleLogbook\Database\Seeders\TripSeeder::class,
+            ContactSeeder::class,
         ]);
     }
 }

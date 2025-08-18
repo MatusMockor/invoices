@@ -3,7 +3,9 @@
 use App\Http\Controllers\BusinessEntityController;
 use App\Http\Controllers\CompanyAnalyticsController;
 use App\Http\Controllers\CompanyController;
+use App\Http\Controllers\ContactController;
 use App\Http\Controllers\InvoiceController;
+use App\Http\Controllers\NoteController;
 use App\Http\Controllers\ProfileController;
 use App\Http\Middleware\EnsureCompanySelected;
 use Illuminate\Support\Facades\Route;
@@ -40,6 +42,12 @@ Route::middleware('auth')->group(function () {
 
     // Company Analytics routes
     Route::get('/company-analytics', [CompanyAnalyticsController::class, 'index'])->name('company-analytics.index');
+
+    // CRM: Contacts and Notes
+    Route::resource('contacts', ContactController::class)->middleware(EnsureCompanySelected::class);
+    Route::get('/notes', [NoteController::class, 'index'])->name('notes.index');
+    Route::post('/notes', [NoteController::class, 'store'])->name('notes.store');
+    Route::delete('/notes/{note}', [NoteController::class, 'destroy'])->name('notes.destroy');
 });
 
 require __DIR__.'/auth.php';
