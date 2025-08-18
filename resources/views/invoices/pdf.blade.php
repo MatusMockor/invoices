@@ -303,7 +303,7 @@
         </tr>
     @endforeach
     <tr class="summary-row">
-        <td colspan="4" style="text-align: right;">Spolu</td>
+        <td colspan="4" style="text-align: left;">Spolu:</td>
         <td style="text-align: right;">{{ number_format($invoice->total_amount, 2, ',', ' ') }} {{ $invoice->currency }}</td>
     </tr>
     </tbody>
