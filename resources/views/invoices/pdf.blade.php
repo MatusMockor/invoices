@@ -103,6 +103,8 @@
             width: 80px;
             height: 80px;
             margin-left: auto;
+            margin-right: 12mm;
+            display: block;
         }
     </style>
 </head>
@@ -144,11 +146,6 @@
                     @else
                     <div style="white-space: nowrap;">
                         <span style="display: inline-block;">Nie je platiteľ DPH</span>
-                    </div>
-                    @endif
-                    @if($invoice->supplierCompany->company_type)
-                    <div style="white-space: nowrap;">
-                        <span style="display: inline-block;">Právna forma: {{ $invoice->supplierCompany->company_type }}</span>
                     </div>
                     @endif
                     @if($invoice->supplierCompany->registration_number)
@@ -199,9 +196,6 @@
                     </div>
                     @if($invoice->businessEntity->company_type || $invoice->businessEntity->registration_number)
                     <div style="margin-top: 3px; font-size: 8pt; white-space: nowrap;">
-                        @if($invoice->businessEntity->company_type)
-                            <span style="display: inline-block;">Právna forma: {{ $invoice->businessEntity->company_type }}</span>
-                        @endif
                         @if($invoice->businessEntity->registration_number)
                             <span style="margin-left: 10px; display: inline-block;">
                                 @if($invoice->businessEntity->company_type == 's.r.o.')
@@ -255,7 +249,7 @@
                                     Pay by Square
                                 </div>
                                 @else
-                                <div style="width: 70px; height: 70px; border: 1px solid #ddd; text-align: center; margin-left: auto;">
+                                <div style="width: 70px; height: 70px; border: 1px solid #ddd; text-align: center; margin-left: auto; margin-right: 12mm;">
                                     <!-- QR kód placeholder -->
                                 </div>
                                 <div style="text-align: center; font-size: 6pt; color: #666; margin-top: 3px;">
