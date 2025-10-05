@@ -54,10 +54,11 @@ class ContactIndexRequest extends FormRequest
         return $this->get('tag');
     }
 
-    public function getStatus(): ?ContactStatus
+    public function getStatus(): ContactStatus
     {
-        return $this->get('status', ContactStatus::ACTIVE);
+        $status = $this->get('status');
 
+        return $status ? ContactStatus::from($status) : ContactStatus::ACTIVE;
     }
 
     public function getSortBy(): string
