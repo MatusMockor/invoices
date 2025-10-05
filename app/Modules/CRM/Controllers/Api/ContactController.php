@@ -8,6 +8,8 @@ use App\Http\Controllers\Controller;
 use App\Http\Requests\ContactBulkUpdateRequest;
 use App\Http\Requests\ContactImportRequest;
 use App\Modules\CRM\Enums\ContactStatus;
+use App\Modules\CRM\Filters\ContactFilter;
+use App\Modules\CRM\Http\Requests\ContactIndexRequest;
 use App\Modules\CRM\Http\Requests\CrmContactCreateRequest;
 use App\Modules\CRM\Http\Requests\CrmContactDeleteRequest;
 use App\Modules\CRM\Http\Requests\CrmContactUpdateRequest;
@@ -27,24 +29,19 @@ class ContactController extends Controller
         private readonly CrmContactServiceContract $contactService
     ) {}
 
-    public function index(Request $request): AnonymousResourceCollection
+    public function index(ContactIndexRequest $request): AnonymousResourceCollection
     {
-        // Default values for AJAX requests
-        $perPage = (int) $request->get('per_page', 15);
-        $search = $request->get('search');
-        $companyId = $request->get('company_id', auth()->user()->current_company_id);
-        $userId = $request->get('user_id');
-        $tag = $request->get('tag');
-        $status = $request->get('status', ContactStatus::ACTIVE->value);
+        $filter = new ContactFilter(
+            search: $request->getSearch(),
+            companyId: $request->getCompanyId() ?? auth()->user()->current_company_id,
+            userId: $request->getUserId(),
+            tag: $request->getTag(),
+            status: $request->getStatus() ?? ContactStatus::ACTIVE, // Default to active if no status specified
+            sortBy: $request->getSortBy(),
+            sortDirection: $request->getSortDirection()
+        );
 
-        $contacts = match (true) {
-            ! empty($search) => $this->contactService->searchContacts($search, $perPage),
-            ! empty($tag) => $this->contactService->getContactsByTag($tag, $perPage),
-            ! empty($userId) => $this->contactService->getContactsByUser((int) $userId, $perPage),
-            ! empty($companyId) => $this->contactService->getContactsByCompany((int) $companyId, $perPage),
-            $status === ContactStatus::INACTIVE->value => $this->contactService->getInactiveContacts($perPage),
-            default => $this->contactService->getActiveContacts($perPage),
-        };
+        $contacts = $this->contactService->getFilteredContacts($filter, $request->getPerPage());
 
         return CrmContactResource::collection($contacts);
     }

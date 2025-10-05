@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Modules\CRM\Services;
 
+use App\Modules\CRM\Filters\ContactFilter;
 use App\Modules\CRM\Models\ContactActivity;
 use App\Modules\CRM\Models\ContactAddress;
 use App\Modules\CRM\Models\ContactCustomFieldDefinition;
@@ -31,6 +32,11 @@ class CrmContactService implements CrmContactServiceContract
     public function getAllContacts(int $perPage = 15): LengthAwarePaginator
     {
         return $this->contactRepository->paginate($perPage);
+    }
+
+    public function getFilteredContacts(ContactFilter $filter, int $perPage = 15): LengthAwarePaginator
+    {
+        return $this->contactRepository->getFiltered($filter, $perPage);
     }
 
     public function getContact(int $id): CrmContact

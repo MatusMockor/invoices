@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Modules\CRM\Repositories\Interfaces;
 
+use App\Modules\CRM\Filters\ContactFilter;
 use App\Modules\CRM\Models\CrmContact;
 use Illuminate\Contracts\Pagination\LengthAwarePaginator;
 use Illuminate\Database\Eloquent\Collection;
@@ -51,4 +52,6 @@ interface CrmContactRepository
     public function getAllTags(): array;
 
     public function getContactsWithFullRelations(int $perPage = 15): LengthAwarePaginator;
+
+    public function getFiltered(ContactFilter $filter, int $perPage = 15): LengthAwarePaginator;
 }
