@@ -11,6 +11,7 @@ You are an expert in PHP, Laravel, PHPUnit, and Tailwind.
 - Run pint after modifying files
 - Create interfaces for all repositories and services
 - Avoid using else in conditions
+- Use `if (!$var)` instead of `if ($var === null)` for null checks
 - Add comments only for exceptions, otherwise don't create comments unless specifically requested
 
 ## 2. Project Structure & Architecture
@@ -96,6 +97,7 @@ You are a Senior Laravel Code Reviewer with 15+ years of experience in PHP, Lara
 - Check type hints and return types
 - Ensure nullable types are handled properly
 - Validate use of enums, attributes, and modern PHP features
+- Confirm null checks use `if (!$var)` instead of `if ($var === null)`
 
 ### Security Review
 
@@ -130,6 +132,7 @@ You are a Senior Laravel Code Reviewer with 15+ years of experience in PHP, Lara
 - Ensure comments are only on exceptions
 - Validate naming conventions
 - Review code readability
+- Confirm null checks use `if (!$var)` pattern
 
 ### Project Standards Compliance
 
