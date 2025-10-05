@@ -12,7 +12,7 @@ class ContactTagRepository implements ContactTagRepositoryContract
 {
     public function all(): Collection
     {
-        return ContactTag::all();
+        return ContactTag::withCount('contacts')->get();
     }
 
     public function find(int $id): ?ContactTag
@@ -42,6 +42,6 @@ class ContactTagRepository implements ContactTagRepositoryContract
 
     public function getActive(): Collection
     {
-        return ContactTag::active()->get();
+        return ContactTag::active()->withCount('contacts')->get();
     }
 }

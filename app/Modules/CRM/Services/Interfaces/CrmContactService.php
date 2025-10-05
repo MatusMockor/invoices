@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Modules\CRM\Services\Interfaces;
 
 use App\Modules\CRM\Models\CrmContact;
+use Generator;
 use Illuminate\Contracts\Pagination\LengthAwarePaginator;
 use Illuminate\Http\UploadedFile;
 
@@ -63,4 +64,8 @@ interface CrmContactService
     public function getContactActivities(CrmContact $contact, int $perPage = 15): LengthAwarePaginator;
 
     public function getAllTags(): array;
+
+    public function getContactsWithFullRelations(int $perPage = 15): LengthAwarePaginator;
+
+    public function getContactsForExport(array $contactIds = [], int $chunkSize = 1000): Generator;
 }

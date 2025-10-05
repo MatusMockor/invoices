@@ -44,7 +44,11 @@ interface CrmContactRepository
 
     public function withRelations(array $relations = []): Collection;
 
+    public function withRelationsPaginated(array $relations = [], int $perPage = 15): LengthAwarePaginator;
+
     public function findWithRelations(int $id, array $relations = []): ?CrmContact;
 
     public function getAllTags(): array;
+
+    public function getContactsWithFullRelations(int $perPage = 15): LengthAwarePaginator;
 }

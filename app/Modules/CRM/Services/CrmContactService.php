@@ -15,6 +15,7 @@ use App\Modules\CRM\Models\CrmContact;
 use App\Modules\CRM\Repositories\Interfaces\CrmContactRepository as CrmContactRepositoryContract;
 use App\Modules\CRM\Services\Interfaces\CrmContactService as CrmContactServiceContract;
 use Exception;
+use Generator;
 use Illuminate\Contracts\Pagination\LengthAwarePaginator;
 use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\DB;
@@ -280,10 +281,6 @@ class CrmContactService implements CrmContactServiceContract
 
     public function exportContactsToCsv(array $contactIds = []): string
     {
-        $contacts = empty($contactIds)
-            ? CrmContact::with(['company', 'tags'])->get()
-            : CrmContact::with(['company', 'tags'])->whereIn('id', $contactIds)->get();
-
         $filename = 'contacts_export_'.now()->format('Y-m-d_H-i-s').'.csv';
         $filepath = storage_path('app/exports/'.$filename);
 
@@ -297,19 +294,24 @@ class CrmContactService implements CrmContactServiceContract
             'Company', 'Tags', 'Created At', 'Updated At',
         ]);
 
-        foreach ($contacts as $contact) {
-            $csv->insertOne([
-                $contact->id,
-                $contact->first_name,
-                $contact->last_name,
-                $contact->primary_email,
-                $contact->primary_phone,
-                $contact->job_title,
-                $contact->company?->name,
-                $contact->tags->pluck('name')->join(', '),
-                $contact->created_at,
-                $contact->updated_at,
-            ]);
+        // Use chunked processing to handle large datasets efficiently
+        $contactChunks = $this->getContactsForExport($contactIds, 1000);
+
+        foreach ($contactChunks as $contacts) {
+            foreach ($contacts as $contact) {
+                $csv->insertOne([
+                    $contact->id,
+                    $contact->first_name,
+                    $contact->last_name,
+                    $contact->primary_email,
+                    $contact->primary_phone,
+                    $contact->job_title,
+                    $contact->company?->name,
+                    $contact->tags->pluck('name')->join(', '),
+                    $contact->created_at,
+                    $contact->updated_at,
+                ]);
+            }
         }
 
         return $filepath;
@@ -317,12 +319,28 @@ class CrmContactService implements CrmContactServiceContract
 
     public function bulkUpdateContacts(array $contactIds, array $data): int
     {
-        return CrmContact::whereIn('id', $contactIds)->update($data);
+        // Process in chunks to avoid memory issues with large datasets
+        $chunkSize = 1000;
+        $totalUpdated = 0;
+
+        foreach (array_chunk($contactIds, $chunkSize) as $chunk) {
+            $totalUpdated += CrmContact::whereIn('id', $chunk)->update($data);
+        }
+
+        return $totalUpdated;
     }
 
     public function bulkDeleteContacts(array $contactIds): int
     {
-        return CrmContact::whereIn('id', $contactIds)->delete();
+        // Process in chunks to avoid memory issues with large datasets
+        $chunkSize = 1000;
+        $totalDeleted = 0;
+
+        foreach (array_chunk($contactIds, $chunkSize) as $chunk) {
+            $totalDeleted += CrmContact::whereIn('id', $chunk)->delete();
+        }
+
+        return $totalDeleted;
     }
 
     public function recordContactActivity(CrmContact $contact, string $action, string $description, array $metadata = []): void
@@ -351,10 +369,32 @@ class CrmContactService implements CrmContactServiceContract
         return $this->contactRepository->getAllTags();
     }
 
+    public function getContactsWithFullRelations(int $perPage = 15): LengthAwarePaginator
+    {
+        return $this->contactRepository->getContactsWithFullRelations($perPage);
+    }
+
+    public function getContactsForExport(array $contactIds = [], int $chunkSize = 1000): Generator
+    {
+        $query = CrmContact::with([
+            'company:id,name',
+            'tags:id,name',
+            'emails:id,contact_id,email,type,is_primary',
+            'phones:id,contact_id,phone,type,is_primary',
+        ]);
+
+        if (! empty($contactIds)) {
+            $query->whereIn('id', $contactIds);
+        }
+
+        // Use chunk to process large datasets without loading everything into memory
+        return $query->chunk($chunkSize);
+    }
+
     private function updateContactNotes(CrmContact $contact, array $notesData): void
     {
-        // Get existing notes
-        $existingNotes = $contact->notes()->get()->keyBy('id');
+        // Get existing notes with proper eager loading
+        $existingNotes = $contact->notes()->with('user:id,name')->get()->keyBy('id');
 
         // Process each note
         foreach ($notesData as $noteData) {

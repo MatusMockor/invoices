@@ -5,17 +5,19 @@ declare(strict_types=1);
 namespace App\Modules\CRM\Controllers\Api;
 
 use App\Http\Controllers\Controller;
+use App\Http\Requests\ContactBulkUpdateRequest;
+use App\Http\Requests\ContactImportRequest;
 use App\Modules\CRM\Enums\ContactStatus;
-use App\Modules\CRM\Http\Requests\ContactBulkUpdateRequest;
-use App\Modules\CRM\Http\Requests\ContactImportRequest;
 use App\Modules\CRM\Http\Requests\CrmContactCreateRequest;
 use App\Modules\CRM\Http\Requests\CrmContactDeleteRequest;
 use App\Modules\CRM\Http\Requests\CrmContactUpdateRequest;
+use App\Modules\CRM\Http\Resources\ContactImportResource;
 use App\Modules\CRM\Http\Resources\CrmContactResource;
 use App\Modules\CRM\Models\CrmContact;
 use App\Modules\CRM\Services\Interfaces\CrmContactService as CrmContactServiceContract;
-use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
+use Illuminate\Http\Resources\Json\AnonymousResourceCollection;
+use Illuminate\Http\Resources\Json\JsonResource;
 use Illuminate\Http\Response;
 use Illuminate\Support\Facades\Storage;
 
@@ -25,171 +27,121 @@ class ContactController extends Controller
         private readonly CrmContactServiceContract $contactService
     ) {}
 
-    public function index(Request $request): JsonResponse
+    public function index(Request $request): AnonymousResourceCollection
     {
+        // Default values for AJAX requests
         $perPage = (int) $request->get('per_page', 15);
         $search = $request->get('search');
-        $companyId = $request->get('company_id');
+        $companyId = $request->get('company_id', auth()->user()->current_company_id);
         $userId = $request->get('user_id');
         $tag = $request->get('tag');
         $status = $request->get('status', ContactStatus::ACTIVE->value);
-        $isActive = $status === ContactStatus::ACTIVE->value;
-
-        // If no company_id is provided, use the current user's company
-        if (empty($companyId) && auth()->user()->current_company_id) {
-            $companyId = auth()->user()->current_company_id;
-        }
 
         $contacts = match (true) {
             ! empty($search) => $this->contactService->searchContacts($search, $perPage),
             ! empty($tag) => $this->contactService->getContactsByTag($tag, $perPage),
-            ! $isActive && ! empty($companyId) => $this->contactService->getContactsByCompany((int) $companyId, $perPage),
-            ! $isActive => $this->contactService->getInactiveContacts($perPage),
-            ! empty($companyId) => $this->contactService->getContactsByCompany((int) $companyId, $perPage),
             ! empty($userId) => $this->contactService->getContactsByUser((int) $userId, $perPage),
+            ! empty($companyId) => $this->contactService->getContactsByCompany((int) $companyId, $perPage),
+            $status === ContactStatus::INACTIVE->value => $this->contactService->getInactiveContacts($perPage),
             default => $this->contactService->getActiveContacts($perPage),
         };
 
-        return response()->json([
-            'data' => CrmContactResource::collection($contacts->items()),
-            'meta' => [
-                'current_page' => $contacts->currentPage(),
-                'last_page' => $contacts->lastPage(),
-                'per_page' => $contacts->perPage(),
-                'total' => $contacts->total(),
-            ],
-        ]);
+        return CrmContactResource::collection($contacts);
     }
 
-    public function store(CrmContactCreateRequest $request): JsonResponse
+    public function store(CrmContactCreateRequest $request): JsonResource
     {
         $contact = $this->contactService->createContact($request->validated());
 
-        return response()->json([
-            'data' => new CrmContactResource($contact),
-            'message' => 'Contact created successfully.',
-        ], Response::HTTP_CREATED);
+        return new CrmContactResource($contact);
     }
 
-    public function show(CrmContact $contact): JsonResponse
+    public function show(CrmContact $contact): JsonResource
     {
         $contact = $this->contactService->getContact($contact->id);
 
-        return response()->json([
-            'data' => new CrmContactResource($contact),
-        ]);
+        return new CrmContactResource($contact);
     }
 
-    public function update(CrmContactUpdateRequest $request, CrmContact $contact): JsonResponse
+    public function update(CrmContactUpdateRequest $request, CrmContact $contact): JsonResource
     {
         $contact = $this->contactService->updateContact($contact, $request->validated());
 
-        return response()->json([
-            'data' => new CrmContactResource($contact),
-            'message' => 'Contact updated successfully.',
-        ]);
+        return new CrmContactResource($contact);
     }
 
-    public function destroy(CrmContactDeleteRequest $request, CrmContact $contact): JsonResponse
+    public function destroy(CrmContactDeleteRequest $request, CrmContact $contact): Response
     {
         $forceDelete = $request->boolean('force_delete', false);
 
         if ($forceDelete) {
             $this->contactService->forceDeleteContact($contact);
-            $message = 'Contact permanently deleted.';
         } else {
             $this->contactService->deleteContact($contact);
-            $message = 'Contact deleted.';
         }
 
-        return response()->json([
-            'message' => $message,
-        ]);
+        return response()->noContent();
     }
 
-    public function bulkDelete(Request $request): JsonResponse
+    public function bulkDelete(Request $request): Response
     {
         $request->validate([
             'contact_ids' => ['required', 'array', 'min:1'],
             'contact_ids.*' => ['integer', 'exists:contacts,id'],
         ]);
 
-        $deleted = $this->contactService->bulkDeleteContacts($request->get('contact_ids'));
+        $this->contactService->bulkDeleteContacts($request->get('contact_ids'));
 
-        return response()->json([
-            'message' => "Deleted {$deleted} contacts.",
-            'deleted_count' => $deleted,
-        ]);
+        return response()->noContent();
     }
 
-    public function bulkUpdate(ContactBulkUpdateRequest $request): JsonResponse
+    public function bulkUpdate(ContactBulkUpdateRequest $request): Response
     {
-        $updated = $this->contactService->bulkUpdateContacts(
+        $this->contactService->bulkUpdateContacts(
             $request->get('contact_ids'),
             $request->get('data')
         );
 
-        return response()->json([
-            'message' => "Updated {$updated} contacts.",
-            'updated_count' => $updated,
-        ]);
+        return response()->noContent();
     }
 
-    public function export(Request $request): JsonResponse
+    public function export(Request $request): JsonResource
     {
         $contactIds = $request->get('contact_ids', []);
         $filepath = $this->contactService->exportContactsToCsv($contactIds);
 
-        return response()->json([
+        return new JsonResource([
             'download_url' => Storage::url('exports/'.basename($filepath)),
-            'message' => 'Export prepared for download.',
         ]);
     }
 
-    public function import(ContactImportRequest $request): JsonResponse
+    public function import(ContactImportRequest $request): ContactImportResource
     {
         $file = $request->file('file');
         $result = $this->contactService->importContactsFromCsv($file);
 
-        return response()->json([
-            'message' => "Import completed. Imported: {$result['imported']} contacts.",
-            'imported' => $result['imported'],
-            'errors' => $result['errors'],
-        ]);
+        return new ContactImportResource($result);
     }
 
-    public function restore(CrmContact $contact): JsonResponse
+    public function restore(CrmContact $contact): CrmContactResource
     {
         $this->contactService->restoreContact($contact);
 
-        return response()->json([
-            'data' => new CrmContactResource($contact),
-            'message' => 'Contact restored successfully.',
-        ]);
+        return new CrmContactResource($contact);
     }
 
-    public function activities(Request $request, CrmContact $contact): JsonResponse
+    public function activities(Request $request, CrmContact $contact): AnonymousResourceCollection
     {
         $perPage = (int) $request->get('per_page', 15);
         $activities = $this->contactService->getContactActivities($contact, $perPage);
 
-        return response()->json([
-            'data' => $activities->items(),
-            'meta' => [
-                'current_page' => $activities->currentPage(),
-                'last_page' => $activities->lastPage(),
-                'per_page' => $activities->perPage(),
-                'total' => $activities->total(),
-            ],
-        ]);
+        return JsonResource::collection($activities);
     }
 
-    public function tags(): JsonResponse
+    public function tags(): JsonResource
     {
         $tags = $this->contactService->getAllTags();
 
-        return response()->json([
-            'data' => $tags,
-        ]);
+        return new JsonResource($tags);
     }
 }

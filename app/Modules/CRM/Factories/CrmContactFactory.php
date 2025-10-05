@@ -24,7 +24,6 @@ class CrmContactFactory extends Factory
             'primary_email' => fake()->unique()->safeEmail(),
             'primary_phone' => fake()->phoneNumber(),
             'job_title' => fake()->jobTitle(),
-            'notes' => fake()->optional(0.3)->paragraph(),
             'metadata' => fake()->optional(0.2)->randomElements([
                 'source' => fake()->randomElement(['website', 'referral', 'cold_call', 'event']),
                 'priority' => fake()->randomElement(['low', 'medium', 'high']),

@@ -105,6 +105,10 @@ class CrmContact extends Model
 
     public function getPrimaryAddressAttribute(): ?ContactAddress
     {
+        if ($this->relationLoaded('addresses')) {
+            return $this->addresses->where('is_primary', true)->first();
+        }
+
         return $this->addresses()->where('is_primary', true)->first();
     }
 

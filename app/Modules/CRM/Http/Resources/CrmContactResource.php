@@ -5,9 +5,13 @@ declare(strict_types=1);
 namespace App\Modules\CRM\Http\Resources;
 
 use App\Http\Resources\UserResource;
+use App\Modules\CRM\Models\CrmContact;
 use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\JsonResource;
 
+/**
+ * @mixin CrmContact
+ */
 class CrmContactResource extends JsonResource
 {
     public function toArray(Request $request): array
