@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Services;
 
 use App\Models\BusinessEntity;
@@ -24,34 +26,6 @@ class BusinessEntityDataService implements BusinessEntityDataServiceContract
         }
 
         return $this->fetchFromScraper($ico);
-    }
-
-    protected function fetchFromScraper(string $ico): array
-    {
-        $data = $this->scraperService->startScraper($ico);
-
-        if (! $data) {
-            return [
-                'success' => false,
-                'message' => 'Failed to load business entity data.',
-            ];
-        }
-
-        return [
-            'success' => true,
-            'data' => [
-                'ico' => $data['ico'] ?? $ico,
-                'name' => $data['nazov'] ?? '',
-                'street' => $data['ulica'] ?? '',
-                'city' => $data['mesto'] ?? '',
-                'postal_code' => $data['psc'] ?? '',
-                'country' => 'Slovensko',
-                'dic' => $data['dic'] ?? null,
-                'ic_dph' => $data['icDph'] ?? null,
-                'company_type' => $data['zdroj'],
-                'registration_number' => $data['registration_number'],
-            ],
-        ];
     }
 
     public function findOrCreateBusinessEntity(string $ico): ?BusinessEntity
@@ -81,5 +55,33 @@ class BusinessEntityDataService implements BusinessEntityDataServiceContract
             'company_type' => $businessEntityData['data']['company_type'] ?? null,
             'registration_number' => $businessEntityData['data']['registration_number'] ?? null,
         ]);
+    }
+
+    protected function fetchFromScraper(string $ico): array
+    {
+        $data = $this->scraperService->startScraper($ico);
+
+        if (! $data) {
+            return [
+                'success' => false,
+                'message' => 'Failed to load business entity data.',
+            ];
+        }
+
+        return [
+            'success' => true,
+            'data' => [
+                'ico' => $data['ico'] ?? $ico,
+                'name' => $data['nazov'] ?? '',
+                'street' => $data['ulica'] ?? '',
+                'city' => $data['mesto'] ?? '',
+                'postal_code' => $data['psc'] ?? '',
+                'country' => 'Slovensko',
+                'dic' => $data['dic'] ?? null,
+                'ic_dph' => $data['icDph'] ?? null,
+                'company_type' => $data['zdroj'],
+                'registration_number' => $data['registration_number'],
+            ],
+        ];
     }
 }

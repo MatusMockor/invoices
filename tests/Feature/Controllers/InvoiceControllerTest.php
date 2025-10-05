@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Feature\Controllers;
 
 use App\Models\BusinessEntity;
@@ -34,6 +36,12 @@ class InvoiceControllerTest extends TestCase
         $user->update(['current_company_id' => $company->id]);
 
         $this->actingAs($user);
+    }
+
+    protected function tearDown(): void
+    {
+        Mockery::close();
+        parent::tearDown();
     }
 
     /**
@@ -311,11 +319,5 @@ class InvoiceControllerTest extends TestCase
     public function test_view_pdf_returns_pdf_response(): void
     {
         $this->markTestSkipped('Skipping PDF test due to property issues');
-    }
-
-    protected function tearDown(): void
-    {
-        Mockery::close();
-        parent::tearDown();
     }
 }

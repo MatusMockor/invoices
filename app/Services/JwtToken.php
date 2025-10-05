@@ -1,7 +1,10 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Services;
 
+use Exception;
 use Firebase\JWT\JWT;
 use Firebase\JWT\Key;
 
@@ -40,7 +43,7 @@ class JwtToken
             JWT::decode($token, new Key($secret, $algorithm));
 
             return true;
-        } catch (\Exception $e) {
+        } catch (Exception $e) {
             return false;
         }
     }

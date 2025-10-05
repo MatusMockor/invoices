@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Modules\VehicleLogbook\Repositories\Interfaces;
 
 use App\Modules\VehicleLogbook\Models\Trip;

@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Modules\VehicleLogbook\Providers;
 
 use App\Modules\VehicleLogbook\Repositories\Interfaces\TripRepository as TripRepositoryContract;
