@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Modules\VehicleLogbook\tests\Feature;
 
 use App\Models\Company;

@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Modules\VehicleLogbook\Models;
 
 use App\Models\Company;
@@ -39,6 +41,16 @@ class Vehicle extends Model
     ];
 
     /**
+     * Create a new factory instance for the model.
+     *
+     * @return \Illuminate\Database\Eloquent\Factories\Factory
+     */
+    protected static function newFactory()
+    {
+        return VehicleFactory::new();
+    }
+
+    /**
      * Get the company that owns the vehicle.
      */
     public function company(): BelongsTo
@@ -52,15 +64,5 @@ class Vehicle extends Model
     public function trips(): HasMany
     {
         return $this->hasMany(Trip::class);
-    }
-
-    /**
-     * Create a new factory instance for the model.
-     *
-     * @return \Illuminate\Database\Eloquent\Factories\Factory
-     */
-    protected static function newFactory()
-    {
-        return VehicleFactory::new();
     }
 }

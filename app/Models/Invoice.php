@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Models;
 
 use App\Observers\InvoiceObserver;
@@ -38,14 +40,6 @@ class Invoice extends Model
 {
     use HasFactory;
 
-    /**
-     * Get the user that owns the invoice.
-     */
-    public function user(): BelongsTo
-    {
-        return $this->belongsTo(User::class);
-    }
-
     protected $fillable = [
         'user_id',
         'invoice_number',
@@ -66,6 +60,14 @@ class Invoice extends Model
         'due_date' => 'date',
         'delivery_date' => 'date',
     ];
+
+    /**
+     * Get the user that owns the invoice.
+     */
+    public function user(): BelongsTo
+    {
+        return $this->belongsTo(User::class);
+    }
 
     public function businessEntity(): BelongsTo
     {

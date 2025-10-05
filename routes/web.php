@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 use App\Http\Controllers\BusinessEntityController;
 use App\Http\Controllers\CompanyAnalyticsController;
 use App\Http\Controllers\CompanyController;

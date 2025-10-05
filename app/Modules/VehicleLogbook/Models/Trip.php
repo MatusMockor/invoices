@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Modules\VehicleLogbook\Models;
 
 use Database\Factories\TripFactory;
@@ -67,14 +69,6 @@ class Trip extends Model
     ];
 
     /**
-     * Get the vehicle that owns the trip.
-     */
-    public function vehicle(): BelongsTo
-    {
-        return $this->belongsTo(Vehicle::class);
-    }
-
-    /**
      * Create a new factory instance for the model.
      *
      * @return \Illuminate\Database\Eloquent\Factories\Factory
@@ -82,5 +76,13 @@ class Trip extends Model
     protected static function newFactory()
     {
         return TripFactory::new();
+    }
+
+    /**
+     * Get the vehicle that owns the trip.
+     */
+    public function vehicle(): BelongsTo
+    {
+        return $this->belongsTo(Vehicle::class);
     }
 }
