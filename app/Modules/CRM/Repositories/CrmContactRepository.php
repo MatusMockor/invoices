@@ -24,7 +24,11 @@ class CrmContactRepository implements CrmContactRepositoryContract
 
     public function all(): Collection
     {
-        return CrmContact::all();
+        return CrmContact::with([
+            'company:id,name',
+            'user:id,name,email',
+            'tags:id,name',
+        ])->get();
     }
 
     public function paginate(int $perPage = 15): LengthAwarePaginator
@@ -154,6 +158,11 @@ class CrmContactRepository implements CrmContactRepositoryContract
         return CrmContact::with($relations)->get();
     }
 
+    public function withRelationsPaginated(array $relations = [], int $perPage = 15): LengthAwarePaginator
+    {
+        return CrmContact::with($relations)->paginate($perPage);
+    }
+
     public function findWithRelations(int $id, array $relations = []): ?CrmContact
     {
         return CrmContact::with($relations)->find($id);
@@ -161,6 +170,21 @@ class CrmContactRepository implements CrmContactRepositoryContract
 
     public function getAllTags(): array
     {
-        return ContactTag::all()->toArray();
+        return ContactTag::withCount('contacts')->get()->toArray();
+    }
+
+    public function getContactsWithFullRelations(int $perPage = 15): LengthAwarePaginator
+    {
+        return CrmContact::with([
+            'company:id,name',
+            'user:id,name,email',
+            'tags:id,name,color',
+            'emails:id,contact_id,email,type,is_primary,is_verified',
+            'phones:id,contact_id,phone,type,is_primary,is_verified,country_code',
+            'addresses:id,contact_id,type,street,city,postal_code,state,country,is_primary',
+            'customFieldValues.fieldDefinition:id,name,type',
+            'activities:id,contact_id,user_id,type,action,description,occurred_at',
+            'notes:id,noteable_id,noteable_type,body,user_id,created_at',
+        ])->paginate($perPage);
     }
 }

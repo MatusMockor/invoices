@@ -144,8 +144,8 @@
           </div>
           <div v-if="contacts.links">
             <nav class="flex items-center space-x-2">
-              <button v-for="link in contacts.links" :key="link.label" @click="loadPage(link.url)" :disabled="!link.url" :class="link.active ? 'bg-indigo-600 text-white' : 'bg-white text-gray-700 hover:bg-gray-50'" class="px-3 py-2 text-sm font-medium rounded-md border border-gray-300 disabled:opacity-50 disabled:cursor-not-allowed">
-                <span v-html="link.label"></span>
+              <button v-for="link in contacts.links" :key="link?.label || 'empty'" @click="loadPage(link?.url)" :disabled="!link?.url" :class="link?.active ? 'bg-indigo-600 text-white' : 'bg-white text-gray-700 hover:bg-gray-50'" class="px-3 py-2 text-sm font-medium rounded-md border border-gray-300 disabled:opacity-50 disabled:cursor-not-allowed">
+                <span v-html="link?.label || ''"></span>
               </button>
             </nav>
           </div>

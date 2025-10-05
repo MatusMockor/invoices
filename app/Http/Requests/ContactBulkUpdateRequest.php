@@ -17,7 +17,7 @@ class ContactBulkUpdateRequest extends FormRequest
     {
         return [
             'contact_ids' => ['required', 'array', 'min:1'],
-            'contact_ids.*' => ['integer', 'exists:contacts,id'],
+            'contact_ids.*' => ['integer', 'exists:crm_contacts,id'],
             'data' => ['required', 'array'],
             'data.position' => ['nullable', 'string', 'max:255'],
             'data.notes' => ['nullable', 'string'],
