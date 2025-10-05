@@ -5,6 +5,12 @@ declare(strict_types=1);
 namespace App\Providers;
 
 use App\Models\Invoice;
+use App\Modules\CRM\Models\CrmContact;
+use App\Modules\CRM\Policies\CrmContactPolicy;
+use App\Modules\CRM\Repositories\ContactRepository;
+use App\Modules\CRM\Repositories\Interfaces\ContactRepository as ContactRepositoryContract;
+use App\Modules\CRM\Services\ContactService;
+use App\Modules\CRM\Services\Interfaces\ContactService as ContactServiceContract;
 use App\Policies\InvoicePolicy;
 use App\Repositories\BusinessEntityRepository;
 use App\Repositories\CompanyRepository;
@@ -45,6 +51,7 @@ class AppServiceProvider extends ServiceProvider
         $this->app->bind(CompanyRepositoryContract::class, CompanyRepository::class);
         $this->app->bind(VehicleRepositoryContract::class, VehicleRepository::class);
         $this->app->bind(TripRepositoryContract::class, TripRepository::class);
+        $this->app->bind(ContactRepositoryContract::class, ContactRepository::class);
 
         // Register service interfaces with Contract suffix for aliases
         $this->app->bind(BusinessEntityDataServiceContract::class, BusinessEntityDataServiceImpl::class);
@@ -52,6 +59,7 @@ class AppServiceProvider extends ServiceProvider
         $this->app->bind(ScraperServiceContract::class, ScraperServiceImpl::class);
         $this->app->bind(PayBySquareContract::class, PayBySquareService::class);
         $this->app->bind(CompanyAnalyticsServiceContract::class, CompanyAnalyticsService::class);
+        $this->app->bind(ContactServiceContract::class, ContactService::class);
     }
 
     /**
@@ -61,5 +69,8 @@ class AppServiceProvider extends ServiceProvider
     {
         // Register the InvoicePolicy for the Invoice model
         Gate::policy(Invoice::class, InvoicePolicy::class);
+
+        // Register the CrmContactPolicy for the CrmContact model
+        Gate::policy(CrmContact::class, CrmContactPolicy::class);
     }
 }

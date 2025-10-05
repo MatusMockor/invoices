@@ -1,0 +1,42 @@
+<?php
+
+declare(strict_types=1);
+
+namespace App\Modules\CRM\Models;
+
+use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
+
+class ContactEmail extends Model
+{
+    use HasFactory;
+
+    protected $fillable = [
+        'contact_id',
+        'email',
+        'type',
+        'is_verified',
+        'verified_at',
+    ];
+
+    protected $casts = [
+        'is_verified' => 'boolean',
+        'verified_at' => 'datetime',
+    ];
+
+    public function contact(): BelongsTo
+    {
+        return $this->belongsTo(CrmContact::class, 'contact_id');
+    }
+
+    public function scopeVerified($query)
+    {
+        return $query->where('is_verified', true);
+    }
+
+    public function scopeByType($query, string $type)
+    {
+        return $query->where('type', $type);
+    }
+}

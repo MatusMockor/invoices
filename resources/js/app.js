@@ -8,6 +8,13 @@ import CompanySwitcher from "./components/CompanySwitcher.vue";
 import TripForm from './components/TripForm.vue';
 import AnalyticsComponent from './components/Analytics/AnalyticsComponent.vue';
 import ContactNotes from './components/CRM/ContactNotes.vue';
+import CrmModule from './components/CRM/CrmModule.vue';
+import ContactsIndex from './components/CRM/Contacts/ContactsIndex.vue';
+import ContactCreateModal from './components/CRM/Contacts/ContactCreateModal.vue';
+import ContactEditModal from './components/CRM/Contacts/ContactEditModal.vue';
+import ContactViewModal from './components/CRM/Contacts/ContactViewModal.vue';
+import ContactImportModal from './components/CRM/Contacts/ContactImportModal.vue';
+import BulkUpdateModal from './components/CRM/Contacts/BulkUpdateModal.vue';
 
 
 // Import Flowbite for initialization
@@ -138,6 +145,16 @@ app.component('analytics-component', AnalyticsComponent);
 
 // CRM components
 app.component('contact-notes', ContactNotes);
+app.component('crm-module', CrmModule);
+app.component('contacts-index', ContactsIndex);
+app.component('contact-create-modal', ContactCreateModal);
+app.component('contact-edit-modal', ContactEditModal);
+app.component('contact-view-modal', ContactViewModal);
+app.component('contact-import-modal', ContactImportModal);
+app.component('bulk-update-modal', BulkUpdateModal);
+
+// Make CRM components globally available
+window.CrmModule = CrmModule;
 
 // Mount Vue app when the DOM is fully loaded
 app.mount('#app');
