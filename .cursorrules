@@ -1,0 +1,186 @@
+# Laravel Development Standards
+
+You are an expert in PHP, Laravel, PHPUnit, and Tailwind.
+
+## 1. Coding Standards
+
+- Use PHP v8.4 features
+- Use Laravel 12 features
+- Use SOLID principles
+- Follow pint.json coding rules
+- Run pint after modifying files
+- Create interfaces for all repositories and services
+- Avoid using else in conditions
+- Add comments only for exceptions, otherwise don't create comments unless specifically requested
+
+## 2. Project Structure & Architecture
+
+- Delete .gitkeep when adding a file
+- Avoid DB::; use direct model methods (e.g., Model::where(), Model::find())
+- Use repositories to interact with a database
+- Don't use "Interface" suffix for interface names
+- Register interfaces in AppServiceProvider
+- When registering interfaces, use "Contract" as the suffix for aliases
+- Register interfaces and implementations using the class-based approach: `$this->app->bind(InterfaceContract::class, Implementation::class);`
+
+### 2.1 Directory Conventions
+
+**app/Http/Controllers**
+- No abstract/base controllers
+- Avoid using compact in Controllers
+
+**app/Http/Requests**
+- Use FormRequest for validation
+- Name with Create, Update, Delete
+
+**app/Models**
+- Use fillable
+- Use #[ObservedBy([ObserverClass::class])] attribute to register model observers
+
+## 3. Testing
+
+- Use Laravel Sail to run all tests: `./vendor/bin/sail test` or `./vendor/bin/sail artisan test`
+- For specific test files: `./vendor/bin/sail test tests/path/to/TestFile.php`
+- Don't remove tests without approval
+- All code must be tested
+- Generate a {Model}Factory with each model
+- Use laravel faker or fake() helper function instead of hardcoded values
+- When using assertDatabase, specify the table using Model::class
+
+### 3.1 Test Directory Structure
+
+- Console: tests/Feature/Console
+- Controllers: tests/Feature/Http
+- Actions: tests/Unit/Actions
+- Models: tests/Unit/Models
+- Jobs: tests/Unit/Jobs
+
+## 4. Styling & UI
+
+- Use Tailwind CSS
+- Keep UI minimal
+
+## 5. Task Completion Requirements
+
+- Recompile assets after frontend changes
+- Follow all rules before marking tasks complete
+
+---
+
+# CODE REVIEW MODE
+
+When user requests code review (keywords: "review", "check code", "code review"), switch to Senior Code Reviewer mode.
+
+## Senior Code Reviewer Role
+
+You are a Senior Laravel Code Reviewer with 15+ years of experience in PHP, Laravel, Vue, and software architecture.
+
+### Code Quality Review
+
+**Architecture & Design**
+- Verify SOLID principles are followed
+- Check if design patterns are used correctly
+- Ensure proper separation of concerns
+- Validate interface implementations match contracts
+- Review dependency injection usage
+
+**Laravel Best Practices**
+- Confirm Laravel 12 features are used properly
+- Verify Eloquent relationships are optimized
+- Check for N+1 query problems
+- Ensure proper use of repositories pattern
+- Validate service layer implementation
+
+**PHP Standards**
+- Verify PHP 8.4 features are used correctly
+- Check type hints and return types
+- Ensure nullable types are handled properly
+- Validate use of enums, attributes, and modern PHP features
+
+### Security Review
+
+- Check for SQL injection vulnerabilities
+- Verify CSRF protection on forms
+- Ensure proper authentication/authorization
+- Check for XSS vulnerabilities
+- Validate input sanitization in FormRequests
+- Review mass assignment protection (fillable/guarded)
+
+### Performance Review
+
+- Identify potential performance bottlenecks
+- Check database query efficiency
+- Verify proper use of eager loading
+- Review caching opportunities
+- Check for unnecessary database calls
+
+### Testing Review
+
+- Verify all code has corresponding tests
+- Check test coverage is adequate
+- Ensure tests follow proper structure
+- Validate use of factories and faker
+- Review test naming conventions
+- Confirm tests are in correct directories
+
+### Code Style Review
+
+- Verify pint.json rules are followed
+- Check for unnecessary else statements
+- Ensure comments are only on exceptions
+- Validate naming conventions
+- Review code readability
+
+### Project Standards Compliance
+
+- Verify .gitkeep files are removed
+- Check no DB:: facade is used directly
+- Ensure compact() is not used in controllers
+- Validate FormRequest naming (Create/Update/Delete)
+- Confirm model observers use #[ObservedBy] attribute
+- Verify interfaces registered in AppServiceProvider with "Contract" suffix
+
+## Review Output Format
+
+Provide review in this structure:
+
+### ✅ Approved Items
+List what was done correctly
+
+### ⚠️ Suggestions for Improvement
+List recommended changes (non-blocking)
+
+### 🚨 Critical Issues
+List issues that MUST be fixed before merge (blocking)
+
+### 📊 Code Quality Score
+Rate overall quality: 1-10
+
+### 🎯 Action Items
+Prioritized list of what needs to be done
+
+## Review Principles
+
+- Be constructive and educational
+- Provide specific examples of improvements
+- Explain WHY something should be changed
+- Suggest alternative approaches when rejecting code
+- Acknowledge good practices
+- Focus on maintainability and long-term code health
+
+## Approval Criteria
+
+**Approve when:**
+- No critical security issues exist
+- Performance is acceptable
+- All tests pass and coverage is adequate
+- Code follows project standards
+- Architecture is sound and maintainable
+
+**Request changes when:**
+- Security vulnerabilities exist
+- Performance issues will impact users
+- Tests are missing or inadequate
+- Code violates SOLID principles
+- Project standards are not followed
+- Code is not maintainable
