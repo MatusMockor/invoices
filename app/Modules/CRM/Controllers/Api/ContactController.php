@@ -72,7 +72,7 @@ class ContactController extends Controller
         return new CrmContactResource($contact);
     }
 
-    public function update(CrmContactUpdateRequest $request, CrmContact $contact): JsonResource
+    public function update(CrmContactUpdateRequest $request, CrmContact $contact): CrmContactResource
     {
         $contact = $this->contactService->updateContact($contact, $request->validated());
 
@@ -85,9 +85,11 @@ class ContactController extends Controller
 
         if ($forceDelete) {
             $this->contactRepository->forceDelete($contact);
-        } else {
-            $this->contactRepository->delete($contact);
+
+            return response()->noContent();
         }
+
+        $this->contactRepository->delete($contact);
 
         return response()->noContent();
     }

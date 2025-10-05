@@ -8,6 +8,7 @@ use App\Modules\CRM\Models\ContactActivity;
 use App\Modules\CRM\Models\CrmContact;
 use App\Modules\CRM\Repositories\Interfaces\CrmContactRepository as CrmContactRepositoryContract;
 use App\Modules\CRM\Services\Interfaces\CrmContactService as CrmContactServiceContract;
+use Generator;
 use Illuminate\Contracts\Pagination\LengthAwarePaginator;
 use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\DB;
@@ -270,5 +271,70 @@ class CrmContactService implements CrmContactServiceContract
         if ($notesToDelete->isNotEmpty()) {
             $contact->notes()->whereIn('id', $notesToDelete)->delete();
         }
+    }
+
+    private function addEmailToContact(CrmContact $contact, array $emailData): void
+    {
+        $contact->emails()->create([
+            'email' => $emailData['email'],
+            'type' => $emailData['type'],
+            'is_primary' => $emailData['type'] === 'primary',
+            'is_verified' => $emailData['is_verified'] ?? false,
+        ]);
+    }
+
+    private function addPhoneToContact(CrmContact $contact, array $phoneData): void
+    {
+        $contact->phones()->create([
+            'phone' => $phoneData['phone'],
+            'type' => $phoneData['type'],
+            'country_code' => $phoneData['country_code'],
+            'is_primary' => $phoneData['type'] === 'primary',
+            'is_verified' => $phoneData['is_verified'] ?? false,
+        ]);
+    }
+
+    private function addAddressToContact(CrmContact $contact, array $addressData): void
+    {
+        $contact->addresses()->create([
+            'type' => $addressData['type'],
+            'street' => $addressData['street'] ?? null,
+            'city' => $addressData['city'] ?? null,
+            'postal_code' => $addressData['postal_code'] ?? null,
+            'state' => $addressData['state'] ?? null,
+            'country' => $addressData['country'] ?? null,
+            'latitude' => $addressData['latitude'] ?? null,
+            'longitude' => $addressData['longitude'] ?? null,
+            'is_primary' => $addressData['is_primary'] ?? false,
+        ]);
+    }
+
+    private function addTagToContact(CrmContact $contact, string $tagName): void
+    {
+        $tag = \App\Modules\CRM\Models\ContactTag::firstOrCreate(['name' => $tagName]);
+        $contact->tags()->syncWithoutDetaching([$tag->id]);
+    }
+
+    private function setCustomFieldValue(CrmContact $contact, string $fieldSlug, mixed $value): void
+    {
+        $fieldDefinition = \App\Modules\CRM\Models\ContactCustomFieldDefinition::where('slug', $fieldSlug)->first();
+
+        if ($fieldDefinition) {
+            $contact->customFieldValues()->updateOrCreate(
+                ['field_definition_id' => $fieldDefinition->id],
+                ['value' => $value]
+            );
+        }
+    }
+
+    private function getContactsForExport(array $contactIds = [], int $chunkSize = 1000): Generator
+    {
+        $query = CrmContact::with(['company', 'tags']);
+
+        if (! empty($contactIds)) {
+            $query->whereIn('id', $contactIds);
+        }
+
+        return $query->chunk($chunkSize);
     }
 }
