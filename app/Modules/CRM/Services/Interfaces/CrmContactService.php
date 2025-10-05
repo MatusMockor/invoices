@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Modules\CRM\Services\Interfaces;
 
+use App\Modules\CRM\Filters\ContactFilter;
 use App\Modules\CRM\Models\CrmContact;
 use Generator;
 use Illuminate\Contracts\Pagination\LengthAwarePaginator;
@@ -12,6 +13,8 @@ use Illuminate\Http\UploadedFile;
 interface CrmContactService
 {
     public function getAllContacts(int $perPage = 15): LengthAwarePaginator;
+
+    public function getFilteredContacts(ContactFilter $filter, int $perPage = 15): LengthAwarePaginator;
 
     public function getContact(int $id): CrmContact;
 

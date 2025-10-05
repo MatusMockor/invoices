@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Modules\CRM\Repositories;
 
+use App\Modules\CRM\Filters\ContactFilter;
 use App\Modules\CRM\Models\ContactTag;
 use App\Modules\CRM\Models\CrmContact;
 use App\Modules\CRM\Repositories\Interfaces\CrmContactRepository as CrmContactRepositoryContract;
@@ -177,6 +178,25 @@ class CrmContactRepository implements CrmContactRepositoryContract
     {
         return CrmContact::with([
             'company:id,name',
+            'user:id,name,email',
+            'tags:id,name,color',
+            'emails:id,contact_id,email,type,is_primary,is_verified',
+            'phones:id,contact_id,phone,type,is_primary,is_verified,country_code',
+            'addresses:id,contact_id,type,street,city,postal_code,state,country,is_primary',
+            'customFieldValues.fieldDefinition:id,name,type',
+            'activities:id,contact_id,user_id,type,action,description,occurred_at',
+            'notes:id,noteable_id,noteable_type,body,user_id,created_at',
+        ])->paginate($perPage);
+    }
+
+    public function getFiltered(ContactFilter $filter, int $perPage = 15): LengthAwarePaginator
+    {
+        $query = CrmContact::query();
+
+        $query = $filter->apply($query);
+
+        return $query->with([
+            'company:id,name,email,phone,website',
             'user:id,name,email',
             'tags:id,name,color',
             'emails:id,contact_id,email,type,is_primary,is_verified',
