@@ -56,10 +56,19 @@
                                     </a>
                                 </li>
                                 <li>
-                                    <a href="{{ route('contacts.index') }}" class="flex items-center p-2 text-base text-gray-900 rounded-lg hover:bg-gray-100 group dark:text-gray-200 dark:hover:bg-gray-700 {{ request()->routeIs('contacts.*') ? 'bg-gray-100 dark:bg-gray-700' : '' }}">
+                                    <button type="button" class="flex items-center w-full p-2 text-base text-gray-900 transition duration-75 rounded-lg group hover:bg-gray-100 dark:text-gray-200 dark:hover:bg-gray-700" aria-controls="dropdown-contacts" data-collapse-toggle="dropdown-contacts" {{ request()->routeIs('crm.contacts.*') ? 'aria-expanded="true"' : 'aria-expanded="false"' }}>
                                         <svg class="w-6 h-6 text-gray-500 transition duration-75 group-hover:text-gray-900 dark:text-gray-400 dark:group-hover:text-white" fill="currentColor" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg"><path d="M13 7a3 3 0 11-6 0 3 3 0 016 0z"></path><path fill-rule="evenodd" d="M5 14a4 4 0 018 0v1H5v-1z" clip-rule="evenodd"></path></svg>
-                                        <span class="ml-3" sidebar-toggle-item>{{ __('Contacts') }}</span>
-                                    </a>
+                                        <span class="flex-1 ml-3 text-left whitespace-nowrap" sidebar-toggle-item>{{ __('Contacts') }}</span>
+                                        <svg sidebar-toggle-item class="w-6 h-6" fill="currentColor" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg"><path fill-rule="evenodd" d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z" clip-rule="evenodd"></path></svg>
+                                    </button>
+                                    <ul id="dropdown-contacts" class="{{ request()->routeIs('crm.contacts.*') ? '' : 'hidden' }} py-2 space-y-2">
+                                        <li>
+                                            <a href="{{ route('crm.contacts.index') }}" class="flex items-center p-2 pl-11 w-full text-base text-gray-900 rounded-lg transition duration-75 group hover:bg-gray-100 dark:text-gray-200 dark:hover:bg-gray-700 {{ request()->routeIs('crm.contacts.index') ? 'bg-gray-100 dark:bg-gray-700' : '' }}">
+                                                <svg class="w-5 h-5 text-gray-500 transition duration-75 group-hover:text-gray-900 dark:text-gray-400 dark:group-hover:text-white" fill="currentColor" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg"><path d="M13 6a3 3 0 11-6 0 3 3 0 016 0zM18 8a2 2 0 11-4 0 2 2 0 014 0zM14 15a4 4 0 00-8 0v3h8v-3zM6 8a2 2 0 11-4 0 2 2 0 014 0zM16 18v-3a5.972 5.972 0 00-.75-2.906A3.005 3.005 0 0119 15v3h-3zM4.75 12.094A5.973 5.973 0 004 15v3H1v-3a3 3 0 013.75-2.906z"></path></svg>
+                                                <span class="ml-3">{{ __('All Contacts') }}</span>
+                                            </a>
+                                        </li>
+                                    </ul>
                                 </li>
                                 <li>
                                     <button type="button" class="flex items-center w-full p-2 text-base text-gray-900 transition duration-75 rounded-lg group hover:bg-gray-100 dark:text-gray-200 dark:hover:bg-gray-700" aria-controls="dropdown-trip" data-collapse-toggle="dropdown-trip" {{ request()->routeIs('vehiclelogbook.trips.*') || request()->routeIs('vehiclelogbook.vehicles.*') ? 'aria-expanded="true"' : 'aria-expanded="false"' }}>
@@ -104,7 +113,7 @@
 
             <div id="main-content" class="relative w-full h-full overflow-y-auto bg-gray-50 lg:ml-64 dark:bg-gray-900 transition-all duration-300">
                 <!-- Page Content -->
-                <main class="p-4">
+                <main class="p-0">
                     {{ $slot }}
                 </main>
             </div>
@@ -119,6 +128,7 @@
         } else {
             document.documentElement.classList.remove('dark')
         }
+
     </script>
 </body>
 </html>

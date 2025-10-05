@@ -1,3 +1,21 @@
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
+
+/* Modal Styles */
+.modal-backdrop {
+  @apply fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full z-50 flex items-center justify-center p-4 pointer-events-auto;
+  backdrop-filter: blur(2px);
+}
+
+.modal-content {
+  @apply relative mx-auto border shadow-lg rounded-md bg-white dark:bg-gray-800 pointer-events-auto;
+}
+
+.modal-content-sm {
+  @apply w-full max-w-2xl;
+}
+
+.modal-content-lg {
+  @apply w-full max-w-3xl;
+}

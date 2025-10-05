@@ -4,14 +4,14 @@
             <h2 class="font-semibold text-xl text-gray-800 dark:text-gray-200 leading-tight">
                 {{ __('Contacts') }}
             </h2>
-            <a href="{{ route('contacts.create') }}" class="inline-flex items-center px-4 py-2 bg-indigo-600 border border-transparent rounded-md font-semibold text-xs text-white uppercase tracking-widest hover:bg-indigo-700 focus:bg-indigo-700 active:bg-indigo-900 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 dark:focus:ring-offset-gray-800 transition ease-in-out duration-150">
+            <a href="{{ route('crm.contacts.create') }}" class="inline-flex items-center px-4 py-2 bg-indigo-600 border border-transparent rounded-md font-semibold text-xs text-white uppercase tracking-widest hover:bg-indigo-700 focus:bg-indigo-700 active:bg-indigo-900 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 dark:focus:ring-offset-gray-800 transition ease-in-out duration-150">
                 {{ __('Add Contact') }}
             </a>
         </div>
     </x-slot>
 
     <div class="py-6">
-        <div class="max-w-7xl mx-auto sm:px-6 lg:px-8">
+        <div class="w-full px-4 sm:px-6 lg:px-8">
             @if(session('success'))
                 <div class="mb-6 bg-green-100 border border-green-400 text-green-700 px-4 py-3 rounded relative" role="alert">
                     <span class="block sm:inline">{{ session('success') }}</span>
@@ -37,8 +37,8 @@
                                     <td class="px-6 py-4 whitespace-nowrap">{{ $contact->email }}</td>
                                     <td class="px-6 py-4 whitespace-nowrap">{{ $contact->phone }}</td>
                                     <td class="px-6 py-4 whitespace-nowrap text-right text-sm font-medium space-x-2">
-                                        <a href="{{ route('contacts.edit', $contact) }}" class="text-indigo-600 hover:text-indigo-900">Edit</a>
-                                        <form action="{{ route('contacts.destroy', $contact) }}" method="POST" class="inline" onsubmit="return confirm('Delete this contact?');">
+                                        <a href="{{ route('crm.contacts.edit', $contact) }}" class="text-indigo-600 hover:text-indigo-900">Edit</a>
+                                        <form action="{{ route('crm.contacts.destroy', $contact) }}" method="POST" class="inline" onsubmit="return confirm('Delete this contact?');">
                                             @csrf
                                             @method('DELETE')
                                             <button type="submit" class="text-red-600 hover:text-red-900">Delete</button>

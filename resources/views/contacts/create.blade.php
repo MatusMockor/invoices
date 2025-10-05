@@ -9,7 +9,7 @@
         <div class="max-w-3xl mx-auto sm:px-6 lg:px-8">
             <div class="bg-white dark:bg-gray-800 overflow-hidden shadow-sm sm:rounded-lg">
                 <div class="p-6 text-gray-900 dark:text-gray-100">
-                    <form method="POST" action="{{ route('contacts.store') }}" class="space-y-4">
+                    <form method="POST" action="{{ route('crm.contacts.store') }}" class="space-y-4">
                         @csrf
                         <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                             <div>
@@ -46,7 +46,7 @@
                             @error('notes')<div class="text-sm text-red-600">{{ $message }}</div>@enderror
                         </div>
                         <div class="flex justify-end">
-                            <a href="{{ route('contacts.index') }}" class="mr-3 px-4 py-2 border rounded-md">Cancel</a>
+                            <a href="{{ route('crm.contacts.index') }}" class="mr-3 px-4 py-2 border rounded-md">Cancel</a>
                             <button type="submit" class="px-4 py-2 bg-indigo-600 text-white rounded-md">Save</button>
                         </div>
                     </form>
