@@ -19,8 +19,7 @@ class ContactBulkUpdateRequest extends FormRequest
             'contact_ids' => ['required', 'array', 'min:1'],
             'contact_ids.*' => ['integer', 'exists:crm_contacts,id'],
             'data' => ['required', 'array'],
-            'data.position' => ['nullable', 'string', 'max:255'],
-            'data.notes' => ['nullable', 'string'],
+            'data.job_title' => ['nullable', 'string', 'max:255'],
             'data.is_active' => ['nullable', 'boolean'],
         ];
     }
@@ -35,9 +34,8 @@ class ContactBulkUpdateRequest extends FormRequest
             'contact_ids.*.exists' => 'One or more contact IDs do not exist.',
             'data.required' => 'Update data is required.',
             'data.array' => 'Update data must be an array.',
-            'data.position.string' => 'Position must be a string.',
-            'data.position.max' => 'Position cannot exceed 255 characters.',
-            'data.notes.string' => 'Notes must be a string.',
+            'data.job_title.string' => 'Job title must be a string.',
+            'data.job_title.max' => 'Job title cannot exceed 255 characters.',
             'data.is_active.boolean' => 'Active status must be a boolean.',
         ];
     }
