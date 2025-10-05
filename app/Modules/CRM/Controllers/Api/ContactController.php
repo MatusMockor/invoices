@@ -16,6 +16,7 @@ use App\Modules\CRM\Http\Requests\CrmContactUpdateRequest;
 use App\Modules\CRM\Http\Resources\ContactImportResource;
 use App\Modules\CRM\Http\Resources\CrmContactResource;
 use App\Modules\CRM\Models\CrmContact;
+use App\Modules\CRM\Repositories\Interfaces\CrmContactRepository as CrmContactRepositoryContract;
 use App\Modules\CRM\Services\Interfaces\CrmContactService as CrmContactServiceContract;
 use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\AnonymousResourceCollection;
@@ -26,6 +27,7 @@ use Illuminate\Support\Facades\Storage;
 class ContactController extends Controller
 {
     public function __construct(
+        private readonly CrmContactRepositoryContract $contactRepository,
         private readonly CrmContactServiceContract $contactService
     ) {}
 
@@ -41,7 +43,7 @@ class ContactController extends Controller
             sortDirection: $request->getSortDirection()
         );
 
-        $contacts = $this->contactService->getFilteredContacts($filter, $request->getPerPage());
+        $contacts = $this->contactRepository->getFiltered($filter, $request->getPerPage());
 
         return CrmContactResource::collection($contacts);
     }
@@ -55,7 +57,17 @@ class ContactController extends Controller
 
     public function show(CrmContact $contact): JsonResource
     {
-        $contact = $this->contactService->getContact($contact->id);
+        $contact = $this->contactRepository->findWithRelations($contact->id, [
+            'company',
+            'user',
+            'emails',
+            'phones',
+            'addresses',
+            'tags',
+            'customFieldValues.fieldDefinition',
+            'activities.user',
+            'notes',
+        ]) ?? $this->contactRepository->findOrFail($contact->id);
 
         return new CrmContactResource($contact);
     }
@@ -72,9 +84,9 @@ class ContactController extends Controller
         $forceDelete = $request->boolean('force_delete', false);
 
         if ($forceDelete) {
-            $this->contactService->forceDeleteContact($contact);
+            $this->contactRepository->forceDelete($contact);
         } else {
-            $this->contactService->deleteContact($contact);
+            $this->contactRepository->delete($contact);
         }
 
         return response()->noContent();
@@ -84,10 +96,14 @@ class ContactController extends Controller
     {
         $request->validate([
             'contact_ids' => ['required', 'array', 'min:1'],
-            'contact_ids.*' => ['integer', 'exists:contacts,id'],
+            'contact_ids.*' => ['integer', 'exists:crm_contacts,id'],
         ]);
 
-        $this->contactService->bulkDeleteContacts($request->get('contact_ids'));
+        $contactIds = $request->get('contact_ids');
+        foreach ($contactIds as $contactId) {
+            $contact = $this->contactRepository->findOrFail($contactId);
+            $this->contactRepository->delete($contact);
+        }
 
         return response()->noContent();
     }
@@ -122,7 +138,7 @@ class ContactController extends Controller
 
     public function restore(CrmContact $contact): CrmContactResource
     {
-        $this->contactService->restoreContact($contact);
+        $this->contactRepository->restore($contact);
 
         return new CrmContactResource($contact);
     }

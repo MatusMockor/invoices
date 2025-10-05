@@ -4,19 +4,10 @@ declare(strict_types=1);
 
 namespace App\Modules\CRM\Services;
 
-use App\Modules\CRM\Filters\ContactFilter;
 use App\Modules\CRM\Models\ContactActivity;
-use App\Modules\CRM\Models\ContactAddress;
-use App\Modules\CRM\Models\ContactCustomFieldDefinition;
-use App\Modules\CRM\Models\ContactCustomFieldValue;
-use App\Modules\CRM\Models\ContactEmail;
-use App\Modules\CRM\Models\ContactPhone;
-use App\Modules\CRM\Models\ContactTag;
 use App\Modules\CRM\Models\CrmContact;
 use App\Modules\CRM\Repositories\Interfaces\CrmContactRepository as CrmContactRepositoryContract;
 use App\Modules\CRM\Services\Interfaces\CrmContactService as CrmContactServiceContract;
-use Exception;
-use Generator;
 use Illuminate\Contracts\Pagination\LengthAwarePaginator;
 use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\DB;
@@ -28,31 +19,6 @@ class CrmContactService implements CrmContactServiceContract
     public function __construct(
         private readonly CrmContactRepositoryContract $contactRepository
     ) {}
-
-    public function getAllContacts(int $perPage = 15): LengthAwarePaginator
-    {
-        return $this->contactRepository->paginate($perPage);
-    }
-
-    public function getFilteredContacts(ContactFilter $filter, int $perPage = 15): LengthAwarePaginator
-    {
-        return $this->contactRepository->getFiltered($filter, $perPage);
-    }
-
-    public function getContact(int $id): CrmContact
-    {
-        return $this->contactRepository->findWithRelations($id, [
-            'company',
-            'user',
-            'emails',
-            'phones',
-            'addresses',
-            'tags',
-            'customFieldValues.fieldDefinition',
-            'activities.user',
-            'notes',
-        ]) ?? $this->contactRepository->findOrFail($id);
-    }
 
     public function createContact(array $data): CrmContact
     {
@@ -132,31 +98,6 @@ class CrmContactService implements CrmContactServiceContract
         });
     }
 
-    public function deleteContact(CrmContact $contact): bool
-    {
-        $this->recordContactActivity($contact, 'delete', 'Contact was deleted');
-
-        return $this->contactRepository->delete($contact);
-    }
-
-    public function restoreContact(CrmContact $contact): bool
-    {
-        $result = $this->contactRepository->restore($contact);
-
-        if ($result) {
-            $this->recordContactActivity($contact, 'restore', 'Contact was restored');
-        }
-
-        return $result;
-    }
-
-    public function forceDeleteContact(CrmContact $contact): bool
-    {
-        $this->recordContactActivity($contact, 'force_delete', 'Contact was permanently deleted');
-
-        return $this->contactRepository->forceDelete($contact);
-    }
-
     public function searchContacts(string $query, int $perPage = 15): LengthAwarePaginator
     {
         return $this->contactRepository->search($query, $perPage);
@@ -190,72 +131,6 @@ class CrmContactService implements CrmContactServiceContract
     public function getRecentlyContactedContacts(int $days = 30, int $perPage = 15): LengthAwarePaginator
     {
         return $this->contactRepository->getRecentlyContacted($days, $perPage);
-    }
-
-    public function addEmailToContact(CrmContact $contact, array $emailData): void
-    {
-        ContactEmail::create([
-            'contact_id' => $contact->id,
-            'email' => $emailData['email'],
-            'type' => $emailData['type'] ?? 'secondary',
-            'is_verified' => $emailData['is_verified'] ?? false,
-        ]);
-    }
-
-    public function addPhoneToContact(CrmContact $contact, array $phoneData): void
-    {
-        ContactPhone::create([
-            'contact_id' => $contact->id,
-            'phone' => $phoneData['phone'],
-            'type' => $phoneData['type'] ?? 'secondary',
-            'country_code' => $phoneData['country_code'] ?? '+421',
-            'is_verified' => $phoneData['is_verified'] ?? false,
-        ]);
-    }
-
-    public function addAddressToContact(CrmContact $contact, array $addressData): void
-    {
-        ContactAddress::create([
-            'contact_id' => $contact->id,
-            'type' => $addressData['type'] ?? 'primary',
-            'street' => $addressData['street'] ?? null,
-            'city' => $addressData['city'] ?? null,
-            'postal_code' => $addressData['postal_code'] ?? null,
-            'state' => $addressData['state'] ?? null,
-            'country' => $addressData['country'] ?? 'Slovakia',
-            'latitude' => $addressData['latitude'] ?? null,
-            'longitude' => $addressData['longitude'] ?? null,
-            'is_primary' => $addressData['is_primary'] ?? false,
-        ]);
-    }
-
-    public function addTagToContact(CrmContact $contact, string $tagName): void
-    {
-        $tag = ContactTag::firstOrCreate(['name' => $tagName]);
-        $contact->tags()->syncWithoutDetaching([$tag->id]);
-    }
-
-    public function removeTagFromContact(CrmContact $contact, string $tagName): void
-    {
-        $tag = ContactTag::where('name', $tagName)->first();
-        if ($tag) {
-            $contact->tags()->detach($tag->id);
-        }
-    }
-
-    public function setCustomFieldValue(CrmContact $contact, string $fieldSlug, mixed $value): void
-    {
-        $fieldDefinition = ContactCustomFieldDefinition::where('slug', $fieldSlug)->first();
-
-        if ($fieldDefinition) {
-            ContactCustomFieldValue::updateOrCreate(
-                [
-                    'contact_id' => $contact->id,
-                    'field_definition_id' => $fieldDefinition->id,
-                ],
-                ['value' => $value]
-            );
-        }
     }
 
     public function importContactsFromCsv(UploadedFile $file): array
@@ -336,32 +211,6 @@ class CrmContactService implements CrmContactServiceContract
         return $totalUpdated;
     }
 
-    public function bulkDeleteContacts(array $contactIds): int
-    {
-        // Process in chunks to avoid memory issues with large datasets
-        $chunkSize = 1000;
-        $totalDeleted = 0;
-
-        foreach (array_chunk($contactIds, $chunkSize) as $chunk) {
-            $totalDeleted += CrmContact::whereIn('id', $chunk)->delete();
-        }
-
-        return $totalDeleted;
-    }
-
-    public function recordContactActivity(CrmContact $contact, string $action, string $description, array $metadata = []): void
-    {
-        ContactActivity::create([
-            'contact_id' => $contact->id,
-            'user_id' => auth()->id(),
-            'type' => $action,
-            'action' => $action,
-            'description' => $description,
-            'metadata' => $metadata,
-            'occurred_at' => now(),
-        ]);
-    }
-
     public function getContactActivities(CrmContact $contact, int $perPage = 15): LengthAwarePaginator
     {
         return $contact->activities()
@@ -375,26 +224,17 @@ class CrmContactService implements CrmContactServiceContract
         return $this->contactRepository->getAllTags();
     }
 
-    public function getContactsWithFullRelations(int $perPage = 15): LengthAwarePaginator
+    public function recordContactActivity(CrmContact $contact, string $action, string $description, array $metadata = []): void
     {
-        return $this->contactRepository->getContactsWithFullRelations($perPage);
-    }
-
-    public function getContactsForExport(array $contactIds = [], int $chunkSize = 1000): Generator
-    {
-        $query = CrmContact::with([
-            'company:id,name',
-            'tags:id,name',
-            'emails:id,contact_id,email,type,is_primary',
-            'phones:id,contact_id,phone,type,is_primary',
+        ContactActivity::create([
+            'contact_id' => $contact->id,
+            'user_id' => auth()->id(),
+            'type' => $action,
+            'action' => $action,
+            'description' => $description,
+            'metadata' => $metadata,
+            'occurred_at' => now(),
         ]);
-
-        if (! empty($contactIds)) {
-            $query->whereIn('id', $contactIds);
-        }
-
-        // Use chunk to process large datasets without loading everything into memory
-        return $query->chunk($chunkSize);
     }
 
     private function updateContactNotes(CrmContact $contact, array $notesData): void
