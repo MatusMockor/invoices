@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace Tests\Feature\Http\Requests;
+namespace App\Modules\CRM\tests\Feature\Http\Requests;
 
 use App\Models\Company;
 use App\Models\User;
@@ -43,6 +43,28 @@ class CrmContactNotesTest extends TestCase
         $user = User::factory()->create();
         $company = Company::factory()->create(['user_id' => $user->id]);
 
+        // Create a contact with existing notes
+        $contact = \App\Modules\CRM\Models\CrmContact::factory()
+            ->for($company)
+            ->create([
+                'first_name' => 'John',
+                'last_name' => 'Doe',
+            ]);
+
+        $note1 = \App\Models\Note::create([
+            'user_id' => $user->id,
+            'noteable_type' => \App\Modules\CRM\Models\CrmContact::class,
+            'noteable_id' => $contact->id,
+            'body' => 'Original first note',
+        ]);
+
+        $note2 = \App\Models\Note::create([
+            'user_id' => $user->id,
+            'noteable_type' => \App\Modules\CRM\Models\CrmContact::class,
+            'noteable_id' => $contact->id,
+            'body' => 'Original second note',
+        ]);
+
         $request = new CrmContactUpdateRequest;
         $request->setUserResolver(fn () => $user);
 
@@ -51,15 +73,12 @@ class CrmContactNotesTest extends TestCase
             'last_name' => 'Doe',
             'company_id' => $company->id,
             'notes' => [
-                ['id' => 1, 'content' => 'Updated first note'],
+                ['id' => $note1->id, 'content' => 'Updated first note'],
                 ['content' => 'New note added'],
-                ['id' => 2, 'content' => 'Updated second note'],
+                ['id' => $note2->id, 'content' => 'Updated second note'],
             ],
         ], $request->rules(), $request->messages());
 
-        if ($validator->fails()) {
-            $this->fail('Validation failed: '.json_encode($validator->errors()->toArray()));
-        }
         $this->assertFalse($validator->fails());
     }
 

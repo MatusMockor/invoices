@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace Tests\Feature\Http\Requests;
+namespace App\Modules\CRM\tests\Feature\Http\Requests;
 
 use App\Models\Company;
 use App\Models\User;
