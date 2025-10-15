@@ -117,7 +117,7 @@ class PayBySquareService implements PayBySquareContract
                 ->generate($base32Data);
 
             // Convert to base64
-            $base64 = base64_encode($qrCode);
+            $base64 = base64_encode($qrCode->toHtml());
 
             return 'data:image/png;base64,'.$base64;
         }
