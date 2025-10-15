@@ -71,6 +71,12 @@
                                     </ul>
                                 </li>
                                 <li>
+                                    <a href="{{ route('taskmanagement.tasks.index') }}" class="flex items-center p-2 text-base text-gray-900 rounded-lg hover:bg-gray-100 group dark:text-gray-200 dark:hover:bg-gray-700 {{ request()->routeIs('taskmanagement.tasks.*') ? 'bg-gray-100 dark:bg-gray-700' : '' }}">
+                                        <svg class="w-6 h-6 text-gray-500 transition duration-75 group-hover:text-gray-900 dark:text-gray-400 dark:group-hover:text-white" fill="currentColor" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg"><path d="M9 2a1 1 0 000 2h2a1 1 0 100-2H9z"></path><path fill-rule="evenodd" d="M4 5a2 2 0 012-2 3 3 0 003 3h2a3 3 0 003-3 2 2 0 012 2v11a2 2 0 01-2 2H6a2 2 0 01-2-2V5zm9.707 5.707a1 1 0 00-1.414-1.414L9 12.586l-1.293-1.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"></path></svg>
+                                        <span class="ml-3" sidebar-toggle-item>{{ __('Tasks & Follow-ups') }}</span>
+                                    </a>
+                                </li>
+                                <li>
                                     <button type="button" class="flex items-center w-full p-2 text-base text-gray-900 transition duration-75 rounded-lg group hover:bg-gray-100 dark:text-gray-200 dark:hover:bg-gray-700" aria-controls="dropdown-trip" data-collapse-toggle="dropdown-trip" {{ request()->routeIs('vehiclelogbook.trips.*') || request()->routeIs('vehiclelogbook.vehicles.*') ? 'aria-expanded="true"' : 'aria-expanded="false"' }}>
                                         <svg class="w-6 h-6 text-gray-500 transition duration-75 group-hover:text-gray-900 dark:text-gray-400 dark:group-hover:text-white" fill="currentColor" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg"><path d="M8 16.5a1.5 1.5 0 11-3 0 1.5 1.5 0 013 0zM15 16.5a1.5 1.5 0 11-3 0 1.5 1.5 0 013 0z" /><path d="M3 4a1 1 0 00-1 1v10a1 1 0 001 1h1.05a2.5 2.5 0 014.9 0H10a1 1 0 001-1v-5h2a1 1 0 00.9-.5l1.5-2A1 1 0 0015 7h-3V4a1 1 0 00-1-1H3zM14 7l-1.5 2h-2.05A2.5 2.5 0 008 10.5H5V5h8v2z" /></svg>
                                         <span class="flex-1 ml-3 text-left whitespace-nowrap" sidebar-toggle-item>{{ __('Trip') }}</span>

@@ -6,4 +6,5 @@ return [
     App\Providers\AppServiceProvider::class,
     App\Modules\VehicleLogbook\Providers\VehicleLogbookServiceProvider::class,
     App\Modules\CRM\Providers\CrmServiceProvider::class,
+    App\Modules\TaskManagement\Providers\TaskManagementServiceProvider::class,
 ];
