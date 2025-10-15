@@ -311,8 +311,14 @@
 
 <!-- Footer -->
 <div class="footer">
-    <p>Spoločnosť je zapísaná v Živnostenskom registri Okresného úradu Nové Zámky, registrácia č. 440-46274</p>
-    <p>Doklad obsahuje {{ count($invoice->items) }} položky, dátové číslo a importačné ID pridelené do systému.</p>
+    @if($invoice->supplierCompany->registration_number)
+        @if($invoice->supplierCompany->company_type == 's.r.o.')
+            <p>Spoločnosť je zapísaná v Obchodnom registri, registrácia č. {{ $invoice->supplierCompany->registration_number }}</p>
+        @else
+            <p>Spoločnosť je zapísaná v Živnostenskom registri, registrácia č. {{ $invoice->supplierCompany->registration_number }}</p>
+        @endif
+    @endif
+    <p>Doklad obsahuje {{ count($invoice->items) }} {{ count($invoice->items) == 1 ? 'položku' : (count($invoice->items) < 5 ? 'položky' : 'položiek') }}.</p>
     </div>
 
     <div class="page-number">
