@@ -172,7 +172,7 @@ class CompanyRepository implements CompanyRepositoryContract
 
         // Group invoices by month and sum the total amounts
         foreach ($invoices as $invoice) {
-            $month = (int) date('n', strtotime($invoice->issue_date));
+            $month = $invoice->issue_date->month;
             $result[$month] += (float) $invoice->total_amount;
         }
 

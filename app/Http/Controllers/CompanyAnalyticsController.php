@@ -29,15 +29,16 @@ class CompanyAnalyticsController extends Controller
 
         // Get monthly financial data for the current year
         $monthlyData = null;
+        $date = now()->year;
         if ($currentCompanyId) {
-            $currentYear = date('Y');
+            $currentYear = $date;
             $monthlyData = $this->companyAnalyticsService->getMonthlyFinancialData($currentCompanyId, $currentYear);
         }
 
         return view('company-analytics.index', [
             'statistics' => $statistics,
             'monthlyData' => $monthlyData,
-            'currentYear' => date('Y'),
+            'currentYear' => $date,
         ]);
     }
 }
