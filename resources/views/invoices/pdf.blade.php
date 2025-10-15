@@ -6,8 +6,8 @@
     <style>
         body {
             font-family: 'DejaVu Sans', Arial, sans-serif;
-            font-size: 9pt;
-            line-height: 1.2;
+            font-size: 8.5pt;
+            line-height: 1.3;
             color: #333;
         }
 
@@ -18,8 +18,9 @@
 
         .invoice-title {
             text-align: right;
-            font-size: 12pt;
+            font-size: 14pt;
             font-weight: bold;
+            letter-spacing: 0.5px;
         }
 
         .party-table {
@@ -32,30 +33,33 @@
             text-transform: uppercase;
             margin-bottom: 5px;
             font-size: 9pt;
+            letter-spacing: 0.3px;
         }
 
         .payment-box {
             border: 1px solid #ddd;
-            padding: 12px;
-            margin-top: 10px;
+            padding: 8px 10px;
+            margin-top: 8px;
+            background-color: #fafafa;
         }
 
         .payment-row {
-            margin-bottom: 5px;
-            font-size: 8pt;
+            margin-bottom: 3px;
+            font-size: 8.5pt;
+            line-height: 1.2;
+            white-space: nowrap;
         }
 
         .payment-label {
-            display: inline-block;
-            width: 110px;
+            color: #666;
+            font-size: 8.5pt;
         }
 
         .payment-value {
-            font-weight: bold;
-            display: inline-block;
-            width: 180px;
-            word-break: keep-all;
-            white-space: nowrap;
+            font-weight: 600;
+            color: #333;
+            font-size: 8.5pt;
+            margin-left: 2px;
         }
 
         .items-table {
@@ -68,15 +72,18 @@
 
         .items-table th {
             border-bottom: 1px solid #ddd;
-            padding: 4px;
+            padding: 6px 4px;
             text-align: left;
             font-weight: bold;
-            font-size: 7pt;
+            font-size: 8pt;
+            text-transform: uppercase;
+            letter-spacing: 0.3px;
         }
 
         .items-table td {
-            padding: 4px;
+            padding: 5px 4px;
             border-bottom: 1px solid #ddd;
+            font-size: 8pt;
         }
 
         .number-col {
@@ -104,7 +111,7 @@
 
         .footer {
             margin-top: 30px;
-            font-size: 7pt;
+            font-size: 7.5pt;
             color: #666;
             text-align: center;
             border-top: 1px solid #ddd;
@@ -113,21 +120,32 @@
 
         .page-number {
             text-align: right;
-            font-size: 7pt;
+            font-size: 7.5pt;
             color: #666;
             margin-top: 10px;
         }
 
         .qr-code {
-            width: 120px;
-            height: 120px;
+            width: 95px;
+            height: 95px;
             display: block;
+            border: 1px solid #e0e0e0;
+            padding: 4px;
+            background-color: #fff;
         }
 
         .qr-wrap {
-            width: 120px;
-            margin-left: auto;
+            width: 104px;
+            margin: 0 auto;
             text-align: center;
+        }
+
+        .qr-label {
+            font-size: 7pt;
+            color: #888;
+            margin-top: 3px;
+            text-transform: uppercase;
+            letter-spacing: 0.3px;
         }
     </style>
 </head>
@@ -216,61 +234,43 @@
                         <span style="margin-left: 10px; display: inline-block;">IČ DPH: {{ $invoice->businessEntity->ic_dph }}</span>
                     @endif
                 </div>
-                @if($invoice->businessEntity->company_type || $invoice->businessEntity->registration_number)
-                    <div style="margin-top: 4px; font-size: 8pt; word-break: break-word;">
-                        @if($invoice->businessEntity->registration_number)
-                            @if($invoice->businessEntity->company_type == 's.r.o.')
-                                Zápis v OR: {{ $invoice->businessEntity->registration_number }}
-                            @else
-                                Zápis v ŽR: {{ $invoice->businessEntity->registration_number }}
-                            @endif
-                        @endif
-                    </div>
-                @endif
             </div>
 
             <div class="payment-box">
                 <table width="100%">
                     <tr>
-                        <td width="60%" valign="top">
+                        <td width="65%" valign="middle">
                             <div class="payment-row">
-                                <span class="payment-label">Spôsob úhrady:</span>
-                                <span class="payment-value">Bankový prevod</span>
+                                <span class="payment-label">Spôsob úhrady:</span> <span class="payment-value">Bankový prevod</span>
                             </div>
                             <div class="payment-row">
-                                <span class="payment-label">Suma:</span>
-                                <span class="payment-value">{{ number_format($invoice->total_amount, 2, ',', ' ') }} {{ $invoice->currency }}</span>
+                                <span class="payment-label">Suma:</span> <span class="payment-value">{{ number_format($invoice->total_amount, 2, ',', ' ') }} {{ $invoice->currency }}</span>
                             </div>
                             <div class="payment-row">
-                                <span class="payment-label">Variabilný symbol:</span>
-                                <span class="payment-value">{{ substr(str_replace(['INV-', '-'], '', $invoice->invoice_number), 0, 10) }}</span>
+                                <span class="payment-label">Variabilný symbol:</span> <span class="payment-value">{{ substr(str_replace(['INV-', '-'], '', $invoice->invoice_number), 0, 10) }}</span>
                             </div>
                             @if($invoice->constant_symbol)
                                 <div class="payment-row">
-                                    <span class="payment-label">Konštantný symbol:</span>
-                                    <span class="payment-value">{{ $invoice->constant_symbol }}</span>
+                                    <span class="payment-label">Konštantný symbol:</span> <span class="payment-value">{{ $invoice->constant_symbol }}</span>
                                 </div>
                             @endif
                             <div class="payment-row">
-                                <span class="payment-label">IBAN:</span>
-                                <span class="payment-value"
-                                      style="font-size: 7pt;">{{ $invoice->supplierCompany->iban ?? 'SK14 0900 0000 0052 7700 4607' }}</span>
+                                <span class="payment-label">IBAN:</span> <span class="payment-value">{{ $invoice->supplierCompany->iban ?? 'SK14 0900 0000 0052 7700 4607' }}</span>
                             </div>
                             <div class="payment-row">
-                                <span class="payment-label">SWIFT:</span>
-                                <span class="payment-value">{{ $invoice->supplierCompany->swift ?? 'GIBASKBX' }}</span>
+                                <span class="payment-label">SWIFT:</span> <span class="payment-value">{{ $invoice->supplierCompany->swift ?? 'GIBASKBX' }}</span>
                             </div>
                         </td>
-                        <td width="40%" valign="top" align="right">
+                        <td width="35%" valign="middle" align="center">
                             @if($qrCode)
                                 <div class="qr-wrap">
                                     <img src="{{ $qrCode }}" class="qr-code" alt="Pay by Square QR kód">
-                                    <div style="font-size: 6pt; color: #666; margin-top: 3px;">Pay by Square</div>
+                                    <div class="qr-label">Pay by Square</div>
                                 </div>
                             @else
                                 <div class="qr-wrap">
-                                    <div style="border: 1px solid #ddd; width: 120px; height: 120px;"></div>
-                                    <div style="font-size: 6pt; color: #666; margin-top: 3px;">Pay by invoice</div>
+                                    <div style="border: 1px solid #e0e0e0; width: 95px; height: 95px; padding: 4px; background-color: #fff;"></div>
+                                    <div class="qr-label">Pay by invoice</div>
                                 </div>
                             @endif
                         </td>
