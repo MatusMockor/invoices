@@ -33,7 +33,7 @@ class InvoiceItemRepository implements InvoiceItemRepositoryContract
      */
     public function deleteItemsNotInIds(int $invoiceId, array $itemIds): bool
     {
-        return InvoiceItem::where('invoice_id', $invoiceId)
+        return (bool) InvoiceItem::where('invoice_id', $invoiceId)
             ->whereNotIn('id', $itemIds)
             ->delete();
     }
@@ -47,6 +47,6 @@ class InvoiceItemRepository implements InvoiceItemRepositoryContract
      */
     public function upsert(array $items, array $uniqueBy, array $update): bool
     {
-        return InvoiceItem::upsert($items, $uniqueBy, $update);
+        return (bool) InvoiceItem::upsert($items, $uniqueBy, $update);
     }
 }

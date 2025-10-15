@@ -59,6 +59,7 @@ class Invoice extends Model
         'issue_date' => 'date',
         'due_date' => 'date',
         'delivery_date' => 'date',
+        'total_amount' => 'float',
     ];
 
     /**
