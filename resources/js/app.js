@@ -20,6 +20,9 @@ import TasksIndex from './components/TaskManagement/TasksIndex.vue';
 import TaskCard from './components/TaskManagement/TaskCard.vue';
 import TaskCreateModal from './components/TaskManagement/TaskCreateModal.vue';
 import TaskEditModal from './components/TaskManagement/TaskEditModal.vue';
+import AttendanceModule from './components/Attendance/AttendanceModule.vue';
+import CheckInOutWidget from './components/Attendance/CheckInOutWidget.vue';
+import AttendanceList from './components/Attendance/AttendanceList.vue';
 
 
 // Import Flowbite for initialization
@@ -164,6 +167,11 @@ app.component('tasks-index', TasksIndex);
 app.component('task-card', TaskCard);
 app.component('task-create-modal', TaskCreateModal);
 app.component('task-edit-modal', TaskEditModal);
+
+// Attendance components
+app.component('attendance-module', AttendanceModule);
+app.component('check-in-out-widget', CheckInOutWidget);
+app.component('attendance-list', AttendanceList);
 
 // Make CRM components globally available
 window.CrmModule = CrmModule;
