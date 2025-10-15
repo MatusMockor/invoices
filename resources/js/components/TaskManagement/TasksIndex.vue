@@ -128,13 +128,17 @@
 
     <!-- Calendar View -->
     <div v-if="currentView === 'calendar'">
-      <TaskCalendar :tasks="allTasks" />
+      <TaskCalendar
+        :tasks="allTasks"
+        @create-task="handleCreateTaskFromCalendar"
+      />
     </div>
 
     <TaskCreateModal
       v-if="showCreateModal"
       :api-routes="apiRoutes"
       :csrf-token="csrfToken"
+      :initial-due-date="selectedDueDate"
       @close="closeCreateModal"
       @created="handleTaskCreated"
     />
@@ -187,7 +191,8 @@ export default {
       showEditModal: false,
       selectedTask: null,
       searchTimeout: null,
-      currentView: 'list'
+      currentView: 'list',
+      selectedDueDate: ''
     }
   },
   watch: {
@@ -237,10 +242,16 @@ export default {
       this.fetchTasks()
     },
     openCreateModal() {
+      this.selectedDueDate = ''
       this.showCreateModal = true
     },
     closeCreateModal() {
       this.showCreateModal = false
+      this.selectedDueDate = ''
+    },
+    handleCreateTaskFromCalendar(data) {
+      this.selectedDueDate = data.dueDate
+      this.showCreateModal = true
     },
     openEditModal(task) {
       this.selectedTask = task
@@ -252,7 +263,11 @@ export default {
     },
     handleTaskCreated() {
       this.closeCreateModal()
-      this.fetchTasks()
+      if (this.currentView === 'calendar') {
+        this.fetchAllTasks()
+      } else {
+        this.fetchTasks()
+      }
     },
     handleTaskUpdated() {
       this.closeEditModal()

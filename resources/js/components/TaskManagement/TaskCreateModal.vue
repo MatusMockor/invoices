@@ -108,6 +108,10 @@ export default {
     csrfToken: {
       type: String,
       required: true
+    },
+    initialDueDate: {
+      type: String,
+      default: ''
     }
   },
   data() {
@@ -118,7 +122,7 @@ export default {
         description: '',
         status: 'pending',
         priority: 'medium',
-        due_date: ''
+        due_date: this.initialDueDate || ''
       }
     }
   },

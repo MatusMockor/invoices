@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace App\Modules\TaskManagement\Tests\Feature\Http\Controllers\Api;
+namespace App\Modules\TaskManagement\tests\Feature\Http\Controllers\Api;
 
 use App\Models\Company;
 use App\Models\User;

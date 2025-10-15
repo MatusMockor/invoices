@@ -37,8 +37,10 @@ interface CompanyAnalyticsService
      * Get companies statistics summary
      *
      * Returns an array with various statistics about companies
+     *
+     * @param  int|null  $currentCompanyId  The ID of the current company, if any
      */
-    public function getStatisticsSummary(): array;
+    public function getStatisticsSummary(?int $currentCompanyId = null): array;
 
     /**
      * Get companies created in a date range

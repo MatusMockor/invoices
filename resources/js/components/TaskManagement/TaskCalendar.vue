@@ -74,12 +74,22 @@
             >
               {{ day.date.getDate() }}
             </span>
-            <span
-              v-if="day.tasks.length > 0"
-              class="inline-flex items-center justify-center w-5 h-5 text-xs font-bold bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-300 rounded-full"
-            >
-              {{ day.tasks.length }}
-            </span>
+            <div class="flex items-center gap-1">
+              <button
+                v-if="day.isCurrentMonth"
+                @click.stop="createTaskForDay(day)"
+                class="inline-flex items-center justify-center w-5 h-5 text-xs font-bold bg-green-100 text-green-800 hover:bg-green-200 dark:bg-green-900 dark:text-green-300 dark:hover:bg-green-800 rounded-full transition-colors"
+                title="Create task for this day"
+              >
+                +
+              </button>
+              <span
+                v-if="day.tasks.length > 0"
+                class="inline-flex items-center justify-center w-5 h-5 text-xs font-bold bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-300 rounded-full"
+              >
+                {{ day.tasks.length }}
+              </span>
+            </div>
           </div>
 
           <!-- Tasks Preview -->
@@ -118,14 +128,25 @@
           <h3 class="text-lg font-semibold text-gray-900 dark:text-white">
             Tasks for {{ formatDate(selectedDay.date) }}
           </h3>
-          <button
-            @click="selectedDay = null"
-            class="text-gray-400 bg-transparent hover:bg-gray-200 hover:text-gray-900 rounded-lg text-sm w-8 h-8 inline-flex justify-center items-center dark:hover:bg-gray-700 dark:hover:text-white"
-          >
-            <svg class="w-3 h-3" fill="none" viewBox="0 0 14 14">
-              <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="m1 1 6 6m0 0 6 6M7 7l6-6M7 7l-6 6"/>
-            </svg>
-          </button>
+          <div class="flex items-center gap-2">
+            <button
+              @click="createTaskForDay(selectedDay)"
+              class="text-white bg-green-700 hover:bg-green-800 focus:ring-4 focus:ring-green-300 font-medium rounded-lg text-sm px-3 py-1.5 dark:bg-green-600 dark:hover:bg-green-700 dark:focus:ring-green-800 inline-flex items-center"
+            >
+              <svg class="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path>
+              </svg>
+              New Task
+            </button>
+            <button
+              @click="selectedDay = null"
+              class="text-gray-400 bg-transparent hover:bg-gray-200 hover:text-gray-900 rounded-lg text-sm w-8 h-8 inline-flex justify-center items-center dark:hover:bg-gray-700 dark:hover:text-white"
+            >
+              <svg class="w-3 h-3" fill="none" viewBox="0 0 14 14">
+                <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="m1 1 6 6m0 0 6 6M7 7l6-6M7 7l-6 6"/>
+              </svg>
+            </button>
+          </div>
         </div>
 
         <!-- Modal Body -->
@@ -298,6 +319,11 @@ export default {
     },
     showTasksForDay(day) {
       this.selectedDay = day
+    },
+    createTaskForDay(day) {
+      const dueDate = day.date.toISOString().split('T')[0]
+      this.$emit('create-task', { dueDate })
+      this.selectedDay = null
     },
     formatDate(date) {
       const options = { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' }

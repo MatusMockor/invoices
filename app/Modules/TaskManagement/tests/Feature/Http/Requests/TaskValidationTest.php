@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace App\Modules\TaskManagement\Tests\Feature\Http\Requests;
+namespace App\Modules\TaskManagement\tests\Feature\Http\Requests;
 
 use App\Models\User;
 use App\Modules\TaskManagement\Enums\TaskPriority;
