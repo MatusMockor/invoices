@@ -15,6 +15,11 @@ import ContactEditModal from './components/CRM/Contacts/ContactEditModal.vue';
 import ContactViewModal from './components/CRM/Contacts/ContactViewModal.vue';
 import ContactImportModal from './components/CRM/Contacts/ContactImportModal.vue';
 import BulkUpdateModal from './components/CRM/Contacts/BulkUpdateModal.vue';
+import TaskManagementModule from './components/TaskManagement/TaskManagementModule.vue';
+import TasksIndex from './components/TaskManagement/TasksIndex.vue';
+import TaskCard from './components/TaskManagement/TaskCard.vue';
+import TaskCreateModal from './components/TaskManagement/TaskCreateModal.vue';
+import TaskEditModal from './components/TaskManagement/TaskEditModal.vue';
 
 
 // Import Flowbite for initialization
@@ -152,6 +157,13 @@ app.component('contact-edit-modal', ContactEditModal);
 app.component('contact-view-modal', ContactViewModal);
 app.component('contact-import-modal', ContactImportModal);
 app.component('bulk-update-modal', BulkUpdateModal);
+
+// TaskManagement components
+app.component('task-management-module', TaskManagementModule);
+app.component('tasks-index', TasksIndex);
+app.component('task-card', TaskCard);
+app.component('task-create-modal', TaskCreateModal);
+app.component('task-edit-modal', TaskEditModal);
 
 // Make CRM components globally available
 window.CrmModule = CrmModule;
