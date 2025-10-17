@@ -4,6 +4,7 @@
     "scripts": {
         "build": "vite build",
         "dev": "vite",
+        "start": "vite build --watch",
         "watch": "vite build --watch",
         "preview": "vite preview"
     },
