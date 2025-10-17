@@ -1,0 +1,351 @@
+import { useNavigate, useParams } from "react-router-dom";
+import { useForm, useFieldArray } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
+import * as z from "zod";
+import { format } from "date-fns";
+import { CalendarIcon, Plus, Trash2, Save, ArrowLeft } from "lucide-react";
+import { DashboardLayout } from "@/components/dashboard/DashboardLayout";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Calendar } from "@/components/ui/calendar";
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
+import { cn } from "@/lib/utils";
+import { useToast } from "@/hooks/use-toast";
+import { useState } from "react";
+
+const invoiceSchema = z.object({
+  clientName: z.string().trim().min(1, "Meno klienta je povinné").max(100),
+  clientAddress: z.string().trim().min(1, "Adresa je povinná").max(200),
+  clientIco: z.string().trim().min(1, "IČO je povinné").max(20),
+  clientDic: z.string().trim().min(1, "DIČ je povinné").max(20),
+  issueDate: z.date({ required_error: "Dátum vystavenia je povinný" }),
+  dueDate: z.date({ required_error: "Dátum splatnosti je povinný" }),
+  items: z.array(
+    z.object({
+      description: z.string().trim().min(1, "Popis je povinný").max(200),
+      quantity: z.number().min(1, "Množstvo musí byť aspoň 1"),
+      price: z.number().min(0, "Cena musí byť nezáporná"),
+    })
+  ).min(1, "Aspoň jedna položka je povinná"),
+});
+
+type InvoiceFormData = z.infer<typeof invoiceSchema>;
+
+const NewInvoice = () => {
+  const navigate = useNavigate();
+  const { id } = useParams();
+  const { toast } = useToast();
+  const [issueDate, setIssueDate] = useState<Date>();
+  const [dueDate, setDueDate] = useState<Date>();
+
+  const isEditMode = !!id;
+
+  const {
+    register,
+    control,
+    handleSubmit,
+    formState: { errors },
+    setValue,
+    watch,
+  } = useForm<InvoiceFormData>({
+    resolver: zodResolver(invoiceSchema),
+    defaultValues: {
+      items: [{ description: "", quantity: 1, price: 0 }],
+    },
+  });
+
+  const { fields, append, remove } = useFieldArray({
+    control,
+    name: "items",
+  });
+
+  const items = watch("items");
+
+  const onSubmit = (data: InvoiceFormData) => {
+    console.log("Invoice data:", data);
+    toast({
+      title: isEditMode ? "Faktúra upravená" : "Faktúra vytvorená",
+      description: isEditMode ? "Faktúra bola úspešne upravená." : "Faktúra bola úspešne vytvorená.",
+    });
+    navigate("/invoices");
+  };
+
+  const calculateTotal = () => {
+    return items.reduce((total, item) => {
+      const quantity = item.quantity || 0;
+      const price = item.price || 0;
+      return total + (quantity * price);
+    }, 0);
+  };
+
+  return (
+    <DashboardLayout>
+      <div className="max-w-6xl mx-auto animate-fade-in">
+        <div className="mb-6">
+          <Button
+            variant="ghost"
+            onClick={() => navigate("/")}
+            className="mb-4"
+          >
+            <ArrowLeft className="h-4 w-4 mr-2" />
+            Späť na dashboard
+          </Button>
+          <h1 className="text-3xl font-bold text-foreground">{isEditMode ? "Upraviť faktúru" : "Nová faktúra"}</h1>
+          <p className="text-muted-foreground mt-1">{isEditMode ? "Upravte existujúcu faktúru" : "Vytvorte novú faktúru pre vášho klienta"}</p>
+        </div>
+
+        <form onSubmit={handleSubmit(onSubmit)} className="space-y-8">
+          {/* Client Information */}
+          <div className="bg-gradient-card rounded-xl p-6 border-2 border-primary/30 shadow-elegant-sm">
+            <h3 className="text-lg font-bold text-primary mb-4 flex items-center gap-2">
+              <span className="w-8 h-8 bg-primary text-primary-foreground rounded-full flex items-center justify-center text-sm">1</span>
+              Informácie o klientovi
+            </h3>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div className="space-y-2">
+                <Label htmlFor="clientName">Názov / Meno klienta *</Label>
+                <Input
+                  id="clientName"
+                  {...register("clientName")}
+                  placeholder="ABC s.r.o."
+                  className="border-primary/30"
+                />
+                {errors.clientName && (
+                  <p className="text-sm text-destructive">{errors.clientName.message}</p>
+                )}
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="clientAddress">Adresa *</Label>
+                <Input
+                  id="clientAddress"
+                  {...register("clientAddress")}
+                  placeholder="Hlavná 123, 811 01 Bratislava"
+                  className="border-primary/30"
+                />
+                {errors.clientAddress && (
+                  <p className="text-sm text-destructive">{errors.clientAddress.message}</p>
+                )}
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="clientIco">IČO *</Label>
+                <Input
+                  id="clientIco"
+                  {...register("clientIco")}
+                  placeholder="12345678"
+                  className="border-primary/30"
+                />
+                {errors.clientIco && (
+                  <p className="text-sm text-destructive">{errors.clientIco.message}</p>
+                )}
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="clientDic">DIČ *</Label>
+                <Input
+                  id="clientDic"
+                  {...register("clientDic")}
+                  placeholder="2023456789"
+                  className="border-primary/30"
+                />
+                {errors.clientDic && (
+                  <p className="text-sm text-destructive">{errors.clientDic.message}</p>
+                )}
+              </div>
+            </div>
+          </div>
+
+          {/* Dates */}
+          <div className="bg-gradient-card rounded-xl p-6 border-2 border-border shadow-elegant-sm">
+            <h3 className="text-lg font-bold text-foreground mb-4 flex items-center gap-2">
+              <span className="w-8 h-8 bg-accent text-accent-foreground rounded-full flex items-center justify-center text-sm">2</span>
+              Dátumy
+            </h3>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div className="space-y-2">
+                <Label>Dátum vystavenia *</Label>
+                <Popover>
+                  <PopoverTrigger asChild>
+                    <Button
+                      type="button"
+                      variant="outline"
+                      className={cn(
+                        "w-full justify-start text-left font-normal",
+                        !issueDate && "text-muted-foreground"
+                      )}
+                    >
+                      <CalendarIcon className="mr-2 h-4 w-4" />
+                      {issueDate ? format(issueDate, "dd.MM.yyyy") : "Vyberte dátum"}
+                    </Button>
+                  </PopoverTrigger>
+                  <PopoverContent className="w-auto p-0" align="start">
+                    <Calendar
+                      mode="single"
+                      selected={issueDate}
+                      onSelect={(date) => {
+                        setIssueDate(date);
+                        setValue("issueDate", date as Date);
+                      }}
+                      initialFocus
+                      className="pointer-events-auto"
+                    />
+                  </PopoverContent>
+                </Popover>
+                {errors.issueDate && (
+                  <p className="text-sm text-destructive">{errors.issueDate.message}</p>
+                )}
+              </div>
+              <div className="space-y-2">
+                <Label>Dátum splatnosti *</Label>
+                <Popover>
+                  <PopoverTrigger asChild>
+                    <Button
+                      type="button"
+                      variant="outline"
+                      className={cn(
+                        "w-full justify-start text-left font-normal",
+                        !dueDate && "text-muted-foreground"
+                      )}
+                    >
+                      <CalendarIcon className="mr-2 h-4 w-4" />
+                      {dueDate ? format(dueDate, "dd.MM.yyyy") : "Vyberte dátum"}
+                    </Button>
+                  </PopoverTrigger>
+                  <PopoverContent className="w-auto p-0" align="start">
+                    <Calendar
+                      mode="single"
+                      selected={dueDate}
+                      onSelect={(date) => {
+                        setDueDate(date);
+                        setValue("dueDate", date as Date);
+                      }}
+                      initialFocus
+                      className="pointer-events-auto"
+                    />
+                  </PopoverContent>
+                </Popover>
+                {errors.dueDate && (
+                  <p className="text-sm text-destructive">{errors.dueDate.message}</p>
+                )}
+              </div>
+            </div>
+          </div>
+
+          {/* Items */}
+          <div className="bg-gradient-card rounded-xl p-6 border-2 border-primary/30 shadow-elegant-sm">
+            <h3 className="text-lg font-bold text-primary mb-4 flex items-center gap-2">
+              <span className="w-8 h-8 bg-primary text-primary-foreground rounded-full flex items-center justify-center text-sm">3</span>
+              Položky faktúry
+            </h3>
+            <div className="space-y-4">
+              {fields.map((field, index) => (
+                <div
+                  key={field.id}
+                  className="grid grid-cols-12 gap-3 p-4 bg-card rounded-lg border border-primary/20"
+                >
+                  <div className="col-span-5 space-y-2">
+                    <Label htmlFor={`description-${index}`}>Popis</Label>
+                    <Input
+                      id={`description-${index}`}
+                      {...register(`items.${index}.description`)}
+                      placeholder="Webový dizajn"
+                      className="border-primary/30"
+                    />
+                    {errors.items?.[index]?.description && (
+                      <p className="text-sm text-destructive">
+                        {errors.items[index]?.description?.message}
+                      </p>
+                    )}
+                  </div>
+                  <div className="col-span-2 space-y-2">
+                    <Label htmlFor={`quantity-${index}`}>Počet</Label>
+                    <Input
+                      id={`quantity-${index}`}
+                      type="number"
+                      {...register(`items.${index}.quantity`, {
+                        valueAsNumber: true,
+                      })}
+                      placeholder="1"
+                      min="1"
+                      className="border-primary/30"
+                    />
+                    {errors.items?.[index]?.quantity && (
+                      <p className="text-sm text-destructive">
+                        {errors.items[index]?.quantity?.message}
+                      </p>
+                    )}
+                  </div>
+                  <div className="col-span-3 space-y-2">
+                    <Label htmlFor={`price-${index}`}>Cena/ks (€)</Label>
+                    <Input
+                      id={`price-${index}`}
+                      type="number"
+                      {...register(`items.${index}.price`, {
+                        valueAsNumber: true,
+                      })}
+                      placeholder="0.00"
+                      min="0"
+                      step="0.01"
+                      className="border-primary/30"
+                    />
+                    {errors.items?.[index]?.price && (
+                      <p className="text-sm text-destructive">
+                        {errors.items[index]?.price?.message}
+                      </p>
+                    )}
+                  </div>
+                  <div className="col-span-2 flex items-end">
+                    {fields.length > 1 && (
+                      <Button
+                        type="button"
+                        variant="outline"
+                        size="icon"
+                        onClick={() => remove(index)}
+                        className="border-destructive/30 text-destructive hover:bg-destructive/10"
+                      >
+                        <Trash2 className="h-4 w-4" />
+                      </Button>
+                    )}
+                  </div>
+                </div>
+              ))}
+              <Button
+                type="button"
+                variant="outline"
+                onClick={() => append({ description: "", quantity: 1, price: 0 })}
+                className="w-full border-primary/30 text-primary hover:bg-primary/10"
+              >
+                <Plus className="h-4 w-4 mr-2" />
+                Pridať položku
+              </Button>
+              {errors.items && (
+                <p className="text-sm text-destructive">{errors.items.message}</p>
+              )}
+            </div>
+          </div>
+
+          {/* Actions */}
+          <div className="flex justify-between items-center pt-6 pb-8 border-t border-border bg-card rounded-xl p-6 shadow-elegant-sm">
+            <div className="text-lg font-semibold text-foreground">
+              Celkom: <span className="text-2xl text-primary ml-2">€{calculateTotal().toFixed(2)}</span>
+            </div>
+            <div className="flex gap-3">
+              <Button
+                type="button"
+                variant="outline"
+                onClick={() => navigate("/")}
+              >
+                Zrušiť
+              </Button>
+              <Button type="submit" className="bg-primary hover:bg-primary/90">
+                <Save className="h-4 w-4 mr-2" />
+                {isEditMode ? "Uložiť zmeny" : "Vytvoriť faktúru"}
+              </Button>
+            </div>
+          </div>
+        </form>
+      </div>
+    </DashboardLayout>
+  );
+};
+
+export default NewInvoice;
