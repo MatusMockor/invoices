@@ -1,18 +1,10 @@
 import { defineConfig } from 'vite';
-import react from '@vitejs/plugin-react';
+import react from '@vitejs/plugin-react-swc';
 import laravel from 'laravel-vite-plugin';
 import path from 'path';
 
 // https://vitejs.dev/config/
 export default defineConfig({
-    server: {
-        host: 'localhost',
-        port: 5173,
-        strictPort: false,
-        hmr: {
-            host: 'localhost',
-        },
-    },
     plugins: [
         laravel({
             input: [
@@ -21,12 +13,7 @@ export default defineConfig({
             ],
             refresh: true,
         }),
-        react({
-            jsxRuntime: 'automatic',
-            babel: {
-                plugins: [],
-            },
-        }),
+        react(),
     ],
     resolve: {
         alias: {
