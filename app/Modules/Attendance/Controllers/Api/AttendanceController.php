@@ -276,12 +276,12 @@ class AttendanceController extends Controller
         ]);
 
         $companyId = auth()->user()->current_company_id;
-        $year = $request->input('year');
-        $month = $request->input('month');
-        $userId = $request->input('user_id');
+        $year = (int) $request->input('year');
+        $month = (int) $request->input('month');
+        $userId = $request->input('user_id') ? (int) $request->input('user_id') : null;
 
         // If no user_id provided, use authenticated user
-        if (! $userId && ! auth()->user()->hasPermissionTo('attendance.view-all')) {
+        if (! $userId) {
             $userId = auth()->id();
         }
 

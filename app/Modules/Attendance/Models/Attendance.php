@@ -168,6 +168,6 @@ class Attendance extends Model
         $totalMinutes = $this->check_in->diffInMinutes($this->check_out);
         $breakMinutes = $this->breaks()->sum('duration_minutes') ?? 0;
 
-        return $totalMinutes - $breakMinutes;
+        return (int) ($totalMinutes - $breakMinutes);
     }
 }
