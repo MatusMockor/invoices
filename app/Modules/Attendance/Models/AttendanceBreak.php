@@ -63,7 +63,7 @@ class AttendanceBreak extends Model
             return 0;
         }
 
-        return $this->break_start->diffInMinutes($this->break_end);
+        return (int) $this->break_start->diffInMinutes($this->break_end);
     }
 
     /**

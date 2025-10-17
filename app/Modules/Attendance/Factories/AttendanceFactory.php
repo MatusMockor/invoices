@@ -17,8 +17,9 @@ class AttendanceFactory extends Factory
 
     public function definition(): array
     {
-        $checkIn = $this->faker->dateTimeBetween('-30 days', 'now');
-        $checkOut = $this->faker->optional(0.8)->dateTimeBetween($checkIn, '+8 hours');
+        $checkIn = \Carbon\Carbon::instance($this->faker->dateTimeBetween('-30 days', 'now'));
+        $hasCheckOut = $this->faker->boolean(80);
+        $checkOut = $hasCheckOut ? \Carbon\Carbon::instance($this->faker->dateTimeBetween($checkIn, $checkIn->copy()->addHours(8))) : null;
 
         return [
             'company_id' => Company::factory(),
@@ -45,8 +46,8 @@ class AttendanceFactory extends Factory
     public function completed(): static
     {
         return $this->state(function (array $attributes) {
-            $checkIn = $attributes['check_in'];
-            $checkOut = $this->faker->dateTimeBetween($checkIn, '+8 hours');
+            $checkIn = \Carbon\Carbon::parse($attributes['check_in']);
+            $checkOut = \Carbon\Carbon::instance($this->faker->dateTimeBetween($checkIn, $checkIn->copy()->addHours(8)));
 
             return [
                 'check_out' => $checkOut,

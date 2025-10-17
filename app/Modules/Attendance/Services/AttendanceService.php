@@ -92,8 +92,11 @@ class AttendanceService implements AttendanceServiceInterface
 
         $break->update([
             'break_end' => now(),
-            'duration_minutes' => $break->calculateDuration(),
         ]);
+
+        // Calculate duration after break_end is set
+        $duration = $break->calculateDuration();
+        $break->update(['duration_minutes' => $duration]);
 
         // Recalculate total attendance minutes if attendance is checked out
         if ($break->attendance->check_out) {

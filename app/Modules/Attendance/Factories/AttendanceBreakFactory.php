@@ -15,8 +15,9 @@ class AttendanceBreakFactory extends Factory
 
     public function definition(): array
     {
-        $breakStart = $this->faker->dateTimeBetween('-8 hours', 'now');
-        $breakEnd = $this->faker->optional(0.9)->dateTimeBetween($breakStart, '+60 minutes');
+        $breakStart = \Carbon\Carbon::instance($this->faker->dateTimeBetween('-8 hours', 'now'));
+        $hasBreakEnd = $this->faker->boolean(90);
+        $breakEnd = $hasBreakEnd ? \Carbon\Carbon::instance($this->faker->dateTimeBetween($breakStart, $breakStart->copy()->addMinutes(60))) : null;
 
         return [
             'attendance_id' => Attendance::factory(),
@@ -39,8 +40,8 @@ class AttendanceBreakFactory extends Factory
     public function completed(): static
     {
         return $this->state(function (array $attributes) {
-            $breakStart = $attributes['break_start'];
-            $breakEnd = $this->faker->dateTimeBetween($breakStart, '+60 minutes');
+            $breakStart = \Carbon\Carbon::parse($attributes['break_start']);
+            $breakEnd = \Carbon\Carbon::instance($this->faker->dateTimeBetween($breakStart, $breakStart->copy()->addMinutes(60)));
 
             return [
                 'break_end' => $breakEnd,

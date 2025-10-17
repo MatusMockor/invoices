@@ -5,7 +5,7 @@ declare(strict_types=1);
 use App\Modules\Attendance\Controllers\Api\AttendanceController;
 use Illuminate\Support\Facades\Route;
 
-Route::prefix('attendance')->name('attendance.')->group(function () {
+Route::prefix('attendances')->group(function () {
     // Options endpoint for dropdowns
     Route::get('options', [AttendanceController::class, 'options'])
         ->name('options');
@@ -21,10 +21,10 @@ Route::prefix('attendance')->name('attendance.')->group(function () {
         ->name('check-out');
 
     // Breaks
-    Route::post('{attendance}/breaks/start', [AttendanceController::class, 'startBreak'])
-        ->name('breaks.start');
+    Route::post('{attendance}/start-break', [AttendanceController::class, 'startBreak'])
+        ->name('start-break');
     Route::post('breaks/{break}/end', [AttendanceController::class, 'endBreak'])
-        ->name('breaks.end');
+        ->name('end-break');
 
     // Approval
     Route::post('{attendance}/approve', [AttendanceController::class, 'approve'])
@@ -36,7 +36,19 @@ Route::prefix('attendance')->name('attendance.')->group(function () {
     Route::get('monthly-report', [AttendanceController::class, 'monthlyReport'])
         ->name('monthly-report');
 
-    // Resource routes
-    Route::apiResource('attendances', AttendanceController::class)
-        ->except(['store']);
+    // Get specific attendance
+    Route::get('{attendance}', [AttendanceController::class, 'show'])
+        ->name('show');
+
+    // Update attendance
+    Route::put('{attendance}', [AttendanceController::class, 'update'])
+        ->name('update');
+
+    // Delete attendance
+    Route::delete('{attendance}', [AttendanceController::class, 'destroy'])
+        ->name('destroy');
+
+    // List attendances - must be last
+    Route::get('/', [AttendanceController::class, 'index'])
+        ->name('index');
 });

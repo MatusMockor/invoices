@@ -42,9 +42,8 @@ class AttendancePolicy
      */
     public function update(User $user, Attendance $attendance): bool
     {
-        // User can update their own attendance if it's pending and in their company
+        // User can update their own attendance in their company
         return $attendance->user_id === $user->id
-            && $attendance->status->value === 'pending'
             && $attendance->company_id === $user->current_company_id;
     }
 
@@ -53,9 +52,8 @@ class AttendancePolicy
      */
     public function delete(User $user, Attendance $attendance): bool
     {
-        // User can delete their own pending attendance
+        // User can delete their own attendance in their company
         return $attendance->user_id === $user->id
-            && $attendance->status->value === 'pending'
             && $attendance->company_id === $user->current_company_id;
     }
 
@@ -64,8 +62,8 @@ class AttendancePolicy
      */
     public function approve(User $user, Attendance $attendance): bool
     {
-        // For now, users cannot approve (can be extended later with roles)
-        return false;
+        // User can approve attendances in their company (can be extended later with roles)
+        return $attendance->company_id === $user->current_company_id;
     }
 
     /**
