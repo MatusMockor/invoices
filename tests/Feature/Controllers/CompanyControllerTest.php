@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace Feature\Controllers;
 
+use App\Models\Company;
 use App\Models\User;
-use App\Models\UserCompany;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Foundation\Testing\WithFaker;
 use Tests\TestCase;
@@ -29,7 +29,7 @@ class CompanyControllerTest extends TestCase
     public function test_index_displays_companies_list(): void
     {
         // Create some companies for the authenticated user
-        $companies = UserCompany::factory()->count(3)->create([
+        $companies = Company::factory()->count(3)->create([
             'user_id' => auth()->id(),
         ]);
 
@@ -84,7 +84,7 @@ class CompanyControllerTest extends TestCase
         $response = $this->post(route('companies.store'), $companyData);
 
         // Find the company that was just created
-        $company = UserCompany::where('name', $companyData['name'])
+        $company = Company::where('name', $companyData['name'])
             ->where('ico', $companyData['ico'])
             ->where('user_id', auth()->id())
             ->first();
@@ -95,7 +95,7 @@ class CompanyControllerTest extends TestCase
         $response->assertSessionHas('success', 'Company was successfully created');
 
         // Assert the company was created in the database
-        $this->assertDatabaseHas(UserCompany::class, [
+        $this->assertDatabaseHas(Company::class, [
             'name' => $companyData['name'],
             'ico' => $companyData['ico'],
             'user_id' => auth()->id(),
@@ -107,13 +107,13 @@ class CompanyControllerTest extends TestCase
      */
     public function test_show_displays_company(): void
     {
-        $company = UserCompany::factory()->create([
+        $company = Company::factory()->create([
             'user_id' => auth()->id(),
             'name' => 'Test Company Name XYZ',
         ]);
 
         // Check if the company was created with the correct name
-        $this->assertDatabaseHas(UserCompany::class, [
+        $this->assertDatabaseHas(Company::class, [
             'id' => $company->id,
             'name' => 'Test Company Name XYZ',
         ]);
@@ -133,7 +133,7 @@ class CompanyControllerTest extends TestCase
      */
     public function test_edit_displays_form(): void
     {
-        $company = UserCompany::factory()->create([
+        $company = Company::factory()->create([
             'user_id' => auth()->id(),
         ]);
 
@@ -149,7 +149,7 @@ class CompanyControllerTest extends TestCase
      */
     public function test_update_updates_company(): void
     {
-        $company = UserCompany::factory()->create([
+        $company = Company::factory()->create([
             'user_id' => auth()->id(),
         ]);
 
@@ -176,7 +176,7 @@ class CompanyControllerTest extends TestCase
         $response->assertSessionHas('success', 'Company was successfully updated');
 
         // Assert the company was updated in the database
-        $this->assertDatabaseHas(UserCompany::class, [
+        $this->assertDatabaseHas(Company::class, [
             'id' => $company->id,
             'name' => 'Updated Company Name',
             'street' => 'Updated Address',
@@ -188,7 +188,7 @@ class CompanyControllerTest extends TestCase
      */
     public function test_destroy_deletes_company(): void
     {
-        $company = UserCompany::factory()->create([
+        $company = Company::factory()->create([
             'user_id' => auth()->id(),
         ]);
 
@@ -198,7 +198,7 @@ class CompanyControllerTest extends TestCase
         $response->assertSessionHas('success', 'Company deleted successfully');
 
         // Assert the company was deleted from the database
-        $this->assertDatabaseMissing(UserCompany::class, [
+        $this->assertDatabaseMissing(Company::class, [
             'id' => $company->id,
         ]);
     }
@@ -209,11 +209,11 @@ class CompanyControllerTest extends TestCase
     public function test_switch_company_changes_current_company(): void
     {
         // Create two companies for the user
-        $company1 = UserCompany::factory()->create([
+        $company1 = Company::factory()->create([
             'user_id' => auth()->id(),
         ]);
 
-        $company2 = UserCompany::factory()->create([
+        $company2 = Company::factory()->create([
             'user_id' => auth()->id(),
         ]);
 
@@ -237,7 +237,7 @@ class CompanyControllerTest extends TestCase
     {
         // Create a company for another user
         $anotherUser = User::factory()->create();
-        $company = UserCompany::factory()->create([
+        $company = Company::factory()->create([
             'user_id' => $anotherUser->id,
         ]);
 

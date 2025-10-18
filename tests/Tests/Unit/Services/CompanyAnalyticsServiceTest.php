@@ -21,11 +21,11 @@ class CompanyAnalyticsServiceTest extends TestCase
 
     protected User $user;
 
-    protected UserCompany $companyA;
+    protected Company $companyA;
 
-    protected UserCompany $companyB;
+    protected Company $companyB;
 
-    protected UserCompany $companyC;
+    protected Company $companyC;
 
     protected function setUp(): void
     {
@@ -38,7 +38,7 @@ class CompanyAnalyticsServiceTest extends TestCase
         $this->user = User::factory()->create();
 
         // Create test companies
-        $this->companyA = UserCompany::factory()->create([
+        $this->companyA = Company::factory()->create([
             'user_id' => $this->user->id,
             'name' => 'Company A',
             'country' => 'Slovakia',
@@ -47,7 +47,7 @@ class CompanyAnalyticsServiceTest extends TestCase
             'created_at' => Carbon::now()->subYear()->subMonths(2),
         ]);
 
-        $this->companyB = UserCompany::factory()->create([
+        $this->companyB = Company::factory()->create([
             'user_id' => $this->user->id,
             'name' => 'Company B',
             'country' => 'Slovakia',
@@ -56,7 +56,7 @@ class CompanyAnalyticsServiceTest extends TestCase
             'created_at' => Carbon::now()->subMonths(6),
         ]);
 
-        $this->companyC = UserCompany::factory()->create([
+        $this->companyC = Company::factory()->create([
             'user_id' => $this->user->id,
             'name' => 'Company C',
             'country' => 'Czech Republic',
@@ -66,12 +66,12 @@ class CompanyAnalyticsServiceTest extends TestCase
         ]);
 
         // Create business entities with matching ICOs for expense tracking
-        $businessEntityA = Company::factory()->create([
+        $businessEntityA = UserCompany::factory()->create([
             'name' => 'Business Entity A',
             'ico' => '12345678', // Same as Company A
         ]);
 
-        $businessEntityB = Company::factory()->create([
+        $businessEntityB = UserCompany::factory()->create([
             'name' => 'Business Entity B',
             'ico' => '87654321', // Same as Company B
         ]);

@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace App\Modules\TaskManagement\Models;
 
+use App\Models\Company;
 use App\Models\User;
-use App\Models\UserCompany;
 use App\Modules\TaskManagement\Enums\TaskPriority;
 use App\Modules\TaskManagement\Enums\TaskStatus;
 use App\Modules\TaskManagement\Factories\TaskFactory;
@@ -51,7 +51,7 @@ class Task extends Model
 
     public function company(): BelongsTo
     {
-        return $this->belongsTo(UserCompany::class);
+        return $this->belongsTo(Company::class);
     }
 
     public function user(): BelongsTo

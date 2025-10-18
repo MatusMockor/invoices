@@ -18,7 +18,7 @@ class CompanyRepository implements CompanyRepositoryContract
      */
     public function getAllPaginated(int $perPage = 10): LengthAwarePaginator
     {
-        return UserCompany::latest()->paginate($perPage);
+        return Company::latest()->paginate($perPage);
     }
 
     /**
@@ -26,23 +26,23 @@ class CompanyRepository implements CompanyRepositoryContract
      */
     public function getAllOrderedByName(): Collection
     {
-        return UserCompany::orderBy('name')->get();
+        return Company::orderBy('name')->get();
     }
 
     /**
      * Find a company by ID
      */
-    public function findById(int $id): ?UserCompany
+    public function findById(int $id): ?Company
     {
-        return UserCompany::find($id);
+        return Company::find($id);
     }
 
     /**
      * Find a company by ICO
      */
-    public function findByIco(string $ico): ?UserCompany
+    public function findByIco(string $ico): ?Company
     {
-        return UserCompany::where('ico', $ico)->first();
+        return Company::where('ico', $ico)->first();
     }
 
     /**
@@ -50,7 +50,7 @@ class CompanyRepository implements CompanyRepositoryContract
      */
     public function getByCountry(string $country): Collection
     {
-        return UserCompany::where('country', $country)->get();
+        return Company::where('country', $country)->get();
     }
 
     /**
@@ -58,7 +58,7 @@ class CompanyRepository implements CompanyRepositoryContract
      */
     public function getByYear(int $year): Collection
     {
-        return UserCompany::whereYear('created_at', $year)
+        return Company::whereYear('created_at', $year)
             ->get();
     }
 
@@ -67,7 +67,7 @@ class CompanyRepository implements CompanyRepositoryContract
      */
     public function getByMonth(int $year, int $month): Collection
     {
-        return UserCompany::whereYear('created_at', $year)
+        return Company::whereYear('created_at', $year)
             ->whereMonth('created_at', $month)
             ->get();
     }
@@ -77,7 +77,7 @@ class CompanyRepository implements CompanyRepositoryContract
      */
     public function getWithVatNumber(): Collection
     {
-        return UserCompany::whereNotNull('ic_dph')
+        return Company::whereNotNull('ic_dph')
             ->get();
     }
 
@@ -86,7 +86,7 @@ class CompanyRepository implements CompanyRepositoryContract
      */
     public function getWithoutVatNumber(): Collection
     {
-        return UserCompany::whereNull('ic_dph')
+        return Company::whereNull('ic_dph')
             ->get();
     }
 
@@ -95,21 +95,21 @@ class CompanyRepository implements CompanyRepositoryContract
      */
     public function count(): int
     {
-        return UserCompany::count();
+        return Company::count();
     }
 
     /**
      * Create a new company
      */
-    public function create(array $data): UserCompany
+    public function create(array $data): Company
     {
-        return UserCompany::create($data);
+        return Company::create($data);
     }
 
     /**
      * Update a company
      */
-    public function update(UserCompany $company, array $data): bool
+    public function update(Company $company, array $data): bool
     {
         return $company->update($data);
     }
@@ -117,7 +117,7 @@ class CompanyRepository implements CompanyRepositoryContract
     /**
      * Delete a company
      */
-    public function delete(UserCompany $company): bool
+    public function delete(Company $company): bool
     {
         return $company->delete();
     }
@@ -137,7 +137,7 @@ class CompanyRepository implements CompanyRepositoryContract
     public function getTotalExpenses(int $companyId): float
     {
         // Get the company's ICO
-        $company = UserCompany::find($companyId);
+        $company = Company::find($companyId);
         if (! $company) {
             return 0.0;
         }
@@ -145,7 +145,7 @@ class CompanyRepository implements CompanyRepositoryContract
         $ico = $company->ico;
 
         // Find business entities with the same ICO
-        $businessEntityIds = Company::where('ico', $ico)
+        $businessEntityIds = UserCompany::where('ico', $ico)
             ->pluck('id')
             ->toArray();
 
@@ -187,7 +187,7 @@ class CompanyRepository implements CompanyRepositoryContract
         $result = array_fill(1, 12, 0.0);
 
         // Get the company's ICO
-        $company = UserCompany::find($companyId);
+        $company = Company::find($companyId);
         if (! $company) {
             return $result;
         }
@@ -195,7 +195,7 @@ class CompanyRepository implements CompanyRepositoryContract
         $ico = $company->ico;
 
         // Find business entities with the same ICO
-        $businessEntityIds = Company::where('ico', $ico)
+        $businessEntityIds = UserCompany::where('ico', $ico)
             ->pluck('id')
             ->toArray();
 

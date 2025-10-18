@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Repositories\Interfaces;
 
-use App\Models\UserCompany;
+use App\Models\Company;
 use Illuminate\Contracts\Pagination\LengthAwarePaginator;
 use Illuminate\Database\Eloquent\Collection;
 
@@ -23,12 +23,12 @@ interface CompanyRepository
     /**
      * Find a company by ID
      */
-    public function findById(int $id): ?UserCompany;
+    public function findById(int $id): ?Company;
 
     /**
      * Find a company by ICO
      */
-    public function findByIco(string $ico): ?UserCompany;
+    public function findByIco(string $ico): ?Company;
 
     /**
      * Get companies by country
@@ -63,17 +63,17 @@ interface CompanyRepository
     /**
      * Create a new company
      */
-    public function create(array $data): UserCompany;
+    public function create(array $data): Company;
 
     /**
      * Update a company
      */
-    public function update(UserCompany $company, array $data): bool;
+    public function update(Company $company, array $data): bool;
 
     /**
      * Delete a company
      */
-    public function delete(UserCompany $company): bool;
+    public function delete(Company $company): bool;
 
     /**
      * Get total income for a company

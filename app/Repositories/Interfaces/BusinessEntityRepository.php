@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Repositories\Interfaces;
 
-use App\Models\Company;
+use App\Models\UserCompany;
 use Illuminate\Contracts\Pagination\LengthAwarePaginator;
 use Illuminate\Database\Eloquent\Collection;
 
@@ -23,25 +23,25 @@ interface BusinessEntityRepository
     /**
      * Find a business entity by ID
      */
-    public function findById(int $id): ?Company;
+    public function findById(int $id): ?UserCompany;
 
     /**
      * Find a business entity by ICO
      */
-    public function findByIco(string $ico): ?Company;
+    public function findByIco(string $ico): ?UserCompany;
 
     /**
      * Create a new business entity
      */
-    public function create(array $data): Company;
+    public function create(array $data): UserCompany;
 
     /**
      * Update a business entity
      */
-    public function update(Company $businessEntity, array $data): bool;
+    public function update(UserCompany $businessEntity, array $data): bool;
 
     /**
      * Delete a business entity
      */
-    public function delete(Company $businessEntity): bool;
+    public function delete(UserCompany $businessEntity): bool;
 }

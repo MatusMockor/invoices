@@ -19,7 +19,7 @@ class InvoicePdfControllerTest extends TestCase
     {
         // Create a user with a company
         $user = User::factory()->create();
-        $company = UserCompany::factory()->create([
+        $company = Company::factory()->create([
             'user_id' => $user->id,
         ]);
 
@@ -28,7 +28,7 @@ class InvoicePdfControllerTest extends TestCase
         $user->save();
 
         // Create a business entity
-        $businessEntity = Company::factory()->create();
+        $businessEntity = UserCompany::factory()->create();
 
         // Create an invoice
         $invoice = Invoice::factory()->create([
@@ -53,7 +53,7 @@ class InvoicePdfControllerTest extends TestCase
     {
         // Create a user with a company
         $user = User::factory()->create();
-        $company = UserCompany::factory()->create([
+        $company = Company::factory()->create([
             'user_id' => $user->id,
         ]);
 
@@ -62,7 +62,7 @@ class InvoicePdfControllerTest extends TestCase
         $user->save();
 
         // Create a business entity
-        $businessEntity = Company::factory()->create();
+        $businessEntity = UserCompany::factory()->create();
 
         // Create an invoice
         $invoice = Invoice::factory()->create([
@@ -86,7 +86,7 @@ class InvoicePdfControllerTest extends TestCase
     {
         // Create a user with a company
         $user1 = User::factory()->create();
-        $company1 = UserCompany::factory()->create([
+        $company1 = Company::factory()->create([
             'user_id' => $user1->id,
         ]);
 
@@ -95,7 +95,7 @@ class InvoicePdfControllerTest extends TestCase
         $user1->save();
 
         // Create a business entity
-        $businessEntity = Company::factory()->create();
+        $businessEntity = UserCompany::factory()->create();
 
         // Create an invoice for user1
         $invoice = Invoice::factory()->create([

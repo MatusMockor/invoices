@@ -10,7 +10,7 @@ use App\Http\Requests\UpdateCompanyRequest;
 use App\Http\Resources\CompanyMinimalCollection;
 use App\Http\Resources\UserCompanyCollection;
 use App\Http\Resources\UserCompanyResource;
-use App\Models\UserCompany;
+use App\Models\Company;
 use App\Repositories\Interfaces\CompanyRepository;
 use Illuminate\Http\JsonResponse;
 
@@ -43,7 +43,7 @@ class UserCompanyController extends Controller
         return new CompanyMinimalCollection($companies);
     }
 
-    public function show(UserCompany $company): UserCompanyResource
+    public function show(Company $company): UserCompanyResource
     {
         $this->authorize('view', $company);
 
@@ -59,7 +59,7 @@ class UserCompanyController extends Controller
             ->setStatusCode(201);
     }
 
-    public function update(UpdateCompanyRequest $request, UserCompany $company): UserCompanyResource
+    public function update(UpdateCompanyRequest $request, Company $company): UserCompanyResource
     {
         $this->authorize('update', $company);
 
@@ -71,7 +71,7 @@ class UserCompanyController extends Controller
     /**
      * Delete a company.
      */
-    public function destroy(UserCompany $company): JsonResponse
+    public function destroy(Company $company): JsonResponse
     {
         $this->authorize('delete', $company);
 
@@ -85,7 +85,7 @@ class UserCompanyController extends Controller
     /**
      * Switch the user's active company.
      */
-    public function switch(UserCompany $company): UserCompanyResource
+    public function switch(Company $company): UserCompanyResource
     {
         $this->authorize('view', $company);
 

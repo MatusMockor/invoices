@@ -20,7 +20,7 @@ class InvoicePolicyTest extends TestCase
     {
         // Create a user with a company
         $user = User::factory()->create();
-        $company = UserCompany::factory()->create([
+        $company = Company::factory()->create([
             'user_id' => $user->id,
         ]);
         $user->update(['current_company_id' => $company->id]);
@@ -33,7 +33,7 @@ class InvoicePolicyTest extends TestCase
     {
         // Create a user with a company
         $user = User::factory()->create();
-        $company = UserCompany::factory()->create([
+        $company = Company::factory()->create([
             'user_id' => $user->id,
         ]);
         $user->update(['current_company_id' => $company->id]);
@@ -46,13 +46,13 @@ class InvoicePolicyTest extends TestCase
     {
         // Create a user with two companies
         $user = User::factory()->create();
-        $company1 = UserCompany::factory()->create([
+        $company1 = Company::factory()->create([
             'user_id' => $user->id,
         ]);
         $user->update(['current_company_id' => $company1->id]);
 
         // Create a business entity for invoices
-        $partner = Company::factory()->create();
+        $partner = UserCompany::factory()->create();
 
         // Create an invoice for the current company
         $ownInvoice = Invoice::factory()->create([
@@ -69,16 +69,16 @@ class InvoicePolicyTest extends TestCase
     {
         // Create a user with two companies
         $user = User::factory()->create();
-        $company1 = UserCompany::factory()->create([
+        $company1 = Company::factory()->create([
             'user_id' => $user->id,
         ]);
-        $company2 = UserCompany::factory()->create([
+        $company2 = Company::factory()->create([
             'user_id' => $user->id,
         ]);
         $user->update(['current_company_id' => $company1->id]);
 
         // Create a business entity for invoices
-        $partner = Company::factory()->create();
+        $partner = UserCompany::factory()->create();
 
         // Create an invoice for the other company
         $otherInvoice = Invoice::factory()->create([
@@ -95,13 +95,13 @@ class InvoicePolicyTest extends TestCase
     {
         // Create a user with a company
         $user = User::factory()->create();
-        $company = UserCompany::factory()->create([
+        $company = Company::factory()->create([
             'user_id' => $user->id,
         ]);
         $user->update(['current_company_id' => $company->id]);
 
         // Create a business entity for invoices
-        $partner = Company::factory()->create();
+        $partner = UserCompany::factory()->create();
 
         // Create an invoice for the current company
         $ownInvoice = Invoice::factory()->create([
@@ -118,16 +118,16 @@ class InvoicePolicyTest extends TestCase
     {
         // Create a user with two companies
         $user = User::factory()->create();
-        $company1 = UserCompany::factory()->create([
+        $company1 = Company::factory()->create([
             'user_id' => $user->id,
         ]);
-        $company2 = UserCompany::factory()->create([
+        $company2 = Company::factory()->create([
             'user_id' => $user->id,
         ]);
         $user->update(['current_company_id' => $company1->id]);
 
         // Create a business entity for invoices
-        $partner = Company::factory()->create();
+        $partner = UserCompany::factory()->create();
 
         // Create an invoice for the other company
         $otherInvoice = Invoice::factory()->create([
@@ -144,13 +144,13 @@ class InvoicePolicyTest extends TestCase
     {
         // Create a user with a company
         $user = User::factory()->create();
-        $company = UserCompany::factory()->create([
+        $company = Company::factory()->create([
             'user_id' => $user->id,
         ]);
         $user->update(['current_company_id' => $company->id]);
 
         // Create a business entity for invoices
-        $partner = Company::factory()->create();
+        $partner = UserCompany::factory()->create();
 
         // Create an invoice for the current company
         $ownInvoice = Invoice::factory()->create([
@@ -167,16 +167,16 @@ class InvoicePolicyTest extends TestCase
     {
         // Create a user with two companies
         $user = User::factory()->create();
-        $company1 = UserCompany::factory()->create([
+        $company1 = Company::factory()->create([
             'user_id' => $user->id,
         ]);
-        $company2 = UserCompany::factory()->create([
+        $company2 = Company::factory()->create([
             'user_id' => $user->id,
         ]);
         $user->update(['current_company_id' => $company1->id]);
 
         // Create a business entity for invoices
-        $partner = Company::factory()->create();
+        $partner = UserCompany::factory()->create();
 
         // Create an invoice for the other company
         $otherInvoice = Invoice::factory()->create([

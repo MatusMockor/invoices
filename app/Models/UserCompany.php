@@ -69,12 +69,4 @@ class UserCompany extends Model
     {
         return $this->belongsTo(User::class);
     }
-
-    /**
-     * Get the vehicles for the company.
-     */
-    public function vehicles(): HasMany
-    {
-        return $this->hasMany(Vehicle::class);
-    }
 }

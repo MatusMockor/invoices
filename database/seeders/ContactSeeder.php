@@ -4,11 +4,11 @@ declare(strict_types=1);
 
 namespace Database\Seeders;
 
+use App\Models\Company;
 use App\Models\Contact;
 use App\Models\Invoice;
 use App\Models\Note;
 use App\Models\User;
-use App\Models\UserCompany;
 use Illuminate\Database\Seeder;
 use Illuminate\Support\Str;
 
@@ -22,7 +22,7 @@ class ContactSeeder extends Seeder
             return;
         }
 
-        $company = UserCompany::first();
+        $company = Company::first();
         if (! $company) {
             return;
         }

@@ -10,7 +10,7 @@ return new class extends Migration
 {
     public function up(): void
     {
-        Schema::create('business_entities', static function (Blueprint $table) {
+        Schema::create('companies', static function (Blueprint $table) {
             $table->id();
             $table->string('ico')->unique();
             $table->string('dic')->nullable();

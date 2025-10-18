@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace App\Modules\Attendance\Factories;
 
+use App\Models\Company;
 use App\Models\User;
-use App\Models\UserCompany;
 use App\Modules\Attendance\Enums\AttendanceStatus;
 use App\Modules\Attendance\Enums\WorkType;
 use App\Modules\Attendance\Models\Attendance;
@@ -22,7 +22,7 @@ class AttendanceFactory extends Factory
         $checkOut = $hasCheckOut ? \Carbon\Carbon::instance($this->faker->dateTimeBetween($checkIn, $checkIn->copy()->addHours(8))) : null;
 
         return [
-            'company_id' => UserCompany::factory(),
+            'company_id' => Company::factory(),
             'user_id' => User::factory(),
             'check_in' => $checkIn,
             'check_out' => $checkOut,

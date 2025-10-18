@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace App\Modules\Attendance\Models;
 
+use App\Models\Company;
 use App\Models\User;
-use App\Models\UserCompany;
 use App\Modules\Attendance\Factories\WorkScheduleFactory;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
@@ -43,7 +43,7 @@ class WorkSchedule extends Model
      */
     public function company(): BelongsTo
     {
-        return $this->belongsTo(UserCompany::class);
+        return $this->belongsTo(Company::class);
     }
 
     /**

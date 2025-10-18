@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace App\Modules\VehicleLogbook\tests\Repositories;
 
+use App\Models\Company;
 use App\Models\User;
-use App\Models\UserCompany;
 use App\Modules\VehicleLogbook\Models\Trip;
 use App\Modules\VehicleLogbook\Models\Vehicle;
 use App\Modules\VehicleLogbook\Repositories\Interfaces\TripRepository;
@@ -20,7 +20,7 @@ class TripRepositoryTest extends TestCase
 
     protected User $user;
 
-    protected UserCompany $company;
+    protected Company $company;
 
     protected Vehicle $vehicle;
 
@@ -33,7 +33,7 @@ class TripRepositoryTest extends TestCase
         $this->user = User::factory()->create();
 
         // Create a company for the user
-        $this->company = UserCompany::factory()->create([
+        $this->company = Company::factory()->create([
             'user_id' => $this->user->id,
         ]);
 

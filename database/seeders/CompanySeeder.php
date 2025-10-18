@@ -16,10 +16,10 @@ class CompanySeeder extends Seeder
     public function run(): void
     {
         // Create some business entities with Slovak data
-        Company::factory(3)->slovak()->create();
+        UserCompany::factory(3)->slovak()->create();
 
         // Create a specific business entity with known data
-        Company::factory()->create([
+        UserCompany::factory()->create([
             'name' => 'ABC Corporation',
             'ico' => '87654321',
             'dic' => '2023987654',
@@ -31,16 +31,16 @@ class CompanySeeder extends Seeder
         ]);
 
         // Create some random business entities
-        Company::factory(5)->create();
+        UserCompany::factory(5)->create();
 
         // Add user companies to business entities
-        $companies = UserCompany::all();
+        $companies = Company::all();
         foreach ($companies as $company) {
             // Check if a business entity with the same ICO already exists
-            $existingEntity = Company::where('ico', $company->ico)->first();
+            $existingEntity = UserCompany::where('ico', $company->ico)->first();
             if (! $existingEntity) {
                 // Create a new business entity from the company data
-                Company::create([
+                UserCompany::create([
                     'name' => $company->name,
                     'ico' => $company->ico,
                     'dic' => $company->dic,

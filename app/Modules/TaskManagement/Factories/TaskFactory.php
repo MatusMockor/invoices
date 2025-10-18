@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace App\Modules\TaskManagement\Factories;
 
+use App\Models\Company;
 use App\Models\User;
-use App\Models\UserCompany;
 use App\Modules\TaskManagement\Enums\TaskPriority;
 use App\Modules\TaskManagement\Enums\TaskStatus;
 use App\Modules\TaskManagement\Models\Task;
@@ -18,7 +18,7 @@ class TaskFactory extends Factory
     public function definition(): array
     {
         return [
-            'company_id' => UserCompany::factory(),
+            'company_id' => Company::factory(),
             'user_id' => User::factory(),
             'assigned_to' => fake()->boolean(70) ? User::factory() : null,
             'title' => fake()->sentence(),

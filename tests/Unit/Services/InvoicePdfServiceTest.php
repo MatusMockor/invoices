@@ -26,10 +26,10 @@ class InvoicePdfServiceTest extends TestCase
 
         // Create test data
         $this->user = User::factory()->create();
-        $this->company = UserCompany::factory()->create([
+        $this->company = Company::factory()->create([
             'user_id' => $this->user->id,
         ]);
-        $this->partner = Company::factory()->create();
+        $this->partner = UserCompany::factory()->create();
         $this->invoice = Invoice::factory()->create([
             'user_id' => $this->user->id,
             'supplier_company_id' => $this->company->id,

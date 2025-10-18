@@ -8,7 +8,7 @@ use App\Http\Requests\BusinessEntities\CreateBusinessEntityRequest;
 use App\Http\Requests\BusinessEntities\UpdateBusinessEntityRequest;
 use App\Http\Requests\Companies\FetchCompanyByIcoRequest;
 use App\Http\Resources\BusinessEntityResource;
-use App\Models\Company;
+use App\Models\UserCompany;
 use App\Repositories\Interfaces\BusinessEntityRepository;
 use App\Services\Interfaces\BusinessEntityDataService;
 use Illuminate\Http\JsonResponse;
@@ -42,17 +42,17 @@ class BusinessEntityController extends Controller
             ->with('success', 'Company was successfully created');
     }
 
-    public function show(Company $businessEntity): View
+    public function show(UserCompany $businessEntity): View
     {
         return view('business-entities.show', ['businessEntity' => $businessEntity]);
     }
 
-    public function edit(Company $businessEntity): View
+    public function edit(UserCompany $businessEntity): View
     {
         return view('business-entities.edit', ['businessEntity' => $businessEntity]);
     }
 
-    public function update(UpdateBusinessEntityRequest $request, Company $businessEntity): RedirectResponse
+    public function update(UpdateBusinessEntityRequest $request, UserCompany $businessEntity): RedirectResponse
     {
         $this->businessEntityRepository->update($businessEntity, $request->validated());
 
@@ -60,7 +60,7 @@ class BusinessEntityController extends Controller
             ->with('success', 'Company data was successfully updated');
     }
 
-    public function destroy(Company $businessEntity): RedirectResponse
+    public function destroy(UserCompany $businessEntity): RedirectResponse
     {
         $this->businessEntityRepository->delete($businessEntity);
 
