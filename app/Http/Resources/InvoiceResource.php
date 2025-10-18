@@ -5,7 +5,6 @@ declare(strict_types=1);
 namespace App\Http\Resources;
 
 use App\Models\Invoice;
-use App\Services\PayBySquareService;
 use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\JsonResource;
 
@@ -39,9 +38,7 @@ class InvoiceResource extends JsonResource
             'business_entity' => new BusinessEntityResource($this->whenLoaded('businessEntity')),
             'supplier_company' => new CompanyResource($this->whenLoaded('supplierCompany')),
             'items' => InvoiceItemResource::collection($this->whenLoaded('items')),
-            'qr_code' => $this->when($this->relationLoaded('supplierCompany'), function () {
-                return $this->generateQrCode();
-            }),
+            'qr_code' => $this->qr_code ?? null,
         ];
     }
 
@@ -63,27 +60,5 @@ class InvoiceResource extends JsonResource
         return $this->items->sum(function ($item) {
             return $item->total_price * ($item->vat_rate / 100);
         });
-    }
-
-    private function generateQrCode(): ?string
-    {
-        $company = $this->supplierCompany;
-
-        if (! $company || ! $company->iban || ! $company->swift) {
-            return null;
-        }
-
-        $payBySquareService = app(PayBySquareService::class);
-
-        return $payBySquareService->generateQrCode(
-            iban: str_replace(' ', '', $company->iban),
-            swift: $company->swift,
-            amount: $this->total_amount,
-            variableSymbol: str_replace(['INV-', '-'], '', $this->invoice_number),
-            constantSymbol: $this->constant_symbol ?? '',
-            specificSymbol: $this->specific_symbol ?? '',
-            note: 'Faktura '.$this->invoice_number,
-            recipient: $company->name
-        );
     }
 }

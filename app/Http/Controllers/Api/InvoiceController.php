@@ -13,6 +13,7 @@ use App\Models\Invoice;
 use App\Repositories\Interfaces\InvoiceRepository;
 use App\Services\Interfaces\InvoicePdfService;
 use App\Services\Interfaces\InvoiceService;
+use App\Services\Interfaces\PayBySquare;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Http\Response;
@@ -22,7 +23,8 @@ class InvoiceController extends Controller
     public function __construct(
         private readonly InvoiceService $invoiceService,
         private readonly InvoicePdfService $pdfService,
-        private readonly InvoiceRepository $invoiceRepository
+        private readonly InvoiceRepository $invoiceRepository,
+        private readonly PayBySquare $payBySquareService
     ) {
         $this->authorizeResource(Invoice::class);
     }
@@ -46,6 +48,7 @@ class InvoiceController extends Controller
     public function show(Invoice $invoice): InvoiceResource
     {
         $invoice->load(['businessEntity', 'supplierCompany', 'items']);
+        $invoice->qr_code = $this->generateQrCode($invoice);
 
         return new InvoiceResource($invoice);
     }
@@ -60,6 +63,9 @@ class InvoiceController extends Controller
             auth()->id(),
             auth()->user()->current_company_id
         );
+
+        $invoice->load(['businessEntity', 'supplierCompany', 'items']);
+        $invoice->qr_code = $this->generateQrCode($invoice);
 
         return new InvoiceResource($invoice)
             ->response()
@@ -76,6 +82,9 @@ class InvoiceController extends Controller
             $request->validated(),
             auth()->user()->current_company_id
         );
+
+        $updatedInvoice->load(['businessEntity', 'supplierCompany', 'items']);
+        $updatedInvoice->qr_code = $this->generateQrCode($updatedInvoice);
 
         return new InvoiceResource($updatedInvoice);
     }
@@ -110,5 +119,28 @@ class InvoiceController extends Controller
         $this->authorize('view', $invoice);
 
         return $this->pdfService->streamPdf($invoice);
+    }
+
+    /**
+     * Generate QR code for invoice payment.
+     */
+    private function generateQrCode(Invoice $invoice): ?string
+    {
+        $company = $invoice->supplierCompany;
+
+        if (! $company || ! $company->iban || ! $company->swift) {
+            return null;
+        }
+
+        return $this->payBySquareService->generateQrCode(
+            iban: str_replace(' ', '', $company->iban),
+            swift: $company->swift,
+            amount: $invoice->total_amount,
+            variableSymbol: str_replace(['INV-', '-'], '', $invoice->invoice_number),
+            constantSymbol: $invoice->constant_symbol ?? '',
+            specificSymbol: $invoice->specific_symbol ?? '',
+            note: 'Faktura '.$invoice->invoice_number,
+            recipient: $company->name
+        );
     }
 }
