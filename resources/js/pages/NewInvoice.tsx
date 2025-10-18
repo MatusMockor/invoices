@@ -3,7 +3,7 @@ import { useForm, useFieldArray } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";
 import { format } from "date-fns";
-import { CalendarIcon, Plus, Trash2, Save, ArrowLeft, Loader2 } from "lucide-react";
+import { CalendarIcon, Plus, Trash2, Save, ArrowLeft, Loader2, Search } from "lucide-react";
 import { DashboardLayout } from "@/components/dashboard/DashboardLayout";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -14,6 +14,7 @@ import { cn } from "@/lib/utils";
 import { useToast } from "@/hooks/use-toast";
 import { useState, useEffect } from "react";
 import { useInvoice } from "@/hooks/useInvoices";
+import { useBusinessEntitySearch } from "@/hooks/useBusinessEntitySearch";
 
 const invoiceSchema = z.object({
   clientName: z.string().trim().min(1, "Meno klienta je povinné").max(100),
@@ -39,9 +40,11 @@ const NewInvoice = () => {
   const { toast } = useToast();
   const [issueDate, setIssueDate] = useState<Date>();
   const [dueDate, setDueDate] = useState<Date>();
+  const [icoSearch, setIcoSearch] = useState("");
 
   const isEditMode = !!id;
   const { invoice, isLoading: isLoadingInvoice } = useInvoice(id ? Number(id) : 0);
+  const { searchByIco, isSearching, error: searchError } = useBusinessEntitySearch();
 
   const {
     register,
@@ -123,6 +126,48 @@ const NewInvoice = () => {
     }, 0);
   };
 
+  const handleIcoSearch = async () => {
+    if (!icoSearch || icoSearch.trim().length < 3) {
+      toast({
+        title: "Neplatné IČO",
+        description: "IČO musí mať aspoň 3 znaky",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    const businessEntity = await searchByIco(icoSearch);
+
+    if (businessEntity) {
+      setValue("clientName", businessEntity.name);
+      setValue("clientIco", businessEntity.ico);
+      setValue("clientDic", businessEntity.dic || "");
+
+      // Construct address
+      const addressParts = [
+        businessEntity.street,
+        businessEntity.postal_code && businessEntity.city
+          ? `${businessEntity.postal_code} ${businessEntity.city}`
+          : businessEntity.city || businessEntity.postal_code,
+      ].filter(Boolean);
+
+      if (addressParts.length > 0) {
+        setValue("clientAddress", addressParts.join(", "));
+      }
+
+      toast({
+        title: "Firma nájdená",
+        description: `Údaje firmy ${businessEntity.name} boli načítané`,
+      });
+    } else if (searchError) {
+      toast({
+        title: "Firma nenájdená",
+        description: searchError,
+        variant: "destructive",
+      });
+    }
+  };
+
   // Show loading state when fetching invoice data in edit mode
   if (isEditMode && isLoadingInvoice) {
     return (
@@ -186,6 +231,33 @@ const NewInvoice = () => {
               </div>
               <div className="space-y-2">
                 <Label htmlFor="clientIco">IČO *</Label>
+                <div className="flex gap-2">
+                  <Input
+                    id="icoSearch"
+                    value={icoSearch}
+                    onChange={(e) => setIcoSearch(e.target.value)}
+                    onKeyDown={(e) => {
+                      if (e.key === "Enter") {
+                        e.preventDefault();
+                        handleIcoSearch();
+                      }
+                    }}
+                    placeholder="Vyhľadať podľa IČO..."
+                    className="border-primary/30 flex-1"
+                  />
+                  <Button
+                    type="button"
+                    onClick={handleIcoSearch}
+                    disabled={isSearching || !icoSearch}
+                    className="bg-primary hover:bg-primary/90"
+                  >
+                    {isSearching ? (
+                      <Loader2 className="h-4 w-4 animate-spin" />
+                    ) : (
+                      <Search className="h-4 w-4" />
+                    )}
+                  </Button>
+                </div>
                 <Input
                   id="clientIco"
                   {...register("clientIco")}
@@ -194,6 +266,9 @@ const NewInvoice = () => {
                 />
                 {errors.clientIco && (
                   <p className="text-sm text-destructive">{errors.clientIco.message}</p>
+                )}
+                {searchError && (
+                  <p className="text-sm text-yellow-600">{searchError}</p>
                 )}
               </div>
               <div className="space-y-2">
