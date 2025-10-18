@@ -13,38 +13,42 @@ export const useAuth = () => {
         return response.user;
       } catch (error) {
         // If 401, user is not authenticated - this is expected
+        authService.removeToken();
         return null;
       }
     },
     retry: false,
     staleTime: Infinity,
-    enabled: false, // Don't fetch automatically, only manually via refetch
+    enabled: !!authService.getToken(), // Only fetch if token exists
   });
 
   const loginMutation = useMutation({
-    mutationFn: async (credentials: LoginCredentials) => {
-      // Get CSRF cookie before login
-      await authService.getCsrfCookie();
-      return authService.login(credentials);
-    },
+    mutationFn: (credentials: LoginCredentials) => authService.login(credentials),
     onSuccess: (data) => {
       queryClient.setQueryData(['user'], data.user);
+      // Refetch to ensure query is enabled with new token
+      refetch();
     },
   });
 
   const registerMutation = useMutation({
-    mutationFn: async (data: RegisterData) => {
-      // Get CSRF cookie before register
-      await authService.getCsrfCookie();
-      return authService.register(data);
-    },
+    mutationFn: (data: RegisterData) => authService.register(data),
     onSuccess: (data) => {
       queryClient.setQueryData(['user'], data.user);
+      // Refetch to ensure query is enabled with new token
+      refetch();
     },
   });
 
   const logoutMutation = useMutation({
-    mutationFn: () => authService.logout(),
+    mutationFn: async () => {
+      // Only call API if token exists
+      if (authService.getToken()) {
+        await authService.logout();
+      } else {
+        authService.removeToken();
+      }
+    },
     onSuccess: () => {
       queryClient.setQueryData(['user'], null);
       queryClient.clear();

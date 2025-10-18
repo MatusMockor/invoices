@@ -8,7 +8,6 @@ use App\Http\Controllers\Controller;
 use App\Models\User;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Validation\ValidationException;
 
@@ -24,17 +23,23 @@ class AuthController extends Controller
             'password' => 'required',
         ]);
 
-        if (! Auth::attempt($request->only('email', 'password'))) {
+        // Find user by email
+        $user = User::where('email', $request->email)->first();
+
+        // Check if user exists and password is correct
+        if (! $user || ! Hash::check($request->password, $user->password)) {
             throw ValidationException::withMessages([
                 'email' => ['The provided credentials are incorrect.'],
             ]);
         }
 
-        $request->session()->regenerate();
+        // Create token without creating session
+        $token = $user->createToken('auth-token')->plainTextToken;
 
         return response()->json([
             'message' => 'Logged in successfully',
-            'user' => Auth::user(),
+            'user' => $user,
+            'token' => $token,
         ]);
     }
 
@@ -55,11 +60,12 @@ class AuthController extends Controller
             'password' => Hash::make($validated['password']),
         ]);
 
-        Auth::login($user);
+        $token = $user->createToken('auth-token')->plainTextToken;
 
         return response()->json([
             'message' => 'User registered successfully',
             'user' => $user,
+            'token' => $token,
         ], 201);
     }
 
@@ -68,10 +74,8 @@ class AuthController extends Controller
      */
     public function logout(Request $request): JsonResponse
     {
-        Auth::guard('web')->logout();
-
-        $request->session()->invalidate();
-        $request->session()->regenerateToken();
+        // Revoke the current token that was used to authenticate the request
+        $request->user()->currentAccessToken()->delete();
 
         return response()->json([
             'message' => 'Logged out successfully',
@@ -86,5 +90,32 @@ class AuthController extends Controller
         return response()->json([
             'user' => $request->user(),
         ]);
+    }
+
+    /**
+     * Clear old session cookies (helper for migration to token-based auth).
+     */
+    public function clearCookies(): JsonResponse
+    {
+        $response = response()->json([
+            'message' => 'Cookies cleared',
+        ]);
+
+        // Expire all possible session cookies
+        $cookies = ['laravel_session', 'XSRF-TOKEN'];
+
+        // Also try to get any encrypted session cookie name
+        foreach ($cookies as $cookie) {
+            $response->cookie($cookie, '', -1, '/', null, false, false);
+        }
+
+        // Try to clear any possible encrypted cookie names
+        if (isset($_COOKIE)) {
+            foreach (array_keys($_COOKIE) as $cookieName) {
+                $response->cookie($cookieName, '', -1, '/', null, false, false);
+            }
+        }
+
+        return $response;
     }
 }

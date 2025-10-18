@@ -2,8 +2,10 @@ import { Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { FileText, BarChart3, Users, Calendar, CheckCircle2, Zap, Shield } from "lucide-react";
+import { useAuthContext } from "@/contexts/AuthContext";
 
 const Index = () => {
+  const { isAuthenticated } = useAuthContext();
 
   const features = [
     {
@@ -45,16 +47,26 @@ const Index = () => {
         <div className="flex justify-between items-center">
           <h2 className="text-2xl font-bold text-foreground">Faktura Flow</h2>
           <div className="flex gap-3">
-            <Link to="/login">
-              <Button variant="outline" size="lg">
-                Prihlásenie
-              </Button>
-            </Link>
-            <Link to="/register">
-              <Button size="lg">
-                Registrácia
-              </Button>
-            </Link>
+            {isAuthenticated ? (
+              <Link to="/app/dashboard">
+                <Button size="lg">
+                  Prejsť na Dashboard
+                </Button>
+              </Link>
+            ) : (
+              <>
+                <Link to="/login">
+                  <Button variant="outline" size="lg">
+                    Prihlásenie
+                  </Button>
+                </Link>
+                <Link to="/register">
+                  <Button size="lg">
+                    Registrácia
+                  </Button>
+                </Link>
+              </>
+            )}
           </div>
         </div>
       </header>
@@ -93,16 +105,19 @@ const Index = () => {
             </div>
 
             <div className="flex gap-4">
-              <Link to="/register">
-                <Button size="lg" className="mt-4">
-                  Začať teraz
-                </Button>
-              </Link>
-              <Link to="/app/dashboard">
-                <Button variant="outline" size="lg" className="mt-4">
-                  Prejsť na Dashboard
-                </Button>
-              </Link>
+              {isAuthenticated ? (
+                <Link to="/app/dashboard">
+                  <Button size="lg" className="mt-4">
+                    Prejsť na Dashboard
+                  </Button>
+                </Link>
+              ) : (
+                <Link to="/register">
+                  <Button size="lg" className="mt-4">
+                    Začať teraz
+                  </Button>
+                </Link>
+              )}
             </div>
           </div>
 

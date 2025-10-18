@@ -6,6 +6,7 @@ import { BrowserRouter, Routes, Route } from "react-router-dom";
 import { ThemeProvider } from "@/components/ThemeProvider";
 import { AuthProvider } from "@/contexts/AuthContext";
 import { CompanyProvider } from "@/contexts/CompanyContext";
+import { ProtectedRoute } from "@/components/ProtectedRoute";
 import Index from "./pages/Index";
 import Login from "./pages/Login";
 import Register from "./pages/Register";
@@ -44,19 +45,23 @@ const App = () => (
               }}
             >
           <Routes>
+            {/* Public routes */}
             <Route path="/" element={<Index />} />
             <Route path="/login" element={<Login />} />
             <Route path="/register" element={<Register />} />
-            <Route path="/app/dashboard" element={<Dashboard />} />
-            <Route path="/app/invoices" element={<Invoices />} />
-            <Route path="/app/invoices/new" element={<NewInvoice />} />
-            <Route path="/app/invoices/edit/:id" element={<NewInvoice />} />
-            <Route path="/app/clients" element={<Clients />} />
-            <Route path="/app/reports" element={<Reports />} />
-            <Route path="/app/attendance" element={<Attendance />} />
-            <Route path="/app/vehicle-log" element={<VehicleLog />} />
-            <Route path="/app/vehicles" element={<Vehicles />} />
-            <Route path="/app/settings" element={<Settings />} />
+
+            {/* Protected routes - require authentication */}
+            <Route path="/app/dashboard" element={<ProtectedRoute><Dashboard /></ProtectedRoute>} />
+            <Route path="/app/invoices" element={<ProtectedRoute><Invoices /></ProtectedRoute>} />
+            <Route path="/app/invoices/new" element={<ProtectedRoute><NewInvoice /></ProtectedRoute>} />
+            <Route path="/app/invoices/edit/:id" element={<ProtectedRoute><NewInvoice /></ProtectedRoute>} />
+            <Route path="/app/clients" element={<ProtectedRoute><Clients /></ProtectedRoute>} />
+            <Route path="/app/reports" element={<ProtectedRoute><Reports /></ProtectedRoute>} />
+            <Route path="/app/attendance" element={<ProtectedRoute><Attendance /></ProtectedRoute>} />
+            <Route path="/app/vehicle-log" element={<ProtectedRoute><VehicleLog /></ProtectedRoute>} />
+            <Route path="/app/vehicles" element={<ProtectedRoute><Vehicles /></ProtectedRoute>} />
+            <Route path="/app/settings" element={<ProtectedRoute><Settings /></ProtectedRoute>} />
+
             {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
             <Route path="*" element={<NotFound />} />
             </Routes>

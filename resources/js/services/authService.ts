@@ -1,7 +1,5 @@
 import api from '@/lib/axios';
-import axios from 'axios';
-import { getFullUrl } from '@/config/api';
-import type { User, ApiResponse } from '@/types';
+import type { User } from '@/types';
 
 export interface LoginCredentials {
   email: string;
@@ -16,28 +14,41 @@ export interface RegisterData {
   password_confirmation: string;
 }
 
+const TOKEN_KEY = 'auth_token';
+
 export const authService = {
-  async login(credentials: LoginCredentials): Promise<ApiResponse<{ user: User; token: string }>> {
+  async login(credentials: LoginCredentials): Promise<{ message: string; user: User; token: string }> {
     const response = await api.post('/login', credentials);
+    const { token } = response.data;
+    console.log('[AuthService] Login successful, storing token:', token ? '✓' : '✗');
+    localStorage.setItem(TOKEN_KEY, token);
     return response.data;
   },
 
-  async register(data: RegisterData): Promise<ApiResponse<{ user: User; token: string }>> {
+  async register(data: RegisterData): Promise<{ message: string; user: User; token: string }> {
     const response = await api.post('/register', data);
+    const { token } = response.data;
+    console.log('[AuthService] Register successful, storing token:', token ? '✓' : '✗');
+    localStorage.setItem(TOKEN_KEY, token);
     return response.data;
   },
 
   async logout(): Promise<void> {
     await api.post('/logout');
+    localStorage.removeItem(TOKEN_KEY);
   },
 
-  async getCurrentUser(): Promise<ApiResponse<User>> {
+  async getCurrentUser(): Promise<{ user: User }> {
     const response = await api.get('/user');
     return response.data;
   },
 
-  async getCsrfCookie(): Promise<void> {
-    await axios.get(getFullUrl('/sanctum/csrf-cookie'), { withCredentials: true });
+  getToken(): string | null {
+    return localStorage.getItem(TOKEN_KEY);
+  },
+
+  removeToken(): void {
+    localStorage.removeItem(TOKEN_KEY);
   },
 };
 
