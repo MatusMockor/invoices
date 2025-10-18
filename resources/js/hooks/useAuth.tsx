@@ -12,15 +12,12 @@ export const useAuth = () => {
         const response = await authService.getCurrentUser();
         return response.data;
       } catch (error) {
-        return null;
+        throw error;
       }
     },
     retry: false,
     staleTime: Infinity,
-    refetchOnMount: false,
-    refetchOnWindowFocus: false,
-    refetchOnReconnect: false,
-    enabled: false, // Vypneme automatické načítanie
+    enabled: false,
   });
 
   const loginMutation = useMutation({

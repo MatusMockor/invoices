@@ -4,6 +4,7 @@ import { useTheme } from "next-themes";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
+import { Sheet, SheetContent } from "@/components/ui/sheet";
 
 const navItems = [
   { icon: Home, label: "Dashboard", path: "/dashboard" },
@@ -16,12 +17,16 @@ const navItems = [
   { icon: Settings, label: "Nastavenia", path: "/settings" },
 ];
 
-export const Sidebar = () => {
+interface SidebarProps {
+  mobileMenuOpen: boolean;
+  onMobileMenuClose: () => void;
+}
+
+export const Sidebar = ({ mobileMenuOpen, onMobileMenuClose }: SidebarProps) => {
   const { theme, setTheme } = useTheme();
 
-  return (
-    <aside className="fixed left-0 top-0 z-40 h-screen w-64 border-r border-border bg-card/50 backdrop-blur-xl hidden lg:block">
-      <div className="flex flex-col h-full">
+  const sidebarContent = (
+    <div className="flex flex-col h-full">
         <div className="p-6 border-b border-border">
           <div className="flex items-center justify-between">
             <div>
@@ -60,6 +65,7 @@ export const Sidebar = () => {
             <NavLink
               key={item.path}
               to={item.path}
+              onClick={onMobileMenuClose}
               className={({ isActive }) =>
                 cn(
                   "flex items-center gap-3 px-4 py-3 rounded-lg transition-all duration-200",
@@ -77,12 +83,31 @@ export const Sidebar = () => {
         </nav>
 
         <div className="p-4 border-t border-border">
-          <Link to="/invoices/new" className="w-full flex items-center justify-center gap-2 px-4 py-3 bg-gradient-primary text-primary-foreground rounded-lg hover:opacity-90 transition-opacity shadow-elegant-md">
+          <Link 
+            to="/invoices/new" 
+            onClick={onMobileMenuClose}
+            className="w-full flex items-center justify-center gap-2 px-4 py-3 bg-gradient-primary text-primary-foreground rounded-lg hover:opacity-90 transition-opacity shadow-elegant-md"
+          >
             <Plus className="w-5 h-5" />
             <span className="font-medium">Nová faktúra</span>
           </Link>
         </div>
       </div>
-    </aside>
+  );
+
+  return (
+    <>
+      {/* Mobile Sheet */}
+      <Sheet open={mobileMenuOpen} onOpenChange={onMobileMenuClose}>
+        <SheetContent side="left" className="w-64 p-0">
+          {sidebarContent}
+        </SheetContent>
+      </Sheet>
+
+      {/* Desktop Sidebar */}
+      <aside className="fixed left-0 top-16 z-40 h-[calc(100vh-4rem)] w-64 border-r border-border bg-card/50 backdrop-blur-xl hidden lg:block">
+        {sidebarContent}
+      </aside>
+    </>
   );
 };
