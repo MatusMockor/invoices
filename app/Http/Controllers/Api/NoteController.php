@@ -5,57 +5,50 @@ declare(strict_types=1);
 namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
+use App\Http\Requests\NoteIndexRequest;
+use App\Http\Requests\NoteStoreRequest;
 use App\Http\Resources\NoteCollection;
 use App\Http\Resources\NoteResource;
 use App\Models\Note;
+use App\Repositories\Interfaces\NoteRepository;
 use Illuminate\Http\JsonResponse;
-use Illuminate\Http\Request;
 
 class NoteController extends Controller
 {
-    public function index(Request $request): NoteCollection
-    {
-        $validated = $request->validate([
-            'noteable_type' => ['required', 'string'],
-            'noteable_id' => ['required', 'integer'],
-        ]);
+    public function __construct(
+        private readonly NoteRepository $noteRepository
+    ) {}
 
-        $notes = Note::query()
-            ->where('noteable_type', $validated['noteable_type'])
-            ->where('noteable_id', $validated['noteable_id'])
-            ->with('user')
-            ->orderByDesc('created_at')
-            ->get();
+    public function index(NoteIndexRequest $request): NoteCollection
+    {
+        $notes = $this->noteRepository->getByNoteable(
+            $request->getNoteableType(),
+            $request->getNoteableId()
+        );
 
         return new NoteCollection($notes);
     }
 
-    public function store(Request $request): JsonResponse
+    public function store(NoteStoreRequest $request): JsonResponse
     {
-        $validated = $request->validate([
-            'noteable_type' => ['required', 'string'],
-            'noteable_id' => ['required', 'integer'],
-            'body' => ['required', 'string'],
-        ]);
-
         $user = auth()->user();
 
-        $note = Note::create([
+        $note = $this->noteRepository->create([
             'user_id' => $user->id,
             'company_id' => $user->current_company_id,
-            'noteable_type' => $validated['noteable_type'],
-            'noteable_id' => $validated['noteable_id'],
-            'body' => $validated['body'],
+            'noteable_type' => $request->getNoteableType(),
+            'noteable_id' => $request->getNoteableId(),
+            'body' => $request->getBody(),
         ]);
 
-        return (new NoteResource($note->load('user')))
+        return new NoteResource($note->load('user'))
             ->response()
             ->setStatusCode(201);
     }
 
     public function destroy(Note $note): JsonResponse
     {
-        $note->delete();
+        $this->noteRepository->delete($note);
 
         return response()->json(['message' => 'Note deleted successfully']);
     }

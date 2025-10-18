@@ -5,21 +5,27 @@ declare(strict_types=1);
 namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
+use App\Http\Requests\ContactCreateRequest;
+use App\Http\Requests\ContactUpdateRequest;
 use App\Http\Resources\ContactCollection;
 use App\Http\Resources\ContactResource;
 use App\Models\Contact;
+use App\Repositories\Interfaces\ContactRepository;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 
 class ContactController extends Controller
 {
+    public function __construct(
+        private readonly ContactRepository $contactRepository
+    ) {}
+
     public function index(Request $request): ContactCollection
     {
-        $contacts = Contact::query()
-            ->where('company_id', auth()->user()->current_company_id)
-            ->orderBy('last_name')
-            ->orderBy('first_name')
-            ->paginate($request->input('per_page', 15));
+        $contacts = $this->contactRepository->getPaginatedByCompany(
+            auth()->user()->current_company_id,
+            $request->input('per_page', 15)
+        );
 
         return new ContactCollection($contacts);
     }
@@ -29,20 +35,12 @@ class ContactController extends Controller
         return new ContactResource($contact);
     }
 
-    public function store(Request $request): JsonResponse
+    public function store(ContactCreateRequest $request): JsonResponse
     {
-        $validated = $request->validate([
-            'first_name' => ['nullable', 'string', 'max:255'],
-            'last_name' => ['nullable', 'string', 'max:255'],
-            'email' => ['nullable', 'email', 'max:255'],
-            'phone' => ['nullable', 'string', 'max:255'],
-            'position' => ['nullable', 'string', 'max:255'],
-            'notes' => ['nullable', 'string'],
-        ]);
-
+        $validated = $request->validated();
         $user = auth()->user();
 
-        $contact = Contact::create(array_merge($validated, [
+        $contact = $this->contactRepository->create(array_merge($validated, [
             'company_id' => $user->current_company_id,
             'user_id' => $user->id,
         ]));
@@ -52,26 +50,17 @@ class ContactController extends Controller
             ->setStatusCode(201);
     }
 
-    public function update(Request $request, Contact $contact): ContactResource
+    public function update(ContactUpdateRequest $request, Contact $contact): ContactResource
     {
-        $validated = $request->validate([
-            'first_name' => ['nullable', 'string', 'max:255'],
-            'last_name' => ['nullable', 'string', 'max:255'],
-            'email' => ['nullable', 'email', 'max:255'],
-            'phone' => ['nullable', 'string', 'max:255'],
-            'position' => ['nullable', 'string', 'max:255'],
-            'notes' => ['nullable', 'string'],
-        ]);
+        $this->contactRepository->update($contact, $request->validated());
 
-        $contact->update($validated);
-
-        return new ContactResource($contact);
+        return new ContactResource($contact->fresh());
     }
 
     public function destroy(Contact $contact): JsonResponse
     {
         $this->authorizeForUser(auth()->user(), 'delete', $contact);
-        $contact->delete();
+        $this->contactRepository->delete($contact);
 
         return response()->json(['message' => 'Contact deleted successfully']);
     }

@@ -14,15 +14,21 @@ use App\Modules\CRM\Services\Interfaces\ContactService as ContactServiceContract
 use App\Policies\InvoicePolicy;
 use App\Repositories\BusinessEntityRepository;
 use App\Repositories\CompanyRepository;
+use App\Repositories\ContactRepository as AppContactRepository;
 use App\Repositories\Interfaces\BusinessEntityRepository as BusinessEntityRepositoryContract;
 use App\Repositories\Interfaces\CompanyRepository as CompanyRepositoryContract;
+use App\Repositories\Interfaces\ContactRepository as AppContactRepositoryContract;
 use App\Repositories\Interfaces\InvoiceItemRepository as InvoiceItemRepositoryContract;
 use App\Repositories\Interfaces\InvoiceRepository as InvoiceRepositoryContract;
+use App\Repositories\Interfaces\NoteRepository as NoteRepositoryContract;
 use App\Repositories\Interfaces\TripRepository as TripRepositoryContract;
+use App\Repositories\Interfaces\UserRepository as UserRepositoryContract;
 use App\Repositories\Interfaces\VehicleRepository as VehicleRepositoryContract;
 use App\Repositories\InvoiceItemRepository as InvoiceItemRepositoryImpl;
 use App\Repositories\InvoiceRepository as InvoiceRepositoryImpl;
+use App\Repositories\NoteRepository;
 use App\Repositories\TripRepository;
+use App\Repositories\UserRepository;
 use App\Repositories\VehicleRepository;
 use App\Services\BusinessEntityDataService as BusinessEntityDataServiceImpl;
 use App\Services\CompanyAnalyticsService;
@@ -53,6 +59,9 @@ class AppServiceProvider extends ServiceProvider
         $this->app->bind(CompanyRepositoryContract::class, CompanyRepository::class);
         $this->app->bind(VehicleRepositoryContract::class, VehicleRepository::class);
         $this->app->bind(TripRepositoryContract::class, TripRepository::class);
+        $this->app->bind(AppContactRepositoryContract::class, AppContactRepository::class);
+        $this->app->bind(NoteRepositoryContract::class, NoteRepository::class);
+        $this->app->bind(UserRepositoryContract::class, UserRepository::class);
         $this->app->bind(ContactRepositoryContract::class, ContactRepository::class);
 
         // Register service interfaces with Contract suffix for aliases

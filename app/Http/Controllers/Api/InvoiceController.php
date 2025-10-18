@@ -61,7 +61,7 @@ class InvoiceController extends Controller
             auth()->user()->current_company_id
         );
 
-        return (new InvoiceResource($invoice))
+        return new InvoiceResource($invoice)
             ->response()
             ->setStatusCode(201);
     }

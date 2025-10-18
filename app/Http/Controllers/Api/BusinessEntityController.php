@@ -5,16 +5,20 @@ declare(strict_types=1);
 namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
+use App\Http\Requests\FetchByIcoRequest;
+use App\Http\Requests\StoreBusinessEntityRequest;
+use App\Http\Requests\UpdateBusinessEntityRequest;
 use App\Http\Resources\BusinessEntityCollection;
 use App\Http\Resources\BusinessEntityResource;
 use App\Models\BusinessEntity;
+use App\Repositories\Interfaces\BusinessEntityRepository;
 use App\Services\Interfaces\BusinessEntityDataService;
 use Illuminate\Http\JsonResponse;
-use Illuminate\Http\Request;
 
 class BusinessEntityController extends Controller
 {
     public function __construct(
+        private readonly BusinessEntityRepository $businessEntityRepository,
         private readonly BusinessEntityDataService $businessEntityDataService
     ) {}
 
@@ -23,7 +27,7 @@ class BusinessEntityController extends Controller
      */
     public function index(): BusinessEntityCollection
     {
-        $businessEntities = BusinessEntity::orderBy('name')->get();
+        $businessEntities = $this->businessEntityRepository->getAllOrderedByName();
 
         return new BusinessEntityCollection($businessEntities);
     }
@@ -39,22 +43,11 @@ class BusinessEntityController extends Controller
     /**
      * Create a new business entity.
      */
-    public function store(Request $request): JsonResponse
+    public function store(StoreBusinessEntityRequest $request): JsonResponse
     {
-        $validated = $request->validate([
-            'name' => 'required|string|max:255',
-            'ico' => 'required|string|max:20',
-            'dic' => 'nullable|string|max:20',
-            'ic_dph' => 'nullable|string|max:20',
-            'address' => 'required|string|max:255',
-            'city' => 'required|string|max:100',
-            'postal_code' => 'required|string|max:20',
-            'country' => 'required|string|max:100',
-            'phone' => 'nullable|string|max:50',
-            'email' => 'nullable|email|max:255',
-        ]);
+        $validated = $request->validated();
 
-        $businessEntity = BusinessEntity::create([
+        $businessEntity = $this->businessEntityRepository->create([
             'name' => $validated['name'],
             'ico' => $validated['ico'],
             'dic' => $validated['dic'] ?? null,
@@ -63,6 +56,8 @@ class BusinessEntityController extends Controller
             'city' => $validated['city'],
             'postal_code' => $validated['postal_code'],
             'country' => $validated['country'],
+            'phone' => $validated['phone'] ?? null,
+            'email' => $validated['email'] ?? null,
             'company_type' => 'SRO',
             'registration_number' => $validated['ico'],
         ]);
@@ -75,48 +70,20 @@ class BusinessEntityController extends Controller
     /**
      * Update an existing business entity.
      */
-    public function update(Request $request, BusinessEntity $businessEntity): BusinessEntityResource
+    public function update(UpdateBusinessEntityRequest $request, BusinessEntity $businessEntity): BusinessEntityResource
     {
-        $validated = $request->validate([
-            'name' => 'sometimes|required|string|max:255',
-            'ico' => 'sometimes|required|string|max:20',
-            'dic' => 'nullable|string|max:20',
-            'ic_dph' => 'nullable|string|max:20',
-            'address' => 'sometimes|required|string|max:255',
-            'city' => 'sometimes|required|string|max:100',
-            'postal_code' => 'sometimes|required|string|max:20',
-            'country' => 'sometimes|required|string|max:100',
-            'phone' => 'nullable|string|max:50',
-            'email' => 'nullable|email|max:255',
-        ]);
+        $validated = $request->validated();
 
         $updateData = [];
-        if (isset($validated['name'])) {
-            $updateData['name'] = $validated['name'];
-        }
-        if (isset($validated['ico'])) {
-            $updateData['ico'] = $validated['ico'];
-        }
-        if (array_key_exists('dic', $validated)) {
-            $updateData['dic'] = $validated['dic'];
-        }
-        if (array_key_exists('ic_dph', $validated)) {
-            $updateData['ic_dph'] = $validated['ic_dph'];
-        }
-        if (isset($validated['address'])) {
-            $updateData['street'] = $validated['address'];
-        }
-        if (isset($validated['city'])) {
-            $updateData['city'] = $validated['city'];
-        }
-        if (isset($validated['postal_code'])) {
-            $updateData['postal_code'] = $validated['postal_code'];
-        }
-        if (isset($validated['country'])) {
-            $updateData['country'] = $validated['country'];
+        foreach ($validated as $key => $value) {
+            if ($key === 'address') {
+                $updateData['street'] = $value;
+            } else {
+                $updateData[$key] = $value;
+            }
         }
 
-        $businessEntity->update($updateData);
+        $this->businessEntityRepository->update($businessEntity, $updateData);
 
         return new BusinessEntityResource($businessEntity->fresh());
     }
@@ -126,7 +93,7 @@ class BusinessEntityController extends Controller
      */
     public function destroy(BusinessEntity $businessEntity): JsonResponse
     {
-        $businessEntity->delete();
+        $this->businessEntityRepository->delete($businessEntity);
 
         return response()->json([
             'message' => 'Business entity deleted successfully',
@@ -136,13 +103,9 @@ class BusinessEntityController extends Controller
     /**
      * Fetch business entity data by ICO from external service.
      */
-    public function fetchByIco(Request $request): JsonResponse
+    public function fetchByIco(FetchByIcoRequest $request): JsonResponse
     {
-        $request->validate([
-            'ico' => 'required|string|max:20',
-        ]);
-
-        $businessEntityData = $this->businessEntityDataService->findOrCreateBusinessEntity($request->input('ico'));
+        $businessEntityData = $this->businessEntityDataService->findOrCreateBusinessEntity($request->getIco());
 
         if (! $businessEntityData) {
             return response()->json([
