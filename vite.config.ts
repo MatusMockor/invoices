@@ -1,5 +1,4 @@
 import { defineConfig } from 'vite';
-import react from '@vitejs/plugin-react-swc';
 import laravel from 'laravel-vite-plugin';
 import path from 'path';
 
@@ -13,11 +12,22 @@ export default defineConfig({
             ],
             refresh: true,
         }),
-        react(),
     ],
+    esbuild: {
+        jsx: 'automatic',
+        jsxImportSource: 'react',
+    },
     resolve: {
         alias: {
             '@': path.resolve(__dirname, './resources/js'),
+        },
+    },
+    server: {
+        host: '0.0.0.0',
+        port: 5173,
+        strictPort: true,
+        hmr: {
+            host: 'localhost',
         },
     },
 });
