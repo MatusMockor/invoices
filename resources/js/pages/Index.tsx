@@ -98,7 +98,7 @@ const Index = () => {
                   Začať teraz
                 </Button>
               </Link>
-              <Link to="/dashboard">
+              <Link to="/app/dashboard">
                 <Button variant="outline" size="lg" className="mt-4">
                   Prejsť na Dashboard
                 </Button>

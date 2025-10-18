@@ -1,4 +1,6 @@
 import api from '@/lib/axios';
+import axios from 'axios';
+import { getFullUrl } from '@/config/api';
 import type { User, ApiResponse } from '@/types';
 
 export interface LoginCredentials {
@@ -35,7 +37,7 @@ export const authService = {
   },
 
   async getCsrfCookie(): Promise<void> {
-    await api.get('/sanctum/csrf-cookie');
+    await axios.get(getFullUrl('/sanctum/csrf-cookie'), { withCredentials: true });
   },
 };
 

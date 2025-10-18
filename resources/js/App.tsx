@@ -37,21 +37,26 @@ const App = () => (
           <TooltipProvider>
             <Toaster />
             <Sonner />
-            <BrowserRouter>
+            <BrowserRouter
+              future={{
+                v7_startTransition: true,
+                v7_relativeSplatPath: true,
+              }}
+            >
           <Routes>
             <Route path="/" element={<Index />} />
             <Route path="/login" element={<Login />} />
             <Route path="/register" element={<Register />} />
-            <Route path="/dashboard" element={<Dashboard />} />
-            <Route path="/invoices" element={<Invoices />} />
-            <Route path="/invoices/new" element={<NewInvoice />} />
-            <Route path="/invoices/edit/:id" element={<NewInvoice />} />
-            <Route path="/clients" element={<Clients />} />
-            <Route path="/reports" element={<Reports />} />
-            <Route path="/attendance" element={<Attendance />} />
-            <Route path="/vehicle-log" element={<VehicleLog />} />
-            <Route path="/vehicles" element={<Vehicles />} />
-            <Route path="/settings" element={<Settings />} />
+            <Route path="/app/dashboard" element={<Dashboard />} />
+            <Route path="/app/invoices" element={<Invoices />} />
+            <Route path="/app/invoices/new" element={<NewInvoice />} />
+            <Route path="/app/invoices/edit/:id" element={<NewInvoice />} />
+            <Route path="/app/clients" element={<Clients />} />
+            <Route path="/app/reports" element={<Reports />} />
+            <Route path="/app/attendance" element={<Attendance />} />
+            <Route path="/app/vehicle-log" element={<VehicleLog />} />
+            <Route path="/app/vehicles" element={<Vehicles />} />
+            <Route path="/app/settings" element={<Settings />} />
             {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
             <Route path="*" element={<NotFound />} />
             </Routes>

@@ -9,7 +9,7 @@ import {
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import { useCompanyContext } from "@/contexts/CompanyContext";
-import { useCompanies } from "@/hooks/useCompanies";
+import { useCompaniesMinimal } from "@/hooks/useCompanies";
 
 interface TopBarProps {
   onMenuClick: () => void;
@@ -17,7 +17,7 @@ interface TopBarProps {
 
 export const TopBar = ({ onMenuClick }: TopBarProps) => {
   const { selectedCompanyId, setSelectedCompanyId } = useCompanyContext();
-  const { companies, isLoading } = useCompanies();
+  const { companies, isLoading } = useCompaniesMinimal();
 
   return (
     <div className="fixed top-0 left-0 right-0 z-50 h-16 border-b border-border bg-card/95 backdrop-blur-lg">

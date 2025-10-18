@@ -7,14 +7,14 @@ import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip
 import { Sheet, SheetContent } from "@/components/ui/sheet";
 
 const navItems = [
-  { icon: Home, label: "Dashboard", path: "/dashboard" },
-  { icon: FileText, label: "Faktúry", path: "/invoices" },
-  { icon: Users, label: "Klienti", path: "/clients" },
-  { icon: BarChart3, label: "Reporty", path: "/reports" },
-  { icon: Clock, label: "Dochádzka", path: "/attendance" },
-  { icon: Car, label: "Kniha jázd", path: "/vehicle-log" },
-  { icon: Wrench, label: "Vozidlá", path: "/vehicles" },
-  { icon: Settings, label: "Nastavenia", path: "/settings" },
+  { icon: Home, label: "Dashboard", path: "/app/dashboard" },
+  { icon: FileText, label: "Faktúry", path: "/app/invoices" },
+  { icon: Users, label: "Klienti", path: "/app/clients" },
+  { icon: BarChart3, label: "Reporty", path: "/app/reports" },
+  { icon: Clock, label: "Dochádzka", path: "/app/attendance" },
+  { icon: Car, label: "Kniha jázd", path: "/app/vehicle-log" },
+  { icon: Wrench, label: "Vozidlá", path: "/app/vehicles" },
+  { icon: Settings, label: "Nastavenia", path: "/app/settings" },
 ];
 
 interface SidebarProps {
@@ -83,8 +83,8 @@ export const Sidebar = ({ mobileMenuOpen, onMobileMenuClose }: SidebarProps) => 
         </nav>
 
         <div className="p-4 border-t border-border">
-          <Link 
-            to="/invoices/new" 
+          <Link
+            to="/app/invoices/new"
             onClick={onMobileMenuClose}
             className="w-full flex items-center justify-center gap-2 px-4 py-3 bg-gradient-primary text-primary-foreground rounded-lg hover:opacity-90 transition-opacity shadow-elegant-md"
           >

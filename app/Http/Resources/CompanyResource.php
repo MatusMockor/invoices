@@ -4,20 +4,19 @@ declare(strict_types=1);
 
 namespace App\Http\Resources;
 
-use App\Models\BusinessEntity;
+use App\Models\Company;
 use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\JsonResource;
 
 /**
- * @mixin BusinessEntity
+ * @mixin Company
  */
-class BusinessEntityResource extends JsonResource
+class CompanyResource extends JsonResource
 {
     public function toArray(Request $request): array
     {
         return [
             'id' => $this->id,
-            'company_id' => auth()->user()?->current_company_id,
             'name' => $this->name,
             'ico' => $this->ico,
             'dic' => $this->dic,
@@ -26,8 +25,11 @@ class BusinessEntityResource extends JsonResource
             'city' => $this->city,
             'postal_code' => $this->postal_code,
             'country' => $this->country,
-            'phone' => null,
-            'email' => null,
+            'phone' => $this->phone,
+            'email' => $this->email,
+            'bank_account' => null,
+            'iban' => $this->iban,
+            'swift' => $this->swift,
             'created_at' => $this->created_at?->toISOString(),
             'updated_at' => $this->updated_at?->toISOString(),
         ];

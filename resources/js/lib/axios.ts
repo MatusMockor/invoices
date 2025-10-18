@@ -1,13 +1,15 @@
 import axios from 'axios';
+import { API_CONFIG, getApiUrl } from '@/config/api';
 
 const instance = axios.create({
-  baseURL: '/api',
+  baseURL: getApiUrl(),
   headers: {
     'Content-Type': 'application/json',
     'Accept': 'application/json',
   },
   withCredentials: true,
   withXSRFToken: true,
+  timeout: API_CONFIG.timeout,
 });
 
 instance.interceptors.request.use(
@@ -26,10 +28,8 @@ instance.interceptors.request.use(
 instance.interceptors.response.use(
   (response) => response,
   (error) => {
-    // Nepreposielaj na login pri 401 ak ide o /api/user request (check auth status)
-    if (error.response?.status === 401 && !error.config?.url?.includes('/api/user')) {
-      window.location.href = '/login';
-    }
+    // Don't redirect on 401 - let components handle authentication state
+    // The useAuth hook will handle checking if user is authenticated
     return Promise.reject(error);
   }
 );

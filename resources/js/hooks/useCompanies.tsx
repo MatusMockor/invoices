@@ -68,3 +68,23 @@ export const useCompany = (id: number) => {
   };
 };
 
+/**
+ * Hook for getting minimal company data (only id and name) for TopBar/dropdowns.
+ * More performant than useCompanies() as it fetches less data.
+ * Data is cached for 5 minutes to reduce unnecessary API calls.
+ */
+export const useCompaniesMinimal = () => {
+  const { data, isLoading, error } = useQuery({
+    queryKey: ['companies-minimal'],
+    queryFn: () => companyService.getMinimal(),
+    staleTime: 5 * 60 * 1000, // 5 minutes
+    gcTime: 10 * 60 * 1000, // 10 minutes
+  });
+
+  return {
+    companies: data?.data || [],
+    isLoading,
+    error,
+  };
+};
+

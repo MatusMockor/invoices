@@ -59,7 +59,7 @@ class AttendanceServiceProvider extends ServiceProvider
             ->group(__DIR__.'/../routes/web.php');
 
         // API routes
-        \Illuminate\Support\Facades\Route::middleware(['web', 'auth'])
+        \Illuminate\Support\Facades\Route::middleware(['api', 'auth:sanctum'])
             ->prefix('api')
             ->name('api.attendance.')
             ->group(__DIR__.'/../routes/api.php');

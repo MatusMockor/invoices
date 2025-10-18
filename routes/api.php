@@ -3,7 +3,12 @@
 declare(strict_types=1);
 
 use App\Http\Controllers\Api\AuthController;
+use App\Http\Controllers\Api\BusinessEntityController;
 use App\Http\Controllers\Api\CompanyController;
+use App\Http\Controllers\Api\ContactController;
+use App\Http\Controllers\Api\InvoiceController;
+use App\Http\Controllers\Api\NoteController;
+use App\Http\Controllers\Api\ProfileController;
 use Illuminate\Support\Facades\Route;
 
 /*
@@ -17,15 +22,56 @@ use Illuminate\Support\Facades\Route;
 |
 */
 
-// Authentication routes
+// Authentication routes (public)
 Route::post('/register', [AuthController::class, 'register'])->name('api.register');
 Route::post('/login', [AuthController::class, 'login'])->name('api.login');
-Route::post('/logout', [AuthController::class, 'logout'])->middleware('auth:sanctum')->name('api.logout');
 
-// Protected routes
+// Protected routes (require authentication via Sanctum)
 Route::middleware('auth:sanctum')->group(function () {
+    // Auth
     Route::get('/user', [AuthController::class, 'user'])->name('api.user');
+    Route::post('/logout', [AuthController::class, 'logout'])->name('api.logout');
 
-    // Companies API endpoint for frontend
+    // Companies
+    Route::get('/companies/minimal', [CompanyController::class, 'minimal'])->name('api.companies.minimal');
     Route::get('/companies', [CompanyController::class, 'index'])->name('api.companies.index');
+    Route::get('/companies/{company}', [CompanyController::class, 'show'])->name('api.companies.show');
+    Route::post('/companies', [CompanyController::class, 'store'])->name('api.companies.store');
+    Route::put('/companies/{company}', [CompanyController::class, 'update'])->name('api.companies.update');
+    Route::delete('/companies/{company}', [CompanyController::class, 'destroy'])->name('api.companies.destroy');
+    Route::post('/companies/{company}/switch', [CompanyController::class, 'switch'])->name('api.companies.switch');
+
+    // Business Entities
+    Route::get('/business-entities', [BusinessEntityController::class, 'index'])->name('api.business-entities.index');
+    Route::get('/business-entities/{businessEntity}', [BusinessEntityController::class, 'show'])->name('api.business-entities.show');
+    Route::post('/business-entities', [BusinessEntityController::class, 'store'])->name('api.business-entities.store');
+    Route::put('/business-entities/{businessEntity}', [BusinessEntityController::class, 'update'])->name('api.business-entities.update');
+    Route::delete('/business-entities/{businessEntity}', [BusinessEntityController::class, 'destroy'])->name('api.business-entities.destroy');
+    Route::get('/business-entities-fetch-by-ico', [BusinessEntityController::class, 'fetchByIco'])->name('api.business-entities.fetch-by-ico');
+
+    // Invoices
+    Route::get('/invoices', [InvoiceController::class, 'index'])->name('api.invoices.index');
+    Route::get('/invoices/{invoice}', [InvoiceController::class, 'show'])->name('api.invoices.show');
+    Route::post('/invoices', [InvoiceController::class, 'store'])->name('api.invoices.store');
+    Route::put('/invoices/{invoice}', [InvoiceController::class, 'update'])->name('api.invoices.update');
+    Route::delete('/invoices/{invoice}', [InvoiceController::class, 'destroy'])->name('api.invoices.destroy');
+    Route::get('/invoices/{invoice}/pdf/download', [InvoiceController::class, 'downloadPdf'])->name('api.invoices.pdf.download');
+    Route::get('/invoices/{invoice}/pdf/view', [InvoiceController::class, 'viewPdf'])->name('api.invoices.pdf.view');
+
+    // Profile
+    Route::get('/profile', [ProfileController::class, 'show'])->name('api.profile.show');
+    Route::put('/profile', [ProfileController::class, 'update'])->name('api.profile.update');
+    Route::delete('/profile', [ProfileController::class, 'destroy'])->name('api.profile.destroy');
+
+    // Contacts
+    Route::get('/contacts', [ContactController::class, 'index'])->name('api.contacts.index');
+    Route::get('/contacts/{contact}', [ContactController::class, 'show'])->name('api.contacts.show');
+    Route::post('/contacts', [ContactController::class, 'store'])->name('api.contacts.store');
+    Route::put('/contacts/{contact}', [ContactController::class, 'update'])->name('api.contacts.update');
+    Route::delete('/contacts/{contact}', [ContactController::class, 'destroy'])->name('api.contacts.destroy');
+
+    // Notes
+    Route::get('/notes', [NoteController::class, 'index'])->name('api.notes.index');
+    Route::post('/notes', [NoteController::class, 'store'])->name('api.notes.store');
+    Route::delete('/notes/{note}', [NoteController::class, 'destroy'])->name('api.notes.destroy');
 });

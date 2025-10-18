@@ -1,11 +1,13 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { invoiceService, type InvoiceCreateData, type InvoiceUpdateData, type InvoiceFilters } from '@/services';
+import { useCompanyContext } from '@/contexts/CompanyContext';
 
 export const useInvoices = (filters?: InvoiceFilters) => {
   const queryClient = useQueryClient();
+  const { selectedCompanyId } = useCompanyContext();
 
   const { data, isLoading, error } = useQuery({
-    queryKey: ['invoices', filters],
+    queryKey: ['invoices', selectedCompanyId, filters],
     queryFn: () => invoiceService.getAll(filters),
   });
 

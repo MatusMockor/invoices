@@ -5,32 +5,41 @@ import type { User } from '@/types';
 export const useAuth = () => {
   const queryClient = useQueryClient();
 
-  const { data: user, isLoading } = useQuery<User>({
+  const { data: user, isLoading, refetch } = useQuery<User>({
     queryKey: ['user'],
     queryFn: async () => {
       try {
         const response = await authService.getCurrentUser();
-        return response.data;
+        return response.user;
       } catch (error) {
-        throw error;
+        // If 401, user is not authenticated - this is expected
+        return null;
       }
     },
     retry: false,
     staleTime: Infinity,
-    enabled: false,
+    enabled: false, // Don't fetch automatically, only manually via refetch
   });
 
   const loginMutation = useMutation({
-    mutationFn: (credentials: LoginCredentials) => authService.login(credentials),
+    mutationFn: async (credentials: LoginCredentials) => {
+      // Get CSRF cookie before login
+      await authService.getCsrfCookie();
+      return authService.login(credentials);
+    },
     onSuccess: (data) => {
-      queryClient.setQueryData(['user'], data.data.user);
+      queryClient.setQueryData(['user'], data.user);
     },
   });
 
   const registerMutation = useMutation({
-    mutationFn: (data: RegisterData) => authService.register(data),
+    mutationFn: async (data: RegisterData) => {
+      // Get CSRF cookie before register
+      await authService.getCsrfCookie();
+      return authService.register(data);
+    },
     onSuccess: (data) => {
-      queryClient.setQueryData(['user'], data.data.user);
+      queryClient.setQueryData(['user'], data.user);
     },
   });
 
@@ -50,6 +59,7 @@ export const useAuth = () => {
     login: loginMutation.mutateAsync,
     register: registerMutation.mutateAsync,
     logout: logoutMutation.mutateAsync,
+    refetch, // Expose refetch to manually check auth status
     isLoggingIn: loginMutation.isPending,
     isRegistering: registerMutation.isPending,
     isLoggingOut: logoutMutation.isPending,

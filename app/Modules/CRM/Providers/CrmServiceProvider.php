@@ -39,7 +39,7 @@ class CrmServiceProvider extends ServiceProvider
             ->group(__DIR__.'/../routes/web.php');
 
         // Register API routes
-        Route::middleware(['web', 'auth'])
+        Route::middleware(['api', 'auth:sanctum'])
             ->prefix('api/crm')
             ->name('api.crm.')
             ->group(__DIR__.'/../routes/api.php');

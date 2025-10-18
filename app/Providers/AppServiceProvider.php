@@ -29,9 +29,11 @@ use App\Services\CompanyAnalyticsService;
 use App\Services\Interfaces\BusinessEntityDataService as BusinessEntityDataServiceContract;
 use App\Services\Interfaces\CompanyAnalyticsService as CompanyAnalyticsServiceContract;
 use App\Services\Interfaces\InvoicePdfService as InvoicePdfServiceContract;
+use App\Services\Interfaces\InvoiceService as InvoiceServiceContract;
 use App\Services\Interfaces\PayBySquare as PayBySquareContract;
 use App\Services\Interfaces\ScraperService as ScraperServiceContract;
 use App\Services\InvoicePdfService as InvoicePdfServiceImpl;
+use App\Services\InvoiceService as InvoiceServiceImpl;
 use App\Services\PayBySquareService;
 use App\Services\ScraperService as ScraperServiceImpl;
 use Illuminate\Support\Facades\Gate;
@@ -56,6 +58,7 @@ class AppServiceProvider extends ServiceProvider
         // Register service interfaces with Contract suffix for aliases
         $this->app->bind(BusinessEntityDataServiceContract::class, BusinessEntityDataServiceImpl::class);
         $this->app->bind(InvoicePdfServiceContract::class, InvoicePdfServiceImpl::class);
+        $this->app->bind(InvoiceServiceContract::class, InvoiceServiceImpl::class);
         $this->app->bind(ScraperServiceContract::class, ScraperServiceImpl::class);
         $this->app->bind(PayBySquareContract::class, PayBySquareService::class);
         $this->app->bind(CompanyAnalyticsServiceContract::class, CompanyAnalyticsService::class);

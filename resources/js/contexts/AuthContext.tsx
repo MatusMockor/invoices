@@ -9,6 +9,7 @@ interface AuthContextType {
   login: (credentials: any) => Promise<any>;
   register: (data: any) => Promise<any>;
   logout: () => Promise<void>;
+  refetch: () => Promise<any>;
   isLoggingIn: boolean;
   isRegistering: boolean;
   isLoggingOut: boolean;

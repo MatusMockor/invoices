@@ -28,7 +28,7 @@ class TaskManagementServiceProvider extends ServiceProvider
             ->name('taskmanagement.')
             ->group(__DIR__.'/../routes/web.php');
 
-        Route::middleware(['web', 'auth'])
+        Route::middleware(['api', 'auth:sanctum'])
             ->prefix('api/taskmanagement')
             ->name('api.taskmanagement.')
             ->group(__DIR__.'/../routes/api.php');

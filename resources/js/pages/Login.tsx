@@ -20,7 +20,7 @@ const Login = () => {
     try {
       await login({ email, password });
       toast.success("Úspešne prihlásený!");
-      navigate("/dashboard");
+      navigate("/app/dashboard");
     } catch (error: any) {
       toast.error(error.response?.data?.message || "Nesprávny email alebo heslo");
     }

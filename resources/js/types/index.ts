@@ -50,6 +50,7 @@ export interface Invoice {
   invoice_number: string;
   issue_date: string;
   due_date: string;
+  delivery_date: string;
   variable_symbol: string | null;
   constant_symbol: string | null;
   specific_symbol: string | null;
@@ -62,7 +63,9 @@ export interface Invoice {
   created_at: string;
   updated_at: string;
   business_entity?: BusinessEntity;
+  supplier_company?: Company;
   items?: InvoiceItem[];
+  qr_code?: string;
 }
 
 export interface InvoiceItem {
@@ -101,6 +104,32 @@ export interface AttendanceBreak {
   break_type: 'lunch' | 'short' | 'other';
   start_time: string;
   end_time: string | null;
+  created_at: string;
+  updated_at: string;
+}
+
+export interface Note {
+  id: number;
+  user_id: number;
+  company_id: number;
+  noteable_type: string;
+  noteable_id: number;
+  body: string;
+  created_at: string;
+  updated_at: string;
+  user?: User;
+}
+
+export interface SimpleContact {
+  id: number;
+  user_id: number;
+  company_id: number;
+  first_name: string | null;
+  last_name: string | null;
+  email: string | null;
+  phone: string | null;
+  position: string | null;
+  notes: string | null;
   created_at: string;
   updated_at: string;
 }

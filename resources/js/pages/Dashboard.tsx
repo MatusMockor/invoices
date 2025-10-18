@@ -52,8 +52,8 @@ const Dashboard = () => {
           <div className="bg-gradient-card rounded-xl p-6 border border-border shadow-elegant-sm animate-fade-in">
             <h3 className="text-lg font-semibold text-foreground mb-4">Rýchle akcie</h3>
             <div className="space-y-3">
-              <Link 
-                to="/invoices/new"
+              <Link
+                to="/app/invoices/new"
                 className="block w-full text-left p-4 bg-background/50 rounded-lg border border-border hover:border-primary/30 hover:bg-background/80 transition-all duration-200"
               >
                 <p className="font-semibold text-foreground">Vytvoriť faktúru</p>
