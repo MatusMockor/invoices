@@ -22,18 +22,20 @@ class InvoiceSeeder extends Seeder
         // Get the test user
         $testUser = User::first();
 
-        // Get the user's company
-        $company = $testUser->currentCompany ?? Company::where('user_id', $testUser->id)->first();
+        // Get the user's company (supplier)
+        $userCompany = $testUser->currentCompany;
 
-        // Get some business entities
-        $businessEntities = UserCompany::take(3)->get();
-
-        if ($businessEntities->count() > 0) {
-            // Create invoices with different statuses
-            $this->createDraftInvoice($testUser, $company, $businessEntities->first());
-            $this->createSentInvoice($testUser, $company, $businessEntities->skip(1)->first() ?? $businessEntities->first());
-            $this->createPaidInvoice($testUser, $company, $businessEntities->skip(2)->first() ?? $businessEntities->first());
+        if (! $userCompany) {
+            return;
         }
+
+        // Create some external companies (customers)
+        $externalCompanies = Company::factory(3)->create();
+
+        // Create invoices with different statuses
+        $this->createDraftInvoice($testUser, $userCompany, $externalCompanies->first());
+        $this->createSentInvoice($testUser, $userCompany, $externalCompanies->skip(1)->first() ?? $externalCompanies->first());
+        $this->createPaidInvoice($testUser, $userCompany, $externalCompanies->skip(2)->first() ?? $externalCompanies->first());
 
         // Create some random invoices with items
         Invoice::factory(5)
@@ -44,12 +46,12 @@ class InvoiceSeeder extends Seeder
     /**
      * Create a draft invoice with items
      */
-    private function createDraftInvoice(User $user, Company $company, UserCompany $businessEntity): void
+    private function createDraftInvoice(User $user, UserCompany $userCompany, Company $company): void
     {
         $invoice = Invoice::factory()->create([
             'user_id' => $user->id,
-            'supplier_company_id' => $company->id,
-            'business_entity_id' => $businessEntity->id,
+            'supplier_company_id' => $userCompany->id,
+            'company_id' => $company->id,
             'invoice_number' => 'INV-'.date('Y').'-001',
             'issue_date' => Carbon::now(),
             'due_date' => Carbon::now()->addDays(14),
@@ -93,12 +95,12 @@ class InvoiceSeeder extends Seeder
     /**
      * Create a sent invoice with items
      */
-    private function createSentInvoice(User $user, Company $company, UserCompany $businessEntity): void
+    private function createSentInvoice(User $user, UserCompany $userCompany, Company $company): void
     {
         $invoice = Invoice::factory()->create([
             'user_id' => $user->id,
-            'supplier_company_id' => $company->id,
-            'business_entity_id' => $businessEntity->id,
+            'supplier_company_id' => $userCompany->id,
+            'company_id' => $company->id,
             'invoice_number' => 'INV-'.date('Y').'-002',
             'issue_date' => Carbon::now()->subDays(7),
             'due_date' => Carbon::now()->addDays(7),
@@ -147,12 +149,12 @@ class InvoiceSeeder extends Seeder
     /**
      * Create a paid invoice with items
      */
-    private function createPaidInvoice(User $user, Company $company, UserCompany $businessEntity): void
+    private function createPaidInvoice(User $user, UserCompany $userCompany, Company $company): void
     {
         $invoice = Invoice::factory()->create([
             'user_id' => $user->id,
-            'supplier_company_id' => $company->id,
-            'business_entity_id' => $businessEntity->id,
+            'supplier_company_id' => $userCompany->id,
+            'company_id' => $company->id,
             'invoice_number' => 'INV-'.date('Y').'-003',
             'issue_date' => Carbon::now()->subDays(30),
             'due_date' => Carbon::now()->subDays(15),

@@ -54,4 +54,16 @@ class UserCompanyFactory extends Factory
             ];
         });
     }
+
+    /**
+     * Indicate the user that owns the company.
+     */
+    public function forUser($user): Factory
+    {
+        return $this->state(function (array $attributes) use ($user) {
+            return [
+                'user_id' => $user->id,
+            ];
+        });
+    }
 }

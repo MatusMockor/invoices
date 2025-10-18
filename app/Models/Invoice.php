@@ -21,7 +21,7 @@ use Illuminate\Support\Carbon;
  * @property Carbon $issue_date
  * @property Carbon $due_date
  * @property Carbon $delivery_date
- * @property int $business_entity_id
+ * @property int $company_id
  * @property int $supplier_company_id
  * @property float $total_amount
  * @property string $currency
@@ -31,7 +31,7 @@ use Illuminate\Support\Carbon;
  * @property Carbon $created_at
  * @property Carbon $updated_at
  * @property-read User $user
- * @property-read Company $businessEntity
+ * @property-read Company $company
  * @property-read UserCompany $supplierCompany
  * @property-read Collection|InvoiceItem[] $items
  */
@@ -46,7 +46,7 @@ class Invoice extends Model
         'issue_date',
         'due_date',
         'delivery_date',
-        'business_entity_id',
+        'company_id',
         'supplier_company_id',
         'total_amount',
         'currency',
