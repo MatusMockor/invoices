@@ -20,6 +20,7 @@ export const useAuth = () => {
     refetchOnMount: false,
     refetchOnWindowFocus: false,
     refetchOnReconnect: false,
+    enabled: false, // Vypneme automatické načítanie
   });
 
   const loginMutation = useMutation({
