@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace App\Modules\Attendance\tests\Feature\Http\Controllers\Api;
 
-use App\Models\Company;
 use App\Models\User;
+use App\Models\UserCompany;
 use App\Modules\Attendance\Enums\AttendanceStatus;
 use App\Modules\Attendance\Enums\BreakType;
 use App\Modules\Attendance\Enums\WorkType;
@@ -22,14 +22,14 @@ class AttendanceControllerTest extends TestCase
 
     protected User $user;
 
-    protected Company $company;
+    protected UserCompany $company;
 
     protected function setUp(): void
     {
         parent::setUp();
 
         $this->user = User::factory()->create();
-        $this->company = Company::factory()->create(['user_id' => $this->user->id]);
+        $this->company = UserCompany::factory()->create(['user_id' => $this->user->id]);
         $this->user->update(['current_company_id' => $this->company->id]);
 
         $this->actingAs($this->user);
@@ -629,7 +629,7 @@ class AttendanceControllerTest extends TestCase
 
     public function test_user_cannot_access_other_company_attendances(): void
     {
-        $otherCompany = Company::factory()->create();
+        $otherCompany = UserCompany::factory()->create();
         $otherUser = User::factory()->create(['current_company_id' => $otherCompany->id]);
 
         $otherAttendance = Attendance::factory()->create([

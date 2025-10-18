@@ -15,7 +15,7 @@ class InvoiceRepository implements InvoiceRepositoryContract
      */
     public function getAllForCompanyPaginated(int $companyId, int $perPage = 10): LengthAwarePaginator
     {
-        return Invoice::with('businessEntity')
+        return Invoice::with('company')
             ->where('supplier_company_id', $companyId)
             ->paginate($perPage);
     }

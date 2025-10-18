@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Repositories;
 
-use App\Models\BusinessEntity;
+use App\Models\Company;
 use App\Repositories\Interfaces\BusinessEntityRepository as BusinessEntityRepositoryContract;
 use Illuminate\Contracts\Pagination\LengthAwarePaginator;
 use Illuminate\Database\Eloquent\Collection;
@@ -16,7 +16,7 @@ class BusinessEntityRepository implements BusinessEntityRepositoryContract
      */
     public function getAllPaginated(int $perPage = 10): LengthAwarePaginator
     {
-        return BusinessEntity::latest()->paginate($perPage);
+        return Company::latest()->paginate($perPage);
     }
 
     /**
@@ -24,37 +24,37 @@ class BusinessEntityRepository implements BusinessEntityRepositoryContract
      */
     public function getAllOrderedByName(): Collection
     {
-        return BusinessEntity::orderBy('name')->get();
+        return Company::orderBy('name')->get();
     }
 
     /**
      * Find a business entity by ID
      */
-    public function findById(int $id): ?BusinessEntity
+    public function findById(int $id): ?Company
     {
-        return BusinessEntity::find($id);
+        return Company::find($id);
     }
 
     /**
      * Find a business entity by ICO
      */
-    public function findByIco(string $ico): ?BusinessEntity
+    public function findByIco(string $ico): ?Company
     {
-        return BusinessEntity::where('ico', $ico)->first();
+        return Company::where('ico', $ico)->first();
     }
 
     /**
      * Create a new business entity
      */
-    public function create(array $data): BusinessEntity
+    public function create(array $data): Company
     {
-        return BusinessEntity::create($data);
+        return Company::create($data);
     }
 
     /**
      * Update a business entity
      */
-    public function update(BusinessEntity $businessEntity, array $data): bool
+    public function update(Company $businessEntity, array $data): bool
     {
         return $businessEntity->update($data);
     }
@@ -62,7 +62,7 @@ class BusinessEntityRepository implements BusinessEntityRepositoryContract
     /**
      * Delete a business entity
      */
-    public function delete(BusinessEntity $businessEntity): bool
+    public function delete(Company $businessEntity): bool
     {
         return $businessEntity->delete();
     }

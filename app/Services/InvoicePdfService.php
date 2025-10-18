@@ -24,7 +24,7 @@ class InvoicePdfService implements InvoicePdfServiceContract
      */
     public function generatePdf(Invoice $invoice)
     {
-        $invoice->load(['businessEntity', 'items', 'supplierCompany']);
+        $invoice->load(['company', 'items', 'supplierCompany']);
 
         // Generate Pay by Square QR code if we have the necessary data
         $qrCode = null;

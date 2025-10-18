@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Modules\VehicleLogbook\Database\Seeders;
 
-use App\Models\Company;
+use App\Models\UserCompany;
 use App\Modules\VehicleLogbook\Models\Vehicle;
 use Illuminate\Database\Seeder;
 
@@ -16,7 +16,7 @@ class VehicleSeeder extends Seeder
     public function run(): void
     {
         // Get the primary company for the test user
-        $primaryCompany = Company::where('name', 'My Company s.r.o.')->first();
+        $primaryCompany = UserCompany::where('name', 'My Company s.r.o.')->first();
 
         if ($primaryCompany) {
             // Create vehicles for the primary company
@@ -35,7 +35,7 @@ class VehicleSeeder extends Seeder
         }
 
         // Create vehicles for other companies
-        $otherCompanies = Company::where('id', '!=', $primaryCompany->id ?? 0)->get();
+        $otherCompanies = UserCompany::where('id', '!=', $primaryCompany->id ?? 0)->get();
         foreach ($otherCompanies as $company) {
             Vehicle::factory(rand(1, 3))->forCompany($company)->create();
         }

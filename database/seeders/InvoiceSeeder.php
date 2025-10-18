@@ -4,11 +4,11 @@ declare(strict_types=1);
 
 namespace Database\Seeders;
 
-use App\Models\BusinessEntity;
 use App\Models\Company;
 use App\Models\Invoice;
 use App\Models\InvoiceItem;
 use App\Models\User;
+use App\Models\UserCompany;
 use Carbon\Carbon;
 use Illuminate\Database\Seeder;
 
@@ -23,10 +23,10 @@ class InvoiceSeeder extends Seeder
         $testUser = User::first();
 
         // Get the user's company
-        $company = $testUser->currentCompany ?? Company::where('user_id', $testUser->id)->first();
+        $company = $testUser->currentCompany ?? UserCompany::where('user_id', $testUser->id)->first();
 
         // Get some business entities
-        $businessEntities = BusinessEntity::take(3)->get();
+        $businessEntities = Company::take(3)->get();
 
         if ($businessEntities->count() > 0) {
             // Create invoices with different statuses
@@ -44,7 +44,7 @@ class InvoiceSeeder extends Seeder
     /**
      * Create a draft invoice with items
      */
-    private function createDraftInvoice(User $user, Company $company, BusinessEntity $businessEntity): void
+    private function createDraftInvoice(User $user, UserCompany $company, Company $businessEntity): void
     {
         $invoice = Invoice::factory()->create([
             'user_id' => $user->id,
@@ -93,7 +93,7 @@ class InvoiceSeeder extends Seeder
     /**
      * Create a sent invoice with items
      */
-    private function createSentInvoice(User $user, Company $company, BusinessEntity $businessEntity): void
+    private function createSentInvoice(User $user, UserCompany $company, Company $businessEntity): void
     {
         $invoice = Invoice::factory()->create([
             'user_id' => $user->id,
@@ -147,7 +147,7 @@ class InvoiceSeeder extends Seeder
     /**
      * Create a paid invoice with items
      */
-    private function createPaidInvoice(User $user, Company $company, BusinessEntity $businessEntity): void
+    private function createPaidInvoice(User $user, UserCompany $company, Company $businessEntity): void
     {
         $invoice = Invoice::factory()->create([
             'user_id' => $user->id,

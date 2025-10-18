@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace App\Modules\VehicleLogbook\tests\Repositories;
 
-use App\Models\Company;
 use App\Models\User;
+use App\Models\UserCompany;
 use App\Modules\VehicleLogbook\Models\Vehicle;
 use App\Modules\VehicleLogbook\Repositories\Interfaces\VehicleRepository;
 use Illuminate\Foundation\Testing\RefreshDatabase;
@@ -19,7 +19,7 @@ class VehicleRepositoryTest extends TestCase
 
     protected User $user;
 
-    protected Company $company;
+    protected UserCompany $company;
 
     protected function setUp(): void
     {
@@ -30,7 +30,7 @@ class VehicleRepositoryTest extends TestCase
         $this->user = User::factory()->create();
 
         // Create a company for the user
-        $this->company = Company::factory()->create([
+        $this->company = UserCompany::factory()->create([
             'user_id' => $this->user->id,
         ]);
     }
@@ -43,7 +43,7 @@ class VehicleRepositoryTest extends TestCase
         ]);
 
         // Create vehicles for another company
-        $anotherCompany = Company::factory()->create();
+        $anotherCompany = UserCompany::factory()->create();
         Vehicle::factory()->count(2)->create([
             'company_id' => $anotherCompany->id,
         ]);

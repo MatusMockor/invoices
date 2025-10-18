@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace App\Modules\Attendance\tests\Unit\Repositories;
 
-use App\Models\Company;
 use App\Models\User;
+use App\Models\UserCompany;
 use App\Modules\Attendance\Enums\AttendanceStatus;
 use App\Modules\Attendance\Enums\WorkType;
 use App\Modules\Attendance\Models\Attendance;
@@ -23,7 +23,7 @@ class AttendanceRepositoryTest extends TestCase
 
     protected User $user;
 
-    protected Company $company;
+    protected UserCompany $company;
 
     protected function setUp(): void
     {
@@ -31,7 +31,7 @@ class AttendanceRepositoryTest extends TestCase
 
         $this->repository = new AttendanceRepository;
         $this->user = User::factory()->create();
-        $this->company = Company::factory()->create(['user_id' => $this->user->id]);
+        $this->company = UserCompany::factory()->create(['user_id' => $this->user->id]);
     }
 
     public function test_create_stores_new_attendance_record(): void
@@ -410,7 +410,7 @@ class AttendanceRepositoryTest extends TestCase
 
     public function test_get_pending_approvals_filters_by_company(): void
     {
-        $otherCompany = Company::factory()->create();
+        $otherCompany = UserCompany::factory()->create();
 
         $companyAttendance = Attendance::factory()->create([
             'user_id' => $this->user->id,

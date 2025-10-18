@@ -4,10 +4,10 @@ declare(strict_types=1);
 
 namespace Tests\Unit\Services;
 
-use App\Models\BusinessEntity;
 use App\Models\Company;
 use App\Models\Invoice;
 use App\Models\User;
+use App\Models\UserCompany;
 use App\Services\Interfaces\CompanyAnalyticsService;
 use Carbon\Carbon;
 use Illuminate\Foundation\Testing\RefreshDatabase;
@@ -21,11 +21,11 @@ class CompanyAnalyticsServiceTest extends TestCase
 
     protected User $user;
 
-    protected Company $companyA;
+    protected UserCompany $companyA;
 
-    protected Company $companyB;
+    protected UserCompany $companyB;
 
-    protected Company $companyC;
+    protected UserCompany $companyC;
 
     protected function setUp(): void
     {
@@ -38,7 +38,7 @@ class CompanyAnalyticsServiceTest extends TestCase
         $this->user = User::factory()->create();
 
         // Create test companies
-        $this->companyA = Company::factory()->create([
+        $this->companyA = UserCompany::factory()->create([
             'user_id' => $this->user->id,
             'name' => 'Company A',
             'country' => 'Slovakia',
@@ -47,7 +47,7 @@ class CompanyAnalyticsServiceTest extends TestCase
             'created_at' => Carbon::now()->subYear()->subMonths(2),
         ]);
 
-        $this->companyB = Company::factory()->create([
+        $this->companyB = UserCompany::factory()->create([
             'user_id' => $this->user->id,
             'name' => 'Company B',
             'country' => 'Slovakia',
@@ -56,7 +56,7 @@ class CompanyAnalyticsServiceTest extends TestCase
             'created_at' => Carbon::now()->subMonths(6),
         ]);
 
-        $this->companyC = Company::factory()->create([
+        $this->companyC = UserCompany::factory()->create([
             'user_id' => $this->user->id,
             'name' => 'Company C',
             'country' => 'Czech Republic',
@@ -66,12 +66,12 @@ class CompanyAnalyticsServiceTest extends TestCase
         ]);
 
         // Create business entities with matching ICOs for expense tracking
-        $businessEntityA = BusinessEntity::factory()->create([
+        $businessEntityA = Company::factory()->create([
             'name' => 'Business Entity A',
             'ico' => '12345678', // Same as Company A
         ]);
 
-        $businessEntityB = BusinessEntity::factory()->create([
+        $businessEntityB = Company::factory()->create([
             'name' => 'Business Entity B',
             'ico' => '87654321', // Same as Company B
         ]);

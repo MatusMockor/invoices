@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Services\Interfaces;
 
-use App\Models\BusinessEntity;
+use App\Models\Company;
 
 interface BusinessEntityDataService
 {
@@ -16,5 +16,5 @@ interface BusinessEntityDataService
     /**
      * Find or create a business entity by ICO
      */
-    public function findOrCreateBusinessEntity(string $ico): ?BusinessEntity;
+    public function findOrCreateBusinessEntity(string $ico): ?Company;
 }

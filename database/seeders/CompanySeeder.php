@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace Database\Seeders;
 
 use App\Models\Company;
-use App\Models\User;
+use App\Models\UserCompany;
 use Illuminate\Database\Seeder;
 
 class CompanySeeder extends Seeder
@@ -15,24 +15,44 @@ class CompanySeeder extends Seeder
      */
     public function run(): void
     {
-        // Create a primary company for the test user
-        $testUser = User::first();
-        $primaryCompany = Company::factory()->forUser($testUser)->slovak()->create([
-            'name' => 'My Company s.r.o.',
-            'ico' => '12345678',
-            'dic' => '2023456789',
-            'ic_dph' => 'SK2023456789',
+        // Create some business entities with Slovak data
+        Company::factory(3)->slovak()->create();
+
+        // Create a specific business entity with known data
+        Company::factory()->create([
+            'name' => 'ABC Corporation',
+            'ico' => '87654321',
+            'dic' => '2023987654',
+            'ic_dph' => 'SK2023987654',
+            'street' => 'Hlavná 123',
+            'city' => 'Bratislava',
+            'postal_code' => '81101',
+            'country' => 'Slovakia',
         ]);
 
-        // Set as the user's current company
-        $testUser->update(['current_company_id' => $primaryCompany->id]);
+        // Create some random business entities
+        Company::factory(5)->create();
 
-        // Create additional companies for the test user
-        Company::factory(2)->forUser($testUser)->create();
-
-        // Create random companies with their owners
-        Company::factory(5)
-            ->has(User::factory())
-            ->create();
+        // Add user companies to business entities
+        $companies = UserCompany::all();
+        foreach ($companies as $company) {
+            // Check if a business entity with the same ICO already exists
+            $existingEntity = Company::where('ico', $company->ico)->first();
+            if (! $existingEntity) {
+                // Create a new business entity from the company data
+                Company::create([
+                    'name' => $company->name,
+                    'ico' => $company->ico,
+                    'dic' => $company->dic,
+                    'ic_dph' => $company->ic_dph,
+                    'street' => $company->street,
+                    'city' => $company->city,
+                    'postal_code' => $company->postal_code,
+                    'country' => $company->country,
+                    'company_type' => $company->company_type,
+                    'registration_number' => $company->registration_number,
+                ]);
+            }
+        }
     }
 }

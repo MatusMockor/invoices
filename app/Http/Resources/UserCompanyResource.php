@@ -4,14 +4,14 @@ declare(strict_types=1);
 
 namespace App\Http\Resources;
 
-use App\Models\Company;
+use App\Models\UserCompany;
 use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\JsonResource;
 
 /**
- * @mixin Company
+ * @mixin UserCompany
  */
-class CompanyResource extends JsonResource
+class UserCompanyResource extends JsonResource
 {
     public function toArray(Request $request): array
     {

@@ -6,7 +6,7 @@ namespace App\Http\Controllers;
 
 use App\Http\Requests\Companies\CreateCompanyRequest;
 use App\Http\Requests\Companies\UpdateCompanyRequest;
-use App\Models\Company;
+use App\Models\UserCompany;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\View\View;
@@ -39,7 +39,7 @@ class CompanyController extends Controller
         $validated = $request->validated();
         $validated['user_id'] = auth()->id();
 
-        $company = Company::create($validated);
+        $company = UserCompany::create($validated);
 
         return redirect()->route('companies.show', $company)
             ->with('success', 'Company was successfully created');
@@ -48,7 +48,7 @@ class CompanyController extends Controller
     /**
      * Display the specified company.
      */
-    public function show(Company $company): View
+    public function show(UserCompany $company): View
     {
         return view('companies.show', ['company' => $company]);
     }
@@ -56,7 +56,7 @@ class CompanyController extends Controller
     /**
      * Show the form for editing the specified company.
      */
-    public function edit(Company $company): View
+    public function edit(UserCompany $company): View
     {
         return view('companies.edit', ['company' => $company]);
     }
@@ -64,7 +64,7 @@ class CompanyController extends Controller
     /**
      * Update the specified company in database.
      */
-    public function update(UpdateCompanyRequest $request, Company $company): RedirectResponse
+    public function update(UpdateCompanyRequest $request, UserCompany $company): RedirectResponse
     {
         $company->update($request->validated());
 
@@ -75,7 +75,7 @@ class CompanyController extends Controller
     /**
      * Remove the specified company from database.
      */
-    public function destroy(Company $company): RedirectResponse
+    public function destroy(UserCompany $company): RedirectResponse
     {
         $company->delete();
 
@@ -86,7 +86,7 @@ class CompanyController extends Controller
     /**
      * Switch the user's current company.
      */
-    public function switchCompany(Request $request, Company $company): RedirectResponse
+    public function switchCompany(Request $request, UserCompany $company): RedirectResponse
     {
         $user = auth()->user();
 

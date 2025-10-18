@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Feature\Controllers;
 
-use App\Models\BusinessEntity;
+use App\Models\Company;
 use App\Models\User;
 use App\Services\Interfaces\BusinessEntityDataService;
 use Illuminate\Foundation\Testing\RefreshDatabase;
@@ -30,7 +30,7 @@ class BusinessEntityControllerTest extends TestCase
     public function test_index_displays_business_entities_list(): void
     {
         // Create some business entities
-        $businessEntities = BusinessEntity::factory()->count(3)->create();
+        $businessEntities = Company::factory()->count(3)->create();
 
         // Make a request to the index endpoint
         $response = $this->get(route('business-entities.index'));
@@ -84,7 +84,7 @@ class BusinessEntityControllerTest extends TestCase
         $response->assertSessionHas('success', 'Company was successfully created');
 
         // Assert the business entity was created in the database
-        $this->assertDatabaseHas(BusinessEntity::class, [
+        $this->assertDatabaseHas(Company::class, [
             'name' => $businessEntityData['name'],
             'ico' => $businessEntityData['ico'],
         ]);
@@ -96,7 +96,7 @@ class BusinessEntityControllerTest extends TestCase
     public function test_show_response(): void
     {
         // Create a business entity with a specific name
-        $businessEntity = BusinessEntity::factory()->create([
+        $businessEntity = Company::factory()->create([
             'name' => 'Test Company Name XYZ',
         ]);
 
@@ -122,7 +122,7 @@ class BusinessEntityControllerTest extends TestCase
      */
     public function test_edit_displays_form(): void
     {
-        $businessEntity = BusinessEntity::factory()->create();
+        $businessEntity = Company::factory()->create();
 
         $response = $this->get(route('business-entities.edit', $businessEntity));
 
@@ -136,7 +136,7 @@ class BusinessEntityControllerTest extends TestCase
      */
     public function test_update_updates_business_entity(): void
     {
-        $businessEntity = BusinessEntity::factory()->create();
+        $businessEntity = Company::factory()->create();
 
         $updatedData = [
             'name' => 'Updated Company Name',
@@ -159,7 +159,7 @@ class BusinessEntityControllerTest extends TestCase
         $response->assertSessionHas('success', 'Company data was successfully updated');
 
         // Assert the business entity was updated in the database
-        $this->assertDatabaseHas(BusinessEntity::class, [
+        $this->assertDatabaseHas(Company::class, [
             'id' => $businessEntity->id,
             'name' => 'Updated Company Name',
             'street' => 'Updated Address',
@@ -171,7 +171,7 @@ class BusinessEntityControllerTest extends TestCase
      */
     public function test_destroy_deletes_business_entity(): void
     {
-        $businessEntity = BusinessEntity::factory()->create();
+        $businessEntity = Company::factory()->create();
 
         $response = $this->delete(route('business-entities.destroy', $businessEntity));
 
@@ -179,7 +179,7 @@ class BusinessEntityControllerTest extends TestCase
         $response->assertSessionHas('success', 'Company was successfully deleted');
 
         // Assert the business entity was deleted from the database
-        $this->assertDatabaseMissing(BusinessEntity::class, [
+        $this->assertDatabaseMissing(Company::class, [
             'id' => $businessEntity->id,
         ]);
     }
@@ -189,7 +189,7 @@ class BusinessEntityControllerTest extends TestCase
      */
     public function test_fetch_by_ico_returns_business_entity_data(): void
     {
-        $businessEntity = BusinessEntity::factory()->create();
+        $businessEntity = Company::factory()->create();
 
         $response = $this->getJson(route('business-entities.fetch-by-ico', ['ico' => $businessEntity->ico]));
 

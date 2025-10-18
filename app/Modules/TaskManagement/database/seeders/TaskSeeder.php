@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace App\Modules\TaskManagement\Database\Seeders;
 
-use App\Models\Company;
 use App\Models\User;
+use App\Models\UserCompany;
 use App\Modules\TaskManagement\Factories\FollowUpFactory;
 use App\Modules\TaskManagement\Factories\TaskFactory;
 use Illuminate\Database\Seeder;
@@ -14,7 +14,7 @@ class TaskSeeder extends Seeder
 {
     public function run(): void
     {
-        $companies = Company::all();
+        $companies = UserCompany::all();
         $users = User::all();
 
         if ($companies->isEmpty() || $users->isEmpty()) {

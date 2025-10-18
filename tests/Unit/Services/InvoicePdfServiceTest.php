@@ -4,11 +4,11 @@ declare(strict_types=1);
 
 namespace Tests\Unit\Services;
 
-use App\Models\BusinessEntity;
 use App\Models\Company;
 use App\Models\Invoice;
 use App\Models\InvoiceItem;
 use App\Models\User;
+use App\Models\UserCompany;
 use App\Services\InvoicePdfService;
 use Barryvdh\DomPDF\PDF;
 use Illuminate\Foundation\Testing\RefreshDatabase;
@@ -26,10 +26,10 @@ class InvoicePdfServiceTest extends TestCase
 
         // Create test data
         $this->user = User::factory()->create();
-        $this->company = Company::factory()->create([
+        $this->company = UserCompany::factory()->create([
             'user_id' => $this->user->id,
         ]);
-        $this->partner = BusinessEntity::factory()->create();
+        $this->partner = Company::factory()->create();
         $this->invoice = Invoice::factory()->create([
             'user_id' => $this->user->id,
             'supplier_company_id' => $this->company->id,

@@ -4,11 +4,11 @@ declare(strict_types=1);
 
 namespace Feature\Controllers;
 
-use App\Models\BusinessEntity;
 use App\Models\Company;
 use App\Models\Invoice;
 use App\Models\InvoiceItem;
 use App\Models\User;
+use App\Models\UserCompany;
 use App\Services\Interfaces\BusinessEntityDataService;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Foundation\Testing\WithFaker;
@@ -28,7 +28,7 @@ class InvoiceControllerTest extends TestCase
         $user = User::factory()->create();
 
         // Create a company for the user
-        $company = Company::factory()->create([
+        $company = UserCompany::factory()->create([
             'user_id' => $user->id,
         ]);
 
@@ -50,7 +50,7 @@ class InvoiceControllerTest extends TestCase
     public function test_index_displays_invoices_list(): void
     {
         // Create a business entity
-        $businessEntity = BusinessEntity::factory()->create();
+        $businessEntity = Company::factory()->create();
 
         // Create some invoices
         $invoices = Invoice::factory()->count(3)->create([
@@ -79,7 +79,7 @@ class InvoiceControllerTest extends TestCase
      */
     public function test_create_displays_form(): void
     {
-        BusinessEntity::factory()->count(3)->create();
+        Company::factory()->count(3)->create();
 
         $response = $this->get(route('invoices.create'));
 
@@ -95,7 +95,7 @@ class InvoiceControllerTest extends TestCase
     {
         // Mock the BusinessEntityDataService
         $businessEntityDataService = Mockery::mock(BusinessEntityDataService::class);
-        $businessEntity = BusinessEntity::factory()->create();
+        $businessEntity = Company::factory()->create();
         $businessEntityDataService->shouldReceive('findOrCreateBusinessEntity')->once()->andReturn($businessEntity);
         $this->app->instance(BusinessEntityDataService::class, $businessEntityDataService);
 
@@ -181,7 +181,7 @@ class InvoiceControllerTest extends TestCase
     public function test_show_displays_invoice(): void
     {
         // Create a business entity
-        $businessEntity = BusinessEntity::factory()->create();
+        $businessEntity = Company::factory()->create();
 
         // Create an invoice
         $invoice = Invoice::factory()->create([
@@ -213,7 +213,7 @@ class InvoiceControllerTest extends TestCase
     {
         // Mock the BusinessEntityDataService
         $businessEntityDataService = Mockery::mock(BusinessEntityDataService::class);
-        $businessEntity = BusinessEntity::factory()->create();
+        $businessEntity = Company::factory()->create();
         $businessEntityDataService->shouldReceive('findOrCreateBusinessEntity')->once()->andReturn($businessEntity);
         $this->app->instance(BusinessEntityDataService::class, $businessEntityDataService);
 
@@ -273,7 +273,7 @@ class InvoiceControllerTest extends TestCase
     public function test_destroy_deletes_invoice(): void
     {
         // Create a business entity
-        $businessEntity = BusinessEntity::factory()->create();
+        $businessEntity = Company::factory()->create();
 
         // Create an invoice
         $invoice = Invoice::factory()->create([

@@ -7,14 +7,14 @@ namespace App\Http\Controllers\Api;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\StoreCompanyRequest;
 use App\Http\Requests\UpdateCompanyRequest;
-use App\Http\Resources\CompanyCollection;
 use App\Http\Resources\CompanyMinimalCollection;
-use App\Http\Resources\CompanyResource;
-use App\Models\Company;
+use App\Http\Resources\UserCompanyCollection;
+use App\Http\Resources\UserCompanyResource;
+use App\Models\UserCompany;
 use App\Repositories\Interfaces\CompanyRepository;
 use Illuminate\Http\JsonResponse;
 
-class CompanyController extends Controller
+class UserCompanyController extends Controller
 {
     public function __construct(
         private readonly CompanyRepository $companyRepository
@@ -23,11 +23,11 @@ class CompanyController extends Controller
     /**
      * Get all companies for the authenticated user.
      */
-    public function index(): CompanyCollection
+    public function index(): UserCompanyCollection
     {
         $companies = auth()->user()->companies()->orderBy('name')->get();
 
-        return new CompanyCollection($companies);
+        return new UserCompanyCollection($companies);
     }
 
     /**
@@ -43,35 +43,35 @@ class CompanyController extends Controller
         return new CompanyMinimalCollection($companies);
     }
 
-    public function show(Company $company): CompanyResource
+    public function show(UserCompany $company): UserCompanyResource
     {
         $this->authorize('view', $company);
 
-        return new CompanyResource($company);
+        return new UserCompanyResource($company);
     }
 
     public function store(StoreCompanyRequest $request): JsonResponse
     {
         $company = $this->companyRepository->create($request->getData());
 
-        return new CompanyResource($company)
+        return new UserCompanyResource($company)
             ->response()
             ->setStatusCode(201);
     }
 
-    public function update(UpdateCompanyRequest $request, Company $company): CompanyResource
+    public function update(UpdateCompanyRequest $request, UserCompany $company): UserCompanyResource
     {
         $this->authorize('update', $company);
 
         $this->companyRepository->update($company, $request->getData());
 
-        return new CompanyResource($company->fresh());
+        return new UserCompanyResource($company->fresh());
     }
 
     /**
      * Delete a company.
      */
-    public function destroy(Company $company): JsonResponse
+    public function destroy(UserCompany $company): JsonResponse
     {
         $this->authorize('delete', $company);
 
@@ -85,7 +85,7 @@ class CompanyController extends Controller
     /**
      * Switch the user's active company.
      */
-    public function switch(Company $company): CompanyResource
+    public function switch(UserCompany $company): UserCompanyResource
     {
         $this->authorize('view', $company);
 
@@ -93,6 +93,6 @@ class CompanyController extends Controller
         $user->current_company_id = $company->id;
         $user->save();
 
-        return new CompanyResource($company);
+        return new UserCompanyResource($company);
     }
 }

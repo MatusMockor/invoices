@@ -31,8 +31,8 @@ use Illuminate\Support\Carbon;
  * @property Carbon $created_at
  * @property Carbon $updated_at
  * @property-read User $user
- * @property-read BusinessEntity $businessEntity
- * @property-read Company $supplierCompany
+ * @property-read Company $businessEntity
+ * @property-read UserCompany $supplierCompany
  * @property-read Collection|InvoiceItem[] $items
  */
 #[ObservedBy([InvoiceObserver::class])]
@@ -70,14 +70,14 @@ class Invoice extends Model
         return $this->belongsTo(User::class);
     }
 
-    public function businessEntity(): BelongsTo
+    public function company(): BelongsTo
     {
-        return $this->belongsTo(BusinessEntity::class);
+        return $this->belongsTo(Company::class);
     }
 
     public function supplierCompany(): BelongsTo
     {
-        return $this->belongsTo(Company::class, 'supplier_company_id');
+        return $this->belongsTo(UserCompany::class, 'supplier_company_id');
     }
 
     public function items(): HasMany

@@ -145,7 +145,7 @@ class TaskValidationTest extends TestCase
     public function test_valid_task_creation_passes_validation(): void
     {
         $user = User::factory()->create();
-        $company = \App\Models\Company::factory()->create(['user_id' => $user->id]);
+        $company = \App\Models\UserCompany::factory()->create(['user_id' => $user->id]);
         $assignedUser = User::factory()->create();
 
         $request = new CreateTaskRequest;

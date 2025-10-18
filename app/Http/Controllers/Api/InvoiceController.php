@@ -47,7 +47,7 @@ class InvoiceController extends Controller
      */
     public function show(Invoice $invoice): InvoiceResource
     {
-        $invoice->load(['businessEntity', 'supplierCompany', 'items']);
+        $invoice->load(['company', 'supplierCompany', 'items']);
         $invoice->qr_code = $this->generateQrCode($invoice);
 
         return new InvoiceResource($invoice);
@@ -64,7 +64,7 @@ class InvoiceController extends Controller
             auth()->user()->current_company_id
         );
 
-        $invoice->load(['businessEntity', 'supplierCompany', 'items']);
+        $invoice->load(['company', 'supplierCompany', 'items']);
         $invoice->qr_code = $this->generateQrCode($invoice);
 
         return new InvoiceResource($invoice)
@@ -83,7 +83,7 @@ class InvoiceController extends Controller
             auth()->user()->current_company_id
         );
 
-        $updatedInvoice->load(['businessEntity', 'supplierCompany', 'items']);
+        $updatedInvoice->load(['company', 'supplierCompany', 'items']);
         $updatedInvoice->qr_code = $this->generateQrCode($updatedInvoice);
 
         return new InvoiceResource($updatedInvoice);

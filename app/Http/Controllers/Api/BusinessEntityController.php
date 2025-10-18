@@ -10,7 +10,7 @@ use App\Http\Requests\StoreBusinessEntityRequest;
 use App\Http\Requests\UpdateBusinessEntityRequest;
 use App\Http\Resources\BusinessEntityCollection;
 use App\Http\Resources\BusinessEntityResource;
-use App\Models\BusinessEntity;
+use App\Models\Company;
 use App\Repositories\Interfaces\BusinessEntityRepository;
 use App\Services\Interfaces\BusinessEntityDataService;
 use Illuminate\Http\JsonResponse;
@@ -35,7 +35,7 @@ class BusinessEntityController extends Controller
     /**
      * Get a single business entity by ID.
      */
-    public function show(BusinessEntity $businessEntity): BusinessEntityResource
+    public function show(Company $businessEntity): BusinessEntityResource
     {
         return new BusinessEntityResource($businessEntity);
     }
@@ -70,7 +70,7 @@ class BusinessEntityController extends Controller
     /**
      * Update an existing business entity.
      */
-    public function update(UpdateBusinessEntityRequest $request, BusinessEntity $businessEntity): BusinessEntityResource
+    public function update(UpdateBusinessEntityRequest $request, Company $businessEntity): BusinessEntityResource
     {
         $validated = $request->validated();
 
@@ -91,7 +91,7 @@ class BusinessEntityController extends Controller
     /**
      * Delete a business entity.
      */
-    public function destroy(BusinessEntity $businessEntity): JsonResponse
+    public function destroy(Company $businessEntity): JsonResponse
     {
         $this->businessEntityRepository->delete($businessEntity);
 

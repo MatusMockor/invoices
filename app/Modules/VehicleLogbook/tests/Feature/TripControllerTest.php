@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace App\Modules\VehicleLogbook\tests\Feature;
 
-use App\Models\Company;
 use App\Models\User;
+use App\Models\UserCompany;
 use App\Modules\VehicleLogbook\Models\Trip;
 use App\Modules\VehicleLogbook\Models\Vehicle;
 use Illuminate\Foundation\Testing\RefreshDatabase;
@@ -18,7 +18,7 @@ class TripControllerTest extends TestCase
 
     protected User $user;
 
-    protected Company $company;
+    protected UserCompany $company;
 
     protected Vehicle $vehicle;
 
@@ -31,7 +31,7 @@ class TripControllerTest extends TestCase
         $this->actingAs($this->user);
 
         // Create a company for the user
-        $this->company = Company::factory()->create([
+        $this->company = UserCompany::factory()->create([
             'user_id' => $this->user->id,
         ]);
 

@@ -30,8 +30,8 @@ use Spatie\Permission\Traits\HasRoles;
  * @property int|null $current_company_id
  * @property Carbon $created_at
  * @property Carbon $updated_at
- * @property-read Collection|Company[] $companies
- * @property-read Company|null $currentCompany
+ * @property-read Collection|UserCompany[] $companies
+ * @property-read UserCompany|null $currentCompany
  * @property-read DatabaseNotificationCollection|\Illuminate\Notifications\DatabaseNotification[] $notifications
  */
 #[ObservedBy([UserObserver::class])]
@@ -64,7 +64,7 @@ class User extends Authenticatable
 
     public function companies(): HasMany
     {
-        return $this->hasMany(Company::class);
+        return $this->hasMany(UserCompany::class);
     }
 
     /**
@@ -72,13 +72,13 @@ class User extends Authenticatable
      */
     public function currentCompany(): BelongsTo
     {
-        return $this->belongsTo(Company::class, 'current_company_id');
+        return $this->belongsTo(UserCompany::class, 'current_company_id');
     }
 
     /**
      * Switch the user's current company.
      */
-    public function switchCompany(Company $company): bool
+    public function switchCompany(UserCompany $company): bool
     {
         // Verify the company belongs to this user
         if ($company->user_id !== $this->id) {

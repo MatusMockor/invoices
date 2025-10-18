@@ -4,10 +4,10 @@ declare(strict_types=1);
 
 namespace Database\Factories;
 
-use App\Models\BusinessEntity;
 use App\Models\Company;
 use App\Models\Invoice;
 use App\Models\User;
+use App\Models\UserCompany;
 use Illuminate\Database\Eloquent\Factories\Factory;
 
 /**
@@ -35,8 +35,8 @@ class InvoiceFactory extends Factory
             'issue_date' => $this->faker->dateTimeBetween('-30 days', 'now'),
             'due_date' => $this->faker->dateTimeBetween('now', '+30 days'),
             'delivery_date' => $this->faker->dateTimeBetween('-15 days', '+15 days'),
-            'business_entity_id' => BusinessEntity::factory(),
-            'supplier_company_id' => Company::factory(),
+            'business_entity_id' => Company::factory(),
+            'supplier_company_id' => UserCompany::factory(),
             'total_amount' => $this->faker->randomFloat(2, 100, 10000),
             'currency' => 'EUR',
             'constant_symbol' => $this->faker->optional(0.7)->numerify('####'),

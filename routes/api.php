@@ -4,11 +4,11 @@ declare(strict_types=1);
 
 use App\Http\Controllers\Api\AuthController;
 use App\Http\Controllers\Api\BusinessEntityController;
-use App\Http\Controllers\Api\CompanyController;
 use App\Http\Controllers\Api\ContactController;
 use App\Http\Controllers\Api\InvoiceController;
 use App\Http\Controllers\Api\NoteController;
 use App\Http\Controllers\Api\ProfileController;
+use App\Http\Controllers\Api\UserCompanyController;
 use Illuminate\Support\Facades\Route;
 
 /*
@@ -39,13 +39,13 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::post('/logout', [AuthController::class, 'logout'])->name('api.logout');
 
     // Companies
-    Route::get('/companies/minimal', [CompanyController::class, 'minimal'])->name('api.companies.minimal');
-    Route::get('/companies', [CompanyController::class, 'index'])->name('api.companies.index');
-    Route::get('/companies/{company}', [CompanyController::class, 'show'])->name('api.companies.show');
-    Route::post('/companies', [CompanyController::class, 'store'])->name('api.companies.store');
-    Route::put('/companies/{company}', [CompanyController::class, 'update'])->name('api.companies.update');
-    Route::delete('/companies/{company}', [CompanyController::class, 'destroy'])->name('api.companies.destroy');
-    Route::post('/companies/{company}/switch', [CompanyController::class, 'switch'])->name('api.companies.switch');
+    Route::get('/user/companies/minimal', [UserCompanyController::class, 'minimal'])->name('api.companies.minimal');
+    Route::get('/companies', [UserCompanyController::class, 'index'])->name('api.companies.index');
+    Route::get('/companies/{company}', [UserCompanyController::class, 'show'])->name('api.companies.show');
+    Route::post('/companies', [UserCompanyController::class, 'store'])->name('api.companies.store');
+    Route::put('/companies/{company}', [UserCompanyController::class, 'update'])->name('api.companies.update');
+    Route::delete('/companies/{company}', [UserCompanyController::class, 'destroy'])->name('api.companies.destroy');
+    Route::post('/companies/{company}/switch', [UserCompanyController::class, 'switch'])->name('api.companies.switch');
 
     // Business Entities
     Route::get('/business-entities', [BusinessEntityController::class, 'index'])->name('api.business-entities.index');

@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace App\Modules\Attendance\tests\Feature\Http\Requests;
 
-use App\Models\Company;
 use App\Models\User;
+use App\Models\UserCompany;
 use App\Modules\Attendance\Enums\WorkType;
 use App\Modules\Attendance\Http\Requests\CheckInRequest;
 use Illuminate\Foundation\Testing\RefreshDatabase;
@@ -18,14 +18,14 @@ class CheckInRequestTest extends TestCase
 
     protected User $user;
 
-    protected Company $company;
+    protected UserCompany $company;
 
     protected function setUp(): void
     {
         parent::setUp();
 
         $this->user = User::factory()->create();
-        $this->company = Company::factory()->create(['user_id' => $this->user->id]);
+        $this->company = UserCompany::factory()->create(['user_id' => $this->user->id]);
         $this->user->update(['current_company_id' => $this->company->id]);
 
         $this->actingAs($this->user);

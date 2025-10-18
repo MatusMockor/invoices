@@ -4,10 +4,10 @@ declare(strict_types=1);
 
 namespace Feature\Controllers;
 
-use App\Models\BusinessEntity;
 use App\Models\Company;
 use App\Models\Invoice;
 use App\Models\User;
+use App\Models\UserCompany;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
 
@@ -17,15 +17,15 @@ class InvoiceAuthorizationTest extends TestCase
 
     protected User $user;
 
-    protected Company $company1;
+    protected UserCompany $company1;
 
-    protected Company $company2;
+    protected UserCompany $company2;
 
     protected Invoice $ownInvoice;
 
     protected Invoice $otherInvoice;
 
-    protected BusinessEntity $businessEntity;
+    protected Company $businessEntity;
 
     protected function setUp(): void
     {
@@ -35,11 +35,11 @@ class InvoiceAuthorizationTest extends TestCase
         $this->user = User::factory()->create();
 
         // Create two companies for the user
-        $this->company1 = Company::factory()->create([
+        $this->company1 = UserCompany::factory()->create([
             'user_id' => $this->user->id,
         ]);
 
-        $this->company2 = Company::factory()->create([
+        $this->company2 = UserCompany::factory()->create([
             'user_id' => $this->user->id,
         ]);
 
@@ -47,7 +47,7 @@ class InvoiceAuthorizationTest extends TestCase
         $this->user->update(['current_company_id' => $this->company1->id]);
 
         // Create a business entity for invoices
-        $this->businessEntity = BusinessEntity::factory()->create();
+        $this->businessEntity = Company::factory()->create();
 
         // Create an invoice for the current company
         $this->ownInvoice = Invoice::factory()->create([

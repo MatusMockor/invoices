@@ -4,10 +4,10 @@ declare(strict_types=1);
 
 namespace Tests\Feature\Http\Controllers;
 
-use App\Models\BusinessEntity;
 use App\Models\Company;
 use App\Models\Invoice;
 use App\Models\User;
+use App\Models\UserCompany;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
 
@@ -19,7 +19,7 @@ class InvoicePdfControllerTest extends TestCase
     {
         // Create a user with a company
         $user = User::factory()->create();
-        $company = Company::factory()->create([
+        $company = UserCompany::factory()->create([
             'user_id' => $user->id,
         ]);
 
@@ -28,7 +28,7 @@ class InvoicePdfControllerTest extends TestCase
         $user->save();
 
         // Create a business entity
-        $businessEntity = BusinessEntity::factory()->create();
+        $businessEntity = Company::factory()->create();
 
         // Create an invoice
         $invoice = Invoice::factory()->create([
@@ -53,7 +53,7 @@ class InvoicePdfControllerTest extends TestCase
     {
         // Create a user with a company
         $user = User::factory()->create();
-        $company = Company::factory()->create([
+        $company = UserCompany::factory()->create([
             'user_id' => $user->id,
         ]);
 
@@ -62,7 +62,7 @@ class InvoicePdfControllerTest extends TestCase
         $user->save();
 
         // Create a business entity
-        $businessEntity = BusinessEntity::factory()->create();
+        $businessEntity = Company::factory()->create();
 
         // Create an invoice
         $invoice = Invoice::factory()->create([
@@ -86,7 +86,7 @@ class InvoicePdfControllerTest extends TestCase
     {
         // Create a user with a company
         $user1 = User::factory()->create();
-        $company1 = Company::factory()->create([
+        $company1 = UserCompany::factory()->create([
             'user_id' => $user1->id,
         ]);
 
@@ -95,7 +95,7 @@ class InvoicePdfControllerTest extends TestCase
         $user1->save();
 
         // Create a business entity
-        $businessEntity = BusinessEntity::factory()->create();
+        $businessEntity = Company::factory()->create();
 
         // Create an invoice for user1
         $invoice = Invoice::factory()->create([

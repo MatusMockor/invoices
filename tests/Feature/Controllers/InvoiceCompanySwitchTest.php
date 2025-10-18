@@ -4,10 +4,10 @@ declare(strict_types=1);
 
 namespace Tests\Feature\Controllers;
 
-use App\Models\BusinessEntity;
 use App\Models\Company;
 use App\Models\Invoice;
 use App\Models\User;
+use App\Models\UserCompany;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
 
@@ -25,11 +25,11 @@ class InvoiceCompanySwitchTest extends TestCase
         $user = User::factory()->create();
 
         // Create two companies for the user
-        $company1 = Company::factory()->create([
+        $company1 = UserCompany::factory()->create([
             'user_id' => $user->id,
         ]);
 
-        $company2 = Company::factory()->create([
+        $company2 = UserCompany::factory()->create([
             'user_id' => $user->id,
         ]);
 
@@ -37,7 +37,7 @@ class InvoiceCompanySwitchTest extends TestCase
         $user->update(['current_company_id' => $company1->id]);
 
         // Create a business entity for invoices
-        $businessEntity = BusinessEntity::factory()->create();
+        $businessEntity = Company::factory()->create();
 
         // Create an invoice for the first company
         $invoice1 = Invoice::factory()->create([
@@ -85,11 +85,11 @@ class InvoiceCompanySwitchTest extends TestCase
         $user = User::factory()->create();
 
         // Create two companies for the user
-        $company1 = Company::factory()->create([
+        $company1 = UserCompany::factory()->create([
             'user_id' => $user->id,
         ]);
 
-        $company2 = Company::factory()->create([
+        $company2 = UserCompany::factory()->create([
             'user_id' => $user->id,
         ]);
 
@@ -97,7 +97,7 @@ class InvoiceCompanySwitchTest extends TestCase
         $user->update(['current_company_id' => $company1->id]);
 
         // Create a business entity for invoices
-        $businessEntity = BusinessEntity::factory()->create();
+        $businessEntity = Company::factory()->create();
 
         // Create an invoice for the first company
         $invoice1 = Invoice::factory()->create([
@@ -145,11 +145,11 @@ class InvoiceCompanySwitchTest extends TestCase
         $user = User::factory()->create();
 
         // Create two companies for the user
-        $company1 = Company::factory()->create([
+        $company1 = UserCompany::factory()->create([
             'user_id' => $user->id,
         ]);
 
-        $company2 = Company::factory()->create([
+        $company2 = UserCompany::factory()->create([
             'user_id' => $user->id,
         ]);
 
@@ -157,7 +157,7 @@ class InvoiceCompanySwitchTest extends TestCase
         $user->update(['current_company_id' => $company1->id]);
 
         // Create a business entity for invoices
-        $businessEntity = BusinessEntity::factory()->create();
+        $businessEntity = Company::factory()->create();
 
         // Create an invoice for the first company
         $invoice1 = Invoice::factory()->create([

@@ -4,21 +4,21 @@ declare(strict_types=1);
 
 namespace Database\Factories;
 
-use App\Models\Company;
 use App\Models\User;
+use App\Models\UserCompany;
 use Illuminate\Database\Eloquent\Factories\Factory;
 
 /**
- * @extends \Illuminate\Database\Eloquent\Factories\Factory<\App\Models\Company>
+ * @extends \Illuminate\Database\Eloquent\Factories\Factory<\App\Models\UserCompany>
  */
-class CompanyFactory extends Factory
+class UserCompanyFactory extends Factory
 {
     /**
      * The name of the factory's corresponding model.
      *
      * @var string
      */
-    protected $model = Company::class;
+    protected $model = UserCompany::class;
 
     /**
      * Define the model's default state.

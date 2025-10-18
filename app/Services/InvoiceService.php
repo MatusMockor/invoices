@@ -43,7 +43,7 @@ class InvoiceService implements InvoiceServiceContract
 
             $this->createInvoiceItems($invoice, $data['items']);
 
-            return $invoice->load(['businessEntity', 'items']);
+            return $invoice->load(['company', 'items']);
         });
     }
 
@@ -73,7 +73,7 @@ class InvoiceService implements InvoiceServiceContract
                 $this->updateInvoiceItems($invoice, $data['items']);
             }
 
-            return $invoice->fresh()->load(['businessEntity', 'items']);
+            return $invoice->fresh()->load(['company', 'items']);
         });
     }
 

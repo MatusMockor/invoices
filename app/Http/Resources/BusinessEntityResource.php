@@ -4,12 +4,12 @@ declare(strict_types=1);
 
 namespace App\Http\Resources;
 
-use App\Models\BusinessEntity;
+use App\Models\Company;
 use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\JsonResource;
 
 /**
- * @mixin BusinessEntity
+ * @mixin Company
  */
 class BusinessEntityResource extends JsonResource
 {

@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace App\Modules\Attendance\Factories;
 
-use App\Models\Company;
 use App\Models\User;
+use App\Models\UserCompany;
 use App\Modules\Attendance\Models\WorkSchedule;
 use Illuminate\Database\Eloquent\Factories\Factory;
 
@@ -16,7 +16,7 @@ class WorkScheduleFactory extends Factory
     public function definition(): array
     {
         return [
-            'company_id' => Company::factory(),
+            'company_id' => UserCompany::factory(),
             'user_id' => User::factory(),
             'day_of_week' => $this->faker->numberBetween(1, 5), // Monday to Friday
             'start_time' => '08:00:00',

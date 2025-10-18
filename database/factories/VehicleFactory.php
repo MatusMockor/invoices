@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Database\Factories;
 
-use App\Models\Company;
+use App\Models\UserCompany;
 use App\Modules\VehicleLogbook\Models\Vehicle;
 use Illuminate\Database\Eloquent\Factories\Factory;
 
@@ -28,7 +28,7 @@ class VehicleFactory extends Factory
     public function definition(): array
     {
         return [
-            'company_id' => Company::factory(),
+            'company_id' => UserCompany::factory(),
             'type' => $this->faker->randomElement(['Car', 'Van', 'Truck', 'Motorcycle']),
             'license_plate' => strtoupper($this->faker->bothify('??###??')),
         ];
@@ -37,7 +37,7 @@ class VehicleFactory extends Factory
     /**
      * Indicate that the vehicle belongs to the given company.
      */
-    public function forCompany(Company $company): self
+    public function forCompany(UserCompany $company): self
     {
         return $this->state(function (array $attributes) use ($company) {
             return [

@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace App\Modules\Attendance\Models;
 
-use App\Models\Company;
 use App\Models\User;
+use App\Models\UserCompany;
 use App\Modules\Attendance\Enums\AttendanceStatus;
 use App\Modules\Attendance\Enums\WorkType;
 use App\Modules\Attendance\Factories\AttendanceFactory;
@@ -66,7 +66,7 @@ class Attendance extends Model
      */
     public function company(): BelongsTo
     {
-        return $this->belongsTo(Company::class);
+        return $this->belongsTo(UserCompany::class);
     }
 
     /**

@@ -33,6 +33,6 @@ class Note extends Model
 
     public function company(): BelongsTo
     {
-        return $this->belongsTo(Company::class);
+        return $this->belongsTo(UserCompany::class);
     }
 }

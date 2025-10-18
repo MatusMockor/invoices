@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Modules\VehicleLogbook\Models;
 
-use App\Models\Company;
+use App\Models\UserCompany;
 use Database\Factories\VehicleFactory;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
@@ -22,7 +22,7 @@ use Illuminate\Support\Carbon;
  * @property string $license_plate
  * @property Carbon $created_at
  * @property Carbon $updated_at
- * @property-read Company $company
+ * @property-read UserCompany $company
  * @property-read Collection|Trip[] $trips
  */
 class Vehicle extends Model
@@ -53,9 +53,9 @@ class Vehicle extends Model
     /**
      * Get the company that owns the vehicle.
      */
-    public function company(): BelongsTo
+    public function userCompany(): BelongsTo
     {
-        return $this->belongsTo(Company::class);
+        return $this->belongsTo(UserCompany::class);
     }
 
     /**

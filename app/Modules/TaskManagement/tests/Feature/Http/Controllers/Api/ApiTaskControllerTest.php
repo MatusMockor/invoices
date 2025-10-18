@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace App\Modules\TaskManagement\tests\Feature\Http\Controllers\Api;
 
-use App\Models\Company;
 use App\Models\User;
+use App\Models\UserCompany;
 use App\Modules\TaskManagement\Enums\TaskPriority;
 use App\Modules\TaskManagement\Enums\TaskStatus;
 use App\Modules\TaskManagement\Models\FollowUp;
@@ -20,14 +20,14 @@ class ApiTaskControllerTest extends TestCase
 
     protected User $user;
 
-    protected Company $company;
+    protected UserCompany $company;
 
     protected function setUp(): void
     {
         parent::setUp();
 
         $this->user = User::factory()->create();
-        $this->company = Company::factory()->create(['user_id' => $this->user->id]);
+        $this->company = UserCompany::factory()->create(['user_id' => $this->user->id]);
         $this->user->update(['current_company_id' => $this->company->id]);
 
         $this->actingAs($this->user);
@@ -310,7 +310,7 @@ class ApiTaskControllerTest extends TestCase
 
     public function test_index_filters_tasks_by_company(): void
     {
-        $otherCompany = Company::factory()->create(['user_id' => $this->user->id]);
+        $otherCompany = UserCompany::factory()->create(['user_id' => $this->user->id]);
 
         Task::factory()->count(3)->create([
             'company_id' => $this->company->id,

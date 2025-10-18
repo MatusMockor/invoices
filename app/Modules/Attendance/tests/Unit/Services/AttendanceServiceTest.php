@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace App\Modules\Attendance\tests\Unit\Services;
 
-use App\Models\Company;
 use App\Models\User;
+use App\Models\UserCompany;
 use App\Modules\Attendance\Enums\AttendanceStatus;
 use App\Modules\Attendance\Enums\BreakType;
 use App\Modules\Attendance\Enums\WorkType;
@@ -26,14 +26,14 @@ class AttendanceServiceTest extends TestCase
 
     protected User $user;
 
-    protected Company $company;
+    protected UserCompany $company;
 
     protected function setUp(): void
     {
         parent::setUp();
 
         $this->user = User::factory()->create();
-        $this->company = Company::factory()->create(['user_id' => $this->user->id]);
+        $this->company = UserCompany::factory()->create(['user_id' => $this->user->id]);
 
         $repository = new AttendanceRepository;
         $this->service = new AttendanceService($repository);
