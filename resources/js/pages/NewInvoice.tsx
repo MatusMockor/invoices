@@ -3,7 +3,7 @@ import { useForm, useFieldArray } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";
 import { format } from "date-fns";
-import { CalendarIcon, Plus, Trash2, Save, ArrowLeft } from "lucide-react";
+import { CalendarIcon, Plus, Trash2, Save, ArrowLeft, Loader2 } from "lucide-react";
 import { DashboardLayout } from "@/components/dashboard/DashboardLayout";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -12,7 +12,8 @@ import { Calendar } from "@/components/ui/calendar";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { cn } from "@/lib/utils";
 import { useToast } from "@/hooks/use-toast";
-import { useState } from "react";
+import { useState, useEffect } from "react";
+import { useInvoice } from "@/hooks/useInvoices";
 
 const invoiceSchema = z.object({
   clientName: z.string().trim().min(1, "Meno klienta je povinné").max(100),
@@ -40,6 +41,7 @@ const NewInvoice = () => {
   const [dueDate, setDueDate] = useState<Date>();
 
   const isEditMode = !!id;
+  const { invoice, isLoading: isLoadingInvoice } = useInvoice(id ? Number(id) : 0);
 
   const {
     register,
@@ -48,6 +50,7 @@ const NewInvoice = () => {
     formState: { errors },
     setValue,
     watch,
+    reset,
   } = useForm<InvoiceFormData>({
     resolver: zodResolver(invoiceSchema),
     defaultValues: {
@@ -62,13 +65,54 @@ const NewInvoice = () => {
 
   const items = watch("items");
 
+  // Load invoice data in edit mode
+  useEffect(() => {
+    if (isEditMode && invoice) {
+      // Set client information from business_entity
+      if (invoice.business_entity) {
+        setValue("clientName", invoice.business_entity.name);
+        setValue("clientAddress", `${invoice.business_entity.address}, ${invoice.business_entity.postal_code} ${invoice.business_entity.city}`);
+        setValue("clientIco", invoice.business_entity.ico);
+        setValue("clientDic", invoice.business_entity.dic || "");
+      }
+
+      // Set dates
+      const issueDateObj = new Date(invoice.issue_date);
+      const dueDateObj = new Date(invoice.due_date);
+      setIssueDate(issueDateObj);
+      setDueDate(dueDateObj);
+      setValue("issueDate", issueDateObj);
+      setValue("dueDate", dueDateObj);
+
+      // Set items
+      if (invoice.items && invoice.items.length > 0) {
+        const formattedItems = invoice.items.map(item => ({
+          description: item.description,
+          quantity: Number(item.quantity),
+          price: Number(item.unit_price),
+        }));
+        reset({
+          clientName: invoice.business_entity?.name || "",
+          clientAddress: invoice.business_entity
+            ? `${invoice.business_entity.address}, ${invoice.business_entity.postal_code} ${invoice.business_entity.city}`
+            : "",
+          clientIco: invoice.business_entity?.ico || "",
+          clientDic: invoice.business_entity?.dic || "",
+          issueDate: issueDateObj,
+          dueDate: dueDateObj,
+          items: formattedItems,
+        });
+      }
+    }
+  }, [isEditMode, invoice, setValue, reset]);
+
   const onSubmit = (data: InvoiceFormData) => {
     console.log("Invoice data:", data);
     toast({
       title: isEditMode ? "Faktúra upravená" : "Faktúra vytvorená",
       description: isEditMode ? "Faktúra bola úspešne upravená." : "Faktúra bola úspešne vytvorená.",
     });
-    navigate("/invoices");
+    navigate("/app/invoices");
   };
 
   const calculateTotal = () => {
@@ -79,17 +123,30 @@ const NewInvoice = () => {
     }, 0);
   };
 
+  // Show loading state when fetching invoice data in edit mode
+  if (isEditMode && isLoadingInvoice) {
+    return (
+      <DashboardLayout>
+        <div className="max-w-6xl mx-auto animate-fade-in">
+          <div className="flex items-center justify-center py-12">
+            <Loader2 className="h-8 w-8 animate-spin" />
+          </div>
+        </div>
+      </DashboardLayout>
+    );
+  }
+
   return (
     <DashboardLayout>
       <div className="max-w-6xl mx-auto animate-fade-in">
         <div className="mb-6">
           <Button
             variant="ghost"
-            onClick={() => navigate("/")}
+            onClick={() => navigate("/app/invoices")}
             className="mb-4"
           >
             <ArrowLeft className="h-4 w-4 mr-2" />
-            Späť na dashboard
+            Späť na faktúry
           </Button>
           <h1 className="text-3xl font-bold text-foreground">{isEditMode ? "Upraviť faktúru" : "Nová faktúra"}</h1>
           <p className="text-muted-foreground mt-1">{isEditMode ? "Upravte existujúcu faktúru" : "Vytvorte novú faktúru pre vášho klienta"}</p>
@@ -332,7 +389,7 @@ const NewInvoice = () => {
               <Button
                 type="button"
                 variant="outline"
-                onClick={() => navigate("/")}
+                onClick={() => navigate("/app/invoices")}
               >
                 Zrušiť
               </Button>
