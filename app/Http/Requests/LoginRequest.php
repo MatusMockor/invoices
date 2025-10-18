@@ -21,11 +21,13 @@ class LoginRequest extends FormRequest
         ];
     }
 
-    public function getData(): array
+    public function getEmail(): string
     {
-        return [
-            'email' => $this->input('email'),
-            'password' => $this->input('password'),
-        ];
+        return $this->validated('email');
+    }
+
+    public function getPassword(): string
+    {
+        return $this->validated('password');
     }
 }
