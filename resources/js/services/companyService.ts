@@ -53,5 +53,18 @@ export const companyService = {
     const response = await api.post(`/companies/${id}/switch`);
     return response.data;
   },
+
+  // Customer companies (for invoice autocomplete)
+  async searchCustomerCompanies(query: string): Promise<ApiResponse<Company[]>> {
+    const response = await api.get('/customer-companies/search', {
+      params: { query },
+    });
+    return response.data;
+  },
+
+  async getAllCustomerCompanies(): Promise<ApiResponse<Company[]>> {
+    const response = await api.get('/customer-companies');
+    return response.data;
+  },
 };
 

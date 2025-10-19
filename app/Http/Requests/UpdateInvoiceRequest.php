@@ -24,22 +24,31 @@ class UpdateInvoiceRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'business_entity_id' => 'sometimes|required|integer|exists:business_entities,id',
-            'invoice_number' => 'sometimes|required|string|max:50',
+            // Client information
+            'clientName' => 'sometimes|required|string|max:255',
+            'clientIco' => 'sometimes|required|string|max:20',
+            'clientDic' => 'sometimes|required|string|max:20',
+            'clientIcDph' => 'sometimes|required|string|max:20',
+            'clientAddress' => 'sometimes|required|string|max:500',
+
+            // Invoice details
+            'invoiceNumber' => 'sometimes|required|string|max:50',
             'issue_date' => 'sometimes|required|date',
-            'due_date' => 'sometimes|required|date',
-            'variable_symbol' => 'nullable|string|max:50',
-            'constant_symbol' => 'nullable|string|max:50',
-            'specific_symbol' => 'nullable|string|max:50',
-            'currency' => 'sometimes|required|string|max:3',
+            'due_date' => 'sometimes|required|date|after_or_equal:issue_date',
+            'delivery_date' => 'sometimes|required|date',
+            'variableSymbol' => 'nullable|string|max:50',
+            'constantSymbol' => 'nullable|string|max:50',
+            'specificSymbol' => 'nullable|string|max:50',
+            'currency' => 'nullable|string|max:3',
             'notes' => 'nullable|string',
             'status' => 'nullable|string|in:draft,sent,paid,overdue,cancelled',
+
+            // Invoice items
             'items' => 'sometimes|required|array|min:1',
             'items.*.id' => 'nullable|integer|exists:invoice_items,id',
             'items.*.description' => 'required|string|max:500',
             'items.*.quantity' => 'required|numeric|min:0.01',
-            'items.*.unit_price' => 'required|numeric|min:0',
-            'items.*.vat_rate' => 'required|numeric|min:0|max:100',
+            'items.*.price' => 'required|numeric|min:0',
         ];
     }
 
@@ -51,7 +60,6 @@ class UpdateInvoiceRequest extends FormRequest
     public function messages(): array
     {
         return [
-            'business_entity_id.exists' => 'The selected business entity does not exist.',
             'items.min' => 'At least one item is required.',
         ];
     }

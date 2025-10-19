@@ -31,6 +31,11 @@ interface CompanyRepository
     public function findByIco(string $ico): ?Company;
 
     /**
+     * Search companies by ICO or name
+     */
+    public function searchByIcoOrName(string $query): Collection;
+
+    /**
      * Get companies by country
      */
     public function getByCountry(string $country): Collection;

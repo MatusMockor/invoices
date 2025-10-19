@@ -2,30 +2,41 @@ import api from '@/lib/axios';
 import type { Invoice, InvoiceItem, ApiResponse, PaginatedResponse } from '@/types';
 
 export interface InvoiceCreateData {
-  business_entity_id: number;
-  invoice_number: string;
+  // Client information
+  clientName: string;
+  clientIco: string;
+  clientDic: string;
+  clientIcDph: string;
+  clientAddress: string;
+
+  // Invoice details
+  invoiceNumber: string;
   issue_date: string;
   due_date: string;
-  variable_symbol?: string;
-  constant_symbol?: string;
-  specific_symbol?: string;
-  currency: string;
+  delivery_date: string;
+  variableSymbol?: string;
+  constantSymbol?: string;
+  specificSymbol?: string;
+  currency?: string;
   notes?: string;
+  status?: 'draft' | 'sent' | 'paid' | 'overdue' | 'cancelled';
+
+  // Invoice items
   items: InvoiceItemData[];
 }
 
 export interface InvoiceItemData {
   description: string;
   quantity: number;
-  unit_price: number;
-  vat_rate: number;
+  price: number;
+  vat_rate?: number; // Optional, defaults to 20% on backend
 }
 
 export type InvoiceUpdateData = Partial<InvoiceCreateData>;
 
 export interface InvoiceFilters {
   status?: string;
-  business_entity_id?: number;
+  company_id?: number;
   date_from?: string;
   date_to?: string;
   page?: number;

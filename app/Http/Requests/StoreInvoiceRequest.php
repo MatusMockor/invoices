@@ -24,21 +24,30 @@ class StoreInvoiceRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'business_entity_id' => 'required|integer|exists:business_entities,id',
-            'invoice_number' => 'required|string|max:50',
+            // Client information
+            'clientName' => 'required|string|max:255',
+            'clientIco' => 'required|string|max:20',
+            'clientDic' => 'required|string|max:20',
+            'clientIcDph' => 'required|string|max:20',
+            'clientAddress' => 'required|string|max:500',
+
+            // Invoice details
+            'invoiceNumber' => 'required|string|max:50|unique:invoices,invoice_number',
             'issue_date' => 'required|date',
-            'due_date' => 'required|date',
-            'variable_symbol' => 'nullable|string|max:50',
-            'constant_symbol' => 'nullable|string|max:50',
-            'specific_symbol' => 'nullable|string|max:50',
-            'currency' => 'required|string|max:3',
+            'due_date' => 'required|date|after_or_equal:issue_date',
+            'delivery_date' => 'required|date',
+            'variableSymbol' => 'nullable|string|max:50',
+            'constantSymbol' => 'nullable|string|max:50',
+            'specificSymbol' => 'nullable|string|max:50',
+            'currency' => 'nullable|string|max:3',
             'notes' => 'nullable|string',
             'status' => 'nullable|string|in:draft,sent,paid,overdue,cancelled',
+
+            // Invoice items
             'items' => 'required|array|min:1',
             'items.*.description' => 'required|string|max:500',
             'items.*.quantity' => 'required|numeric|min:0.01',
-            'items.*.unit_price' => 'required|numeric|min:0',
-            'items.*.vat_rate' => 'required|numeric|min:0|max:100',
+            'items.*.price' => 'required|numeric|min:0',
         ];
     }
 }

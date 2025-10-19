@@ -42,7 +42,19 @@ class CompanyRepository implements CompanyRepositoryContract
      */
     public function findByIco(string $ico): ?Company
     {
-        return Company::where('ico', $ico)->first();
+        return Company::firstWhere('ico', $ico);
+    }
+
+    /**
+     * Search companies by ICO or name
+     */
+    public function searchByIcoOrName(string $query): Collection
+    {
+        return Company::where('ico', 'LIKE', "%{$query}%")
+            ->orWhere('name', 'LIKE', "%{$query}%")
+            ->orderBy('name')
+            ->limit(10)
+            ->get();
     }
 
     /**

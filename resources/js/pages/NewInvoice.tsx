@@ -14,8 +14,8 @@ import { Command, CommandEmpty, CommandGroup, CommandItem, CommandList } from "@
 import { cn } from "@/lib/utils";
 import { useToast } from "@/hooks/use-toast";
 import { useState, useEffect } from "react";
-import { useInvoice } from "@/hooks/useInvoices";
-import { useCompanies } from "@/hooks/useCompanies";
+import { useInvoice, useInvoices } from "@/hooks/useInvoices";
+import { companyService } from "@/services/companyService";
 
 const invoiceSchema = z.object({
   invoiceNumber: z.string().trim().min(1, "Číslo faktúry je povinné"),
@@ -26,6 +26,7 @@ const invoiceSchema = z.object({
   clientIcDph: z.string().trim().min(1, "IČ DPH je povinné").max(20),
   issueDate: z.date({ required_error: "Dátum vystavenia je povinný" }),
   dueDate: z.date({ required_error: "Dátum splatnosti je povinný" }),
+  deliveryDate: z.date({ required_error: "Dátum dodania je povinný" }),
   variableSymbol: z.string().trim().min(1, "Variabilný symbol je povinný").max(20),
   constantSymbol: z.string().trim().max(20).optional(),
   specificSymbol: z.string().trim().max(20).optional(),
@@ -46,6 +47,7 @@ const NewInvoice = () => {
   const { toast } = useToast();
   const [issueDate, setIssueDate] = useState<Date>();
   const [dueDate, setDueDate] = useState<Date>();
+  const [deliveryDate, setDeliveryDate] = useState<Date>();
   const [icoSearch, setIcoSearch] = useState("");
   const [isSearching, setIsSearching] = useState(false);
   const [showSuggestions, setShowSuggestions] = useState(false);
@@ -53,7 +55,7 @@ const NewInvoice = () => {
 
   const isEditMode = !!id;
   const { invoice, isLoading: isLoadingInvoice } = useInvoice(id ? Number(id) : 0);
-  const { companies, isLoading: isLoadingCompanies } = useCompanies();
+  const { createInvoice, updateInvoice, isCreating, isUpdating } = useInvoices();
 
   // Generovanie čísla faktúry vo formáte RRRRCCCC
   const generateInvoiceNumber = () => {
@@ -114,10 +116,13 @@ const NewInvoice = () => {
       // Set dates
       const issueDateObj = new Date(invoice.issue_date);
       const dueDateObj = new Date(invoice.due_date);
+      const deliveryDateObj = new Date(invoice.delivery_date);
       setIssueDate(issueDateObj);
       setDueDate(dueDateObj);
+      setDeliveryDate(deliveryDateObj);
       setValue("issueDate", issueDateObj);
       setValue("dueDate", dueDateObj);
+      setValue("deliveryDate", deliveryDateObj);
 
       // Set items
       if (invoice.items && invoice.items.length > 0) {
@@ -133,33 +138,77 @@ const NewInvoice = () => {
 
   // Debounce search for companies with IČO/name autocomplete
   useEffect(() => {
-    if (icoSearch.length > 0 && showSuggestions && companies) {
+    if (icoSearch.length >= 2 && showSuggestions) {
       setIsSearching(true);
 
-      // Simulácia API volania s debounce
-      const timer = setTimeout(() => {
-        const filtered = companies.filter((company: any) =>
-          company.ico?.includes(icoSearch) ||
-          company.name?.toLowerCase().includes(icoSearch.toLowerCase())
-        );
-        setFilteredCompanies(filtered);
-        setIsSearching(false);
+      // Real API call with debounce
+      const timer = setTimeout(async () => {
+        try {
+          const response = await companyService.searchCustomerCompanies(icoSearch);
+          setFilteredCompanies(response.data);
+        } catch (error) {
+          console.error('Error searching companies:', error);
+          setFilteredCompanies([]);
+        } finally {
+          setIsSearching(false);
+        }
       }, 500);
 
       return () => clearTimeout(timer);
-    } else if (icoSearch.length === 0 && companies) {
-      setFilteredCompanies(companies);
+    } else if (icoSearch.length === 0) {
+      setFilteredCompanies([]);
       setIsSearching(false);
     }
-  }, [icoSearch, showSuggestions, companies]);
+  }, [icoSearch, showSuggestions]);
 
-  const onSubmit = (data: InvoiceFormData) => {
-    console.log("Invoice data:", data);
-    toast({
-      title: isEditMode ? "Faktúra upravená" : "Faktúra vytvorená",
-      description: isEditMode ? "Faktúra bola úspešne upravená." : "Faktúra bola úspešne vytvorená.",
-    });
-    navigate("/app/invoices");
+  const onSubmit = async (data: InvoiceFormData) => {
+    try {
+      // Transform form data to API format
+      const apiData = {
+        clientName: data.clientName,
+        clientIco: data.clientIco,
+        clientDic: data.clientDic,
+        clientIcDph: data.clientIcDph,
+        clientAddress: data.clientAddress,
+        invoiceNumber: data.invoiceNumber,
+        issue_date: data.issueDate.toISOString().split('T')[0], // Format: YYYY-MM-DD
+        due_date: data.dueDate.toISOString().split('T')[0], // Format: YYYY-MM-DD
+        delivery_date: data.deliveryDate.toISOString().split('T')[0], // Format: YYYY-MM-DD
+        variableSymbol: data.variableSymbol,
+        constantSymbol: data.constantSymbol,
+        specificSymbol: data.specificSymbol,
+        currency: 'EUR',
+        notes: data.notes || undefined,
+        items: data.items.map(item => ({
+          description: item.description,
+          quantity: item.quantity,
+          price: item.price,
+        })),
+      };
+
+      if (isEditMode && id) {
+        await updateInvoice({ id: Number(id), data: apiData });
+        toast({
+          title: "Faktúra upravená",
+          description: "Faktúra bola úspešne upravená.",
+        });
+      } else {
+        await createInvoice(apiData);
+        toast({
+          title: "Faktúra vytvorená",
+          description: "Faktúra bola úspešne vytvorená.",
+        });
+      }
+
+      navigate("/app/invoices");
+    } catch (error: any) {
+      console.error('Error submitting invoice:', error);
+      toast({
+        title: "Chyba",
+        description: error.response?.data?.message || "Nepodarilo sa uložiť faktúru",
+        variant: "destructive",
+      });
+    }
   };
 
   const calculateTotal = () => {
@@ -173,7 +222,9 @@ const NewInvoice = () => {
   const handleCompanySelect = (company: any) => {
     setValue("clientIco", company.ico);
     setValue("clientName", company.name);
-    setValue("clientAddress", `${company.address}, ${company.postal_code} ${company.city}`);
+    // API returns: address, city, postal_code, country
+    const fullAddress = `${company.address}, ${company.postal_code} ${company.city}`;
+    setValue("clientAddress", fullAddress);
     setValue("clientDic", company.dic || "");
     setValue("clientIcDph", company.ic_dph || "");
     setIcoSearch(company.ico);
@@ -346,7 +397,7 @@ const NewInvoice = () => {
               <span className="w-8 h-8 bg-accent text-accent-foreground rounded-full flex items-center justify-center text-sm">2</span>
               Dátumy
             </h3>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
               <div className="space-y-2">
                 <Label>Dátum vystavenia *</Label>
                 <Popover>
@@ -378,6 +429,39 @@ const NewInvoice = () => {
                 </Popover>
                 {errors.issueDate && (
                   <p className="text-sm text-destructive">{errors.issueDate.message}</p>
+                )}
+              </div>
+              <div className="space-y-2">
+                <Label>Dátum dodania *</Label>
+                <Popover>
+                  <PopoverTrigger asChild>
+                    <Button
+                      type="button"
+                      variant="outline"
+                      className={cn(
+                        "w-full justify-start text-left font-normal",
+                        !deliveryDate && "text-muted-foreground"
+                      )}
+                    >
+                      <CalendarIcon className="mr-2 h-4 w-4" />
+                      {deliveryDate ? format(deliveryDate, "dd.MM.yyyy") : "Vyberte dátum"}
+                    </Button>
+                  </PopoverTrigger>
+                  <PopoverContent className="w-auto p-0" align="start">
+                    <Calendar
+                      mode="single"
+                      selected={deliveryDate}
+                      onSelect={(date) => {
+                        setDeliveryDate(date);
+                        setValue("deliveryDate", date as Date);
+                      }}
+                      initialFocus
+                      className="pointer-events-auto"
+                    />
+                  </PopoverContent>
+                </Popover>
+                {errors.deliveryDate && (
+                  <p className="text-sm text-destructive">{errors.deliveryDate.message}</p>
                 )}
               </div>
               <div className="space-y-2">

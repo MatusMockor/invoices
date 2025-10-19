@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 use App\Http\Controllers\Api\AuthController;
 use App\Http\Controllers\Api\BusinessEntityController;
+use App\Http\Controllers\Api\CompanyController;
 use App\Http\Controllers\Api\ContactController;
 use App\Http\Controllers\Api\InvoiceController;
 use App\Http\Controllers\Api\NoteController;
@@ -54,6 +55,10 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::put('/business-entities/{businessEntity}', [BusinessEntityController::class, 'update'])->name('api.business-entities.update');
     Route::delete('/business-entities/{businessEntity}', [BusinessEntityController::class, 'destroy'])->name('api.business-entities.destroy');
     Route::get('/business-entities-fetch-by-ico', [BusinessEntityController::class, 'fetchByIco'])->name('api.business-entities.fetch-by-ico');
+
+    // Customer Companies (for invoice autocomplete)
+    Route::get('/customer-companies/search', [CompanyController::class, 'search'])->name('api.customer-companies.search');
+    Route::get('/customer-companies', [CompanyController::class, 'index'])->name('api.customer-companies.index');
 
     // Invoices
     Route::get('/invoices', [InvoiceController::class, 'index'])->name('api.invoices.index');
