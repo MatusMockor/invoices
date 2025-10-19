@@ -45,9 +45,14 @@ const NewInvoice = () => {
   const navigate = useNavigate();
   const { id } = useParams();
   const { toast } = useToast();
-  const [issueDate, setIssueDate] = useState<Date>();
-  const [dueDate, setDueDate] = useState<Date>();
-  const [deliveryDate, setDeliveryDate] = useState<Date>();
+  const [issueDate, setIssueDate] = useState<Date>(new Date());
+  const [deliveryDate, setDeliveryDate] = useState<Date>(new Date());
+  const [dueDateDays, setDueDateDays] = useState(15);
+  const [dueDate, setDueDate] = useState<Date>(() => {
+    const date = new Date();
+    date.setDate(date.getDate() + dueDateDays);
+    return date;
+  });
   const [icoSearch, setIcoSearch] = useState("");
   const [isSearching, setIsSearching] = useState(false);
   const [showSuggestions, setShowSuggestions] = useState(false);
@@ -84,6 +89,9 @@ const NewInvoice = () => {
       variableSymbol: isEditMode ? "" : generatedInvoiceNumber,
       constantSymbol: "",
       specificSymbol: "",
+      issueDate: new Date(),
+      deliveryDate: new Date(),
+      dueDate: new Date(new Date().setDate(new Date().getDate() + 15)),
     },
   });
 
@@ -91,6 +99,15 @@ const NewInvoice = () => {
     control,
     name: "items",
   });
+
+  useEffect(() => {
+    if (issueDate) {
+      const newDueDate = new Date(issueDate);
+      newDueDate.setDate(newDueDate.getDate() + dueDateDays);
+      setDueDate(newDueDate);
+      setValue("dueDate", newDueDate);
+    }
+  }, [issueDate, dueDateDays, setValue]);
 
   const items = watch("items");
 
@@ -464,35 +481,52 @@ const NewInvoice = () => {
                   <p className="text-sm text-destructive">{errors.deliveryDate.message}</p>
                 )}
               </div>
-              <div className="space-y-2">
+              <div className="space-y-2 md:col-span-1">
                 <Label>Dátum splatnosti *</Label>
-                <Popover>
-                  <PopoverTrigger asChild>
-                    <Button
-                      type="button"
-                      variant="outline"
-                      className={cn(
-                        "w-full justify-start text-left font-normal",
-                        !dueDate && "text-muted-foreground"
-                      )}
-                    >
-                      <CalendarIcon className="mr-2 h-4 w-4" />
-                      {dueDate ? format(dueDate, "dd.MM.yyyy") : "Vyberte dátum"}
-                    </Button>
-                  </PopoverTrigger>
-                  <PopoverContent className="w-auto p-0" align="start">
-                    <Calendar
-                      mode="single"
-                      selected={dueDate}
-                      onSelect={(date) => {
-                        setDueDate(date);
-                        setValue("dueDate", date as Date);
-                      }}
-                      initialFocus
-                      className="pointer-events-auto"
+                <div className="grid grid-cols-3 gap-2">
+                  <div className="col-span-1">
+                    <Input
+                      type="number"
+                      value={dueDateDays}
+                      onChange={(e) => setDueDateDays(Number(e.target.value))}
+                      className="border-primary/30 text-center"
                     />
-                  </PopoverContent>
-                </Popover>
+                  </div>
+                  <div className="col-span-2">
+                    <Popover>
+                      <PopoverTrigger asChild>
+                        <Button
+                          type="button"
+                          variant="outline"
+                          className={cn(
+                            "w-full justify-start text-left font-normal",
+                            !dueDate && "text-muted-foreground"
+                          )}
+                        >
+                          <CalendarIcon className="mr-2 h-4 w-4" />
+                          {dueDate ? format(dueDate, "dd.MM.yyyy") : "Vyberte dátum"}
+                        </Button>
+                      </PopoverTrigger>
+                      <PopoverContent className="w-auto p-0" align="start">
+                        <Calendar
+                          mode="single"
+                          selected={dueDate}
+                          onSelect={(date) => {
+                            if (date && issueDate) {
+                              const diffTime = Math.abs(date.getTime() - issueDate.getTime());
+                              const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+                              setDueDateDays(diffDays);
+                            }
+                            setDueDate(date as Date);
+                            setValue("dueDate", date as Date);
+                          }}
+                          initialFocus
+                          className="pointer-events-auto"
+                        />
+                      </PopoverContent>
+                    </Popover>
+                  </div>
+                </div>
                 {errors.dueDate && (
                   <p className="text-sm text-destructive">{errors.dueDate.message}</p>
                 )}
