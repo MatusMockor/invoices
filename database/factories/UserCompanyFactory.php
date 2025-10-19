@@ -29,6 +29,7 @@ class UserCompanyFactory extends Factory
         $companyTypes = ['živnosť', 's.r.o.'];
 
         return [
+            'user_id' => \App\Models\User::factory(),
             'name' => $this->faker->company(),
             'ico' => $this->faker->unique()->numerify('########'),
             'street' => $this->faker->streetAddress(),

@@ -41,20 +41,4 @@ class StoreInvoiceRequest extends FormRequest
             'items.*.vat_rate' => 'required|numeric|min:0|max:100',
         ];
     }
-
-    /**
-     * Get custom messages for validator errors.
-     *
-     * @return array<string, string>
-     */
-    public function messages(): array
-    {
-        return [
-            'business_entity_id.required' => 'Business entity is required.',
-            'business_entity_id.exists' => 'The selected business entity does not exist.',
-            'invoice_number.required' => 'Invoice number is required.',
-            'items.required' => 'At least one item is required.',
-            'items.min' => 'At least one item is required.',
-        ];
-    }
 }

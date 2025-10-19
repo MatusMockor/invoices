@@ -5,20 +5,39 @@ import type { User } from '@/types';
 export const useAuth = () => {
   const queryClient = useQueryClient();
 
-  const { data: user, isLoading, refetch } = useQuery<User>({
+  const { data: user, isLoading, refetch, isError } = useQuery<User | undefined>({
     queryKey: ['user'],
     queryFn: async () => {
+      console.log('[useAuth] Fetching user...');
       try {
-        const response = await authService.getCurrentUser();
+        // Add a custom timeout wrapper (5 seconds max)
+        const timeoutPromise = new Promise<never>((_, reject) => {
+          setTimeout(() => reject(new Error('Request timeout')), 5000);
+        });
+
+        const fetchPromise = authService.getCurrentUser();
+        const response = await Promise.race([fetchPromise, timeoutPromise]);
+
+        console.log('[useAuth] User fetched successfully:', response.user?.email);
         return response.user;
-      } catch (error) {
-        // If 401, user is not authenticated - this is expected
-        authService.removeToken();
-        return null;
+      } catch (error: any) {
+        // Only remove token on 401 Unauthorized - invalid/expired token
+        if (error?.response?.status === 401) {
+          console.log('[useAuth] 401 error - token invalid, logging out');
+          authService.removeToken();
+          return undefined;
+        }
+        // For other errors (network, server down, timeout, etc.), keep token
+        console.error('[useAuth] Error fetching user (keeping token):', error.message);
+        return undefined;
       }
     },
-    retry: false,
+    retry: false, // Disable retry to prevent infinite loading
     staleTime: Infinity,
+    refetchOnMount: false,
+    refetchOnWindowFocus: false,
+    refetchOnReconnect: false,
+    gcTime: 1000 * 60 * 5, // 5 minutes
     enabled: !!authService.getToken(), // Only fetch if token exists
   });
 

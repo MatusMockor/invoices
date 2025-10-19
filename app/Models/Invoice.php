@@ -10,6 +10,7 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Database\Eloquent\Relations\MorphMany;
 use Illuminate\Support\Carbon;
 
 /**
@@ -53,6 +54,32 @@ class Invoice extends Model
         'constant_symbol',
         'note',
         'status',
+        'customer_name',
+        'customer_ico',
+        'customer_dic',
+        'customer_ic_dph',
+        'customer_street',
+        'customer_city',
+        'customer_postal_code',
+        'customer_country',
+        'customer_phone',
+        'customer_email',
+        'customer_company_type',
+        'customer_registration_number',
+        'supplier_name',
+        'supplier_ico',
+        'supplier_dic',
+        'supplier_ic_dph',
+        'supplier_street',
+        'supplier_city',
+        'supplier_postal_code',
+        'supplier_country',
+        'supplier_phone',
+        'supplier_email',
+        'supplier_iban',
+        'supplier_swift',
+        'supplier_company_type',
+        'supplier_registration_number',
     ];
 
     protected $casts = [
@@ -90,7 +117,7 @@ class Invoice extends Model
         return $this->belongsTo(Contact::class);
     }
 
-    public function notes(): \Illuminate\Database\Eloquent\Relations\MorphMany
+    public function notes(): MorphMany
     {
         return $this->morphMany(Note::class, 'noteable');
     }

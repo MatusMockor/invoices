@@ -26,7 +26,7 @@ export const companyService = {
   },
 
   async getMinimal(): Promise<ApiResponse<Array<{ id: number; name: string }>>> {
-    const response = await api.get('/companies/minimal');
+    const response = await api.get('/user/companies/minimal');
     return response.data;
   },
 

@@ -20,7 +20,11 @@ class InvoiceSeeder extends Seeder
     public function run(): void
     {
         // Get the test user
-        $testUser = User::first();
+        $testUser = User::where('email', 'test@example.com')->first();
+
+        if (! $testUser) {
+            return;
+        }
 
         // Get the user's company (supplier)
         $userCompany = $testUser->currentCompany;

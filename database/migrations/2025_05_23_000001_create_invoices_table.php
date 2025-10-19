@@ -24,6 +24,37 @@ return new class extends Migration
             $table->string('constant_symbol')->nullable();
             $table->text('note')->nullable();
             $table->string('status')->default('draft');
+
+            // Customer (odberateľ) snapshot fields
+            $table->string('customer_name')->nullable();
+            $table->string('customer_ico')->nullable();
+            $table->string('customer_dic')->nullable();
+            $table->string('customer_ic_dph')->nullable();
+            $table->string('customer_street')->nullable();
+            $table->string('customer_city')->nullable();
+            $table->string('customer_postal_code')->nullable();
+            $table->string('customer_country')->nullable();
+            $table->string('customer_phone')->nullable();
+            $table->string('customer_email')->nullable();
+            $table->string('customer_company_type')->nullable();
+            $table->string('customer_registration_number')->nullable();
+
+            // Supplier (dodávateľ) snapshot fields
+            $table->string('supplier_name')->nullable();
+            $table->string('supplier_ico')->nullable();
+            $table->string('supplier_dic')->nullable();
+            $table->string('supplier_ic_dph')->nullable();
+            $table->string('supplier_street')->nullable();
+            $table->string('supplier_city')->nullable();
+            $table->string('supplier_postal_code')->nullable();
+            $table->string('supplier_country')->nullable();
+            $table->string('supplier_phone')->nullable();
+            $table->string('supplier_email')->nullable();
+            $table->string('supplier_iban')->nullable();
+            $table->string('supplier_swift')->nullable();
+            $table->string('supplier_company_type')->nullable();
+            $table->string('supplier_registration_number')->nullable();
+
             $table->timestamps();
         });
     }

@@ -17,7 +17,7 @@ class UserCompanySeeder extends Seeder
     public function run(): void
     {
         // Create a primary company for the test user
-        $testUser = User::first();
+        $testUser = User::where('email', 'test@example.com')->first();
         $primaryCompany = UserCompany::factory()->forUser($testUser)->slovak()->create([
             'name' => 'My Company s.r.o.',
             'ico' => '12345678',

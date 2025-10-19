@@ -32,8 +32,9 @@ instance.interceptors.request.use(
 instance.interceptors.response.use(
   (response) => response,
   (error) => {
-    // If 401 unauthorized, remove invalid token
+    // If 401 unauthorized, remove invalid/expired token
     if (error.response?.status === 401) {
+      console.log('[Axios] 401 Unauthorized - removing invalid token');
       localStorage.removeItem(TOKEN_KEY);
     }
     return Promise.reject(error);
