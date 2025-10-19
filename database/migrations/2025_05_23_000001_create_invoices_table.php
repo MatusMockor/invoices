@@ -34,8 +34,7 @@ return new class extends Migration
             $table->string('customer_city')->nullable();
             $table->string('customer_postal_code')->nullable();
             $table->string('customer_country')->nullable();
-            $table->string('customer_phone')->nullable();
-            $table->string('customer_email')->nullable();
+
             $table->string('customer_company_type')->nullable();
             $table->string('customer_registration_number')->nullable();
 
@@ -48,8 +47,7 @@ return new class extends Migration
             $table->string('supplier_city')->nullable();
             $table->string('supplier_postal_code')->nullable();
             $table->string('supplier_country')->nullable();
-            $table->string('supplier_phone')->nullable();
-            $table->string('supplier_email')->nullable();
+
             $table->string('supplier_iban')->nullable();
             $table->string('supplier_swift')->nullable();
             $table->string('supplier_company_type')->nullable();

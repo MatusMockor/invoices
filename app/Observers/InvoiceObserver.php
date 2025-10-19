@@ -62,8 +62,7 @@ class InvoiceObserver
         $invoice->supplier_city = $supplierCompany->city;
         $invoice->supplier_postal_code = $supplierCompany->postal_code;
         $invoice->supplier_country = $supplierCompany->country;
-        $invoice->supplier_phone = $supplierCompany->phone;
-        $invoice->supplier_email = $supplierCompany->email;
+
         $invoice->supplier_iban = $supplierCompany->iban;
         $invoice->supplier_swift = $supplierCompany->swift;
         $invoice->supplier_company_type = $supplierCompany->company_type;
