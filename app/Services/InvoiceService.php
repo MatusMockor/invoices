@@ -198,9 +198,8 @@ class InvoiceService implements InvoiceServiceContract
 
         foreach ($items as $item) {
             $unitPrice = $item['price'] ?? $item['unit_price'] ?? 0;
-            $vatRate = $item['vat_rate'] ?? 20; // Default 20% VAT
             $itemTotal = $item['quantity'] * $unitPrice;
-            $totalAmount += $itemTotal + ($itemTotal * $vatRate / 100);
+            $totalAmount += $itemTotal;
         }
 
         return $totalAmount;

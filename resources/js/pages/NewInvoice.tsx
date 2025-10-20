@@ -23,7 +23,7 @@ const invoiceSchema = z.object({
   clientAddress: z.string().trim().min(1, "Adresa je povinná").max(200),
   clientIco: z.string().trim().min(1, "IČO je povinné").max(20),
   clientDic: z.string().trim().min(1, "DIČ je povinné").max(20),
-  clientIcDph: z.string().trim().min(1, "IČ DPH je povinné").max(20),
+  clientIcDph: z.string().trim().max(20).optional(),
   issueDate: z.date({ required_error: "Dátum vystavenia je povinný" }),
   dueDate: z.date({ required_error: "Dátum splatnosti je povinný" }),
   deliveryDate: z.date({ required_error: "Dátum dodania je povinný" }),
@@ -195,7 +195,6 @@ const NewInvoice = () => {
         constantSymbol: data.constantSymbol,
         specificSymbol: data.specificSymbol,
         currency: 'EUR',
-        notes: data.notes || undefined,
         items: data.items.map(item => ({
           description: item.description,
           quantity: item.quantity,
@@ -380,7 +379,7 @@ const NewInvoice = () => {
                   )}
                 </div>
                 <div className="space-y-2">
-                  <Label htmlFor="clientIcDph">IČ DPH *</Label>
+                  <Label htmlFor="clientIcDph">IČ DPH</Label>
                   <Input
                     id="clientIcDph"
                     {...register("clientIcDph")}
