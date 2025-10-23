@@ -2,6 +2,10 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } f
 import { Button } from "@/components/ui/button";
 import { Printer, Download, Loader2 } from "lucide-react";
 import { useInvoice } from "@/hooks/useInvoices";
+import { useToast } from "@/hooks/use-toast";
+import { useState } from "react";
+import html2canvas from "html2canvas";
+import jsPDF from "jspdf";
 
 interface InvoicePreviewProps {
   open: boolean;
@@ -11,9 +15,59 @@ interface InvoicePreviewProps {
 
 export const InvoicePreview = ({ open, onOpenChange, invoiceId }: InvoicePreviewProps) => {
   const { invoice, isLoading } = useInvoice(invoiceId || 0);
+  const { toast } = useToast();
+  const [isDownloading, setIsDownloading] = useState(false);
 
   const handlePrint = () => {
     window.print();
+  };
+
+  const handleDownloadPdf = async () => {
+    if (!invoice) return;
+
+    try {
+      setIsDownloading(true);
+
+      const invoiceContent = document.getElementById('invoice-content');
+      if (!invoiceContent) {
+        throw new Error('Invoice content not found');
+      }
+
+      // Capture the invoice content as canvas
+      const canvas = await html2canvas(invoiceContent, {
+        scale: 2, // Higher quality
+        useCORS: true,
+        logging: false,
+        backgroundColor: '#ffffff',
+      });
+
+      // Calculate PDF dimensions
+      const imgWidth = 210; // A4 width in mm
+      const imgHeight = (canvas.height * imgWidth) / canvas.width;
+
+      // Create PDF
+      const pdf = new jsPDF('p', 'mm', 'a4');
+      const imgData = canvas.toDataURL('image/png');
+
+      pdf.addImage(imgData, 'PNG', 0, 0, imgWidth, imgHeight);
+
+      // Download the PDF
+      pdf.save(`faktura-${invoice.invoice_number}.pdf`);
+
+      toast({
+        title: "PDF stiahnuté",
+        description: "Faktúra bola úspešne stiahnutá.",
+      });
+    } catch (error) {
+      console.error('Error generating PDF:', error);
+      toast({
+        title: "Chyba",
+        description: "Nepodarilo sa vygenerovať PDF",
+        variant: "destructive",
+      });
+    } finally {
+      setIsDownloading(false);
+    }
   };
 
   if (!invoice && !isLoading) {
@@ -31,8 +85,12 @@ export const InvoicePreview = ({ open, onOpenChange, invoiceId }: InvoicePreview
                 <Printer className="w-4 h-4 mr-2" />
                 Tlačiť
               </Button>
-              <Button variant="outline" size="sm" disabled={isLoading}>
-                <Download className="w-4 h-4 mr-2" />
+              <Button variant="outline" size="sm" onClick={handleDownloadPdf} disabled={isLoading || isDownloading}>
+                {isDownloading ? (
+                  <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                ) : (
+                  <Download className="w-4 h-4 mr-2" />
+                )}
                 PDF
               </Button>
             </div>
@@ -51,8 +109,8 @@ export const InvoicePreview = ({ open, onOpenChange, invoiceId }: InvoicePreview
           {/* Header with Company Logo */}
           <div className="mb-8 pb-6 border-b-2 border-purple-600">
             <div className="flex justify-between items-center mb-6">
-              <h1 className="text-4xl font-bold text-purple-600">InvoiceHub</h1>
-              <h2 className="text-3xl font-bold text-purple-600">FAKTÚRA {invoice.invoice_number}</h2>
+              <h1 className="text-2xl font-bold text-purple-600">InvoiceHub</h1>
+              <h2 className="text-xl font-bold text-purple-600">FAKTÚRA {invoice.invoice_number}</h2>
             </div>
 
             {/* Top row: Supplier + Client side-by-side */}
@@ -91,10 +149,10 @@ export const InvoicePreview = ({ open, onOpenChange, invoiceId }: InvoicePreview
           </div>
 
           {/* Payment Info with QR Code */}
-          <div className="border-2 border-purple-200 rounded-lg p-8 mb-8 bg-gradient-to-br from-purple-50/50 to-white">
-            <h3 className="font-bold mb-6 text-xl text-purple-600 border-b border-purple-200 pb-3">Platobné údaje</h3>
-            <div className="flex gap-8 items-start">
-              <div className="flex-1 space-y-5">
+          <div className="border-2 border-purple-200 rounded-lg p-6 mb-6 bg-gradient-to-br from-purple-50/50 to-white">
+            <h3 className="font-bold mb-3 text-base text-purple-600 border-b border-purple-200 pb-1.5">Platobné údaje</h3>
+            <div className="flex gap-6 items-start">
+              <div className="flex-1 space-y-3">
                 {/* Invoice Details */}
                 <div className="grid grid-cols-2 gap-x-6 gap-y-4">
                   <div className="bg-white/60 p-4 rounded-lg border border-purple-100">
