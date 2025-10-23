@@ -233,15 +233,7 @@ export const InvoicePreview = ({ open, onOpenChange, invoiceId }: InvoicePreview
           {/* Totals */}
           <div className="flex justify-end mb-8">
             <div className="w-80">
-              <div className="flex justify-between py-2 border-b border-gray-200">
-                <span className="text-gray-600">Medzisúčet bez DPH:</span>
-                <span className="font-semibold">{Number(invoice.total_amount_without_vat).toFixed(2)} {invoice.currency}</span>
-              </div>
-              <div className="flex justify-between py-2 border-b border-gray-200">
-                <span className="text-gray-600">DPH:</span>
-                <span className="font-semibold">{Number(invoice.vat_amount).toFixed(2)} {invoice.currency}</span>
-              </div>
-              <div className="flex justify-between py-3 bg-purple-50 px-4 rounded-lg mt-2">
+              <div className="flex justify-between py-3 bg-purple-50 px-4 rounded-lg">
                 <span className="font-bold text-lg">Celkom k úhrade:</span>
                 <span className="font-bold text-lg text-purple-600">{Number(invoice.total_amount).toFixed(2)} {invoice.currency}</span>
               </div>
