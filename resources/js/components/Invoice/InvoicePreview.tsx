@@ -114,33 +114,33 @@ export const InvoicePreview = ({ open, onOpenChange, invoiceId }: InvoicePreview
             </div>
 
             {/* Top row: Supplier + Client side-by-side */}
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               {/* Supplier Info */}
-              <div className="flex-1 bg-purple-50/50 p-6 rounded-lg border border-purple-200">
-                <h3 className="font-bold text-purple-600 mb-3 text-sm uppercase tracking-wide">Dodávateľ</h3>
-                <p className="font-semibold text-lg mb-2">{invoice.supplier_company?.name || 'N/A'}</p>
-                <p className="text-sm text-gray-600">{invoice.supplier_company?.address || ''}</p>
-                <p className="text-sm text-gray-600">{invoice.supplier_company?.postal_code} {invoice.supplier_company?.city}</p>
-                <div className="mt-3 pt-3 border-t border-purple-200">
-                  <p className="text-sm text-gray-600">IČO: {invoice.supplier_company?.ico || 'N/A'}</p>
-                  <p className="text-sm text-gray-600">DIČ: {invoice.supplier_company?.dic || 'N/A'}</p>
+              <div className="flex-1 bg-purple-50/50 p-4 rounded-lg border border-purple-200">
+                <h3 className="font-bold text-purple-600 mb-2 text-xs uppercase tracking-wide">Dodávateľ</h3>
+                <p className="font-semibold text-base mb-1">{invoice.supplier_company?.name || 'N/A'}</p>
+                <p className="text-xs text-gray-600">{invoice.supplier_company?.address || ''}</p>
+                <p className="text-xs text-gray-600">{invoice.supplier_company?.postal_code} {invoice.supplier_company?.city}</p>
+                <div className="mt-2 pt-2 border-t border-purple-200">
+                  <p className="text-xs text-gray-600">IČO: {invoice.supplier_company?.ico || 'N/A'}</p>
+                  <p className="text-xs text-gray-600">DIČ: {invoice.supplier_company?.dic || 'N/A'}</p>
                   {invoice.supplier_company?.ic_dph && (
-                    <p className="text-sm text-gray-600">IČ DPH: {invoice.supplier_company.ic_dph}</p>
+                    <p className="text-xs text-gray-600">IČ DPH: {invoice.supplier_company.ic_dph}</p>
                   )}
                 </div>
               </div>
 
               {/* Client Info */}
-              <div className="flex-1 bg-gray-50 p-6 rounded-lg border border-gray-200">
-                <h3 className="font-bold text-gray-700 mb-3 text-sm uppercase tracking-wide">Odberateľ</h3>
-                <p className="font-semibold text-lg mb-2">{invoice.business_entity?.name || 'N/A'}</p>
-                <p className="text-sm text-gray-600">{invoice.business_entity?.address || ''}</p>
-                <p className="text-sm text-gray-600">{invoice.business_entity?.postal_code} {invoice.business_entity?.city}</p>
-                <div className="mt-3 pt-3 border-t border-gray-200">
-                  <p className="text-sm text-gray-600">IČO: {invoice.business_entity?.ico || 'N/A'}</p>
-                  <p className="text-sm text-gray-600">DIČ: {invoice.business_entity?.dic || 'N/A'}</p>
+              <div className="flex-1 bg-gray-50 p-4 rounded-lg border border-gray-200">
+                <h3 className="font-bold text-gray-700 mb-2 text-xs uppercase tracking-wide">Odberateľ</h3>
+                <p className="font-semibold text-base mb-1">{invoice.business_entity?.name || 'N/A'}</p>
+                <p className="text-xs text-gray-600">{invoice.business_entity?.address || ''}</p>
+                <p className="text-xs text-gray-600">{invoice.business_entity?.postal_code} {invoice.business_entity?.city}</p>
+                <div className="mt-2 pt-2 border-t border-gray-200">
+                  <p className="text-xs text-gray-600">IČO: {invoice.business_entity?.ico || 'N/A'}</p>
+                  <p className="text-xs text-gray-600">DIČ: {invoice.business_entity?.dic || 'N/A'}</p>
                   {invoice.business_entity?.ic_dph && (
-                    <p className="text-sm text-gray-600">IČ DPH: {invoice.business_entity.ic_dph}</p>
+                    <p className="text-xs text-gray-600">IČ DPH: {invoice.business_entity.ic_dph}</p>
                   )}
                 </div>
               </div>
@@ -149,58 +149,55 @@ export const InvoicePreview = ({ open, onOpenChange, invoiceId }: InvoicePreview
           </div>
 
           {/* Payment Info with QR Code */}
-          <div className="border-2 border-purple-200 rounded-lg p-6 mb-6 bg-gradient-to-br from-purple-50/50 to-white">
-            <h3 className="font-bold mb-3 text-base text-purple-600 border-b border-purple-200 pb-1.5">Platobné údaje</h3>
-            <div className="flex gap-6 items-start">
-              <div className="flex-1 space-y-3">
+          <div className="border-2 border-purple-200 rounded-lg p-4 mb-4 bg-gradient-to-br from-purple-50/50 to-white">
+            <h3 className="font-bold mb-2 text-sm text-purple-600 border-b border-purple-200 pb-1">Platobné údaje</h3>
+            <div className="flex gap-4 items-start">
+              <div className="flex-1 space-y-2">
                 {/* Invoice Details */}
-                <div className="grid grid-cols-2 gap-x-6 gap-y-4">
-                  <div className="bg-white/60 p-4 rounded-lg border border-purple-100">
-                    <p className="text-xs text-gray-500 mb-1 uppercase tracking-wide">Dátum vystavenia</p>
-                    <p className="font-semibold text-gray-900">{new Date(invoice.issue_date).toLocaleDateString('sk-SK')}</p>
+                <div className="grid grid-cols-2 gap-x-3 gap-y-2">
+                  <div className="bg-white/60 p-2.5 rounded-lg border border-purple-100">
+                    <p className="text-xs text-gray-500 mb-0.5 uppercase tracking-wide">Dátum vystavenia</p>
+                    <p className="font-semibold text-sm text-gray-900">{new Date(invoice.issue_date).toLocaleDateString('sk-SK')}</p>
                   </div>
-                  <div className="bg-white/60 p-4 rounded-lg border border-purple-100">
-                    <p className="text-xs text-gray-500 mb-1 uppercase tracking-wide">Dátum splatnosti</p>
-                    <p className="font-semibold text-purple-600">{new Date(invoice.due_date).toLocaleDateString('sk-SK')}</p>
+                  <div className="bg-white/60 p-2.5 rounded-lg border border-purple-100">
+                    <p className="text-xs text-gray-500 mb-0.5 uppercase tracking-wide">Dátum splatnosti</p>
+                    <p className="font-semibold text-sm text-purple-600">{new Date(invoice.due_date).toLocaleDateString('sk-SK')}</p>
                   </div>
                 </div>
 
                 {/* Bank Details */}
-                <div className="bg-white/80 p-5 rounded-lg border border-purple-200 space-y-3">
+                <div className="bg-white/80 p-3 rounded-lg border border-purple-200 space-y-2">
                   {invoice.supplier_company?.iban && (
-                    <div className="flex justify-between items-center border-b border-gray-100 pb-2">
+                    <div className="flex justify-between items-center border-b border-gray-100 pb-1.5">
                       <span className="text-xs text-gray-500 uppercase tracking-wide">Číslo účtu</span>
-                      <span className="font-mono font-semibold text-gray-900">{invoice.supplier_company.iban}</span>
+                      <span className="font-mono font-semibold text-sm text-gray-900">{invoice.supplier_company.iban}</span>
                     </div>
                   )}
                   {invoice.variable_symbol && (
-                    <div className="flex justify-between items-center border-b border-gray-100 pb-2">
+                    <div className="flex justify-between items-center border-b border-gray-100 pb-1.5">
                       <span className="text-xs text-gray-500 uppercase tracking-wide">Variabilný symbol</span>
-                      <span className="font-mono font-semibold text-gray-900">{invoice.variable_symbol}</span>
+                      <span className="font-mono font-semibold text-sm text-gray-900">{invoice.variable_symbol}</span>
                     </div>
                   )}
-                  <div className="flex justify-between items-center pt-1">
+                  <div className="flex justify-between items-center pt-0.5">
                     <span className="text-sm font-semibold text-gray-700">Suma k úhrade</span>
-                    <span className="font-bold text-2xl text-purple-600">{Number(invoice.total_amount).toFixed(2)} {invoice.currency}</span>
+                    <span className="font-bold text-lg text-purple-600">{Number(invoice.total_amount).toFixed(2)} {invoice.currency}</span>
                   </div>
                 </div>
               </div>
 
               {/* QR Code */}
-              <div className="flex flex-col items-center gap-3 bg-white p-6 border-2 border-purple-300 rounded-xl shadow-md">
+              <div className="flex flex-col items-center gap-2 bg-white p-4 border-2 border-purple-300 rounded-xl shadow-md">
                 {invoice.qr_code ? (
-                  <img src={invoice.qr_code} alt="Pay by Square QR Code" className="w-[150px] h-[150px]" />
+                  <img src={invoice.qr_code} alt="Pay by Square QR Code" className="w-[120px] h-[120px]" />
                 ) : (
-                  <div className="w-[150px] h-[150px] flex items-center justify-center bg-gray-100">
+                  <div className="w-[120px] h-[120px] flex items-center justify-center bg-gray-100">
                     <p className="text-xs text-gray-500 text-center">QR kód nedostupný</p>
                   </div>
                 )}
                 <div className="text-center">
-                  <p className="text-sm font-bold text-purple-600 mb-1">
+                  <p className="text-xs font-bold text-purple-600">
                     Pay by Square
-                  </p>
-                  <p className="text-xs text-gray-500">
-                    Naskenujte pre platbu
                   </p>
                 </div>
               </div>
