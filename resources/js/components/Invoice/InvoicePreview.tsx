@@ -157,7 +157,6 @@ export const InvoicePreview = ({ open, onOpenChange, invoiceId }: InvoicePreview
                   <th className="text-left py-3 px-2">Popis</th>
                   <th className="text-right py-3 px-2 w-20">Počet</th>
                   <th className="text-right py-3 px-2 w-28">Cena/ks</th>
-                  <th className="text-right py-3 px-2 w-20">DPH %</th>
                   <th className="text-right py-3 px-2 w-28">Celkom</th>
                 </tr>
               </thead>
@@ -167,7 +166,6 @@ export const InvoicePreview = ({ open, onOpenChange, invoiceId }: InvoicePreview
                     <td className="py-3 px-2">{item.description}</td>
                     <td className="text-right py-3 px-2">{Number(item.quantity)}</td>
                     <td className="text-right py-3 px-2">{Number(item.unit_price).toFixed(2)} {invoice.currency}</td>
-                    <td className="text-right py-3 px-2">{Number(item.vat_rate)}%</td>
                     <td className="text-right py-3 px-2 font-semibold">
                       {Number(item.total_price).toFixed(2)} {invoice.currency}
                     </td>
