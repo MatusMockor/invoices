@@ -109,6 +109,14 @@ const NewInvoice = () => {
     }
   }, [issueDate, dueDateDays, setValue]);
 
+  // Sync invoice number with variable symbol
+  const variableSymbol = watch("variableSymbol");
+  useEffect(() => {
+    if (variableSymbol) {
+      setValue("invoiceNumber", variableSymbol);
+    }
+  }, [variableSymbol, setValue]);
+
   const items = watch("items");
 
   // Load invoice data in edit mode
@@ -541,12 +549,12 @@ const NewInvoice = () => {
             </h3>
             <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
               <div className="space-y-2">
-                <Label htmlFor="variableSymbol">Variabilný symbol (= Číslo faktúry) *</Label>
+                <Label htmlFor="variableSymbol">Variabilný symbol *</Label>
                 <Input
                   id="variableSymbol"
                   {...register("variableSymbol")}
-                  readOnly
-                  className="bg-muted font-semibold"
+                  placeholder="Napr. číslo faktúry"
+                  className="border-primary/30"
                 />
                 {errors.variableSymbol && (
                   <p className="text-sm text-destructive">{errors.variableSymbol.message}</p>
