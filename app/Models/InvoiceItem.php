@@ -32,14 +32,12 @@ class InvoiceItem extends Model
         'quantity',
         'unit_price',
         'total_price',
-        'vat_rate',
     ];
 
     protected $casts = [
         'quantity' => 'float',
         'unit_price' => 'float',
         'total_price' => 'float',
-        'vat_rate' => 'float',
     ];
 
     public function invoice(): BelongsTo

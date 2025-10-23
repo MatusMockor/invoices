@@ -74,7 +74,6 @@ export interface InvoiceItem {
   description: string;
   quantity: number;
   unit_price: number;
-  vat_rate: number;
   total_price: number;
   created_at: string;
   updated_at: string;

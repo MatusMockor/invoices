@@ -29,7 +29,6 @@ export interface InvoiceItemData {
   description: string;
   quantity: number;
   price: number;
-  vat_rate?: number; // Optional, defaults to 20% on backend
 }
 
 export type InvoiceUpdateData = Partial<InvoiceCreateData>;

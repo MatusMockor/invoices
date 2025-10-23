@@ -212,14 +212,12 @@ class InvoiceService implements InvoiceServiceContract
     {
         $preparedItems = array_map(static function ($item) use ($invoice) {
             $unitPrice = $item['price'] ?? $item['unit_price'] ?? 0;
-            $vatRate = $item['vat_rate'] ?? 20; // Default 20% VAT
 
             return [
                 'invoice_id' => $invoice->id,
                 'description' => $item['description'],
                 'quantity' => $item['quantity'],
                 'unit_price' => $unitPrice,
-                'vat_rate' => $vatRate,
                 'total_price' => $item['quantity'] * $unitPrice,
             ];
         }, $items);
@@ -227,7 +225,7 @@ class InvoiceService implements InvoiceServiceContract
         $this->invoiceItemRepository->upsert(
             $preparedItems,
             ['id'],
-            ['description', 'quantity', 'unit_price', 'vat_rate', 'total_price']
+            ['description', 'quantity', 'unit_price', 'total_price']
         );
     }
 
@@ -250,14 +248,12 @@ class InvoiceService implements InvoiceServiceContract
         // Prepare items for upsert
         $preparedItems = array_map(static function ($item) use ($invoice) {
             $unitPrice = $item['price'] ?? $item['unit_price'] ?? 0;
-            $vatRate = $item['vat_rate'] ?? 20; // Default 20% VAT
 
             $itemData = [
                 'invoice_id' => $invoice->id,
                 'description' => $item['description'],
                 'quantity' => $item['quantity'],
                 'unit_price' => $unitPrice,
-                'vat_rate' => $vatRate,
                 'total_price' => $item['quantity'] * $unitPrice,
             ];
 
@@ -271,7 +267,7 @@ class InvoiceService implements InvoiceServiceContract
         $this->invoiceItemRepository->upsert(
             $preparedItems,
             ['id'],
-            ['description', 'quantity', 'unit_price', 'vat_rate', 'total_price']
+            ['description', 'quantity', 'unit_price', 'total_price']
         );
     }
 }

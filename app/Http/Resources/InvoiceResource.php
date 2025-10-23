@@ -53,12 +53,6 @@ class InvoiceResource extends JsonResource
 
     private function calculateVatAmount(): float
     {
-        if (! $this->relationLoaded('items')) {
-            return 0;
-        }
-
-        return $this->items->sum(function ($item) {
-            return $item->total_price * ($item->vat_rate / 100);
-        });
+        return 0;
     }
 }
