@@ -16,6 +16,13 @@ use Illuminate\Database\Eloquent\Factories\Factory;
 class InvoiceFactory extends Factory
 {
     /**
+     * Counter for generating sequential invoice numbers.
+     *
+     * @var int
+     */
+    protected static $invoiceCounter = 1;
+
+    /**
      * The name of the factory's corresponding model.
      *
      * @var string
@@ -29,9 +36,12 @@ class InvoiceFactory extends Factory
      */
     public function definition(): array
     {
+        $year = 2025;
+        $invoiceNumber = $year.str_pad((string) self::$invoiceCounter++, 4, '0', STR_PAD_LEFT);
+
         return [
             'user_id' => User::factory(),
-            'invoice_number' => 'INV-'.date('Y').'-'.$this->faker->unique()->randomNumber(3),
+            'invoice_number' => $invoiceNumber,
             'issue_date' => $this->faker->dateTimeBetween('-30 days', 'now'),
             'due_date' => $this->faker->dateTimeBetween('now', '+30 days'),
             'delivery_date' => $this->faker->dateTimeBetween('-15 days', '+15 days'),

@@ -126,21 +126,21 @@ class InvoiceController extends Controller
      */
     private function generateQrCode(Invoice $invoice): ?string
     {
-        $company = $invoice->supplierCompany;
+        $userCompany = $invoice->supplierCompany;
 
-        if (! $company || ! $company->iban || ! $company->swift) {
+        if (! $userCompany || ! $userCompany->iban || ! $userCompany->swift) {
             return null;
         }
 
         return $this->payBySquareService->generateQrCode(
-            iban: str_replace(' ', '', $company->iban),
-            swift: $company->swift,
+            iban: str_replace(' ', '', $userCompany->iban),
+            swift: $userCompany->swift,
             amount: $invoice->total_amount,
             variableSymbol: str_replace(['INV-', '-'], '', $invoice->invoice_number),
             constantSymbol: $invoice->constant_symbol ?? '',
             specificSymbol: $invoice->specific_symbol ?? '',
             note: 'Faktura '.$invoice->invoice_number,
-            recipient: $company->name
+            recipient: $userCompany->name
         );
     }
 }

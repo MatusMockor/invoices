@@ -38,6 +38,11 @@ class UserCompanyFactory extends Factory
             'country' => $this->faker->country(),
             'dic' => $this->faker->numerify('##########'),
             'ic_dph' => 'SK'.$this->faker->numerify('##########'),
+            'iban' => $this->faker->iban('SK'),
+            'swift' => $this->faker->swiftBicNumber(),
+            'phone' => $this->faker->phoneNumber(),
+            'email' => $this->faker->companyEmail(),
+            'website' => $this->faker->url(),
             'company_type' => $this->faker->randomElement($companyTypes),
             'registration_number' => 'OR '.$this->faker->randomElement(['Bratislava I', 'Košice', 'Žilina', 'Prešov', 'Banská Bystrica']).', Oddiel: '.$this->faker->randomElement(['Sro', 'Sa']).', Vložka č. '.$this->faker->numerify('######'),
         ];
