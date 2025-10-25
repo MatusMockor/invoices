@@ -35,7 +35,7 @@ final class InvoiceCreateAction
             'user_id' => $userId,
             'issue_date' => $dto->issueDate,
             'due_date' => $dto->dueDate,
-            'delivery_date' => $dto->deliveryDate ?? $dto->issueDate,
+            'delivery_date' => $dto->deliveryDate,
             'company_id' => $customerCompany->id,
             'supplier_company_id' => $supplierCompanyId,
             'total_amount' => $totalAmount,
@@ -52,7 +52,7 @@ final class InvoiceCreateAction
             'customer_street' => $dto->clientStreet,
             'customer_city' => $dto->clientCity,
             'customer_postal_code' => $dto->clientPostalCode,
-            'customer_country' => $dto->clientCountry,
+            'customer_country' => $dto->clientCountry ?? 'SK',
         ]);
 
         $this->createInvoiceItems($invoice, $dto->items);

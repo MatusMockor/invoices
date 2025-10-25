@@ -28,7 +28,7 @@ class StoreInvoiceRequest extends FormRequest
             'clientName' => 'required|string|max:255',
             'clientIco' => 'required|string|max:20',
             'clientDic' => 'required|string|max:20',
-            'clientIcDph' => 'required|string|max:20',
+            'clientIcDph' => 'nullable|string|max:20',
             'clientStreet' => 'required|string|max:255',
             'clientCity' => 'required|string|max:100',
             'clientPostalCode' => 'required|string|max:20',

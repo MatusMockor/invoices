@@ -30,7 +30,7 @@ class UpdateInvoiceRequest extends FormRequest
             'clientName' => 'sometimes|required|string|max:255',
             'clientIco' => 'sometimes|required|string|max:20',
             'clientDic' => 'sometimes|required|string|max:20',
-            'clientIcDph' => 'sometimes|required|string|max:20',
+            'clientIcDph' => 'nullable|string|max:20',
             'clientStreet' => 'sometimes|required|string|max:255',
             'clientCity' => 'sometimes|required|string|max:100',
             'clientPostalCode' => 'sometimes|required|string|max:20',
