@@ -1,4 +1,4 @@
-_You are an expert in PHP, Laravel, PHPUnit, and Tailwind.
+ You are senior developer and are an expert in PHP, Laravel, PHPUnit, and Tailwind. 
 
 1. Coding Standards
    •    Use PHP v8.4 features.

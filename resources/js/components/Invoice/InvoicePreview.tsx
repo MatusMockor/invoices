@@ -4,8 +4,7 @@ import { Printer, Download, Loader2 } from "lucide-react";
 import { useInvoice } from "@/hooks/useInvoices";
 import { useToast } from "@/hooks/use-toast";
 import { useState } from "react";
-import html2canvas from "html2canvas";
-import jsPDF from "jspdf";
+import axios from "@/lib/axios";
 
 interface InvoicePreviewProps {
   open: boolean;
@@ -28,41 +27,30 @@ export const InvoicePreview = ({ open, onOpenChange, invoiceId }: InvoicePreview
     try {
       setIsDownloading(true);
 
-      const invoiceContent = document.getElementById('invoice-content');
-      if (!invoiceContent) {
-        throw new Error('Invoice content not found');
-      }
-
-      // Capture the invoice content as canvas
-      const canvas = await html2canvas(invoiceContent, {
-        scale: 2, // Higher quality
-        useCORS: true,
-        logging: false,
-        backgroundColor: '#ffffff',
+      // Download PDF from backend
+      const response = await axios.get(`/invoices/${invoice.id}/pdf/download`, {
+        responseType: 'blob',
       });
 
-      // Calculate PDF dimensions
-      const imgWidth = 210; // A4 width in mm
-      const imgHeight = (canvas.height * imgWidth) / canvas.width;
-
-      // Create PDF
-      const pdf = new jsPDF('p', 'mm', 'a4');
-      const imgData = canvas.toDataURL('image/png');
-
-      pdf.addImage(imgData, 'PNG', 0, 0, imgWidth, imgHeight);
-
-      // Download the PDF
-      pdf.save(`faktura-${invoice.invoice_number}.pdf`);
+      // Create download link
+      const url = URL.createObjectURL(response.data);
+      const link = document.createElement('a');
+      link.href = url;
+      link.download = `faktura-${invoice.invoice_number}.pdf`;
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+      URL.revokeObjectURL(url);
 
       toast({
         title: "PDF stiahnuté",
         description: "Faktúra bola úspešne stiahnutá.",
       });
     } catch (error) {
-      console.error('Error generating PDF:', error);
+      console.error('Error downloading PDF:', error);
       toast({
         title: "Chyba",
-        description: "Nepodarilo sa vygenerovať PDF",
+        description: "Nepodarilo sa stiahnuť PDF",
         variant: "destructive",
       });
     } finally {

@@ -7,8 +7,8 @@ namespace App\Services;
 use App\Models\Invoice;
 use App\Services\Interfaces\InvoicePdfService as InvoicePdfServiceContract;
 use App\Services\Interfaces\PayBySquare as PayBySquareContract;
-use Barryvdh\DomPDF\Facade\Pdf;
 use Illuminate\Http\Response;
+use Spatie\Browsershot\Browsershot;
 
 class InvoicePdfService implements InvoicePdfServiceContract
 {
@@ -20,9 +20,9 @@ class InvoicePdfService implements InvoicePdfServiceContract
     /**
      * Generate a PDF for the given invoice
      *
-     * @return mixed
+     * @return string The PDF content as a string
      */
-    public function generatePdf(Invoice $invoice)
+    public function generatePdf(Invoice $invoice): string
     {
         $invoice->load(['company', 'items', 'supplierCompany']);
 
@@ -45,12 +45,32 @@ class InvoicePdfService implements InvoicePdfServiceContract
             );
         }
 
-        $pdf = PDF::loadView('invoices.pdf', [
+        // Render the HTML view
+        $html = view('invoices.pdf-render', [
             'invoice' => $invoice,
             'qrCode' => $qrCode,
-        ]);
+        ])->render();
 
-        return $pdf;
+        // Generate PDF using Browsershot
+        $browsershot = Browsershot::html($html)
+            ->setNodeModulePath(base_path('node_modules'))
+            ->format('A4')
+            ->margins(0, 0, 0, 0)
+            ->showBackground()
+            ->waitUntilNetworkIdle();
+
+        // Use system Chromium if available (for Docker/Alpine)
+        if (file_exists('/usr/bin/chromium-browser')) {
+            $browsershot->setChromePath('/usr/bin/chromium-browser')
+                ->addChromiumArguments([
+                    'no-sandbox',
+                    'disable-setuid-sandbox',
+                    'disable-dev-shm-usage',
+                    'disable-gpu',
+                ]);
+        }
+
+        return $browsershot->pdf();
     }
 
     /**
@@ -60,9 +80,12 @@ class InvoicePdfService implements InvoicePdfServiceContract
     {
         $pdf = $this->generatePdf($invoice);
 
-        $filename = 'invoice-'.$invoice->invoice_number.'.pdf';
+        $filename = 'faktura-'.$invoice->invoice_number.'.pdf';
 
-        return $pdf->download($filename);
+        return response($pdf, 200, [
+            'Content-Type' => 'application/pdf',
+            'Content-Disposition' => 'attachment; filename="'.$filename.'"',
+        ]);
     }
 
     /**
@@ -72,6 +95,9 @@ class InvoicePdfService implements InvoicePdfServiceContract
     {
         $pdf = $this->generatePdf($invoice);
 
-        return $pdf->stream();
+        return response($pdf, 200, [
+            'Content-Type' => 'application/pdf',
+            'Content-Disposition' => 'inline; filename="faktura-'.$invoice->invoice_number.'.pdf"',
+        ]);
     }
 }
