@@ -1,59 +1,183 @@
- You are senior developer and are an expert in PHP, Laravel, PHPUnit, and Tailwind. 
+Senior Laravel Developer (20+ years experience) | Expert in Laravel, PHP, PHPUnit, React, Tailwind CSS
 
-1. Coding Standards
-   •    Use PHP v8.4 features.
-   •    Use Laravel 12 features.
-   •    Use SOLID principles.
-   •    Follow pint.json coding rules.
-   •    Run pint after modifying files.
-   •    Create interfaces for all repositories and services.
-   •    Avoid using else in conditions.
-   •    Use `if (!$var)` instead of `if ($var === null)` for null checks.
-   •    Add comments only for exceptions, otherwise don't create comments unless specifically requested.
+---
 
-2. Project Structure & Architecture
-   •    Delete .gitkeep when adding a file.
-   •    Avoid DB::; use direct model methods (e.g., Model::where(), Model::find()).
-   •    Use repositories to interact with a database.
-   •    Don't use "Interface" suffix for interface names.
-   •    Register interfaces in AppServiceProvider.
-   •    When registering interfaces, use "Contract" as the suffix for aliases.
-   •    Register interfaces and implementations using the class-based approach: `$this->app->bind(InterfaceContract::class, Implementation::class);`
+# Laravel Coding Standards (v2.0 – Unified & AI-friendly)
 
-2.1 Directory Conventions
+## 1. Coding & Language Standards
 
-app/Http/Controllers
--   No abstract/base controllers.
--   Avoid using compact in Controllers.
+* PHP **v8.4**
+* Laravel **v12**
+* Use **strict types** and **typed properties**
+* Follow **SOLID principles**
+* Run `./vendor/bin/pint` after modifying files
+* Each Repository and Service has an **interface** (without `Interface` suffix)
+* Interface aliases in `AppServiceProvider` end with `Contract`
+* Register bindings:
 
-app/Http/Requests
--   Use FormRequest for validation.
--   Name with Create, Update, Delete.
+  ```php
+  $this->app->bind(UserRepositoryContract::class, EloquentUserRepository::class);
+  ```
+* **Avoid `else` statements**; use guard clauses
+* For null checks, use `if (!$var)`
+* Add comments only for exceptions and specific business logic
 
-app/Models
--   Use fillable.
--   Use #[ObservedBy([ObserverClass::class])] attribute to register model observers.
+## 2. Architecture & Project Structure
 
-3. Testing
-   •    Use Laravel Sail to run all tests: `./vendor/bin/sail test` or `./vendor/bin/sail artisan test`.
-   •    For specific test files: `./vendor/bin/sail test tests/path/to/TestFile.php`.
-   •    Don't remove tests without approval.
-   •    All code must be tested.
-   •    Generate a {Model}Factory with each model.
-   •    Use laravel faker or fake() helper function instead of hardcoded values.
-   •    When using assertDatabase, specify the table using Model::class.
+### 2.1 Directory Structure
 
-3.1 Test Directory Structure
--   Console: tests/Feature/Console
--   Controllers: tests/Feature/Http
--   Actions: tests/Unit/Actions
--   Models: tests/Unit/Models
--   Jobs: tests/Unit/Jobs
+```
+app/
+├── Actions/
+│   ├── Order/
+│   │   ├── OrderCreateAction.php
+│   │   ├── OrderItemCancelAction.php
+│   └── Search/
+│       ├── SearchQueryTrackLogAction.php
+├── Services/
+│   ├── Order/
+│   │   ├── OrderConditionService.php
+│   └── Supplier/
+│       ├── DeliveryScheduleService.php
+├── Repositories/
+│   ├── UserRepository.php
+│   ├── Contracts/
+│   │   ├── UserRepositoryContract.php
+├── Models/
+│   ├── Order.php
+├── Http/
+│   ├── Controllers/
+│   ├── Requests/
+│   ├── Resources/
+```
 
-4. Styling & UI
-   •    Use Tailwind CSS.
--    Keep UI minimal.
+### 2.2 General Rules
 
-5. Task Completion Requirements
-   •    Recompile assets after frontend changes.
-   •    Follow all rules before marking tasks complete._
+* No `.gitkeep` after adding real files
+* Avoid `DB::`; always use model or repository methods
+* Controllers are **thin** – only gather inputs and call Actions
+* Use **FormRequest** classes for validation (`Create`, `Update`, `Delete`)
+* Each model has `fillable` and registers observers via:
+
+  ```php
+  #[ObservedBy([OrderObserver::class])]
+  ```
+* Use **DTOs** to transfer data between layers
+
+## 3. Actions & Services (Business Logic Layer)
+
+### 3.1 Actions
+
+* Located in `app/Actions/{Domain}`
+* Naming: `[Domain][Object][Verb]Action` (e.g., `OrderCreateAction`)
+* Each Action handles **one business operation**
+* Constructor-inject dependencies (repositories, services, sub-actions)
+* Main method: `handle()`
+* If modifying data → wrap in `DB::transaction()`
+* Exceptions bubble up to global handler
+* Limit dependencies to 8; split Action if exceeding
+* Controller should only:
+
+    * Validate (FormRequest)
+    * Create DTO
+    * Call `Action->handle()`
+    * Return Resource
+
+**Example:**
+
+```php
+final class OrderCreateAction
+{
+    public function __construct(
+        private readonly OrderRepository $orders,
+        private readonly OrderConditionService $conditions,
+        private readonly OrderIssueNotificationAction $notify
+    ) {}
+
+    public function handle(OrderCreateDTO $dto, int $userId): Order
+    {
+        $this->conditions->validate($dto);
+
+        return DB::transaction(function () use ($dto, $userId) {
+            $order = $this->orders->create($dto, $userId);
+            $this->notify->handle($order);
+
+            return $order;
+        });
+    }
+}
+```
+
+### 3.2 Services
+
+* Located in `app/Services/{Domain}`
+* Naming: `[Domain][Purpose]Service` (e.g., `CartItemValidator`)
+* **Stateless**, no side effects
+* Handles calculations, validations, API calls, formatting
+* Limit dependencies to 5; refactor if exceeding
+* Must be reusable and unit-testable
+
+**Example:**
+
+```php
+final class DeliveryScheduleService
+{
+    public function calculate(DateTime $orderDate, array $rules): DateTime
+    {
+        return $this->applyRules($orderDate, $rules);
+    }
+
+    private function applyRules(DateTime $orderDate, array $rules): DateTime
+    {
+        return $orderDate;
+    }
+}
+```
+
+## 4. Testing
+
+* Run tests with Sail:
+
+  ```bash
+  ./vendor/bin/sail test
+  ```
+* Each model has a Factory
+* Use `fake()` instead of hardcoded values
+* Use `assertDatabaseHas()` with model class:
+
+  ```php
+  $this->assertDatabaseHas(Order::class, ['status' => 'pending']);
+  ```
+* Test directory:
+
+```
+tests/
+├── Feature/
+│   ├── Http/
+│   └── Console/
+├── Unit/
+│   ├── Actions/
+│   ├── Services/
+│   ├── Models/
+│   ├── Jobs/
+```
+
+## 5. Styling & Frontend
+
+* Use **Tailwind CSS**
+* Minimalist, responsive UI
+* Recompile assets after frontend changes:
+
+  ```bash
+  npm run build
+  ```
+
+## 6. Task Completion Checklist ✅
+
+* Pint ran successfully
+* Tests passed (`sail test`)
+* Actions & Services follow naming & structure standards
+* Repositories, Services, and Actions are tested
+* DTOs and FormRequests are used
+* No `else`, no `DB::`, no magic numbers
+* Assets recompiled

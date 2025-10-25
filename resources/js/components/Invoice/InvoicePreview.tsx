@@ -3,8 +3,11 @@ import { Button } from "@/components/ui/button";
 import { Printer, Download, Loader2 } from "lucide-react";
 import { useInvoice } from "@/hooks/useInvoices";
 import { useToast } from "@/hooks/use-toast";
-import { useState } from "react";
+import { useState, useMemo } from "react";
 import axios from "@/lib/axios";
+import { InvoicePreviewModern } from "./InvoicePreviewModern";
+import { InvoicePreviewMinimal } from "./InvoicePreviewMinimal";
+import { InvoicePreviewBold } from "./InvoicePreviewBold";
 
 interface InvoicePreviewProps {
   open: boolean;
@@ -16,6 +19,30 @@ export const InvoicePreview = ({ open, onOpenChange, invoiceId }: InvoicePreview
   const { invoice, isLoading } = useInvoice(invoiceId || 0);
   const { toast } = useToast();
   const [isDownloading, setIsDownloading] = useState(false);
+  const selectedTemplate = localStorage.getItem('invoiceTemplate') || 'classic';
+
+  // Transform invoice data to match the template format
+  const invoiceData = useMemo(() => {
+    if (!invoice) return null;
+
+    return {
+      id: invoice.invoice_number,
+      date: new Date(invoice.issue_date).toLocaleDateString('sk-SK'),
+      dueDate: new Date(invoice.due_date).toLocaleDateString('sk-SK'),
+      variableSymbol: invoice.variable_symbol,
+      client: {
+        name: invoice.business_entity?.name || 'N/A',
+        address: `${invoice.business_entity?.address || ''}, ${invoice.business_entity?.postal_code || ''} ${invoice.business_entity?.city || ''}`,
+        ico: invoice.business_entity?.ico || '',
+        dic: invoice.business_entity?.dic || '',
+      },
+      items: invoice.items?.map(item => ({
+        description: item.description,
+        quantity: Number(item.quantity),
+        price: Number(item.unit_price),
+      })) || [],
+    };
+  }, [invoice]);
 
   const handlePrint = () => {
     window.print();
@@ -92,7 +119,14 @@ export const InvoicePreview = ({ open, onOpenChange, invoiceId }: InvoicePreview
           <div className="flex items-center justify-center py-12">
             <Loader2 className="h-8 w-8 animate-spin" />
           </div>
-        ) : invoice ? (
+        ) : invoice && invoiceData ? (
+          selectedTemplate === 'modern' ? (
+            <InvoicePreviewModern invoiceData={invoiceData} />
+          ) : selectedTemplate === 'minimal' ? (
+            <InvoicePreviewMinimal invoiceData={invoiceData} />
+          ) : selectedTemplate === 'bold' ? (
+            <InvoicePreviewBold invoiceData={invoiceData} />
+          ) : (
         <div className="bg-white text-black p-8 rounded-lg" id="invoice-content">
           {/* Header with Company Logo */}
           <div className="mb-8 pb-6 border-b-2 border-purple-600">
@@ -240,6 +274,7 @@ export const InvoicePreview = ({ open, onOpenChange, invoiceId }: InvoicePreview
             <p>Ďakujeme za vašu dôveru!</p>
           </div>
         </div>
+          )
         ) : null}
       </DialogContent>
     </Dialog>

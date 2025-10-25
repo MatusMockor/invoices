@@ -8,6 +8,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Card } from "@/components/ui/card";
 import { Separator } from "@/components/ui/separator";
 import { useToast } from "@/hooks/use-toast";
+import { InvoicePreview } from "@/components/Invoice/InvoicePreview";
 import {
   User,
   Building2,
@@ -16,17 +17,39 @@ import {
   Save,
   Moon,
   Sun,
+  FileText,
+  Eye,
+  Palette,
 } from "lucide-react";
 
 const Settings = () => {
   const { toast } = useToast();
   const [isDarkMode, setIsDarkMode] = useState(false);
+  const [invoiceTemplate, setInvoiceTemplate] = useState(
+    localStorage.getItem('invoiceTemplate') || 'classic'
+  );
+  const [previewOpen, setPreviewOpen] = useState(false);
+  const [previewInvoiceId, setPreviewInvoiceId] = useState<number | null>(null);
   const [notifications, setNotifications] = useState({
     emailInvoices: true,
     emailPayments: true,
     emailReminders: true,
     pushNotifications: false,
   });
+
+  const handlePreview = (template: string) => {
+    // Temporarily set the template for preview
+    const currentTemplate = localStorage.getItem('invoiceTemplate');
+    localStorage.setItem('invoiceTemplate', template);
+    setPreviewInvoiceId(1); // Use a demo invoice ID
+    setPreviewOpen(true);
+    // Restore after a short delay
+    setTimeout(() => {
+      if (currentTemplate) {
+        localStorage.setItem('invoiceTemplate', currentTemplate);
+      }
+    }, 100);
+  };
 
   const handleSaveProfile = (e: React.FormEvent) => {
     e.preventDefault();
@@ -38,6 +61,7 @@ const Settings = () => {
 
   const handleSaveCompany = (e: React.FormEvent) => {
     e.preventDefault();
+    localStorage.setItem('invoiceTemplate', invoiceTemplate);
     toast({
       title: "Firemné údaje uložené",
       description: "Údaje vašej firmy boli úspešne aktualizované.",
@@ -60,7 +84,7 @@ const Settings = () => {
   };
 
   return (
-    <DashboardLayout>
+    <DashboardLayout disableLoading={true}>
       <div className="max-w-5xl mx-auto space-y-6 animate-fade-in">
         <div>
           <h1 className="text-3xl font-bold text-foreground">Nastavenia</h1>
@@ -78,6 +102,10 @@ const Settings = () => {
             <TabsTrigger value="company" className="gap-2">
               <Building2 className="h-4 w-4" />
               Firma
+            </TabsTrigger>
+            <TabsTrigger value="invoice-design" className="gap-2">
+              <Palette className="h-4 w-4" />
+              Dizajn faktúry
             </TabsTrigger>
             <TabsTrigger value="notifications" className="gap-2">
               <Bell className="h-4 w-4" />
@@ -247,6 +275,178 @@ const Settings = () => {
                   </Button>
                 </div>
               </form>
+            </Card>
+          </TabsContent>
+
+          {/* Invoice Design Tab */}
+          <TabsContent value="invoice-design">
+            <Card className="bg-gradient-card p-6 border border-border shadow-elegant-sm">
+              <div className="mb-6">
+                <h3 className="text-xl font-bold text-foreground">
+                  Dizajn faktúry
+                </h3>
+                <p className="text-sm text-muted-foreground mt-1">
+                  Vyberte vzhľad vašich faktúr
+                </p>
+              </div>
+
+              <div className="space-y-6">
+                <div className="space-y-4">
+                  <Label>Šablóna faktúry</Label>
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div
+                      className={`border-2 rounded-lg p-4 transition-all ${
+                        invoiceTemplate === 'classic'
+                          ? 'border-primary bg-primary/5'
+                          : 'border-border'
+                      }`}
+                    >
+                      <div className="flex items-center justify-between mb-2">
+                        <div className="flex items-center gap-3">
+                          <FileText className="h-5 w-5 text-primary" />
+                          <h5 className="font-semibold text-foreground">Klasický</h5>
+                        </div>
+                        <Button
+                          type="button"
+                          variant="ghost"
+                          size="sm"
+                          onClick={() => handlePreview('classic')}
+                        >
+                          <Eye className="h-4 w-4 mr-1" />
+                          Náhľad
+                        </Button>
+                      </div>
+                      <p className="text-sm text-muted-foreground mb-3">
+                        Tradičný profesionálny vzhľad s fialovým akcetom
+                      </p>
+                      <Button
+                        type="button"
+                        variant={invoiceTemplate === 'classic' ? 'default' : 'outline'}
+                        size="sm"
+                        className="w-full"
+                        onClick={() => setInvoiceTemplate('classic')}
+                      >
+                        {invoiceTemplate === 'classic' ? 'Aktívna šablóna' : 'Vybrať šablónu'}
+                      </Button>
+                    </div>
+                    <div
+                      className={`border-2 rounded-lg p-4 transition-all ${
+                        invoiceTemplate === 'modern'
+                          ? 'border-primary bg-primary/5'
+                          : 'border-border'
+                      }`}
+                    >
+                      <div className="flex items-center justify-between mb-2">
+                        <div className="flex items-center gap-3">
+                          <FileText className="h-5 w-5 text-primary" />
+                          <h5 className="font-semibold text-foreground">Moderný</h5>
+                        </div>
+                        <Button
+                          type="button"
+                          variant="ghost"
+                          size="sm"
+                          onClick={() => handlePreview('modern')}
+                        >
+                          <Eye className="h-4 w-4 mr-1" />
+                          Náhľad
+                        </Button>
+                      </div>
+                      <p className="text-sm text-muted-foreground mb-3">
+                        Moderný vzhľad s gradientami a zaoblenými rohami
+                      </p>
+                      <Button
+                        type="button"
+                        variant={invoiceTemplate === 'modern' ? 'default' : 'outline'}
+                        size="sm"
+                        className="w-full"
+                        onClick={() => setInvoiceTemplate('modern')}
+                      >
+                        {invoiceTemplate === 'modern' ? 'Aktívna šablóna' : 'Vybrať šablónu'}
+                      </Button>
+                    </div>
+                    <div
+                      className={`border-2 rounded-lg p-4 transition-all ${
+                        invoiceTemplate === 'minimal'
+                          ? 'border-primary bg-primary/5'
+                          : 'border-border'
+                      }`}
+                    >
+                      <div className="flex items-center justify-between mb-2">
+                        <div className="flex items-center gap-3">
+                          <FileText className="h-5 w-5 text-primary" />
+                          <h5 className="font-semibold text-foreground">Minimalistický</h5>
+                        </div>
+                        <Button
+                          type="button"
+                          variant="ghost"
+                          size="sm"
+                          onClick={() => handlePreview('minimal')}
+                        >
+                          <Eye className="h-4 w-4 mr-1" />
+                          Náhľad
+                        </Button>
+                      </div>
+                      <p className="text-sm text-muted-foreground mb-3">
+                        Čistý minimalistický dizajn s dôrazom na čitateľnosť
+                      </p>
+                      <Button
+                        type="button"
+                        variant={invoiceTemplate === 'minimal' ? 'default' : 'outline'}
+                        size="sm"
+                        className="w-full"
+                        onClick={() => setInvoiceTemplate('minimal')}
+                      >
+                        {invoiceTemplate === 'minimal' ? 'Aktívna šablóna' : 'Vybrať šablónu'}
+                      </Button>
+                    </div>
+                    <div
+                      className={`border-2 rounded-lg p-4 transition-all ${
+                        invoiceTemplate === 'bold'
+                          ? 'border-primary bg-primary/5'
+                          : 'border-border'
+                      }`}
+                    >
+                      <div className="flex items-center justify-between mb-2">
+                        <div className="flex items-center gap-3">
+                          <FileText className="h-5 w-5 text-primary" />
+                          <h5 className="font-semibold text-foreground">Odvážny</h5>
+                        </div>
+                        <Button
+                          type="button"
+                          variant="ghost"
+                          size="sm"
+                          onClick={() => handlePreview('bold')}
+                        >
+                          <Eye className="h-4 w-4 mr-1" />
+                          Náhľad
+                        </Button>
+                      </div>
+                      <p className="text-sm text-muted-foreground mb-3">
+                        Odvážny moderný dizajn s tmavým pozadím a živými farbami
+                      </p>
+                      <Button
+                        type="button"
+                        variant={invoiceTemplate === 'bold' ? 'default' : 'outline'}
+                        size="sm"
+                        className="w-full"
+                        onClick={() => setInvoiceTemplate('bold')}
+                      >
+                        {invoiceTemplate === 'bold' ? 'Aktívna šablóna' : 'Vybrať šablónu'}
+                      </Button>
+                    </div>
+                  </div>
+                </div>
+
+                <div className="flex justify-end pt-4">
+                  <Button
+                    onClick={handleSaveCompany}
+                    className="bg-primary hover:bg-primary/90"
+                  >
+                    <Save className="h-4 w-4 mr-2" />
+                    Uložiť nastavenia
+                  </Button>
+                </div>
+              </div>
             </Card>
           </TabsContent>
 
@@ -467,6 +667,18 @@ const Settings = () => {
           </TabsContent>
         </Tabs>
       </div>
+
+      <InvoicePreview
+        open={previewOpen}
+        onOpenChange={(open) => {
+          setPreviewOpen(open);
+          // Restore original template when closing
+          if (!open) {
+            localStorage.setItem('invoiceTemplate', invoiceTemplate);
+          }
+        }}
+        invoiceId={previewInvoiceId}
+      />
     </DashboardLayout>
   );
 };
