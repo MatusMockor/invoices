@@ -20,7 +20,10 @@ import { companyService } from "@/services/companyService";
 const invoiceSchema = z.object({
   invoiceNumber: z.string().trim().min(1, "Číslo faktúry je povinné"),
   clientName: z.string().trim().min(1, "Meno klienta je povinné").max(100),
-  clientAddress: z.string().trim().min(1, "Adresa je povinná").max(200),
+  clientStreet: z.string().trim().min(1, "Ulica je povinná").max(255),
+  clientCity: z.string().trim().min(1, "Mesto je povinné").max(100),
+  clientPostalCode: z.string().trim().min(1, "PSČ je povinné").max(20),
+  clientCountry: z.string().trim().max(2).optional(),
   clientIco: z.string().trim().min(1, "IČO je povinné").max(20),
   clientDic: z.string().trim().min(1, "DIČ je povinné").max(20),
   clientIcDph: z.string().trim().max(20).optional(),
@@ -125,7 +128,10 @@ const NewInvoice = () => {
       // Set client information from business_entity
       if (invoice.business_entity) {
         setValue("clientName", invoice.business_entity.name);
-        setValue("clientAddress", `${invoice.business_entity.address}, ${invoice.business_entity.postal_code} ${invoice.business_entity.city}`);
+        setValue("clientStreet", invoice.business_entity.address || "");
+        setValue("clientCity", invoice.business_entity.city || "");
+        setValue("clientPostalCode", invoice.business_entity.postal_code || "");
+        setValue("clientCountry", invoice.business_entity.country || "SK");
         setValue("clientIco", invoice.business_entity.ico);
         setValue("clientDic", invoice.business_entity.dic || "");
         setValue("clientIcDph", invoice.business_entity.ic_dph || "");
@@ -194,7 +200,10 @@ const NewInvoice = () => {
         clientIco: data.clientIco,
         clientDic: data.clientDic,
         clientIcDph: data.clientIcDph,
-        clientAddress: data.clientAddress,
+        clientStreet: data.clientStreet,
+        clientCity: data.clientCity,
+        clientPostalCode: data.clientPostalCode,
+        clientCountry: data.clientCountry || 'SK',
         invoiceNumber: data.invoiceNumber,
         issue_date: data.issueDate.toISOString().split('T')[0], // Format: YYYY-MM-DD
         due_date: data.dueDate.toISOString().split('T')[0], // Format: YYYY-MM-DD
@@ -246,9 +255,10 @@ const NewInvoice = () => {
   const handleCompanySelect = (company: any) => {
     setValue("clientIco", company.ico);
     setValue("clientName", company.name);
-    // API returns: address, city, postal_code, country
-    const fullAddress = `${company.address}, ${company.postal_code} ${company.city}`;
-    setValue("clientAddress", fullAddress);
+    setValue("clientStreet", company.address || "");
+    setValue("clientCity", company.city || "");
+    setValue("clientPostalCode", company.postal_code || "");
+    setValue("clientCountry", company.country || "SK");
     setValue("clientDic", company.dic || "");
     setValue("clientIcDph", company.ic_dph || "");
     setIcoSearch(company.ico);
@@ -401,15 +411,56 @@ const NewInvoice = () => {
               </div>
 
               <div className="space-y-2">
-                <Label htmlFor="clientAddress">Adresa *</Label>
+                <Label htmlFor="clientStreet">Ulica a číslo *</Label>
                 <Input
-                  id="clientAddress"
-                  {...register("clientAddress")}
-                  placeholder="Hlavná 123, 811 01 Bratislava"
+                  id="clientStreet"
+                  {...register("clientStreet")}
+                  placeholder="Hlavná 123"
                   className="border-primary/30"
                 />
-                {errors.clientAddress && (
-                  <p className="text-sm text-destructive">{errors.clientAddress.message}</p>
+                {errors.clientStreet && (
+                  <p className="text-sm text-destructive">{errors.clientStreet.message}</p>
+                )}
+              </div>
+
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                <div className="space-y-2">
+                  <Label htmlFor="clientPostalCode">PSČ *</Label>
+                  <Input
+                    id="clientPostalCode"
+                    {...register("clientPostalCode")}
+                    placeholder="811 01"
+                    className="border-primary/30"
+                  />
+                  {errors.clientPostalCode && (
+                    <p className="text-sm text-destructive">{errors.clientPostalCode.message}</p>
+                  )}
+                </div>
+                <div className="md:col-span-2 space-y-2">
+                  <Label htmlFor="clientCity">Mesto *</Label>
+                  <Input
+                    id="clientCity"
+                    {...register("clientCity")}
+                    placeholder="Bratislava"
+                    className="border-primary/30"
+                  />
+                  {errors.clientCity && (
+                    <p className="text-sm text-destructive">{errors.clientCity.message}</p>
+                  )}
+                </div>
+              </div>
+
+              <div className="space-y-2">
+                <Label htmlFor="clientCountry">Krajina (ISO kód)</Label>
+                <Input
+                  id="clientCountry"
+                  {...register("clientCountry")}
+                  placeholder="SK"
+                  maxLength={2}
+                  className="border-primary/30"
+                />
+                {errors.clientCountry && (
+                  <p className="text-sm text-destructive">{errors.clientCountry.message}</p>
                 )}
               </div>
             </div>

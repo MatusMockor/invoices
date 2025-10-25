@@ -7,7 +7,10 @@ export interface InvoiceCreateData {
   clientIco: string;
   clientDic: string;
   clientIcDph: string;
-  clientAddress: string;
+  clientStreet: string;
+  clientCity: string;
+  clientPostalCode: string;
+  clientCountry?: string;
 
   // Invoice details
   invoiceNumber: string;

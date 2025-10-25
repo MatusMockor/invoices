@@ -23,16 +23,21 @@ class UpdateInvoiceRequest extends FormRequest
      */
     public function rules(): array
     {
+        $invoiceId = $this->route('invoice')?->id;
+
         return [
             // Client information
             'clientName' => 'sometimes|required|string|max:255',
             'clientIco' => 'sometimes|required|string|max:20',
             'clientDic' => 'sometimes|required|string|max:20',
             'clientIcDph' => 'sometimes|required|string|max:20',
-            'clientAddress' => 'sometimes|required|string|max:500',
+            'clientStreet' => 'sometimes|required|string|max:255',
+            'clientCity' => 'sometimes|required|string|max:100',
+            'clientPostalCode' => 'sometimes|required|string|max:20',
+            'clientCountry' => 'nullable|string|max:2',
 
             // Invoice details
-            'invoiceNumber' => 'sometimes|required|string|max:50',
+            'invoiceNumber' => 'sometimes|required|string|max:50|unique:invoices,invoice_number,'.$invoiceId,
             'issue_date' => 'sometimes|required|date',
             'due_date' => 'sometimes|required|date|after_or_equal:issue_date',
             'delivery_date' => 'sometimes|required|date',

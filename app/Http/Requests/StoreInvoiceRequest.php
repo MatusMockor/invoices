@@ -29,7 +29,10 @@ class StoreInvoiceRequest extends FormRequest
             'clientIco' => 'required|string|max:20',
             'clientDic' => 'required|string|max:20',
             'clientIcDph' => 'required|string|max:20',
-            'clientAddress' => 'required|string|max:500',
+            'clientStreet' => 'required|string|max:255',
+            'clientCity' => 'required|string|max:100',
+            'clientPostalCode' => 'required|string|max:20',
+            'clientCountry' => 'nullable|string|max:2',
 
             // Invoice details
             'invoiceNumber' => 'required|string|max:50|unique:invoices,invoice_number',

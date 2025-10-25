@@ -4,6 +4,11 @@ declare(strict_types=1);
 
 namespace App\Http\Controllers\Api;
 
+use App\Actions\Invoice\InvoiceCreateAction;
+use App\Actions\Invoice\InvoiceDeleteAction;
+use App\Actions\Invoice\InvoiceUpdateAction;
+use App\DTOs\Invoice\InvoiceCreateDTO;
+use App\DTOs\Invoice\InvoiceUpdateDTO;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\StoreInvoiceRequest;
 use App\Http\Requests\UpdateInvoiceRequest;
@@ -12,7 +17,6 @@ use App\Http\Resources\InvoiceResource;
 use App\Models\Invoice;
 use App\Repositories\Interfaces\InvoiceRepository;
 use App\Services\Interfaces\InvoicePdfService;
-use App\Services\Interfaces\InvoiceService;
 use App\Services\Interfaces\PayBySquare;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
@@ -21,7 +25,9 @@ use Illuminate\Http\Response;
 class InvoiceController extends Controller
 {
     public function __construct(
-        private readonly InvoiceService $invoiceService,
+        private readonly InvoiceCreateAction $createAction,
+        private readonly InvoiceUpdateAction $updateAction,
+        private readonly InvoiceDeleteAction $deleteAction,
         private readonly InvoicePdfService $pdfService,
         private readonly InvoiceRepository $invoiceRepository,
         private readonly PayBySquare $payBySquareService
@@ -58,13 +64,15 @@ class InvoiceController extends Controller
      */
     public function store(StoreInvoiceRequest $request): JsonResponse
     {
-        $invoice = $this->invoiceService->createInvoice(
-            $request->validated(),
+        $dto = InvoiceCreateDTO::fromRequest($request->validated());
+
+        $invoice = $this->createAction->handle(
+            $dto,
             auth()->id(),
             auth()->user()->current_company_id
         );
 
-        $invoice->load(['company', 'supplierCompany', 'items']);
+        $invoice->load(['supplierCompany']);
         $invoice->qr_code = $this->generateQrCode($invoice);
 
         return new InvoiceResource($invoice)
@@ -77,13 +85,15 @@ class InvoiceController extends Controller
      */
     public function update(UpdateInvoiceRequest $request, Invoice $invoice): InvoiceResource
     {
-        $updatedInvoice = $this->invoiceService->updateInvoice(
+        $dto = InvoiceUpdateDTO::fromRequest($request->validated());
+
+        $updatedInvoice = $this->updateAction->handle(
             $invoice,
-            $request->validated(),
+            $dto,
             auth()->user()->current_company_id
         );
 
-        $updatedInvoice->load(['company', 'supplierCompany', 'items']);
+        $updatedInvoice->load(['supplierCompany']);
         $updatedInvoice->qr_code = $this->generateQrCode($updatedInvoice);
 
         return new InvoiceResource($updatedInvoice);
@@ -94,7 +104,7 @@ class InvoiceController extends Controller
      */
     public function destroy(Invoice $invoice): JsonResponse
     {
-        $this->invoiceRepository->delete($invoice);
+        $this->deleteAction->handle($invoice);
 
         return response()->json([
             'message' => 'Invoice deleted successfully',
