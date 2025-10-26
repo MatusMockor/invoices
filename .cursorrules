@@ -147,6 +147,7 @@ final class DeliveryScheduleService
 * In tests, always use the `route()` helper to generate route URLs.
 * The test name must clearly describe what the test is trying to verify.
 * Don’t use hardcoded values in tests — always use the `Faker` library or the `fake()` helper to generate realistic random data.
+* Tests should follow the real application flow — make requests to endpoints, trigger actions, and validate responses rather than calling methods directly.
 
   ```php
   $this->assertDatabaseHas(Order::class, ['status' => 'pending']);
