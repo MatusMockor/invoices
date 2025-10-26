@@ -97,34 +97,53 @@ class InvoiceControllerTest extends TestCase
 
     public function test_store_creates_new_invoice(): void
     {
+        $clientName = fake()->company();
+        $clientIco = fake()->numerify('########');
+        $clientDic = fake()->numerify('20########');
+        $clientIcDph = 'SK'.fake()->numerify('20########');
+        $clientStreet = fake()->streetAddress();
+        $clientCity = fake()->city();
+        $clientPostalCode = fake()->postcode();
+        $clientCountry = fake()->countryCode();
+        $invoiceNumber = fake()->unique()->numerify('INV-####-####');
+        $variableSymbol = fake()->numerify('########');
+        $constantSymbol = fake()->numerify('####');
+        $notes = fake()->sentence();
+        $item1Description = fake()->words(2, true);
+        $item1Quantity = fake()->numberBetween(1, 20);
+        $item1Price = fake()->randomFloat(2, 10, 200);
+        $item2Description = fake()->words(2, true);
+        $item2Quantity = fake()->numberBetween(1, 20);
+        $item2Price = fake()->randomFloat(2, 10, 200);
+
         $invoiceData = [
-            'clientName' => 'Test Client s.r.o.',
-            'clientIco' => '12345678',
-            'clientDic' => '2012345678',
-            'clientIcDph' => 'SK2012345678',
-            'clientStreet' => 'Hlavná 123',
-            'clientCity' => 'Bratislava',
-            'clientPostalCode' => '81101',
-            'clientCountry' => 'SK',
-            'invoiceNumber' => 'INV-2025-0001',
+            'clientName' => $clientName,
+            'clientIco' => $clientIco,
+            'clientDic' => $clientDic,
+            'clientIcDph' => $clientIcDph,
+            'clientStreet' => $clientStreet,
+            'clientCity' => $clientCity,
+            'clientPostalCode' => $clientPostalCode,
+            'clientCountry' => $clientCountry,
+            'invoiceNumber' => $invoiceNumber,
             'issue_date' => now()->format('Y-m-d'),
             'due_date' => now()->addDays(14)->format('Y-m-d'),
             'delivery_date' => now()->format('Y-m-d'),
-            'variableSymbol' => '20250001',
-            'constantSymbol' => '0308',
+            'variableSymbol' => $variableSymbol,
+            'constantSymbol' => $constantSymbol,
             'currency' => 'EUR',
-            'notes' => 'Test invoice',
+            'notes' => $notes,
             'status' => 'draft',
             'items' => [
                 [
-                    'description' => 'Web Development',
-                    'quantity' => 10,
-                    'price' => 50.00,
+                    'description' => $item1Description,
+                    'quantity' => $item1Quantity,
+                    'price' => $item1Price,
                 ],
                 [
-                    'description' => 'Consulting',
-                    'quantity' => 5,
-                    'price' => 100.00,
+                    'description' => $item2Description,
+                    'quantity' => $item2Quantity,
+                    'price' => $item2Price,
                 ],
             ],
         ];
@@ -141,28 +160,30 @@ class InvoiceControllerTest extends TestCase
             ],
         ]);
 
+        $expectedTotal = ($item1Quantity * $item1Price) + ($item2Quantity * $item2Price);
+
         $this->assertDatabaseHas(Invoice::class, [
-            'invoice_number' => 'INV-2025-0001',
+            'invoice_number' => $invoiceNumber,
             'supplier_company_id' => $this->userCompany->id,
             'user_id' => $this->user->id,
-            'customer_name' => 'Test Client s.r.o.',
-            'customer_ico' => '12345678',
-            'customer_street' => 'Hlavná 123',
-            'customer_city' => 'Bratislava',
-            'customer_postal_code' => '81101',
-            'total_amount' => 1000.00, // (10 * 50) + (5 * 100)
+            'customer_name' => $clientName,
+            'customer_ico' => $clientIco,
+            'customer_street' => $clientStreet,
+            'customer_city' => $clientCity,
+            'customer_postal_code' => $clientPostalCode,
+            'total_amount' => $expectedTotal,
         ]);
 
         $this->assertDatabaseHas(InvoiceItem::class, [
-            'description' => 'Web Development',
-            'quantity' => 10,
-            'unit_price' => 50.00,
+            'description' => $item1Description,
+            'quantity' => $item1Quantity,
+            'unit_price' => $item1Price,
         ]);
 
         $this->assertDatabaseHas(InvoiceItem::class, [
-            'description' => 'Consulting',
-            'quantity' => 5,
-            'unit_price' => 100.00,
+            'description' => $item2Description,
+            'quantity' => $item2Quantity,
+            'unit_price' => $item2Price,
         ]);
     }
 
@@ -180,38 +201,52 @@ class InvoiceControllerTest extends TestCase
 
     public function test_update_updates_existing_invoice(): void
     {
+        $companyIco = fake()->numerify('########');
+        $companyName = fake()->company();
+        $oldInvoiceNumber = fake()->unique()->numerify('INV-OLD-####');
+        $oldItemDescription = fake()->words(2, true);
+
         $company = Company::factory()->create([
-            'ico' => '87654321',
-            'name' => 'Original Company',
+            'ico' => $companyIco,
+            'name' => $companyName,
         ]);
 
         $invoice = Invoice::factory()->create([
             'supplier_company_id' => $this->userCompany->id,
             'company_id' => $company->id,
             'user_id' => $this->user->id,
-            'invoice_number' => 'INV-OLD',
+            'invoice_number' => $oldInvoiceNumber,
         ]);
 
         $item = InvoiceItem::factory()->create([
             'invoice_id' => $invoice->id,
-            'description' => 'Old Item',
+            'description' => $oldItemDescription,
         ]);
 
+        $updatedInvoiceNumber = fake()->unique()->numerify('INV-UPDATED-####');
+        $updatedNotes = fake()->sentence();
+        $updatedItemDescription = fake()->words(2, true);
+        $updatedItemQuantity = fake()->numberBetween(1, 20);
+        $updatedItemPrice = fake()->randomFloat(2, 10, 200);
+        $newItemDescription = fake()->words(2, true);
+        $newItemQuantity = fake()->numberBetween(1, 20);
+        $newItemPrice = fake()->randomFloat(2, 10, 200);
+
         $updateData = [
-            'invoiceNumber' => 'INV-UPDATED',
+            'invoiceNumber' => $updatedInvoiceNumber,
             'status' => 'paid',
-            'notes' => 'Updated notes',
+            'notes' => $updatedNotes,
             'items' => [
                 [
                     'id' => $item->id,
-                    'description' => 'Updated Item',
-                    'quantity' => 5,
-                    'price' => 100.00,
+                    'description' => $updatedItemDescription,
+                    'quantity' => $updatedItemQuantity,
+                    'price' => $updatedItemPrice,
                 ],
                 [
-                    'description' => 'New Item',
-                    'quantity' => 2,
-                    'price' => 50.00,
+                    'description' => $newItemDescription,
+                    'quantity' => $newItemQuantity,
+                    'price' => $newItemPrice,
                 ],
             ],
         ];
@@ -222,21 +257,21 @@ class InvoiceControllerTest extends TestCase
 
         $this->assertDatabaseHas(Invoice::class, [
             'id' => $invoice->id,
-            'invoice_number' => 'INV-UPDATED',
+            'invoice_number' => $updatedInvoiceNumber,
             'status' => 'paid',
-            'note' => 'Updated notes',
+            'note' => $updatedNotes,
         ]);
 
         $this->assertDatabaseHas(InvoiceItem::class, [
             'id' => $item->id,
-            'description' => 'Updated Item',
-            'quantity' => 5,
+            'description' => $updatedItemDescription,
+            'quantity' => $updatedItemQuantity,
         ]);
 
         $this->assertDatabaseHas(InvoiceItem::class, [
             'invoice_id' => $invoice->id,
-            'description' => 'New Item',
-            'quantity' => 2,
+            'description' => $newItemDescription,
+            'quantity' => $newItemQuantity,
         ]);
     }
 
@@ -290,24 +325,36 @@ class InvoiceControllerTest extends TestCase
 
     public function test_store_creates_company_if_not_exists(): void
     {
+        $clientName = fake()->company();
+        $clientIco = fake()->numerify('########');
+        $clientDic = fake()->numerify('20########');
+        $clientStreet = fake()->streetAddress();
+        $clientCity = fake()->city();
+        $clientPostalCode = fake()->postcode();
+        $clientCountry = fake()->countryCode();
+        $invoiceNumber = fake()->unique()->numerify('INV-####-####');
+        $itemDescription = fake()->words(2, true);
+        $itemQuantity = fake()->numberBetween(1, 20);
+        $itemPrice = fake()->randomFloat(2, 10, 200);
+
         $invoiceData = [
-            'clientName' => 'New Company Ltd.',
-            'clientIco' => '99999999',
-            'clientDic' => '2099999999',
+            'clientName' => $clientName,
+            'clientIco' => $clientIco,
+            'clientDic' => $clientDic,
             'clientIcDph' => null,
-            'clientStreet' => 'New Street 456',
-            'clientCity' => 'Košice',
-            'clientPostalCode' => '04001',
-            'clientCountry' => 'SK',
-            'invoiceNumber' => 'INV-2025-0002',
+            'clientStreet' => $clientStreet,
+            'clientCity' => $clientCity,
+            'clientPostalCode' => $clientPostalCode,
+            'clientCountry' => $clientCountry,
+            'invoiceNumber' => $invoiceNumber,
             'issue_date' => now()->format('Y-m-d'),
             'due_date' => now()->addDays(14)->format('Y-m-d'),
             'delivery_date' => now()->format('Y-m-d'),
             'items' => [
                 [
-                    'description' => 'Service',
-                    'quantity' => 1,
-                    'price' => 100.00,
+                    'description' => $itemDescription,
+                    'quantity' => $itemQuantity,
+                    'price' => $itemPrice,
                 ],
             ],
         ];
@@ -317,11 +364,11 @@ class InvoiceControllerTest extends TestCase
         $response->assertStatus(201);
 
         $this->assertDatabaseHas(Company::class, [
-            'ico' => '99999999',
-            'name' => 'New Company Ltd.',
-            'street' => 'New Street 456',
-            'city' => 'Košice',
-            'postal_code' => '04001',
+            'ico' => $clientIco,
+            'name' => $clientName,
+            'street' => $clientStreet,
+            'city' => $clientCity,
+            'postal_code' => $clientPostalCode,
         ]);
     }
 
@@ -329,29 +376,31 @@ class InvoiceControllerTest extends TestCase
     {
         $company = Company::factory()->create();
 
+        $duplicateInvoiceNumber = fake()->unique()->numerify('INV-DUP-####');
+
         Invoice::factory()->create([
             'supplier_company_id' => $this->userCompany->id,
             'company_id' => $company->id,
             'user_id' => $this->user->id,
-            'invoice_number' => 'INV-DUPLICATE',
+            'invoice_number' => $duplicateInvoiceNumber,
         ]);
 
         $invoiceData = [
-            'clientName' => 'Test Client',
-            'clientIco' => '12345678',
-            'clientDic' => '2012345678',
-            'clientStreet' => 'Test Street',
-            'clientCity' => 'Test City',
-            'clientPostalCode' => '12345',
-            'invoiceNumber' => 'INV-DUPLICATE',
+            'clientName' => fake()->company(),
+            'clientIco' => fake()->numerify('########'),
+            'clientDic' => fake()->numerify('20########'),
+            'clientStreet' => fake()->streetAddress(),
+            'clientCity' => fake()->city(),
+            'clientPostalCode' => fake()->postcode(),
+            'invoiceNumber' => $duplicateInvoiceNumber,
             'issue_date' => now()->format('Y-m-d'),
             'due_date' => now()->addDays(14)->format('Y-m-d'),
             'delivery_date' => now()->format('Y-m-d'),
             'items' => [
                 [
-                    'description' => 'Test',
-                    'quantity' => 1,
-                    'price' => 100.00,
+                    'description' => fake()->words(2, true),
+                    'quantity' => fake()->numberBetween(1, 20),
+                    'price' => fake()->randomFloat(2, 10, 200),
                 ],
             ],
         ];
