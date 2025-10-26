@@ -162,14 +162,6 @@
     <div class="flex justify-end mb-3">
         <div class="w-80">
             <div class="bg-white rounded-xl p-3 shadow-lg border border-slate-200">
-                <div class="flex justify-between py-1.5 border-b border-slate-200">
-                    <span class="text-slate-600 font-medium text-sm">Medzisúčet:</span>
-                    <span class="font-semibold text-slate-900 text-sm">{{ number_format($invoice->total_amount, 2, ',', ' ') }} {{ $invoice->currency }}</span>
-                </div>
-                <div class="flex justify-between py-1.5 border-b border-slate-200">
-                    <span class="text-slate-600 font-medium text-sm">DPH (20%):</span>
-                    <span class="font-semibold text-slate-900 text-sm">{{ number_format(0, 2, ',', ' ') }} {{ $invoice->currency }}</span>
-                </div>
                 <div class="flex justify-between py-2 mt-1.5 bg-gradient-to-r from-blue-600 to-purple-600 px-3 rounded-lg">
                     <span class="font-bold text-sm text-white">Celkom k úhrade:</span>
                     <span class="font-black text-lg text-white">{{ number_format($invoice->total_amount, 2, ',', ' ') }} {{ $invoice->currency }}</span>
