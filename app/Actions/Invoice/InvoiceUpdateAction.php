@@ -12,6 +12,7 @@ use App\Repositories\Interfaces\InvoiceItemRepository;
 use App\Repositories\Interfaces\InvoiceRepository;
 use App\Services\Invoice\InvoiceTotalCalculatorService;
 use Illuminate\Support\Arr;
+use Illuminate\Support\Facades\DB;
 use InvalidArgumentException;
 
 final class InvoiceUpdateAction
@@ -25,45 +26,44 @@ final class InvoiceUpdateAction
 
     public function handle(Invoice $invoice, InvoiceUpdateDTO $dto, int $supplierCompanyId): Invoice
     {
-        $updateData = array_filter([
-            'supplier_company_id' => $supplierCompanyId,
-            'invoice_number' => $dto->invoiceNumber,
-            'issue_date' => $dto->issueDate,
-            'due_date' => $dto->dueDate,
-            'delivery_date' => $dto->deliveryDate,
-            'currency' => $dto->currency,
-            'constant_symbol' => $dto->constantSymbol,
-            'note' => $dto->notes,
-            'status' => $dto->status,
-        ], static fn ($value) => $value !== null);
+        return DB::transaction(function () use ($invoice, $dto, $supplierCompanyId) {
+            $updateData = array_filter([
+                'supplier_company_id' => $supplierCompanyId,
+                'invoice_number' => $dto->invoiceNumber,
+                'issue_date' => $dto->issueDate,
+                'due_date' => $dto->dueDate,
+                'delivery_date' => $dto->deliveryDate,
+                'currency' => $dto->currency,
+                'constant_symbol' => $dto->constantSymbol,
+                'note' => $dto->notes,
+                'status' => $dto->status,
+            ], static fn ($value) => $value !== null);
 
-        // Update customer company if client data provided
-        if ($dto->clientIco !== null) {
-            $customerCompany = $this->findOrCreateCompany($dto);
+            if ($dto->clientIco !== null) {
+                $customerCompany = $this->findOrCreateCompany($dto);
 
-            $updateData = array_merge($updateData, [
-                'company_id' => $customerCompany->id,
-                'customer_name' => $dto->clientName,
-                'customer_ico' => $dto->clientIco,
-                'customer_dic' => $dto->clientDic,
-                'customer_ic_dph' => $dto->clientIcDph,
-                'customer_street' => $dto->clientStreet,
-                'customer_city' => $dto->clientCity,
-                'customer_postal_code' => $dto->clientPostalCode,
-                'customer_country' => $dto->clientCountry ?? 'SK',
-            ]);
-        }
+                $updateData = array_merge($updateData, [
+                    'company_id' => $customerCompany->id,
+                    'customer_name' => $dto->clientName,
+                    'customer_ico' => $dto->clientIco,
+                    'customer_dic' => $dto->clientDic,
+                    'customer_ic_dph' => $dto->clientIcDph,
+                    'customer_street' => $dto->clientStreet,
+                    'customer_city' => $dto->clientCity,
+                    'customer_postal_code' => $dto->clientPostalCode,
+                    'customer_country' => $dto->clientCountry ?? 'SK',
+                ]);
+            }
 
-        // Calculate totals if items provided
-        if ($dto->items !== null) {
-            $updateData['total_amount'] = $this->totalCalculator->calculate($dto->items);
-            $this->updateInvoiceItems($invoice, $dto->items);
-        }
+            if ($dto->items !== null) {
+                $updateData['total_amount'] = $this->totalCalculator->calculate($dto->items);
+                $this->updateInvoiceItems($invoice, $dto->items);
+            }
 
-        // Update invoice - Observer will automatically populate supplier snapshot if supplier_company_id changed
-        $this->invoiceRepository->update($invoice, $updateData);
+            $this->invoiceRepository->update($invoice, $updateData);
 
-        return $invoice->fresh()->load(['company', 'items']);
+            return $invoice->fresh()->load(['company', 'items']);
+        });
     }
 
     private function findOrCreateCompany(InvoiceUpdateDTO $dto): Company

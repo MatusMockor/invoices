@@ -22,7 +22,7 @@ use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Http\Response;
 
-class InvoiceController extends Controller
+final class InvoiceController extends Controller
 {
     public function __construct(
         private readonly InvoiceCreateAction $createAction,
