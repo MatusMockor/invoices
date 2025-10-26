@@ -38,7 +38,7 @@ final class InvoicePdfService implements InvoicePdfServiceContract
         $qrCode = null;
         if ($invoice->supplierCompany && $invoice->supplierCompany->iban && $invoice->supplierCompany->swift) {
             // Ensure variable symbol is max 10 characters
-            $variableSymbol = str_replace(['INV-', '-'], '', $invoice->invoice_number);
+            $variableSymbol = $invoice->invoice_number;
             $variableSymbol = substr($variableSymbol, 0, 10);
 
             $qrCode = $this->payBySquare->generateQrCode(
