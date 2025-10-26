@@ -2,6 +2,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } f
 import { Button } from "@/components/ui/button";
 import { Printer, Download, Loader2 } from "lucide-react";
 import { useInvoice } from "@/hooks/useInvoices";
+import { useSettings } from "@/hooks/useSettings";
 import { useToast } from "@/hooks/use-toast";
 import { useState, useMemo, useEffect } from "react";
 import axios from "@/lib/axios";
@@ -17,18 +18,23 @@ interface InvoicePreviewProps {
 
 export const InvoicePreview = ({ open, onOpenChange, invoiceId }: InvoicePreviewProps) => {
   const { invoice, isLoading } = useInvoice(invoiceId || 0);
+  const { settings } = useSettings();
   const { toast } = useToast();
   const [isDownloading, setIsDownloading] = useState(false);
-  const [selectedTemplate, setSelectedTemplate] = useState(() =>
-    localStorage.getItem('invoiceTemplate') || 'classic'
-  );
+  const [selectedTemplate, setSelectedTemplate] = useState<string>('classic');
 
-  // Update template when dialog opens
+  // Update template when dialog opens - use preview template if available, otherwise user's saved setting
   useEffect(() => {
     if (open) {
-      setSelectedTemplate(localStorage.getItem('invoiceTemplate') || 'classic');
+      const previewTemplate = localStorage.getItem('previewTemplate');
+      if (previewTemplate) {
+        setSelectedTemplate(previewTemplate);
+        localStorage.removeItem('previewTemplate'); // Clear after use
+      } else if (settings) {
+        setSelectedTemplate(settings.invoice_template);
+      }
     }
-  }, [open]);
+  }, [open, settings]);
 
   // Transform invoice data to match the template format
   const invoiceData = useMemo(() => {

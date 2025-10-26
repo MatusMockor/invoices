@@ -11,6 +11,7 @@ use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Database\Eloquent\Relations\HasOne;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\DatabaseNotificationCollection;
 use Illuminate\Notifications\Notifiable;
@@ -32,6 +33,7 @@ use Spatie\Permission\Traits\HasRoles;
  * @property Carbon $updated_at
  * @property-read Collection|UserCompany[] $companies
  * @property-read UserCompany|null $currentCompany
+ * @property-read UserSetting|null $settings
  * @property-read DatabaseNotificationCollection|\Illuminate\Notifications\DatabaseNotification[] $notifications
  */
 #[ObservedBy([UserObserver::class])]
@@ -88,6 +90,14 @@ class User extends Authenticatable
         $this->current_company_id = $company->id;
 
         return $this->save();
+    }
+
+    /**
+     * Get the user's settings.
+     */
+    public function settings(): HasOne
+    {
+        return $this->hasOne(UserSetting::class);
     }
 
     /**

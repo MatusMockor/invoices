@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { DashboardLayout } from "@/components/dashboard/DashboardLayout";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -8,6 +8,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Card } from "@/components/ui/card";
 import { Separator } from "@/components/ui/separator";
 import { useToast } from "@/hooks/use-toast";
+import { useSettings } from "@/hooks/useSettings";
 import { InvoicePreview } from "@/components/Invoice/InvoicePreview";
 import {
   User,
@@ -24,10 +25,9 @@ import {
 
 const Settings = () => {
   const { toast } = useToast();
+  const { settings, updateSettings, isUpdating } = useSettings();
   const [isDarkMode, setIsDarkMode] = useState(false);
-  const [invoiceTemplate, setInvoiceTemplate] = useState(
-    localStorage.getItem('invoiceTemplate') || 'classic'
-  );
+  const [invoiceTemplate, setInvoiceTemplate] = useState<'classic' | 'modern' | 'minimal' | 'bold'>('classic');
   const [previewOpen, setPreviewOpen] = useState(false);
   const [previewInvoiceId, setPreviewInvoiceId] = useState<number | null>(null);
   const [notifications, setNotifications] = useState({
@@ -37,11 +37,19 @@ const Settings = () => {
     pushNotifications: false,
   });
 
-  const handlePreview = (template: string) => {
-    // Set template for preview - will be restored when dialog closes
-    localStorage.setItem('invoiceTemplate', template);
+  // Load settings from API
+  useEffect(() => {
+    if (settings) {
+      setInvoiceTemplate(settings.invoice_template);
+    }
+  }, [settings]);
+
+  const handlePreview = (template: 'classic' | 'modern' | 'minimal' | 'bold') => {
+    // Temporarily set template for preview only
     setPreviewInvoiceId(1); // Use a demo invoice ID
     setPreviewOpen(true);
+    // Store the preview template temporarily
+    localStorage.setItem('previewTemplate', template);
   };
 
   const handleSaveProfile = (e: React.FormEvent) => {
@@ -52,13 +60,21 @@ const Settings = () => {
     });
   };
 
-  const handleSaveCompany = (e: React.FormEvent) => {
+  const handleSaveCompany = async (e: React.FormEvent) => {
     e.preventDefault();
-    localStorage.setItem('invoiceTemplate', invoiceTemplate);
-    toast({
-      title: "Firemné údaje uložené",
-      description: "Údaje vašej firmy boli úspešne aktualizované.",
-    });
+    try {
+      await updateSettings({ invoice_template: invoiceTemplate });
+      toast({
+        title: "Nastavenia uložené",
+        description: "Dizajn faktúry bol úspešne uložený.",
+      });
+    } catch (error) {
+      toast({
+        title: "Chyba",
+        description: "Nepodarilo sa uložiť nastavenia.",
+        variant: "destructive",
+      });
+    }
   };
 
   const handleSavePassword = (e: React.FormEvent) => {
@@ -663,13 +679,7 @@ const Settings = () => {
 
       <InvoicePreview
         open={previewOpen}
-        onOpenChange={(open) => {
-          setPreviewOpen(open);
-          // Restore original template when closing
-          if (!open) {
-            localStorage.setItem('invoiceTemplate', invoiceTemplate);
-          }
-        }}
+        onOpenChange={setPreviewOpen}
         invoiceId={previewInvoiceId}
       />
     </DashboardLayout>

@@ -10,6 +10,7 @@ use App\Http\Controllers\Api\InvoiceController;
 use App\Http\Controllers\Api\NoteController;
 use App\Http\Controllers\Api\ProfileController;
 use App\Http\Controllers\Api\UserCompanyController;
+use App\Http\Controllers\Api\UserSettingController;
 use Illuminate\Support\Facades\Route;
 
 /*
@@ -85,4 +86,8 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::get('/notes', [NoteController::class, 'index'])->name('api.notes.index');
     Route::post('/notes', [NoteController::class, 'store'])->name('api.notes.store');
     Route::delete('/notes/{note}', [NoteController::class, 'destroy'])->name('api.notes.destroy');
+
+    // User Settings
+    Route::get('/settings', [UserSettingController::class, 'show'])->name('api.settings.show');
+    Route::put('/settings', [UserSettingController::class, 'update'])->name('api.settings.update');
 });
