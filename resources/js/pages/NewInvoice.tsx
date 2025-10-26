@@ -23,7 +23,6 @@ const invoiceSchema = z.object({
   clientStreet: z.string().trim().min(1, "Ulica je povinná").max(255),
   clientCity: z.string().trim().min(1, "Mesto je povinné").max(100),
   clientPostalCode: z.string().trim().min(1, "PSČ je povinné").max(20),
-  clientCountry: z.string().trim().max(2).optional(),
   clientIco: z.string().trim().min(1, "IČO je povinné").max(20),
   clientDic: z.string().trim().min(1, "DIČ je povinné").max(20),
   clientIcDph: z.string().trim().max(20).optional(),
@@ -131,7 +130,6 @@ const NewInvoice = () => {
         setValue("clientStreet", invoice.business_entity.address || "");
         setValue("clientCity", invoice.business_entity.city || "");
         setValue("clientPostalCode", invoice.business_entity.postal_code || "");
-        setValue("clientCountry", invoice.business_entity.country || "SK");
         setValue("clientIco", invoice.business_entity.ico);
         setValue("clientDic", invoice.business_entity.dic || "");
         setValue("clientIcDph", invoice.business_entity.ic_dph || "");
@@ -203,7 +201,7 @@ const NewInvoice = () => {
         clientStreet: data.clientStreet,
         clientCity: data.clientCity,
         clientPostalCode: data.clientPostalCode,
-        clientCountry: data.clientCountry || 'SK',
+        clientCountry: 'SK',
         invoiceNumber: data.invoiceNumber,
         issue_date: data.issueDate.toISOString().split('T')[0], // Format: YYYY-MM-DD
         due_date: data.dueDate.toISOString().split('T')[0], // Format: YYYY-MM-DD
@@ -258,7 +256,6 @@ const NewInvoice = () => {
     setValue("clientStreet", company.address || "");
     setValue("clientCity", company.city || "");
     setValue("clientPostalCode", company.postal_code || "");
-    setValue("clientCountry", company.country || "SK");
     setValue("clientDic", company.dic || "");
     setValue("clientIcDph", company.ic_dph || "");
     setIcoSearch(company.ico);
@@ -448,20 +445,6 @@ const NewInvoice = () => {
                     <p className="text-sm text-destructive">{errors.clientCity.message}</p>
                   )}
                 </div>
-              </div>
-
-              <div className="space-y-2">
-                <Label htmlFor="clientCountry">Krajina (ISO kód)</Label>
-                <Input
-                  id="clientCountry"
-                  {...register("clientCountry")}
-                  placeholder="SK"
-                  maxLength={2}
-                  className="border-primary/30"
-                />
-                {errors.clientCountry && (
-                  <p className="text-sm text-destructive">{errors.clientCountry.message}</p>
-                )}
               </div>
             </div>
           </div>

@@ -64,7 +64,7 @@ class InvoiceController extends Controller
             'issue_date' => $validated['issue_date'],
             'due_date' => $validated['due_date'],
             'delivery_date' => $validated['delivery_date'],
-            'business_entity_id' => $partner->id, // This is the recipient company
+            'company_id' => $partner->id, // This is the recipient company
             'supplier_company_id' => $user->current_company_id, // Set the active company as supplier
             'total_amount' => $validated['total_amount'],
             'currency' => $validated['currency'],
@@ -113,7 +113,7 @@ class InvoiceController extends Controller
             $this->invoiceRepository->update($invoice, array_merge(
                 $request->validated(),
                 [
-                    'business_entity_id' => $partner->id, // This is the recipient company
+                    'company_id' => $partner->id, // This is the recipient company
                     'supplier_company_id' => $user->current_company_id, // Keep the active company as supplier
                 ]
             ));

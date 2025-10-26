@@ -11,6 +11,13 @@ class InvoiceObserver
     public function creating(Invoice $invoice): void
     {
         $this->populateSupplierSnapshot($invoice);
+        $this->populateCustomerSnapshot($invoice);
+    }
+
+    public function updating(Invoice $invoice): void
+    {
+        $this->populateSupplierSnapshot($invoice);
+        $this->populateCustomerSnapshot($invoice);
     }
 
     public function deleted(Invoice $invoice): void
@@ -45,5 +52,29 @@ class InvoiceObserver
         $invoice->supplier_swift = $supplierCompany->swift;
         $invoice->supplier_company_type = $supplierCompany->company_type;
         $invoice->supplier_registration_number = $supplierCompany->registration_number;
+    }
+
+    protected function populateCustomerSnapshot(Invoice $invoice): void
+    {
+        if (! $invoice->company_id) {
+            return;
+        }
+
+        $customer = \App\Models\Company::find($invoice->company_id);
+
+        if (! $customer) {
+            return;
+        }
+
+        $invoice->customer_name = $customer->name;
+        $invoice->customer_ico = $customer->ico;
+        $invoice->customer_dic = $customer->dic;
+        $invoice->customer_ic_dph = $customer->ic_dph;
+        $invoice->customer_street = $customer->street;
+        $invoice->customer_city = $customer->city;
+        $invoice->customer_postal_code = $customer->postal_code;
+        $invoice->customer_country = $customer->country;
+        $invoice->customer_company_type = $customer->company_type;
+        $invoice->customer_registration_number = $customer->registration_number;
     }
 }
