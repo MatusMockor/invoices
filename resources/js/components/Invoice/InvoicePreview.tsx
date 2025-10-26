@@ -3,7 +3,7 @@ import { Button } from "@/components/ui/button";
 import { Printer, Download, Loader2 } from "lucide-react";
 import { useInvoice } from "@/hooks/useInvoices";
 import { useToast } from "@/hooks/use-toast";
-import { useState, useMemo } from "react";
+import { useState, useMemo, useEffect } from "react";
 import axios from "@/lib/axios";
 import { InvoicePreviewModern } from "./InvoicePreviewModern";
 import { InvoicePreviewMinimal } from "./InvoicePreviewMinimal";
@@ -19,7 +19,16 @@ export const InvoicePreview = ({ open, onOpenChange, invoiceId }: InvoicePreview
   const { invoice, isLoading } = useInvoice(invoiceId || 0);
   const { toast } = useToast();
   const [isDownloading, setIsDownloading] = useState(false);
-  const selectedTemplate = localStorage.getItem('invoiceTemplate') || 'classic';
+  const [selectedTemplate, setSelectedTemplate] = useState(() =>
+    localStorage.getItem('invoiceTemplate') || 'classic'
+  );
+
+  // Update template when dialog opens
+  useEffect(() => {
+    if (open) {
+      setSelectedTemplate(localStorage.getItem('invoiceTemplate') || 'classic');
+    }
+  }, [open]);
 
   // Transform invoice data to match the template format
   const invoiceData = useMemo(() => {

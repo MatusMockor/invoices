@@ -38,17 +38,10 @@ const Settings = () => {
   });
 
   const handlePreview = (template: string) => {
-    // Temporarily set the template for preview
-    const currentTemplate = localStorage.getItem('invoiceTemplate');
+    // Set template for preview - will be restored when dialog closes
     localStorage.setItem('invoiceTemplate', template);
     setPreviewInvoiceId(1); // Use a demo invoice ID
     setPreviewOpen(true);
-    // Restore after a short delay
-    setTimeout(() => {
-      if (currentTemplate) {
-        localStorage.setItem('invoiceTemplate', currentTemplate);
-      }
-    }, 100);
   };
 
   const handleSaveProfile = (e: React.FormEvent) => {
