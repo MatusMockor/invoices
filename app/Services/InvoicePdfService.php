@@ -4,13 +4,14 @@ declare(strict_types=1);
 
 namespace App\Services;
 
+use App\Enums\InvoiceTemplate;
 use App\Models\Invoice;
 use App\Services\Interfaces\InvoicePdfService as InvoicePdfServiceContract;
 use App\Services\Interfaces\PayBySquare as PayBySquareContract;
 use Illuminate\Http\Response;
 use Spatie\Browsershot\Browsershot;
 
-class InvoicePdfService implements InvoicePdfServiceContract
+final class InvoicePdfService implements InvoicePdfServiceContract
 {
     /**
      * InvoicePdfService constructor
@@ -20,11 +21,18 @@ class InvoicePdfService implements InvoicePdfServiceContract
     /**
      * Generate a PDF for the given invoice
      *
-     * @return string The PDF content as a string
+     * Loads the user's preferred invoice template from settings and renders
+     * the PDF with the appropriate template, company data, and QR code.
+     *
+     * @param  Invoice  $invoice  The invoice to generate PDF for (will eager load relations)
+     * @return string The PDF content as a binary string
      */
     public function generatePdf(Invoice $invoice): string
     {
-        $invoice->load(['company', 'items', 'supplierCompany']);
+        $invoice->load(['company', 'items', 'supplierCompany', 'user.settings']);
+
+        // Get user's invoice template preference
+        $template = $invoice->user->settings?->invoice_template?->value ?? InvoiceTemplate::default()->value;
 
         // Generate Pay by Square QR code if we have the necessary data
         $qrCode = null;
@@ -45,10 +53,11 @@ class InvoicePdfService implements InvoicePdfServiceContract
             );
         }
 
-        // Render the HTML view
+        // Render the HTML view based on template
         $html = view('invoices.pdf-render', [
             'invoice' => $invoice,
             'qrCode' => $qrCode,
+            'template' => $template,
         ])->render();
 
         // Generate PDF using Browsershot
