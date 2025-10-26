@@ -144,6 +144,8 @@ final class DeliveryScheduleService
 * Each model has a Factory
 * Use `fake()` instead of hardcoded values
 * Use `assertDatabaseHas()` with model class:
+* In tests, always use the `route()` helper to generate route URLs.
+* The test name must clearly describe what the test is trying to verify.
 
   ```php
   $this->assertDatabaseHas(Order::class, ['status' => 'pending']);
