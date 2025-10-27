@@ -14,6 +14,7 @@ use App\Services\Invoice\InvoiceTotalCalculatorService;
 use Illuminate\Support\Arr;
 use Illuminate\Support\Facades\DB;
 use InvalidArgumentException;
+use Throwable as ThrowableAlias;
 
 final class InvoiceUpdateAction
 {
@@ -24,6 +25,9 @@ final class InvoiceUpdateAction
         private readonly InvoiceTotalCalculatorService $totalCalculator
     ) {}
 
+    /**
+     * @throws ThrowableAlias
+     */
     public function handle(Invoice $invoice, InvoiceUpdateDTO $dto, int $supplierCompanyId): Invoice
     {
         return DB::transaction(function () use ($invoice, $dto, $supplierCompanyId) {

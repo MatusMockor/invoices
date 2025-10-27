@@ -21,6 +21,7 @@ use App\Services\Interfaces\PayBySquare;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Http\Response;
+use Throwable;
 
 final class InvoiceController extends Controller
 {
@@ -82,6 +83,7 @@ final class InvoiceController extends Controller
 
     /**
      * Update an existing invoice.
+     * @throws Throwable
      */
     public function update(UpdateInvoiceRequest $request, Invoice $invoice): InvoiceResource
     {
