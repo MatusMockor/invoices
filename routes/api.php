@@ -30,6 +30,9 @@ use Illuminate\Support\Facades\Route;
 Route::post('/register', [AuthController::class, 'register'])
     ->middleware('throttle:6,1')
     ->name('api.register');
+Route::post('/register-with-company', [AuthController::class, 'registerWithCompany'])
+    ->middleware('throttle:6,1')
+    ->name('api.register-with-company');
 Route::post('/login', [AuthController::class, 'login'])
     ->middleware('throttle:6,1')
     ->name('api.login');

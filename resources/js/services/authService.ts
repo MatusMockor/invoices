@@ -14,6 +14,20 @@ export interface RegisterData {
   password_confirmation: string;
 }
 
+export interface RegisterWithCompanyData {
+  name: string;
+  email: string;
+  password: string;
+  password_confirmation: string;
+  company_ico: string;
+  company_name: string;
+  company_street: string;
+  company_city: string;
+  company_postal_code: string;
+  company_dic: string;
+  company_ic_dph: string;
+}
+
 const TOKEN_KEY = 'auth_token';
 
 export const authService = {
@@ -29,6 +43,14 @@ export const authService = {
     const response = await api.post('/register', data);
     const { token } = response.data;
     console.log('[AuthService] Register successful, storing token:', token ? '✓' : '✗');
+    localStorage.setItem(TOKEN_KEY, token);
+    return response.data;
+  },
+
+  async registerWithCompany(data: RegisterWithCompanyData): Promise<{ message: string; user: User; token: string }> {
+    const response = await api.post('/register-with-company', data);
+    const { token } = response.data;
+    console.log('[AuthService] Register with company successful, storing token:', token ? '✓' : '✗');
     localStorage.setItem(TOKEN_KEY, token);
     return response.data;
   },

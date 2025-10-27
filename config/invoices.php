@@ -67,4 +67,14 @@ return [
     |
     */
     'default_country' => env('INVOICE_DEFAULT_COUNTRY', 'SK'),
+
+    /*
+    |--------------------------------------------------------------------------
+    | Default Company Type
+    |--------------------------------------------------------------------------
+    |
+    | The default legal form for newly registered companies.
+    |
+    */
+    'default_company_type' => env('INVOICE_DEFAULT_COMPANY_TYPE', 's.r.o.'),
 ];

@@ -4,9 +4,12 @@ declare(strict_types=1);
 
 namespace App\Http\Controllers\Api;
 
+use App\Actions\User\UserRegistrationAction;
+use App\DTOs\User\UserRegistrationDTO;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\LoginRequest;
 use App\Http\Requests\RegisterRequest;
+use App\Http\Requests\RegisterWithCompanyRequest;
 use App\Http\Resources\UserResource;
 use App\Models\User;
 use Illuminate\Http\JsonResponse;
@@ -52,6 +55,26 @@ class AuthController extends Controller
 
         return response()->json([
             'message' => 'User registered successfully',
+            'user' => new UserResource($user),
+            'token' => $token,
+        ], 201);
+    }
+
+    /**
+     * Handle user registration with company request.
+     */
+    public function registerWithCompany(
+        RegisterWithCompanyRequest $request,
+        UserRegistrationAction $action
+    ): JsonResponse {
+        $dto = UserRegistrationDTO::fromRequest($request->all());
+
+        $user = $action->handle($dto);
+
+        $token = $user->createToken('auth-token')->plainTextToken;
+
+        return response()->json([
+            'message' => 'User and company registered successfully',
             'user' => new UserResource($user),
             'token' => $token,
         ], 201);

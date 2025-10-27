@@ -16,10 +16,12 @@ use App\Repositories\Interfaces\ContactRepository as AppContactRepositoryContrac
 use App\Repositories\Interfaces\InvoiceItemRepository as InvoiceItemRepositoryContract;
 use App\Repositories\Interfaces\InvoiceRepository as InvoiceRepositoryContract;
 use App\Repositories\Interfaces\NoteRepository as NoteRepositoryContract;
+use App\Repositories\Interfaces\UserCompanyRepository as UserCompanyRepositoryContract;
 use App\Repositories\Interfaces\UserRepository as UserRepositoryContract;
 use App\Repositories\InvoiceItemRepository as InvoiceItemRepositoryImpl;
 use App\Repositories\InvoiceRepository as InvoiceRepositoryImpl;
 use App\Repositories\NoteRepository;
+use App\Repositories\UserCompanyRepository;
 use App\Repositories\UserRepository;
 use App\Services\BusinessEntityDataService as BusinessEntityDataServiceImpl;
 use App\Services\CompanyAnalyticsService;
@@ -51,6 +53,7 @@ class AppServiceProvider extends ServiceProvider
         $this->app->bind(AppContactRepositoryContract::class, AppContactRepository::class);
         $this->app->bind(NoteRepositoryContract::class, NoteRepository::class);
         $this->app->bind(UserRepositoryContract::class, UserRepository::class);
+        $this->app->bind(UserCompanyRepositoryContract::class, UserCompanyRepository::class);
 
         // Register service interfaces with Contract suffix for aliases
         $this->app->bind(BusinessEntityDataServiceContract::class, BusinessEntityDataServiceImpl::class);
