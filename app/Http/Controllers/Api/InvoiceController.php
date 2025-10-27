@@ -83,6 +83,7 @@ final class InvoiceController extends Controller
 
     /**
      * Update an existing invoice.
+     *
      * @throws Throwable
      */
     public function update(UpdateInvoiceRequest $request, Invoice $invoice): InvoiceResource
