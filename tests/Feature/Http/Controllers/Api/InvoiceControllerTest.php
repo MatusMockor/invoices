@@ -10,6 +10,7 @@ use App\Models\InvoiceItem;
 use App\Models\User;
 use App\Models\UserCompany;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Support\Facades\Http;
 use Laravel\Sanctum\Sanctum;
 use Tests\TestCase;
 
@@ -404,5 +405,237 @@ class InvoiceControllerTest extends TestCase
 
         $response->assertStatus(422);
         $response->assertJsonValidationErrors(['invoiceNumber']);
+    }
+
+    public function test_store_creates_company_from_scraper_when_not_in_database(): void
+    {
+        $clientIco = fake()->numerify('########');
+        $scraperCompanyName = fake()->company();
+        $scraperStreet = fake()->streetAddress();
+        $scraperCity = fake()->city();
+        $scraperPostalCode = fake()->postcode();
+        $scraperDic = fake()->numerify('##########');
+        $scraperIcDph = 'SK'.fake()->numerify('##########');
+        $invoiceNumber = fake()->unique()->numerify('INV-####-####');
+        $itemDescription = fake()->words(2, true);
+        $itemQuantity = fake()->numberBetween(1, 20);
+        $itemPrice = fake()->randomFloat(2, 10, 200);
+
+        Http::fake([
+            '*/scraper/company' => Http::response([
+                'data' => [
+                    'success' => true,
+                    'ico' => $clientIco,
+                    'name' => $scraperCompanyName,
+                    'street' => $scraperStreet,
+                    'city' => $scraperCity,
+                    'postal_code' => $scraperPostalCode,
+                    'country' => 'Slovensko',
+                    'dic' => $scraperDic,
+                    'ic_dph' => $scraperIcDph,
+                    'company_type' => 's.r.o.',
+                    'registration_number' => 'OR Bratislava I',
+                ],
+            ], 200),
+        ]);
+
+        $invoiceData = [
+            'clientName' => fake()->company(),
+            'clientIco' => $clientIco,
+            'clientDic' => fake()->numerify('20########'),
+            'clientStreet' => fake()->streetAddress(),
+            'clientCity' => fake()->city(),
+            'clientPostalCode' => fake()->postcode(),
+            'invoiceNumber' => $invoiceNumber,
+            'issue_date' => now()->format('Y-m-d'),
+            'due_date' => now()->addDays(14)->format('Y-m-d'),
+            'delivery_date' => now()->format('Y-m-d'),
+            'items' => [
+                [
+                    'description' => $itemDescription,
+                    'quantity' => $itemQuantity,
+                    'price' => $itemPrice,
+                ],
+            ],
+        ];
+
+        $response = $this->postJson(route('api.invoices.store'), $invoiceData);
+
+        $response->assertStatus(201);
+
+        $this->assertDatabaseHas(Company::class, [
+            'ico' => $clientIco,
+            'name' => $scraperCompanyName,
+            'street' => $scraperStreet,
+            'city' => $scraperCity,
+            'postal_code' => $scraperPostalCode,
+            'dic' => $scraperDic,
+            'ic_dph' => $scraperIcDph,
+        ]);
+
+        Http::assertSent(function ($request) use ($clientIco) {
+            return str_contains($request->url(), '/scraper/company')
+                && $request['ico'] === $clientIco;
+        });
+    }
+
+    public function test_store_creates_company_with_fallback_data_when_scraper_fails(): void
+    {
+        $clientName = fake()->company();
+        $clientIco = fake()->numerify('########');
+        $clientDic = fake()->numerify('20########');
+        $clientStreet = fake()->streetAddress();
+        $clientCity = fake()->city();
+        $clientPostalCode = fake()->postcode();
+        $invoiceNumber = fake()->unique()->numerify('INV-####-####');
+        $itemDescription = fake()->words(2, true);
+        $itemQuantity = fake()->numberBetween(1, 20);
+        $itemPrice = fake()->randomFloat(2, 10, 200);
+
+        Http::fake([
+            '*/scraper/company' => Http::response(null, 500),
+        ]);
+
+        $invoiceData = [
+            'clientName' => $clientName,
+            'clientIco' => $clientIco,
+            'clientDic' => $clientDic,
+            'clientStreet' => $clientStreet,
+            'clientCity' => $clientCity,
+            'clientPostalCode' => $clientPostalCode,
+            'invoiceNumber' => $invoiceNumber,
+            'issue_date' => now()->format('Y-m-d'),
+            'due_date' => now()->addDays(14)->format('Y-m-d'),
+            'delivery_date' => now()->format('Y-m-d'),
+            'items' => [
+                [
+                    'description' => $itemDescription,
+                    'quantity' => $itemQuantity,
+                    'price' => $itemPrice,
+                ],
+            ],
+        ];
+
+        $response = $this->postJson(route('api.invoices.store'), $invoiceData);
+
+        $response->assertStatus(201);
+
+        $this->assertDatabaseHas(Company::class, [
+            'ico' => $clientIco,
+            'name' => $clientName,
+            'street' => $clientStreet,
+            'city' => $clientCity,
+            'postal_code' => $clientPostalCode,
+        ]);
+
+        Http::assertSent(function ($request) use ($clientIco) {
+            return str_contains($request->url(), '/scraper/company')
+                && $request['ico'] === $clientIco;
+        });
+    }
+
+    public function test_update_creates_company_from_scraper_when_changing_client(): void
+    {
+        $oldCompany = Company::factory()->create();
+
+        $invoice = Invoice::factory()->create([
+            'supplier_company_id' => $this->userCompany->id,
+            'company_id' => $oldCompany->id,
+            'user_id' => $this->user->id,
+        ]);
+
+        $newClientIco = fake()->numerify('########');
+        $scraperCompanyName = fake()->company();
+        $scraperStreet = fake()->streetAddress();
+        $scraperCity = fake()->city();
+        $scraperPostalCode = fake()->postcode();
+
+        Http::fake([
+            '*/scraper/company' => Http::response([
+                'data' => [
+                    'success' => true,
+                    'ico' => $newClientIco,
+                    'name' => $scraperCompanyName,
+                    'street' => $scraperStreet,
+                    'city' => $scraperCity,
+                    'postal_code' => $scraperPostalCode,
+                    'country' => 'SK',
+                    'dic' => fake()->numerify('##########'),
+                    'ic_dph' => 'SK'.fake()->numerify('##########'),
+                ],
+            ], 200),
+        ]);
+
+        $updateData = [
+            'clientName' => fake()->company(),
+            'clientIco' => $newClientIco,
+            'clientDic' => fake()->numerify('20########'),
+            'clientStreet' => fake()->streetAddress(),
+            'clientCity' => fake()->city(),
+            'clientPostalCode' => fake()->postcode(),
+            'items' => [
+                [
+                    'description' => fake()->words(2, true),
+                    'quantity' => fake()->numberBetween(1, 20),
+                    'price' => fake()->randomFloat(2, 10, 200),
+                ],
+            ],
+        ];
+
+        $response = $this->putJson(route('api.invoices.update', $invoice), $updateData);
+
+        $response->assertOk();
+
+        $this->assertDatabaseHas(Company::class, [
+            'ico' => $newClientIco,
+            'name' => $scraperCompanyName,
+            'street' => $scraperStreet,
+            'city' => $scraperCity,
+        ]);
+
+        $invoice->refresh();
+        $this->assertEquals($newClientIco, $invoice->company->ico);
+
+        Http::assertSent(function ($request) use ($newClientIco) {
+            return str_contains($request->url(), '/scraper/company')
+                && $request['ico'] === $newClientIco;
+        });
+    }
+
+    public function test_store_uses_existing_company_without_calling_scraper(): void
+    {
+        $existingCompany = Company::factory()->create();
+        $invoiceNumber = fake()->unique()->numerify('INV-####-####');
+
+        Http::fake();
+
+        $invoiceData = [
+            'clientName' => $existingCompany->name,
+            'clientIco' => $existingCompany->ico,
+            'clientDic' => $existingCompany->dic,
+            'clientStreet' => $existingCompany->street,
+            'clientCity' => $existingCompany->city,
+            'clientPostalCode' => $existingCompany->postal_code,
+            'invoiceNumber' => $invoiceNumber,
+            'issue_date' => now()->format('Y-m-d'),
+            'due_date' => now()->addDays(14)->format('Y-m-d'),
+            'delivery_date' => now()->format('Y-m-d'),
+            'items' => [
+                [
+                    'description' => fake()->words(2, true),
+                    'quantity' => fake()->numberBetween(1, 20),
+                    'price' => fake()->randomFloat(2, 10, 200),
+                ],
+            ],
+        ];
+
+        $response = $this->postJson(route('api.invoices.store'), $invoiceData);
+
+        $response->assertStatus(201);
+
+        Http::assertNothingSent();
+
+        $invoice = Invoice::where('invoice_number', $invoiceNumber)->first();
+        $this->assertEquals($existingCompany->id, $invoice->company_id);
     }
 }
