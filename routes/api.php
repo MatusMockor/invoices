@@ -4,11 +4,13 @@ declare(strict_types=1);
 
 use App\Http\Controllers\Api\AuthController;
 use App\Http\Controllers\Api\BusinessEntityController;
+use App\Http\Controllers\Api\CompanyAnalyticsApiController;
 use App\Http\Controllers\Api\CompanyController;
 use App\Http\Controllers\Api\ContactController;
 use App\Http\Controllers\Api\InvoiceController;
 use App\Http\Controllers\Api\NoteController;
 use App\Http\Controllers\Api\ProfileController;
+use App\Http\Controllers\Api\ReportsApiController;
 use App\Http\Controllers\Api\UserCompanyController;
 use App\Http\Controllers\Api\UserSettingController;
 use Illuminate\Support\Facades\Route;
@@ -90,4 +92,10 @@ Route::middleware('auth:sanctum')->group(function () {
     // User Settings
     Route::get('/settings', [UserSettingController::class, 'show'])->name('api.settings.show');
     Route::put('/settings', [UserSettingController::class, 'update'])->name('api.settings.update');
+
+    // Analytics
+    Route::get('/analytics', [CompanyAnalyticsApiController::class, 'index'])->name('api.analytics.index');
+
+    // Reports
+    Route::get('/reports', [ReportsApiController::class, 'index'])->name('api.reports.index');
 });

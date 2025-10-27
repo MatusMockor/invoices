@@ -11,7 +11,6 @@ use App\Http\Resources\BusinessEntityResource;
 use App\Models\UserCompany;
 use App\Repositories\Interfaces\BusinessEntityRepository;
 use App\Services\Interfaces\BusinessEntityDataService;
-use Illuminate\Http\JsonResponse;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\View\View;
 
@@ -68,15 +67,12 @@ class BusinessEntityController extends Controller
             ->with('success', 'Company was successfully deleted');
     }
 
-    public function fetchByIco(FetchCompanyByIcoRequest $request): JsonResponse|BusinessEntityResource
+    public function fetchByIco(FetchCompanyByIcoRequest $request): BusinessEntityResource
     {
         $businessEntityData = $this->businessEntityDataService->findOrCreateBusinessEntity($request->input('ico'));
 
         if (! $businessEntityData) {
-            return response()->json([
-                'success' => false,
-                'message' => 'Company data not found',
-            ], 404);
+            abort(404, 'Company data not found');
         }
 
         return new BusinessEntityResource($businessEntityData);

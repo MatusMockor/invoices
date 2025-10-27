@@ -1,43 +1,84 @@
-import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from "recharts";
+import { useMemo, useCallback } from "react";
+import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Legend } from "recharts";
+import type { MonthlyData } from "@/services";
 
-const data = [
-  { name: "Jan", revenue: 4200 },
-  { name: "Feb", revenue: 5100 },
-  { name: "Mar", revenue: 4800 },
-  { name: "Apr", revenue: 6300 },
-  { name: "Máj", revenue: 7200 },
-  { name: "Jún", revenue: 8100 },
-];
+interface RevenueChartProps {
+  monthlyData?: MonthlyData;
+}
 
-export const RevenueChart = () => {
+export const RevenueChart = ({ monthlyData }: RevenueChartProps) => {
+  const formatValue = useCallback((value: number) => {
+    return new Intl.NumberFormat('sk-SK', {
+      style: 'currency',
+      currency: 'EUR',
+    }).format(value);
+  }, []);
+
+  const chartData = useMemo(() => {
+    if (!monthlyData) return [];
+
+    return monthlyData.labels.map((label, index) => ({
+      name: label,
+      income: monthlyData.income[index] || 0,
+      expenses: monthlyData.expenses[index] || 0,
+    }));
+  }, [monthlyData]);
+
+  if (!monthlyData) {
+    return (
+      <div className="bg-gradient-card rounded-xl p-6 border border-border shadow-elegant-sm animate-fade-in">
+        <h3 className="text-lg font-semibold text-foreground mb-4">Mesačné príjmy a výdavky</h3>
+        <div className="flex items-center justify-center h-[300px]">
+          <p className="text-muted-foreground">Načítavam dáta...</p>
+        </div>
+      </div>
+    );
+  }
+
   return (
-    <div className="bg-gradient-card rounded-xl p-6 border border-border shadow-elegant-sm animate-fade-in">
-      <h3 className="text-lg font-semibold text-foreground mb-4">Mesačné príjmy</h3>
+    <div
+      className="bg-gradient-card rounded-xl p-6 border border-border shadow-elegant-sm animate-fade-in"
+      role="img"
+      aria-label="Graf mesačných príjmov a výdavkov"
+    >
+      <h3 className="text-lg font-semibold text-foreground mb-4">Mesačné príjmy a výdavky</h3>
       <ResponsiveContainer width="100%" height={300}>
-        <LineChart data={data}>
+        <LineChart data={chartData}>
           <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" />
-          <XAxis 
-            dataKey="name" 
+          <XAxis
+            dataKey="name"
             stroke="hsl(var(--muted-foreground))"
             style={{ fontSize: '12px' }}
           />
-          <YAxis 
+          <YAxis
             stroke="hsl(var(--muted-foreground))"
             style={{ fontSize: '12px' }}
           />
-          <Tooltip 
+          <Tooltip
             contentStyle={{
               backgroundColor: 'hsl(var(--card))',
               border: '1px solid hsl(var(--border))',
               borderRadius: '8px',
             }}
+            formatter={formatValue}
           />
-          <Line 
-            type="monotone" 
-            dataKey="revenue" 
-            stroke="hsl(var(--primary))" 
+          <Legend />
+          <Line
+            type="monotone"
+            dataKey="income"
+            name="Príjmy"
+            stroke="hsl(var(--success))"
             strokeWidth={3}
-            dot={{ fill: 'hsl(var(--primary))', r: 4 }}
+            dot={{ fill: 'hsl(var(--success))', r: 4 }}
+            activeDot={{ r: 6 }}
+          />
+          <Line
+            type="monotone"
+            dataKey="expenses"
+            name="Výdavky"
+            stroke="hsl(var(--destructive))"
+            strokeWidth={3}
+            dot={{ fill: 'hsl(var(--destructive))', r: 4 }}
             activeDot={{ r: 6 }}
           />
         </LineChart>

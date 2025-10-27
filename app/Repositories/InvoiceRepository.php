@@ -6,7 +6,9 @@ namespace App\Repositories;
 
 use App\Models\Invoice;
 use App\Repositories\Interfaces\InvoiceRepository as InvoiceRepositoryContract;
+use Carbon\Carbon;
 use Illuminate\Contracts\Pagination\LengthAwarePaginator;
+use Illuminate\Database\Eloquent\Collection;
 
 class InvoiceRepository implements InvoiceRepositoryContract
 {
@@ -50,5 +52,27 @@ class InvoiceRepository implements InvoiceRepositoryContract
     public function loadRelations(Invoice $invoice, array $relations): Invoice
     {
         return $invoice->load($relations);
+    }
+
+    /**
+     * Get income invoices for a company within date range
+     */
+    public function getIncomeInvoices(int $companyId, Carbon $startDate, Carbon $endDate): Collection
+    {
+        return Invoice::where('supplier_company_id', $companyId)
+            ->whereBetween('issue_date', [$startDate, $endDate])
+            ->orderBy('issue_date', 'desc')
+            ->get();
+    }
+
+    /**
+     * Get expense invoices for a company within date range
+     */
+    public function getExpenseInvoices(int $companyId, Carbon $startDate, Carbon $endDate): Collection
+    {
+        return Invoice::where('company_id', $companyId)
+            ->whereBetween('issue_date', [$startDate, $endDate])
+            ->orderBy('issue_date', 'desc')
+            ->get();
     }
 }
