@@ -14,7 +14,7 @@ return new class extends Migration
             $table->id();
             $table->foreignId('user_id')->constrained()->onDelete('cascade');
             $table->foreignId('supplier_company_id')->nullable()->constrained('user_companies')->nullOnDelete();
-            $table->string('invoice_number')->unique();
+            $table->string('invoice_number');
             $table->date('issue_date');
             $table->date('due_date');
             $table->date('delivery_date');
@@ -26,6 +26,9 @@ return new class extends Migration
             $table->string('status')->default('draft');
 
             $table->timestamps();
+
+            // Invoice number must be unique per supplier company
+            $table->unique(['supplier_company_id', 'invoice_number']);
         });
     }
 

@@ -34,13 +34,26 @@ trait HasInvoiceValidationRules
      */
     protected function getInvoiceDetailsValidationRules(bool $required = true, ?int $invoiceId = null): array
     {
+        // Get the current user's supplier company ID
+        $supplierCompanyId = auth()->user()?->currentCompany?->id;
+
+        // Build unique rule that checks uniqueness per supplier_company_id
+        $uniqueRule = \Illuminate\Validation\Rule::unique('invoices', 'invoice_number')
+            ->where('supplier_company_id', $supplierCompanyId);
+
+        if ($invoiceId) {
+            $uniqueRule->ignore($invoiceId);
+        }
+
+        // Build invoice number validation rules
+        $invoiceNumberRules = $required
+            ? ['required', 'string', 'max:50', $uniqueRule]
+            : ['sometimes', 'required', 'string', 'max:50', $uniqueRule];
+
         $requiredRule = $required ? 'required' : 'sometimes|required';
-        $uniqueRule = $invoiceId
-            ? "unique:invoices,invoice_number,{$invoiceId}"
-            : 'unique:invoices,invoice_number';
 
         return [
-            'invoiceNumber' => "{$requiredRule}|string|max:50|{$uniqueRule}",
+            'invoiceNumber' => $invoiceNumberRules,
             'issue_date' => "{$requiredRule}|date",
             'due_date' => "{$requiredRule}|date|after_or_equal:issue_date",
             'delivery_date' => "{$requiredRule}|date",
