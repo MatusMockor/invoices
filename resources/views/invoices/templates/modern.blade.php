@@ -49,12 +49,12 @@
                             </div>
                             <h3 class="font-bold text-slate-700 uppercase text-[10px] tracking-wider">Odberateľ</h3>
                         </div>
-                        <p class="font-bold text-sm mb-0.5 text-slate-900">{{ $invoice->customer_name ?? 'N/A' }}</p>
-                        <p class="text-xs text-slate-600">{{ $invoice->customer_street ?? '' }}</p>
-                        <p class="text-xs text-slate-600 mb-1.5">{{ $invoice->customer_postal_code ?? '' }} {{ $invoice->customer_city ?? '' }}</p>
+                        <p class="font-bold text-sm mb-0.5 text-slate-900">{{ $invoice->company->name ?? 'N/A' }}</p>
+                        <p class="text-xs text-slate-600">{{ $invoice->company->street ?? '' }}</p>
+                        <p class="text-xs text-slate-600 mb-1.5">{{ $invoice->company->postal_code ?? '' }} {{ $invoice->company->city ?? '' }}</p>
                         <div class="border-t border-slate-200 pt-1.5 mt-1.5 space-y-0.5">
-                            <p class="text-[10px] text-slate-500"><span class="font-semibold">IČO:</span> {{ $invoice->customer_ico ?? 'N/A' }}</p>
-                            <p class="text-[10px] text-slate-500"><span class="font-semibold">DIČ:</span> {{ $invoice->customer_dic ?? 'N/A' }}</p>
+                            <p class="text-[10px] text-slate-500"><span class="font-semibold">IČO:</span> {{ $invoice->company->ico ?? 'N/A' }}</p>
+                            <p class="text-[10px] text-slate-500"><span class="font-semibold">DIČ:</span> {{ $invoice->company->dic ?? 'N/A' }}</p>
                         </div>
                     </div>
                 </div>

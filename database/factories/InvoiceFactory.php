@@ -52,14 +52,6 @@ class InvoiceFactory extends Factory
             'constant_symbol' => $this->faker->optional(0.7)->numerify('####'),
             'note' => $this->faker->optional(0.7)->sentence(),
             'status' => $this->faker->randomElement(['draft', 'sent', 'paid', 'cancelled']),
-            'customer_name' => $this->faker->company(),
-            'customer_ico' => $this->faker->numerify('########'),
-            'customer_dic' => $this->faker->numerify('##########'),
-            'customer_ic_dph' => $this->faker->optional(0.7)->numerify('SK##########'),
-            'customer_street' => $this->faker->streetAddress(),
-            'customer_city' => $this->faker->city(),
-            'customer_postal_code' => $this->faker->postcode(),
-            'customer_country' => $this->faker->randomElement(['Slovakia', 'Czech Republic', 'Austria', 'Hungary']),
         ];
     }
 

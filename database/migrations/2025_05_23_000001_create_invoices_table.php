@@ -25,16 +25,6 @@ return new class extends Migration
             $table->text('note')->nullable();
             $table->string('status')->default('draft');
 
-            // Customer (odberateľ) snapshot fields
-            $table->string('customer_name')->nullable();
-            $table->string('customer_ico')->nullable();
-            $table->string('customer_dic')->nullable();
-            $table->string('customer_ic_dph')->nullable();
-            $table->string('customer_street')->nullable();
-            $table->string('customer_city')->nullable();
-            $table->string('customer_postal_code')->nullable();
-            $table->string('customer_country')->nullable();
-
             $table->timestamps();
         });
     }

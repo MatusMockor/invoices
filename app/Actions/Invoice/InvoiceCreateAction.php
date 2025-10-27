@@ -42,15 +42,6 @@ final class InvoiceCreateAction
                 'constant_symbol' => $dto->constantSymbol,
                 'note' => $dto->notes,
                 'status' => $dto->status ?? 'draft',
-
-                'customer_name' => $dto->clientName,
-                'customer_ico' => $dto->clientIco,
-                'customer_dic' => $dto->clientDic,
-                'customer_ic_dph' => $dto->clientIcDph,
-                'customer_street' => $dto->clientStreet,
-                'customer_city' => $dto->clientCity,
-                'customer_postal_code' => $dto->clientPostalCode,
-                'customer_country' => $dto->clientCountry ?? 'SK',
             ]);
 
             $this->createInvoiceItems($invoice, $dto->items);

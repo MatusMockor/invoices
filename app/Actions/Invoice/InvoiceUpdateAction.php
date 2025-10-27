@@ -44,14 +44,6 @@ final class InvoiceUpdateAction
 
                 $updateData = array_merge($updateData, [
                     'company_id' => $customerCompany->id,
-                    'customer_name' => $dto->clientName,
-                    'customer_ico' => $dto->clientIco,
-                    'customer_dic' => $dto->clientDic,
-                    'customer_ic_dph' => $dto->clientIcDph,
-                    'customer_street' => $dto->clientStreet,
-                    'customer_city' => $dto->clientCity,
-                    'customer_postal_code' => $dto->clientPostalCode,
-                    'customer_country' => $dto->clientCountry ?? 'SK',
                 ]);
             }
 

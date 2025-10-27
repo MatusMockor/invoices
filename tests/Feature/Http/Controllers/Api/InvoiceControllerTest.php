@@ -166,11 +166,6 @@ class InvoiceControllerTest extends TestCase
             'invoice_number' => $invoiceNumber,
             'supplier_company_id' => $this->userCompany->id,
             'user_id' => $this->user->id,
-            'customer_name' => $clientName,
-            'customer_ico' => $clientIco,
-            'customer_street' => $clientStreet,
-            'customer_city' => $clientCity,
-            'customer_postal_code' => $clientPostalCode,
             'total_amount' => $expectedTotal,
         ]);
 

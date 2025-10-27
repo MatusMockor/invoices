@@ -54,14 +54,6 @@ class Invoice extends Model
         'constant_symbol',
         'note',
         'status',
-        'customer_name',
-        'customer_ico',
-        'customer_dic',
-        'customer_ic_dph',
-        'customer_street',
-        'customer_city',
-        'customer_postal_code',
-        'customer_country',
     ];
 
     protected $casts = [

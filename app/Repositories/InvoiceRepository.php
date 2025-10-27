@@ -60,7 +60,8 @@ class InvoiceRepository implements InvoiceRepositoryContract
      */
     public function getIncomeInvoices(int $companyId, Carbon $startDate, Carbon $endDate): Collection
     {
-        return Invoice::where('supplier_company_id', $companyId)
+        return Invoice::with('company')
+            ->where('supplier_company_id', $companyId)
             ->whereBetween('issue_date', [$startDate, $endDate])
             ->orderBy('issue_date', 'desc')
             ->get();

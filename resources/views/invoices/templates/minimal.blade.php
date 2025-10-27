@@ -27,14 +27,14 @@
         <!-- Client -->
         <div>
             <p class="text-xs text-gray-500 uppercase tracking-wider mb-3">Odberateľ</p>
-            <p class="font-semibold text-lg mb-1">{{ $invoice->customer_name ?? 'N/A' }}</p>
-            <p class="text-sm text-gray-600">{{ $invoice->customer_street ?? '' }}</p>
-            <p class="text-sm text-gray-600">{{ $invoice->customer_postal_code ?? '' }} {{ $invoice->customer_city ?? '' }}</p>
+            <p class="font-semibold text-lg mb-1">{{ $invoice->company->name ?? 'N/A' }}</p>
+            <p class="text-sm text-gray-600">{{ $invoice->company->street ?? '' }}</p>
+            <p class="text-sm text-gray-600">{{ $invoice->company->postal_code ?? '' }} {{ $invoice->company->city ?? '' }}</p>
             <div class="mt-3 text-sm text-gray-600 space-y-0.5">
-                <p>IČO: {{ $invoice->customer_ico ?? 'N/A' }}</p>
-                <p>DIČ: {{ $invoice->customer_dic ?? 'N/A' }}</p>
-                @if($invoice->customer_ic_dph ?? false)
-                    <p>IČ DPH: {{ $invoice->customer_ic_dph }}</p>
+                <p>IČO: {{ $invoice->company->ico ?? 'N/A' }}</p>
+                <p>DIČ: {{ $invoice->company->dic ?? 'N/A' }}</p>
+                @if($invoice->company->ic_dph ?? false)
+                    <p>IČ DPH: {{ $invoice->company->ic_dph }}</p>
                 @endif
             </div>
         </div>

@@ -61,14 +61,6 @@ class InvoiceSeeder extends Seeder
             'due_date' => Carbon::now()->addDays(14),
             'status' => 'draft',
             'total_amount' => 0, // Will be calculated from items
-            'customer_name' => $company->name,
-            'customer_ico' => $company->ico,
-            'customer_dic' => $company->dic,
-            'customer_ic_dph' => $company->ic_dph,
-            'customer_street' => $company->street,
-            'customer_city' => $company->city,
-            'customer_postal_code' => $company->postal_code,
-            'customer_country' => $company->country,
         ]);
 
         // Create invoice items
@@ -118,14 +110,6 @@ class InvoiceSeeder extends Seeder
             'due_date' => Carbon::now()->addDays(7),
             'status' => 'sent',
             'total_amount' => 0, // Will be calculated from items
-            'customer_name' => $company->name,
-            'customer_ico' => $company->ico,
-            'customer_dic' => $company->dic,
-            'customer_ic_dph' => $company->ic_dph,
-            'customer_street' => $company->street,
-            'customer_city' => $company->city,
-            'customer_postal_code' => $company->postal_code,
-            'customer_country' => $company->country,
         ]);
 
         // Create invoice items
@@ -180,14 +164,6 @@ class InvoiceSeeder extends Seeder
             'due_date' => Carbon::now()->subDays(15),
             'status' => 'paid',
             'total_amount' => 0, // Will be calculated from items
-            'customer_name' => $company->name,
-            'customer_ico' => $company->ico,
-            'customer_dic' => $company->dic,
-            'customer_ic_dph' => $company->ic_dph,
-            'customer_street' => $company->street,
-            'customer_city' => $company->city,
-            'customer_postal_code' => $company->postal_code,
-            'customer_country' => $company->country,
         ]);
 
         // Create invoice items
