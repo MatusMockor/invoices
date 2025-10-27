@@ -19,6 +19,7 @@ class InvoiceRepository implements InvoiceRepositoryContract
     {
         return Invoice::with('company')
             ->where('supplier_company_id', $companyId)
+            ->orderBy('created_at', 'desc')
             ->paginate($perPage);
     }
 
