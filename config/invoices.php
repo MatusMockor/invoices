@@ -2,6 +2,8 @@
 
 declare(strict_types=1);
 
+use App\Enums\Currency;
+use App\Enums\InvoiceStatus;
 use App\Enums\InvoiceTemplate;
 
 return [
@@ -25,4 +27,44 @@ return [
     |
     */
     'default_template' => InvoiceTemplate::CLASSIC->value,
+
+    /*
+    |--------------------------------------------------------------------------
+    | Default Invoice Status
+    |--------------------------------------------------------------------------
+    |
+    | The default status assigned to newly created invoices.
+    |
+    */
+    'default_status' => InvoiceStatus::DRAFT->value,
+
+    /*
+    |--------------------------------------------------------------------------
+    | Default Currency
+    |--------------------------------------------------------------------------
+    |
+    | The default currency code (ISO 4217) used for invoices.
+    |
+    */
+    'default_currency' => Currency::EUR->value,
+
+    /*
+    |--------------------------------------------------------------------------
+    | Available Currencies
+    |--------------------------------------------------------------------------
+    |
+    | List of all available currencies that can be used for invoices.
+    |
+    */
+    'currencies' => Currency::values(),
+
+    /*
+    |--------------------------------------------------------------------------
+    | Default Country
+    |--------------------------------------------------------------------------
+    |
+    | The default country code (ISO 3166-1 alpha-2) used for companies.
+    |
+    */
+    'default_country' => env('INVOICE_DEFAULT_COUNTRY', 'SK'),
 ];

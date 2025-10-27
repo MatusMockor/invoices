@@ -25,7 +25,7 @@ class ScraperService implements ScraperServiceContract
                 'ico' => $ico,
             ]);
 
-        if ($response->failed()) {
+        if (! $response->successful()) {
             Log::error('Error fetching partner data from scraper',
                 ['message' => $response->body(), 'response' => $response]);
 
@@ -44,41 +44,51 @@ class ScraperService implements ScraperServiceContract
     public function fetchCompanyDataByIco(string $ico): array
     {
         $response = Http::withToken(JwtFacade::generateToken())
-            ->timeout(15)
+            ->timeout(config('services.scraper.timeout'))
             ->post($this->baseUrl.'/scraper/company', [
                 'ico' => $ico,
             ]);
 
-        if ($response->successful()) {
-            $data = $response->json('data', default: []);
+        if (! $response->successful()) {
+            Log::warning('Scraper API response not successful', [
+                'status' => $response->status(),
+                'body' => $response->body(),
+            ]);
 
-            if (! empty($data) && isset($data['success']) && $data['success']) {
-                return [
-                    'success' => true,
-                    'data' => [
-                        'ico' => $data['ico'] ?? $ico,
-                        'name' => $data['name'] ?? '',
-                        'street' => $data['street'] ?? '',
-                        'city' => $data['city'] ?? '',
-                        'postal_code' => $data['postal_code'] ?? '',
-                        'country' => $data['country'] ?? 'Slovensko',
-                        'dic' => $data['dic'] ?? null,
-                        'ic_dph' => $data['ic_dph'] ?? null,
-                        'company_type' => $data['company_type'] ?? null,
-                        'registration_number' => $data['registration_number'] ?? null,
-                    ],
-                ];
-            }
+            return [
+                'success' => false,
+                'message' => 'Failed to load company data from scraper.',
+            ];
         }
 
-        Log::warning('Scraper API response not successful', [
-            'status' => $response->status(),
-            'body' => $response->body(),
-        ]);
+        $data = $response->json('data', default: []);
+
+        if (empty($data) || ! isset($data['success']) || ! $data['success']) {
+            Log::warning('Scraper API returned empty or unsuccessful data', [
+                'ico' => $ico,
+                'data' => $data,
+            ]);
+
+            return [
+                'success' => false,
+                'message' => 'Failed to load company data from scraper.',
+            ];
+        }
 
         return [
-            'success' => false,
-            'message' => 'Failed to load company data from scraper.',
+            'success' => true,
+            'data' => [
+                'ico' => $data['ico'] ?? $ico,
+                'name' => $data['name'] ?? '',
+                'street' => $data['street'] ?? '',
+                'city' => $data['city'] ?? '',
+                'postal_code' => $data['postal_code'] ?? '',
+                'country' => $data['country'] ?? config('invoices.default_country'),
+                'dic' => $data['dic'] ?? null,
+                'ic_dph' => $data['ic_dph'] ?? null,
+                'company_type' => $data['company_type'] ?? null,
+                'registration_number' => $data['registration_number'] ?? null,
+            ],
         ];
     }
 

@@ -4,10 +4,10 @@ declare(strict_types=1);
 
 namespace App\Actions\Invoice;
 
+use App\Actions\Company\CompanyFetchOrCreateAction;
 use App\DTOs\Invoice\InvoiceCreateDTO;
 use App\Models\Company;
 use App\Models\Invoice;
-use App\Repositories\Interfaces\CompanyRepository;
 use App\Repositories\Interfaces\InvoiceItemRepository;
 use App\Repositories\Interfaces\InvoiceRepository;
 use App\Services\Invoice\InvoiceTotalCalculatorService;
@@ -18,7 +18,7 @@ final class InvoiceCreateAction
     public function __construct(
         private readonly InvoiceRepository $invoiceRepository,
         private readonly InvoiceItemRepository $invoiceItemRepository,
-        private readonly CompanyRepository $companyRepository,
+        private readonly CompanyFetchOrCreateAction $companyFetchOrCreate,
         private readonly InvoiceTotalCalculatorService $totalCalculator
     ) {}
 
@@ -38,10 +38,10 @@ final class InvoiceCreateAction
                 'company_id' => $customerCompany->id,
                 'supplier_company_id' => $supplierCompanyId,
                 'total_amount' => $totalAmount,
-                'currency' => $dto->currency ?? 'EUR',
+                'currency' => $dto->currency ?? config('invoices.default_currency'),
                 'constant_symbol' => $dto->constantSymbol,
                 'note' => $dto->notes,
-                'status' => $dto->status ?? 'draft',
+                'status' => $dto->status ?? config('invoices.default_status'),
             ]);
 
             $this->createInvoiceItems($invoice, $dto->items);
@@ -52,29 +52,21 @@ final class InvoiceCreateAction
 
     private function findOrCreateCompany(InvoiceCreateDTO $dto): Company
     {
-        $company = $this->companyRepository->findByIco($dto->clientIco);
-
-        if ($company) {
-            return $company;
-        }
-
-        // Create new company
-        return $this->companyRepository->create([
+        return $this->companyFetchOrCreate->handle($dto->clientIco, [
             'name' => $dto->clientName,
-            'ico' => $dto->clientIco,
             'dic' => $dto->clientDic,
             'ic_dph' => $dto->clientIcDph,
             'street' => $dto->clientStreet,
             'city' => $dto->clientCity,
             'postal_code' => $dto->clientPostalCode,
-            'country' => $dto->clientCountry,
+            'country' => $dto->clientCountry ?? config('invoices.default_country'),
         ]);
     }
 
     private function createInvoiceItems(Invoice $invoice, array $items): void
     {
         $preparedItems = array_map(static function ($item) use ($invoice) {
-            $unitPrice = $item['price'] ?? $item['unit_price'] ?? 0;
+            $unitPrice = $item['price'];
 
             return [
                 'invoice_id' => $invoice->id,
@@ -85,10 +77,8 @@ final class InvoiceCreateAction
             ];
         }, $items);
 
-        $this->invoiceItemRepository->upsert(
-            $preparedItems,
-            ['id'],
-            ['description', 'quantity', 'unit_price', 'total_price']
-        );
+        foreach ($preparedItems as $itemData) {
+            $this->invoiceItemRepository->create($itemData);
+        }
     }
 }

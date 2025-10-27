@@ -4,30 +4,26 @@ declare(strict_types=1);
 
 namespace App\Actions\Invoice;
 
+use App\Actions\Company\CompanyFetchOrCreateAction;
 use App\DTOs\Invoice\InvoiceUpdateDTO;
 use App\Models\Company;
 use App\Models\Invoice;
-use App\Repositories\Interfaces\CompanyRepository;
 use App\Repositories\Interfaces\InvoiceItemRepository;
 use App\Repositories\Interfaces\InvoiceRepository;
 use App\Services\Invoice\InvoiceTotalCalculatorService;
 use Illuminate\Support\Arr;
 use Illuminate\Support\Facades\DB;
 use InvalidArgumentException;
-use Throwable as ThrowableAlias;
 
 final class InvoiceUpdateAction
 {
     public function __construct(
         private readonly InvoiceRepository $invoiceRepository,
         private readonly InvoiceItemRepository $invoiceItemRepository,
-        private readonly CompanyRepository $companyRepository,
+        private readonly CompanyFetchOrCreateAction $companyFetchOrCreate,
         private readonly InvoiceTotalCalculatorService $totalCalculator
     ) {}
 
-    /**
-     * @throws ThrowableAlias
-     */
     public function handle(Invoice $invoice, InvoiceUpdateDTO $dto, int $supplierCompanyId): Invoice
     {
         return DB::transaction(function () use ($invoice, $dto, $supplierCompanyId) {
@@ -68,33 +64,37 @@ final class InvoiceUpdateAction
             throw new InvalidArgumentException('Client ICO is required');
         }
 
-        $company = $this->companyRepository->findByIco($dto->clientIco);
-
-        if ($company) {
-            return $company;
-        }
-
-        // Create new company
-        return $this->companyRepository->create([
+        return $this->companyFetchOrCreate->handle($dto->clientIco, [
             'name' => $dto->clientName,
-            'ico' => $dto->clientIco,
             'dic' => $dto->clientDic,
             'ic_dph' => $dto->clientIcDph,
             'street' => $dto->clientStreet,
             'city' => $dto->clientCity,
             'postal_code' => $dto->clientPostalCode,
-            'country' => $dto->clientCountry ?? 'SK',
+            'country' => $dto->clientCountry ?? config('invoices.default_country'),
         ]);
     }
 
     private function updateInvoiceItems(Invoice $invoice, array $items): void
     {
-        // Separate existing items from new items
+        [$existingItems, $newItems] = $this->separateItems($invoice, $items);
+        $this->deleteRemovedItems($invoice, $existingItems);
+        $this->updateExistingItems($existingItems);
+        $this->createNewItems($newItems);
+    }
+
+    /**
+     * Separate items into existing and new items
+     *
+     * @return array{0: array, 1: array}
+     */
+    private function separateItems(Invoice $invoice, array $items): array
+    {
         $existingItems = [];
         $newItems = [];
 
         foreach ($items as $item) {
-            $unitPrice = $item['price'] ?? $item['unit_price'] ?? 0;
+            $unitPrice = $item['price'];
 
             $itemData = [
                 'invoice_id' => $invoice->id,
@@ -112,22 +112,34 @@ final class InvoiceUpdateAction
             }
         }
 
-        // Get IDs of items that should be kept
+        return [$existingItems, $newItems];
+    }
+
+    private function deleteRemovedItems(Invoice $invoice, array $existingItems): void
+    {
         $itemIds = Arr::pluck($existingItems, 'id');
-
-        // Delete items that are not in the update request
         $this->invoiceItemRepository->deleteItemsNotInIds($invoice->id, $itemIds);
+    }
 
-        // Update existing items
-        if (! empty($existingItems)) {
-            $this->invoiceItemRepository->upsert(
-                $existingItems,
-                ['id'],
-                ['description', 'quantity', 'unit_price', 'total_price']
-            );
+    private function updateExistingItems(array $existingItems): void
+    {
+        if (empty($existingItems)) {
+            return;
         }
 
-        // Create new items
+        $this->invoiceItemRepository->upsert(
+            $existingItems,
+            ['id'],
+            ['description', 'quantity', 'unit_price', 'total_price']
+        );
+    }
+
+    private function createNewItems(array $newItems): void
+    {
+        if (empty($newItems)) {
+            return;
+        }
+
         foreach ($newItems as $newItem) {
             $this->invoiceItemRepository->create($newItem);
         }
