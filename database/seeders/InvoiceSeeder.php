@@ -69,8 +69,6 @@ class InvoiceSeeder extends Seeder
             'customer_city' => $company->city,
             'customer_postal_code' => $company->postal_code,
             'customer_country' => $company->country,
-            'customer_company_type' => $company->company_type,
-            'customer_registration_number' => $company->registration_number,
             'supplier_name' => $userCompany->name,
             'supplier_ico' => $userCompany->ico,
             'supplier_dic' => $userCompany->dic,
@@ -81,8 +79,6 @@ class InvoiceSeeder extends Seeder
             'supplier_country' => $userCompany->country,
             'supplier_iban' => $userCompany->iban,
             'supplier_swift' => $userCompany->swift,
-            'supplier_company_type' => $userCompany->company_type,
-            'supplier_registration_number' => $userCompany->registration_number,
         ]);
 
         // Create invoice items
@@ -140,8 +136,6 @@ class InvoiceSeeder extends Seeder
             'customer_city' => $company->city,
             'customer_postal_code' => $company->postal_code,
             'customer_country' => $company->country,
-            'customer_company_type' => $company->company_type,
-            'customer_registration_number' => $company->registration_number,
             'supplier_name' => $userCompany->name,
             'supplier_ico' => $userCompany->ico,
             'supplier_dic' => $userCompany->dic,
@@ -152,8 +146,6 @@ class InvoiceSeeder extends Seeder
             'supplier_country' => $userCompany->country,
             'supplier_iban' => $userCompany->iban,
             'supplier_swift' => $userCompany->swift,
-            'supplier_company_type' => $userCompany->company_type,
-            'supplier_registration_number' => $userCompany->registration_number,
         ]);
 
         // Create invoice items
@@ -216,8 +208,6 @@ class InvoiceSeeder extends Seeder
             'customer_city' => $company->city,
             'customer_postal_code' => $company->postal_code,
             'customer_country' => $company->country,
-            'customer_company_type' => $company->company_type,
-            'customer_registration_number' => $company->registration_number,
             'supplier_name' => $userCompany->name,
             'supplier_ico' => $userCompany->ico,
             'supplier_dic' => $userCompany->dic,
@@ -228,8 +218,6 @@ class InvoiceSeeder extends Seeder
             'supplier_country' => $userCompany->country,
             'supplier_iban' => $userCompany->iban,
             'supplier_swift' => $userCompany->swift,
-            'supplier_company_type' => $userCompany->company_type,
-            'supplier_registration_number' => $userCompany->registration_number,
         ]);
 
         // Create invoice items

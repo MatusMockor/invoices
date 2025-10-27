@@ -50,8 +50,6 @@ class InvoiceObserver
         $invoice->supplier_country = $supplierCompany->country;
         $invoice->supplier_iban = $supplierCompany->iban;
         $invoice->supplier_swift = $supplierCompany->swift;
-        $invoice->supplier_company_type = $supplierCompany->company_type;
-        $invoice->supplier_registration_number = $supplierCompany->registration_number;
     }
 
     protected function populateCustomerSnapshot(Invoice $invoice): void
@@ -74,7 +72,5 @@ class InvoiceObserver
         $invoice->customer_city = $customer->city;
         $invoice->customer_postal_code = $customer->postal_code;
         $invoice->customer_country = $customer->country;
-        $invoice->customer_company_type = $customer->company_type;
-        $invoice->customer_registration_number = $customer->registration_number;
     }
 }

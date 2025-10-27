@@ -93,19 +93,11 @@ final class InvoiceUpdateAction
 
     private function updateInvoiceItems(Invoice $invoice, array $items): void
     {
-        // Get IDs of items that should be kept
-        $itemIds = Arr::pluck(
-            Arr::where($items, static function (array $item) {
-                return isset($item['id']);
-            }),
-            'id'
-        );
+        // Separate existing items from new items
+        $existingItems = [];
+        $newItems = [];
 
-        // Delete items that are not in the update request
-        $this->invoiceItemRepository->deleteItemsNotInIds($invoice->id, $itemIds);
-
-        // Prepare items for upsert
-        $preparedItems = array_map(static function ($item) use ($invoice) {
+        foreach ($items as $item) {
             $unitPrice = $item['price'] ?? $item['unit_price'] ?? 0;
 
             $itemData = [
@@ -118,15 +110,30 @@ final class InvoiceUpdateAction
 
             if (isset($item['id'])) {
                 $itemData['id'] = $item['id'];
+                $existingItems[] = $itemData;
+            } else {
+                $newItems[] = $itemData;
             }
+        }
 
-            return $itemData;
-        }, $items);
+        // Get IDs of items that should be kept
+        $itemIds = Arr::pluck($existingItems, 'id');
 
-        $this->invoiceItemRepository->upsert(
-            $preparedItems,
-            ['id'],
-            ['description', 'quantity', 'unit_price', 'total_price']
-        );
+        // Delete items that are not in the update request
+        $this->invoiceItemRepository->deleteItemsNotInIds($invoice->id, $itemIds);
+
+        // Update existing items
+        if (! empty($existingItems)) {
+            $this->invoiceItemRepository->upsert(
+                $existingItems,
+                ['id'],
+                ['description', 'quantity', 'unit_price', 'total_price']
+            );
+        }
+
+        // Create new items
+        foreach ($newItems as $newItem) {
+            $this->invoiceItemRepository->create($newItem);
+        }
     }
 }

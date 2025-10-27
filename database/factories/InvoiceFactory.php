@@ -60,8 +60,6 @@ class InvoiceFactory extends Factory
             'customer_city' => $this->faker->city(),
             'customer_postal_code' => $this->faker->postcode(),
             'customer_country' => $this->faker->randomElement(['Slovakia', 'Czech Republic', 'Austria', 'Hungary']),
-            'customer_company_type' => $this->faker->randomElement(['s.r.o.', 'a.s.', 'živnosť']),
-            'customer_registration_number' => $this->faker->numerify('###-######'),
             'supplier_name' => $this->faker->company(),
             'supplier_ico' => $this->faker->numerify('########'),
             'supplier_dic' => $this->faker->numerify('##########'),
@@ -72,8 +70,6 @@ class InvoiceFactory extends Factory
             'supplier_country' => $this->faker->randomElement(['Slovakia', 'Czech Republic', 'Austria', 'Hungary']),
             'supplier_iban' => $this->faker->iban('SK'),
             'supplier_swift' => $this->faker->swiftBicNumber(),
-            'supplier_company_type' => $this->faker->randomElement(['s.r.o.', 'a.s.', 'živnosť']),
-            'supplier_registration_number' => $this->faker->numerify('###-######'),
         ];
     }
 
