@@ -62,16 +62,6 @@ class Invoice extends Model
         'customer_city',
         'customer_postal_code',
         'customer_country',
-        'supplier_name',
-        'supplier_ico',
-        'supplier_dic',
-        'supplier_ic_dph',
-        'supplier_street',
-        'supplier_city',
-        'supplier_postal_code',
-        'supplier_country',
-        'supplier_iban',
-        'supplier_swift',
     ];
 
     protected $casts = [

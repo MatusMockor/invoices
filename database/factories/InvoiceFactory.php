@@ -60,16 +60,6 @@ class InvoiceFactory extends Factory
             'customer_city' => $this->faker->city(),
             'customer_postal_code' => $this->faker->postcode(),
             'customer_country' => $this->faker->randomElement(['Slovakia', 'Czech Republic', 'Austria', 'Hungary']),
-            'supplier_name' => $this->faker->company(),
-            'supplier_ico' => $this->faker->numerify('########'),
-            'supplier_dic' => $this->faker->numerify('##########'),
-            'supplier_ic_dph' => $this->faker->optional(0.7)->numerify('SK##########'),
-            'supplier_street' => $this->faker->streetAddress(),
-            'supplier_city' => $this->faker->city(),
-            'supplier_postal_code' => $this->faker->postcode(),
-            'supplier_country' => $this->faker->randomElement(['Slovakia', 'Czech Republic', 'Austria', 'Hungary']),
-            'supplier_iban' => $this->faker->iban('SK'),
-            'supplier_swift' => $this->faker->swiftBicNumber(),
         ];
     }
 

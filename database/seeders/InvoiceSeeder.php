@@ -69,16 +69,6 @@ class InvoiceSeeder extends Seeder
             'customer_city' => $company->city,
             'customer_postal_code' => $company->postal_code,
             'customer_country' => $company->country,
-            'supplier_name' => $userCompany->name,
-            'supplier_ico' => $userCompany->ico,
-            'supplier_dic' => $userCompany->dic,
-            'supplier_ic_dph' => $userCompany->ic_dph,
-            'supplier_street' => $userCompany->street,
-            'supplier_city' => $userCompany->city,
-            'supplier_postal_code' => $userCompany->postal_code,
-            'supplier_country' => $userCompany->country,
-            'supplier_iban' => $userCompany->iban,
-            'supplier_swift' => $userCompany->swift,
         ]);
 
         // Create invoice items
@@ -136,16 +126,6 @@ class InvoiceSeeder extends Seeder
             'customer_city' => $company->city,
             'customer_postal_code' => $company->postal_code,
             'customer_country' => $company->country,
-            'supplier_name' => $userCompany->name,
-            'supplier_ico' => $userCompany->ico,
-            'supplier_dic' => $userCompany->dic,
-            'supplier_ic_dph' => $userCompany->ic_dph,
-            'supplier_street' => $userCompany->street,
-            'supplier_city' => $userCompany->city,
-            'supplier_postal_code' => $userCompany->postal_code,
-            'supplier_country' => $userCompany->country,
-            'supplier_iban' => $userCompany->iban,
-            'supplier_swift' => $userCompany->swift,
         ]);
 
         // Create invoice items
@@ -208,16 +188,6 @@ class InvoiceSeeder extends Seeder
             'customer_city' => $company->city,
             'customer_postal_code' => $company->postal_code,
             'customer_country' => $company->country,
-            'supplier_name' => $userCompany->name,
-            'supplier_ico' => $userCompany->ico,
-            'supplier_dic' => $userCompany->dic,
-            'supplier_ic_dph' => $userCompany->ic_dph,
-            'supplier_street' => $userCompany->street,
-            'supplier_city' => $userCompany->city,
-            'supplier_postal_code' => $userCompany->postal_code,
-            'supplier_country' => $userCompany->country,
-            'supplier_iban' => $userCompany->iban,
-            'supplier_swift' => $userCompany->swift,
         ]);
 
         // Create invoice items

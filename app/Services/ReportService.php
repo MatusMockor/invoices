@@ -62,7 +62,7 @@ final class ReportService implements ReportServiceContract
             'expense_invoices' => $expenseInvoices->map(fn ($invoice) => [
                 'id' => $invoice->id,
                 'invoice_number' => $invoice->invoice_number,
-                'supplier_name' => $invoice->supplier_name,
+                'supplier_name' => $invoice->supplierCompany->name ?? 'N/A',
                 'issue_date' => $invoice->issue_date->toDateString(),
                 'due_date' => $invoice->due_date->toDateString(),
                 'total_amount' => $invoice->total_amount,

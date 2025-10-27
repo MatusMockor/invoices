@@ -35,19 +35,6 @@ return new class extends Migration
             $table->string('customer_postal_code')->nullable();
             $table->string('customer_country')->nullable();
 
-            // Supplier (dodávateľ) snapshot fields
-            $table->string('supplier_name')->nullable();
-            $table->string('supplier_ico')->nullable();
-            $table->string('supplier_dic')->nullable();
-            $table->string('supplier_ic_dph')->nullable();
-            $table->string('supplier_street')->nullable();
-            $table->string('supplier_city')->nullable();
-            $table->string('supplier_postal_code')->nullable();
-            $table->string('supplier_country')->nullable();
-
-            $table->string('supplier_iban')->nullable();
-            $table->string('supplier_swift')->nullable();
-
             $table->timestamps();
         });
     }
