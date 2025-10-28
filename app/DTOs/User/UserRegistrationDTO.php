@@ -16,7 +16,7 @@ final readonly class UserRegistrationDTO
         public string $companyCity,
         public string $companyPostalCode,
         public string $companyDic,
-        public string $companyIcDph,
+        public ?string $companyIcDph,
     ) {}
 
     public static function fromRequest(array $data): self
@@ -31,7 +31,7 @@ final readonly class UserRegistrationDTO
             companyCity: $data['company_city'],
             companyPostalCode: $data['company_postal_code'],
             companyDic: $data['company_dic'],
-            companyIcDph: $data['company_ic_dph'],
+            companyIcDph: $data['company_ic_dph'] ?? null,
         );
     }
 }

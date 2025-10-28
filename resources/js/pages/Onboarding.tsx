@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -11,6 +11,7 @@ import { Search, Building2 } from "lucide-react";
 import { toast } from "sonner";
 import { onboardingService } from "@/services/onboardingService";
 import { businessEntityService } from "@/services/businessEntityService";
+import { useAuthContext } from "@/contexts/AuthContext";
 
 const companySchema = z.object({
   ico: z.string().trim().min(1, "IČO je povinné").max(20),
@@ -29,6 +30,14 @@ const Onboarding = () => {
   const [isSearching, setIsSearching] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const navigate = useNavigate();
+  const { user, refetch } = useAuthContext();
+
+  // Redirect to dashboard if user already has a company
+  useEffect(() => {
+    if (user?.current_company_id) {
+      navigate("/app/dashboard", { replace: true });
+    }
+  }, [user, navigate]);
 
   const companyForm = useForm<CompanyFormData>({
     resolver: zodResolver(companySchema),
@@ -80,6 +89,10 @@ const Onboarding = () => {
       await onboardingService.createCompany(data);
 
       toast.success("Firma bola úspešne vytvorená!");
+
+      // Refetch user data to update current_company_id
+      await refetch();
+
       navigate("/app/dashboard");
     } catch (error: any) {
       toast.error(error.response?.data?.message || "Nepodarilo sa vytvoriť firmu");

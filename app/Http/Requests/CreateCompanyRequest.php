@@ -22,7 +22,7 @@ final class CreateCompanyRequest extends FormRequest
             'city' => 'required|string|max:100',
             'postal_code' => 'required|string|max:10',
             'dic' => 'required|string|max:20',
-            'ic_dph' => 'required|string|max:20',
+            'ic_dph' => 'nullable|string|max:20',
         ];
     }
 
@@ -56,7 +56,7 @@ final class CreateCompanyRequest extends FormRequest
         return $this->input('dic');
     }
 
-    public function getIcDph(): string
+    public function getIcDph(): ?string
     {
         return $this->input('ic_dph');
     }

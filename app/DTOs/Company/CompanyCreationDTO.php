@@ -13,7 +13,7 @@ final readonly class CompanyCreationDTO
         public string $city,
         public string $postalCode,
         public string $dic,
-        public string $icDph,
+        public ?string $icDph,
     ) {}
 
     public static function fromRequest(array $data): self
@@ -25,7 +25,7 @@ final readonly class CompanyCreationDTO
             city: $data['city'],
             postalCode: $data['postal_code'],
             dic: $data['dic'],
-            icDph: $data['ic_dph'],
+            icDph: $data['ic_dph'] ?? null,
         );
     }
 }

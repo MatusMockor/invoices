@@ -11,23 +11,28 @@ import { toast } from "sonner";
 const Login = () => {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
-  const { login, isLoggingIn, isAuthenticated } = useAuthContext();
+  const { login, isLoggingIn, isAuthenticated, user } = useAuthContext();
   const navigate = useNavigate();
 
-  // Redirect to dashboard if already authenticated
+  // Redirect authenticated users to appropriate page
   useEffect(() => {
-    if (isAuthenticated) {
-      navigate("/app/dashboard", { replace: true });
+    if (isAuthenticated && user) {
+      // If user has company, go to dashboard, otherwise go to onboarding
+      if (user.current_company_id) {
+        navigate("/app/dashboard", { replace: true });
+      } else {
+        navigate("/app/onboarding", { replace: true });
+      }
     }
-  }, [isAuthenticated, navigate]);
+  }, [isAuthenticated, user, navigate]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    
+
     try {
       await login({ email, password });
       toast.success("Úspešne prihlásený!");
-      navigate("/app/dashboard");
+      // Navigation is handled by useEffect after user data is loaded
     } catch (error: any) {
       toast.error(error.response?.data?.message || "Nesprávny email alebo heslo");
     }
