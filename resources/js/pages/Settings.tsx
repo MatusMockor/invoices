@@ -10,6 +10,19 @@ import { Separator } from "@/components/ui/separator";
 import { useToast } from "@/hooks/use-toast";
 import { useSettings } from "@/hooks/useSettings";
 import { InvoicePreview } from "@/components/invoice/InvoicePreview";
+import { useTheme } from "next-themes";
+import { useAuth } from "@/hooks/useAuth";
+import api from "@/lib/axios";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
 import {
   User,
   Building2,
@@ -21,12 +34,14 @@ import {
   FileText,
   Eye,
   Palette,
+  Loader2,
 } from "lucide-react";
 
 const Settings = () => {
   const { toast } = useToast();
   const { settings, updateSettings, isUpdating } = useSettings();
-  const [isDarkMode, setIsDarkMode] = useState(false);
+  const { theme, setTheme } = useTheme();
+  const { logout } = useAuth();
   const [invoiceTemplate, setInvoiceTemplate] = useState<'classic' | 'modern' | 'minimal' | 'bold'>('classic');
   const [previewOpen, setPreviewOpen] = useState(false);
   const [previewInvoiceId, setPreviewInvoiceId] = useState<number | null>(null);
@@ -36,6 +51,17 @@ const Settings = () => {
     emailReminders: true,
     pushNotifications: false,
   });
+
+  // Password change form state
+  const [currentPassword, setCurrentPassword] = useState("");
+  const [newPassword, setNewPassword] = useState("");
+  const [confirmPassword, setConfirmPassword] = useState("");
+  const [isChangingPassword, setIsChangingPassword] = useState(false);
+
+  // Account deletion state
+  const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
+  const [deletePassword, setDeletePassword] = useState("");
+  const [isDeletingAccount, setIsDeletingAccount] = useState(false);
 
   // Load settings from API
   useEffect(() => {
@@ -77,12 +103,74 @@ const Settings = () => {
     }
   };
 
-  const handleSavePassword = (e: React.FormEvent) => {
+  const handleSavePassword = async (e: React.FormEvent) => {
     e.preventDefault();
-    toast({
-      title: "Heslo zmenené",
-      description: "Vaše heslo bolo úspešne zmenené.",
-    });
+
+    // Validation
+    if (!currentPassword || !newPassword || !confirmPassword) {
+      toast({
+        title: "Chyba",
+        description: "Všetky polia sú povinné.",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    if (newPassword !== confirmPassword) {
+      toast({
+        title: "Chyba",
+        description: "Nové heslá sa nezhodujú.",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    if (newPassword.length < 8) {
+      toast({
+        title: "Chyba",
+        description: "Heslo musí obsahovať aspoň 8 znakov.",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    setIsChangingPassword(true);
+
+    try {
+      await api.patch("/api/user/password", {
+        current_password: currentPassword,
+        password: newPassword,
+        password_confirmation: confirmPassword,
+      });
+
+      toast({
+        title: "Heslo zmenené",
+        description: "Vaše heslo bolo úspešne zmenené.",
+      });
+
+      // Clear form
+      setCurrentPassword("");
+      setNewPassword("");
+      setConfirmPassword("");
+    } catch (error: any) {
+      const message = error?.response?.data?.message || "Nepodarilo sa zmeniť heslo.";
+      const errors = error?.response?.data?.errors;
+
+      let description = message;
+      if (errors) {
+        // Display first error from each field
+        const errorMessages = Object.values(errors).flat() as string[];
+        description = errorMessages[0] || message;
+      }
+
+      toast({
+        title: "Chyba",
+        description,
+        variant: "destructive",
+      });
+    } finally {
+      setIsChangingPassword(false);
+    }
   };
 
   const handleSaveNotifications = () => {
@@ -90,6 +178,47 @@ const Settings = () => {
       title: "Nastavenia uložené",
       description: "Vaše notifikačné preferencie boli aktualizované.",
     });
+  };
+
+  const handleDeleteAccount = async () => {
+    if (!deletePassword) {
+      toast({
+        title: "Chyba",
+        description: "Zadajte heslo pre potvrdenie.",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    setIsDeletingAccount(true);
+
+    try {
+      await api.delete("/api/profile", {
+        data: { password: deletePassword },
+      });
+
+      toast({
+        title: "Účet vymazaný",
+        description: "Váš účet bol úspešne vymazaný.",
+      });
+
+      // Clear sensitive data
+      setDeletePassword("");
+      setDeleteDialogOpen(false);
+
+      // Logout and redirect to login
+      await logout();
+    } catch (error: any) {
+      const message = error?.response?.data?.message || "Nepodarilo sa vymazať účet.";
+
+      toast({
+        title: "Chyba",
+        description: message,
+        variant: "destructive",
+      });
+    } finally {
+      setIsDeletingAccount(false);
+    }
   };
 
   return (
@@ -591,6 +720,9 @@ const Settings = () => {
                       id="currentPassword"
                       type="password"
                       placeholder="••••••••"
+                      value={currentPassword}
+                      onChange={(e) => setCurrentPassword(e.target.value)}
+                      disabled={isChangingPassword}
                     />
                   </div>
 
@@ -600,6 +732,9 @@ const Settings = () => {
                       id="newPassword"
                       type="password"
                       placeholder="••••••••"
+                      value={newPassword}
+                      onChange={(e) => setNewPassword(e.target.value)}
+                      disabled={isChangingPassword}
                     />
                     <p className="text-sm text-muted-foreground">
                       Heslo musí obsahovať aspoň 8 znakov
@@ -612,13 +747,29 @@ const Settings = () => {
                       id="confirmPassword"
                       type="password"
                       placeholder="••••••••"
+                      value={confirmPassword}
+                      onChange={(e) => setConfirmPassword(e.target.value)}
+                      disabled={isChangingPassword}
                     />
                   </div>
 
                   <div className="flex justify-end pt-4">
-                    <Button type="submit" className="bg-primary hover:bg-primary/90">
-                      <Lock className="h-4 w-4 mr-2" />
-                      Zmeniť heslo
+                    <Button
+                      type="submit"
+                      className="bg-primary hover:bg-primary/90"
+                      disabled={isChangingPassword}
+                    >
+                      {isChangingPassword ? (
+                        <>
+                          <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                          Mením heslo...
+                        </>
+                      ) : (
+                        <>
+                          <Lock className="h-4 w-4 mr-2" />
+                          Zmeniť heslo
+                        </>
+                      )}
                     </Button>
                   </div>
                 </form>
@@ -637,12 +788,12 @@ const Settings = () => {
                 <div className="flex items-center justify-between p-4 bg-card rounded-lg border border-border">
                   <div className="space-y-0.5">
                     <Label htmlFor="darkMode" className="text-base flex items-center gap-2">
-                      {isDarkMode ? (
+                      {theme === "dark" ? (
                         <Moon className="h-5 w-5" />
                       ) : (
                         <Sun className="h-5 w-5" />
                       )}
-                      {isDarkMode ? "Tmavý režim" : "Svetlý režim"}
+                      {theme === "dark" ? "Tmavý režim" : "Svetlý režim"}
                     </Label>
                     <p className="text-sm text-muted-foreground">
                       Prepnúť medzi svetlým a tmavým režimom
@@ -650,8 +801,8 @@ const Settings = () => {
                   </div>
                   <Switch
                     id="darkMode"
-                    checked={isDarkMode}
-                    onCheckedChange={setIsDarkMode}
+                    checked={theme === "dark"}
+                    onCheckedChange={(checked) => setTheme(checked ? "dark" : "light")}
                   />
                 </div>
               </Card>
@@ -665,7 +816,10 @@ const Settings = () => {
                     Nenávratné akcie
                   </p>
                 </div>
-                <Button variant="destructive">
+                <Button
+                  variant="destructive"
+                  onClick={() => setDeleteDialogOpen(true)}
+                >
                   Vymazať účet
                 </Button>
                 <p className="text-sm text-muted-foreground mt-2">
@@ -682,6 +836,56 @@ const Settings = () => {
         onOpenChange={setPreviewOpen}
         invoiceId={previewInvoiceId}
       />
+
+      {/* Account Deletion Confirmation Dialog */}
+      <AlertDialog open={deleteDialogOpen} onOpenChange={setDeleteDialogOpen}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle className="text-destructive">
+              Vymazať účet?
+            </AlertDialogTitle>
+            <AlertDialogDescription>
+              Táto akcia je nenávratná. Všetky vaše dáta vrátane faktúr, kontaktov a nastavení budú natrvalo vymazané.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <div className="space-y-2 py-4">
+            <Label htmlFor="deletePassword">Zadajte heslo pre potvrdenie *</Label>
+            <Input
+              id="deletePassword"
+              type="password"
+              placeholder="••••••••"
+              value={deletePassword}
+              onChange={(e) => setDeletePassword(e.target.value)}
+              disabled={isDeletingAccount}
+            />
+          </div>
+          <AlertDialogFooter>
+            <AlertDialogCancel
+              disabled={isDeletingAccount}
+              onClick={() => {
+                setDeletePassword("");
+                setDeleteDialogOpen(false);
+              }}
+            >
+              Zrušiť
+            </AlertDialogCancel>
+            <Button
+              variant="destructive"
+              onClick={handleDeleteAccount}
+              disabled={isDeletingAccount}
+            >
+              {isDeletingAccount ? (
+                <>
+                  <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                  Vymazávam...
+                </>
+              ) : (
+                "Vymazať účet"
+              )}
+            </Button>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </DashboardLayout>
   );
 };

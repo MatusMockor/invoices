@@ -83,6 +83,7 @@ Route::middleware('auth:sanctum')->group(function () {
     // Profile
     Route::get('/profile', [ProfileController::class, 'show'])->name('api.profile.show');
     Route::put('/profile', [ProfileController::class, 'update'])->name('api.profile.update');
+    Route::patch('/user/password', [ProfileController::class, 'updatePassword'])->name('api.user.password.update');
     Route::delete('/profile', [ProfileController::class, 'destroy'])->name('api.profile.destroy');
 
     // Contacts
