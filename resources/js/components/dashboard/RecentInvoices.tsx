@@ -48,7 +48,7 @@ export const RecentInvoices = () => {
 
   return (
     <>
-      <InvoicePreview open={previewOpen} onOpenChange={setPreviewOpen} />
+      <InvoicePreview open={previewOpen} onOpenChange={setPreviewOpen} invoiceId={0} />
     <div className="bg-gradient-card rounded-xl p-6 border border-border shadow-elegant-sm animate-fade-in">
       <div className="flex items-center justify-between mb-6">
         <h3 className="text-lg font-semibold text-foreground">Posledné faktúry</h3>
