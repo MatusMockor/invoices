@@ -16,6 +16,7 @@ use App\Models\UserCompany;
 use App\Repositories\Interfaces\InvoiceItemRepository;
 use Exception;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Support\Facades\Http;
 use Mockery;
 use Tests\TestCase;
 
@@ -34,6 +35,16 @@ final class InvoiceTransactionTest extends TestCase
         $this->user = User::factory()->create();
         $this->userCompany = UserCompany::factory()->create();
         $this->user->update(['current_company_id' => $this->userCompany->id]);
+
+        // Fake HTTP responses for scraper service
+        Http::fake([
+            '*/scraper/company' => Http::response([
+                'data' => [
+                    'success' => false,
+                    'message' => 'Test mode - using fallback data',
+                ],
+            ], 200),
+        ]);
     }
 
     protected function tearDown(): void
@@ -49,7 +60,7 @@ final class InvoiceTransactionTest extends TestCase
         $initialItemCount = InvoiceItem::count();
 
         $mockItemRepository = Mockery::mock(InvoiceItemRepository::class);
-        $mockItemRepository->shouldReceive('upsert')
+        $mockItemRepository->shouldReceive('create')
             ->once()
             ->andThrow(new Exception('Item creation failed'));
 
