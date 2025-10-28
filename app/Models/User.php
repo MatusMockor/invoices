@@ -5,14 +5,19 @@ declare(strict_types=1);
 namespace App\Models;
 
 // use Illuminate\Contracts\Auth\MustVerifyEmail;
+use App\Observers\UserObserver;
+use Illuminate\Database\Eloquent\Attributes\ObservedBy;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Database\Eloquent\Relations\HasOne;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\DatabaseNotificationCollection;
 use Illuminate\Notifications\Notifiable;
 use Illuminate\Support\Carbon;
+use Laravel\Sanctum\HasApiTokens;
+use Spatie\Permission\Traits\HasRoles;
 
 /**
  * User model representing a user in the system.
@@ -26,14 +31,16 @@ use Illuminate\Support\Carbon;
  * @property int|null $current_company_id
  * @property Carbon $created_at
  * @property Carbon $updated_at
- * @property-read Collection|Company[] $companies
- * @property-read Company|null $currentCompany
+ * @property-read Collection|UserCompany[] $companies
+ * @property-read UserCompany|null $currentCompany
+ * @property-read UserSetting|null $settings
  * @property-read DatabaseNotificationCollection|\Illuminate\Notifications\DatabaseNotification[] $notifications
  */
+#[ObservedBy([UserObserver::class])]
 class User extends Authenticatable
 {
     /** @use HasFactory<\Database\Factories\UserFactory> */
-    use HasFactory, Notifiable, \Spatie\Permission\Traits\HasRoles;
+    use HasApiTokens, HasFactory, HasRoles, Notifiable;
 
     /**
      * The attributes that are mass assignable.
@@ -59,7 +66,7 @@ class User extends Authenticatable
 
     public function companies(): HasMany
     {
-        return $this->hasMany(Company::class);
+        return $this->hasMany(UserCompany::class);
     }
 
     /**
@@ -67,13 +74,13 @@ class User extends Authenticatable
      */
     public function currentCompany(): BelongsTo
     {
-        return $this->belongsTo(Company::class, 'current_company_id');
+        return $this->belongsTo(UserCompany::class, 'current_company_id');
     }
 
     /**
      * Switch the user's current company.
      */
-    public function switchCompany(Company $company): bool
+    public function switchCompany(UserCompany $company): bool
     {
         // Verify the company belongs to this user
         if ($company->user_id !== $this->id) {
@@ -83,6 +90,14 @@ class User extends Authenticatable
         $this->current_company_id = $company->id;
 
         return $this->save();
+    }
+
+    /**
+     * Get the user's settings.
+     */
+    public function settings(): HasOne
+    {
+        return $this->hasOne(UserSetting::class);
     }
 
     /**

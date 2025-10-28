@@ -11,12 +11,18 @@ ENV SOURCE_COMMIT=$SOURCE_COMMIT_VALUE \
     PHP_MEMORY_LIMIT="1024M" \
     PGSSLCERT="/tmp/postgresql.crt"
 
-# Install packages
+# Install packages (including Node.js and Chromium for Browsershot/Puppeteer)
 RUN apk --no-cache --update add apache2 curl dumb-init php84-apache2 php84-bcmath php84-bz2 php84-calendar php84-common php84-gd php84-ctype \
     php84-curl php84-dom php84-fileinfo php84-iconv php84-mbstring php84-opcache php84-openssl php84-pdo_pgsql php84-pdo_sqlite php84-phar  \
     php84-session php84-simplexml php84-tokenizer php84-pecl-xdebug php84-zip php84-xml php84-xmlwriter php84-pecl-memcache imagemagick php84-pecl-imagick \
+    nodejs npm chromium chromium-chromedriver xz \
+    nss freetype freetype-dev harfbuzz ca-certificates ttf-freefont \
     && mkdir /var/www/html \
     && ln -s /usr/bin/php84 /usr/bin/php
+
+# Set Puppeteer to skip bundled Chromium download and use system Chromium
+ENV PUPPETEER_SKIP_CHROMIUM_DOWNLOAD=true \
+    PUPPETEER_EXECUTABLE_PATH=/usr/bin/chromium-browser
 
 # User `sail` only for local environment
 RUN addgroup -g 2000 -S ${APP_GROUP} && adduser -u 1000 -S -G ${APP_GROUP} ${APP_USER} && adduser -u 1001 -S sail -G ${APP_GROUP}

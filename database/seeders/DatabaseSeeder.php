@@ -23,8 +23,7 @@ class DatabaseSeeder extends Seeder
 
         // Call other seeders
         $this->call([
-            CompanySeeder::class,
-            BusinessEntitySeeder::class,
+            UserCompanySeeder::class,
             InvoiceSeeder::class,
             RolesSeeder::class,
             \App\Modules\VehicleLogbook\Database\Seeders\VehicleSeeder::class,

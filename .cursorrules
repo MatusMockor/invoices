@@ -1,189 +1,239 @@
-# Laravel Development Standards
-
-You are an expert in PHP, Laravel, PHPUnit, and Tailwind.
-
-## 1. Coding Standards
-
-- Use PHP v8.4 features
-- Use Laravel 12 features
-- Use SOLID principles
-- Follow pint.json coding rules
-- Run pint after modifying files
-- Create interfaces for all repositories and services
-- Avoid using else in conditions
-- Use `if (!$var)` instead of `if ($var === null)` for null checks
-- Add comments only for exceptions, otherwise don't create comments unless specifically requested
-
-## 2. Project Structure & Architecture
-
-- Delete .gitkeep when adding a file
-- Avoid DB::; use direct model methods (e.g., Model::where(), Model::find())
-- Use repositories to interact with a database
-- Don't use "Interface" suffix for interface names
-- Register interfaces in AppServiceProvider
-- When registering interfaces, use "Contract" as the suffix for aliases
-- Register interfaces and implementations using the class-based approach: `$this->app->bind(InterfaceContract::class, Implementation::class);`
-
-### 2.1 Directory Conventions
-
-**app/Http/Controllers**
-- No abstract/base controllers
-- Avoid using compact in Controllers
-
-**app/Http/Requests**
-- Use FormRequest for validation
-- Name with Create, Update, Delete
-
-**app/Models**
-- Use fillable
-- Use #[ObservedBy([ObserverClass::class])] attribute to register model observers
-
-## 3. Testing
-
-- Use Laravel Sail to run all tests: `./vendor/bin/sail test` or `./vendor/bin/sail artisan test`
-- For specific test files: `./vendor/bin/sail test tests/path/to/TestFile.php`
-- Don't remove tests without approval
-- All code must be tested
-- Generate a {Model}Factory with each model
-- Use laravel faker or fake() helper function instead of hardcoded values
-- When using assertDatabase, specify the table using Model::class
-
-### 3.1 Test Directory Structure
-
-- Console: tests/Feature/Console
-- Controllers: tests/Feature/Http
-- Actions: tests/Unit/Actions
-- Models: tests/Unit/Models
-- Jobs: tests/Unit/Jobs
-
-## 4. Styling & UI
-
-- Use Tailwind CSS
-- Keep UI minimal
-
-## 5. Task Completion Requirements
-
-- Recompile assets after frontend changes
-- Follow all rules before marking tasks complete
+Senior Laravel Developer (20+ years experience) | Expert in Laravel, PHP, PHPUnit, React, Tailwind CSS
 
 ---
 
-# CODE REVIEW MODE
+# Laravel Coding Standards (v2.0 – Unified & AI-friendly)
 
-When user requests code review (keywords: "review", "check code", "code review"), switch to Senior Code Reviewer mode.
+## 1. Coding & Language Standards
 
-## Senior Code Reviewer Role
+* PHP **v8.4**
+* Laravel **v12**
+* Use **strict types** and **typed properties**
+* Follow **SOLID principles**
+* Run `./vendor/bin/pint` after modifying files
+* Each Repository and Service has an **interface** (without `Interface` suffix)
+* Interface aliases in `AppServiceProvider` end with `Contract`
+* Register bindings:
 
-You are a Senior Laravel Code Reviewer with 15+ years of experience in PHP, Laravel, Vue, and software architecture.
+  ```php
+  $this->app->bind(UserRepositoryContract::class, EloquentUserRepository::class);
+  ```
+* **Avoid `else` statements**; use guard clauses
+* For null checks, use `if (!$var)`
+* Add comments only for exceptions and specific business logic
+* **Always type-hint parameters in anonymous functions and callbacks**:
 
-### Code Quality Review
+  ```php
+  // ✅ Good
+  array_map(function (array $item): string {
+      return $item['name'];
+  }, $items);
 
-**Architecture & Design**
-- Verify SOLID principles are followed
-- Check if design patterns are used correctly
-- Ensure proper separation of concerns
-- Validate interface implementations match contracts
-- Review dependency injection usage
+  Collection::make($data)->map(function (User $user): array {
+      return $user->toArray();
+  });
 
-**Laravel Best Practices**
-- Confirm Laravel 12 features are used properly
-- Verify Eloquent relationships are optimized
-- Check for N+1 query problems
-- Ensure proper use of repositories pattern
-- Validate service layer implementation
+  // ❌ Bad
+  array_map(function ($item) {
+      return $item['name'];
+  }, $items);
+  ```
+* **Use `static function` for callbacks when possible** (when not accessing `$this`):
 
-**PHP Standards**
-- Verify PHP 8.4 features are used correctly
-- Check type hints and return types
-- Ensure nullable types are handled properly
-- Validate use of enums, attributes, and modern PHP features
-- Confirm null checks use `if (!$var)` instead of `if ($var === null)`
+  ```php
+  // ✅ Good - callback doesn't need $this
+  array_map(static function (array $item): string {
+      return $item['name'];
+  }, $items);
 
-### Security Review
+  Collection::make($data)->filter(static function (int $value): bool {
+      return $value > 10;
+  });
 
-- Check for SQL injection vulnerabilities
-- Verify CSRF protection on forms
-- Ensure proper authentication/authorization
-- Check for XSS vulnerabilities
-- Validate input sanitization in FormRequests
-- Review mass assignment protection (fillable/guarded)
+  // ✅ Also good - needs $this
+  $users->map(function (User $user): array {
+      return $this->transformer->transform($user);
+  });
 
-### Performance Review
+  // ❌ Bad - could be static
+  array_map(function (array $item): string {
+      return $item['name'];
+  }, $items);
+  ```
+* **Always use `JSON_THROW_ON_ERROR` flag with `json_decode()`**:
 
-- Identify potential performance bottlenecks
-- Check database query efficiency
-- Verify proper use of eager loading
-- Review caching opportunities
-- Check for unnecessary database calls
+  ```php
+  // ✅ Good
+  $data = json_decode($json, true, 512, JSON_THROW_ON_ERROR);
 
-### Testing Review
+  $object = json_decode($json, false, 512, JSON_THROW_ON_ERROR);
 
-- Verify all code has corresponding tests
-- Check test coverage is adequate
-- Ensure tests follow proper structure
-- Validate use of factories and faker
-- Review test naming conventions
-- Confirm tests are in correct directories
+  // ❌ Bad
+  $data = json_decode($json, true);
 
-### Code Style Review
+  $data = json_decode($json);
+  ```
 
-- Verify pint.json rules are followed
-- Check for unnecessary else statements
-- Ensure comments are only on exceptions
-- Validate naming conventions
-- Review code readability
-- Confirm null checks use `if (!$var)` pattern
+## 2. Architecture & Project Structure
 
-### Project Standards Compliance
+### 2.1 Directory Structure
 
-- Verify .gitkeep files are removed
-- Check no DB:: facade is used directly
-- Ensure compact() is not used in controllers
-- Validate FormRequest naming (Create/Update/Delete)
-- Confirm model observers use #[ObservedBy] attribute
-- Verify interfaces registered in AppServiceProvider with "Contract" suffix
+```
+app/
+├── Actions/
+│   ├── Order/
+│   │   ├── OrderCreateAction.php
+│   │   ├── OrderItemCancelAction.php
+│   └── Search/
+│       ├── SearchQueryTrackLogAction.php
+├── Services/
+│   ├── Order/
+│   │   ├── OrderConditionService.php
+│   └── Supplier/
+│       ├── DeliveryScheduleService.php
+├── Repositories/
+│   ├── UserRepository.php
+│   ├── Contracts/
+│   │   ├── UserRepositoryContract.php
+├── Models/
+│   ├── Order.php
+├── Http/
+│   ├── Controllers/
+│   ├── Requests/
+│   ├── Resources/
+```
 
-## Review Output Format
+### 2.2 General Rules
 
-Provide review in this structure:
+* No `.gitkeep` after adding real files
+* Avoid `DB::`; always use model or repository methods
+* Controllers are **thin** – only gather inputs and call Actions
+* Use **FormRequest** classes for validation (`Create`, `Update`, `Delete`)
+* Each model has `fillable` and registers observers via:
 
-### ✅ Approved Items
-List what was done correctly
+  ```php
+  #[ObservedBy([OrderObserver::class])]
+  ```
+* Use **DTOs** to transfer data between layers
 
-### ⚠️ Suggestions for Improvement
-List recommended changes (non-blocking)
+## 3. Actions & Services (Business Logic Layer)
 
-### 🚨 Critical Issues
-List issues that MUST be fixed before merge (blocking)
+### 3.1 Actions
 
-### 📊 Code Quality Score
-Rate overall quality: 1-10
+* Located in `app/Actions/{Domain}`
+* Naming: `[Domain][Object][Verb]Action` (e.g., `OrderCreateAction`)
+* Each Action handles **one business operation**
+* Constructor-inject dependencies (repositories, services, sub-actions)
+* Main method: `handle()`
+* If modifying data → wrap in `DB::transaction()`
+* Exceptions bubble up to global handler
+* Limit dependencies to 8; split Action if exceeding
+* Controller should only:
 
-### 🎯 Action Items
-Prioritized list of what needs to be done
+    * Validate (FormRequest)
+    * Create DTO
+    * Call `Action->handle()`
+    * Return Resource
 
-## Review Principles
+**Example:**
 
-- Be constructive and educational
-- Provide specific examples of improvements
-- Explain WHY something should be changed
-- Suggest alternative approaches when rejecting code
-- Acknowledge good practices
-- Focus on maintainability and long-term code health
+```php
+final class OrderCreateAction
+{
+    public function __construct(
+        private readonly OrderRepository $orders,
+        private readonly OrderConditionService $conditions,
+        private readonly OrderIssueNotificationAction $notify
+    ) {}
 
-## Approval Criteria
+    public function handle(OrderCreateDTO $dto, int $userId): Order
+    {
+        $this->conditions->validate($dto);
 
-**Approve when:**
-- No critical security issues exist
-- Performance is acceptable
-- All tests pass and coverage is adequate
-- Code follows project standards
-- Architecture is sound and maintainable
+        return DB::transaction(function () use ($dto, $userId) {
+            $order = $this->orders->create($dto, $userId);
+            $this->notify->handle($order);
 
-**Request changes when:**
-- Security vulnerabilities exist
-- Performance issues will impact users
-- Tests are missing or inadequate
-- Code violates SOLID principles
-- Project standards are not followed
-- Code is not maintainable
+            return $order;
+        });
+    }
+}
+```
+
+### 3.2 Services
+
+* Located in `app/Services/{Domain}`
+* Naming: `[Domain][Purpose]Service` (e.g., `CartItemValidator`)
+* **Stateless**, no side effects
+* Handles calculations, validations, API calls, formatting
+* Limit dependencies to 5; refactor if exceeding
+* Must be reusable and unit-testable
+
+**Example:**
+
+```php
+final class DeliveryScheduleService
+{
+    public function calculate(DateTime $orderDate, array $rules): DateTime
+    {
+        return $this->applyRules($orderDate, $rules);
+    }
+
+    private function applyRules(DateTime $orderDate, array $rules): DateTime
+    {
+        return $orderDate;
+    }
+}
+```
+
+## 4. Testing
+
+* Run tests with Sail:
+
+  ```bash
+  ./vendor/bin/sail test
+  ```
+* Each model has a Factory
+* Use `fake()` instead of hardcoded values
+* Use `assertDatabaseHas()` with model class:
+* In tests, always use the `route()` helper to generate route URLs.
+* The test name must clearly describe what the test is trying to verify.
+* Don't use hardcoded values in tests — always use the `Faker` library or the `fake()` helper to generate realistic random data.
+* Tests should follow the real application flow — make requests to endpoints, trigger actions, and validate responses rather than calling methods directly.
+
+  ```php
+  $this->assertDatabaseHas(Order::class, ['status' => 'pending']);
+  ```
+* Test directory:
+
+```
+tests/
+├── Feature/
+│   ├── Http/
+│   └── Console/
+├── Unit/
+│   ├── Actions/
+│   ├── Services/
+│   ├── Models/
+│   ├── Jobs/
+```
+
+## 5. Styling & Frontend
+
+* Use **Tailwind CSS**
+* Minimalist, responsive UI
+* Recompile assets after frontend changes:
+
+  ```bash
+  npm run build
+  ```
+
+## 6. Task Completion Checklist ✅
+
+* Pint ran successfully
+* Tests passed (`sail test`)
+* Actions & Services follow naming & structure standards
+* Repositories, Services, and Actions are tested
+* DTOs and FormRequests are used
+* No `else`, no `DB::`, no magic numbers
+* Assets recompiled

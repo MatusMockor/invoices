@@ -13,18 +13,22 @@ return new class extends Migration
         Schema::create('invoices', static function (Blueprint $table) {
             $table->id();
             $table->foreignId('user_id')->constrained()->onDelete('cascade');
-            $table->foreignId('supplier_company_id')->nullable()->constrained('companies')->nullOnDelete();
-            $table->string('invoice_number')->unique();
+            $table->foreignId('supplier_company_id')->nullable()->constrained('user_companies')->nullOnDelete();
+            $table->string('invoice_number');
             $table->date('issue_date');
             $table->date('due_date');
             $table->date('delivery_date');
-            $table->foreignId('business_entity_id')->constrained()->onDelete('cascade');
+            $table->foreignId('company_id')->constrained()->onDelete('cascade');
             $table->decimal('total_amount', 10, 2);
             $table->string('currency')->default('EUR');
             $table->string('constant_symbol')->nullable();
             $table->text('note')->nullable();
             $table->string('status')->default('draft');
+
             $table->timestamps();
+
+            // Invoice number must be unique per supplier company
+            $table->unique(['supplier_company_id', 'invoice_number']);
         });
     }
 

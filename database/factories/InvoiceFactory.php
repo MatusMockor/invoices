@@ -4,10 +4,10 @@ declare(strict_types=1);
 
 namespace Database\Factories;
 
-use App\Models\BusinessEntity;
 use App\Models\Company;
 use App\Models\Invoice;
 use App\Models\User;
+use App\Models\UserCompany;
 use Illuminate\Database\Eloquent\Factories\Factory;
 
 /**
@@ -15,6 +15,13 @@ use Illuminate\Database\Eloquent\Factories\Factory;
  */
 class InvoiceFactory extends Factory
 {
+    /**
+     * Counter for generating sequential invoice numbers.
+     *
+     * @var int
+     */
+    protected static $invoiceCounter = 1;
+
     /**
      * The name of the factory's corresponding model.
      *
@@ -29,14 +36,17 @@ class InvoiceFactory extends Factory
      */
     public function definition(): array
     {
+        $year = 2025;
+        $invoiceNumber = $year.str_pad((string) self::$invoiceCounter++, 4, '0', STR_PAD_LEFT);
+
         return [
             'user_id' => User::factory(),
-            'invoice_number' => 'INV-'.date('Y').'-'.$this->faker->unique()->randomNumber(3),
+            'invoice_number' => $invoiceNumber,
             'issue_date' => $this->faker->dateTimeBetween('-30 days', 'now'),
             'due_date' => $this->faker->dateTimeBetween('now', '+30 days'),
             'delivery_date' => $this->faker->dateTimeBetween('-15 days', '+15 days'),
-            'business_entity_id' => BusinessEntity::factory(),
-            'supplier_company_id' => Company::factory(),
+            'company_id' => Company::factory(),
+            'supplier_company_id' => UserCompany::factory(),
             'total_amount' => $this->faker->randomFloat(2, 100, 10000),
             'currency' => 'EUR',
             'constant_symbol' => $this->faker->optional(0.7)->numerify('####'),

@@ -1,0 +1,98 @@
+<?php
+
+declare(strict_types=1);
+
+namespace App\Http\Controllers\Api;
+
+use App\Http\Controllers\Controller;
+use App\Http\Requests\StoreCompanyRequest;
+use App\Http\Requests\UpdateCompanyRequest;
+use App\Http\Resources\CompanyMinimalCollection;
+use App\Http\Resources\UserCompanyCollection;
+use App\Http\Resources\UserCompanyResource;
+use App\Models\Company;
+use App\Repositories\Interfaces\CompanyRepository;
+use Illuminate\Http\JsonResponse;
+
+class UserCompanyController extends Controller
+{
+    public function __construct(
+        private readonly CompanyRepository $companyRepository
+    ) {}
+
+    /**
+     * Get all companies for the authenticated user.
+     */
+    public function index(): UserCompanyCollection
+    {
+        $companies = auth()->user()->companies()->orderBy('name')->get();
+
+        return new UserCompanyCollection($companies);
+    }
+
+    /**
+     * Get minimal company data (only id and name) for dropdowns/topbar.
+     */
+    public function minimal(): CompanyMinimalCollection
+    {
+        $companies = auth()->user()->companies()
+            ->select('id', 'name')
+            ->orderBy('name')
+            ->get();
+
+        return new CompanyMinimalCollection($companies);
+    }
+
+    public function show(Company $company): UserCompanyResource
+    {
+        $this->authorize('view', $company);
+
+        return new UserCompanyResource($company);
+    }
+
+    public function store(StoreCompanyRequest $request): JsonResponse
+    {
+        $company = $this->companyRepository->create($request->getData());
+
+        return new UserCompanyResource($company)
+            ->response()
+            ->setStatusCode(201);
+    }
+
+    public function update(UpdateCompanyRequest $request, Company $company): UserCompanyResource
+    {
+        $this->authorize('update', $company);
+
+        $this->companyRepository->update($company, $request->getData());
+
+        return new UserCompanyResource($company->fresh());
+    }
+
+    /**
+     * Delete a company.
+     */
+    public function destroy(Company $company): JsonResponse
+    {
+        $this->authorize('delete', $company);
+
+        $this->companyRepository->delete($company);
+
+        return response()->json([
+            'message' => 'Company deleted successfully',
+        ]);
+    }
+
+    /**
+     * Switch the user's active company.
+     */
+    public function switch(Company $company): UserCompanyResource
+    {
+        $this->authorize('view', $company);
+
+        $user = auth()->user();
+        $user->current_company_id = $company->id;
+        $user->save();
+
+        return new UserCompanyResource($company);
+    }
+}

@@ -4,13 +4,14 @@ declare(strict_types=1);
 
 namespace App\Services;
 
+use App\Enums\InvoiceTemplate;
 use App\Models\Invoice;
 use App\Services\Interfaces\InvoicePdfService as InvoicePdfServiceContract;
 use App\Services\Interfaces\PayBySquare as PayBySquareContract;
-use Barryvdh\DomPDF\Facade\Pdf;
 use Illuminate\Http\Response;
+use Spatie\Browsershot\Browsershot;
 
-class InvoicePdfService implements InvoicePdfServiceContract
+final class InvoicePdfService implements InvoicePdfServiceContract
 {
     /**
      * InvoicePdfService constructor
@@ -20,17 +21,24 @@ class InvoicePdfService implements InvoicePdfServiceContract
     /**
      * Generate a PDF for the given invoice
      *
-     * @return mixed
+     * Loads the user's preferred invoice template from settings and renders
+     * the PDF with the appropriate template, company data, and QR code.
+     *
+     * @param  Invoice  $invoice  The invoice to generate PDF for (will eager load relations)
+     * @return string The PDF content as a binary string
      */
-    public function generatePdf(Invoice $invoice)
+    public function generatePdf(Invoice $invoice): string
     {
-        $invoice->load(['businessEntity', 'items', 'supplierCompany']);
+        $invoice->load(['company', 'items', 'supplierCompany', 'user.settings']);
+
+        // Get user's invoice template preference
+        $template = $invoice->user->settings?->invoice_template?->value ?? InvoiceTemplate::default()->value;
 
         // Generate Pay by Square QR code if we have the necessary data
         $qrCode = null;
         if ($invoice->supplierCompany && $invoice->supplierCompany->iban && $invoice->supplierCompany->swift) {
             // Ensure variable symbol is max 10 characters
-            $variableSymbol = str_replace(['INV-', '-'], '', $invoice->invoice_number);
+            $variableSymbol = $invoice->invoice_number;
             $variableSymbol = substr($variableSymbol, 0, 10);
 
             $qrCode = $this->payBySquare->generateQrCode(
@@ -45,12 +53,33 @@ class InvoicePdfService implements InvoicePdfServiceContract
             );
         }
 
-        $pdf = PDF::loadView('invoices.pdf', [
+        // Render the HTML view based on template
+        $html = view('invoices.pdf-render', [
             'invoice' => $invoice,
             'qrCode' => $qrCode,
-        ]);
+            'template' => $template,
+        ])->render();
 
-        return $pdf;
+        // Generate PDF using Browsershot
+        $browsershot = Browsershot::html($html)
+            ->setNodeModulePath(base_path('node_modules'))
+            ->format('A4')
+            ->margins(0, 0, 0, 0)
+            ->showBackground()
+            ->waitUntilNetworkIdle();
+
+        // Use system Chromium if available (for Docker/Alpine)
+        if (file_exists('/usr/bin/chromium-browser')) {
+            $browsershot->setChromePath('/usr/bin/chromium-browser')
+                ->addChromiumArguments([
+                    'no-sandbox',
+                    'disable-setuid-sandbox',
+                    'disable-dev-shm-usage',
+                    'disable-gpu',
+                ]);
+        }
+
+        return $browsershot->pdf();
     }
 
     /**
@@ -60,9 +89,12 @@ class InvoicePdfService implements InvoicePdfServiceContract
     {
         $pdf = $this->generatePdf($invoice);
 
-        $filename = 'invoice-'.$invoice->invoice_number.'.pdf';
+        $filename = 'faktura-'.$invoice->invoice_number.'.pdf';
 
-        return $pdf->download($filename);
+        return response($pdf, 200, [
+            'Content-Type' => 'application/pdf',
+            'Content-Disposition' => 'attachment; filename="'.$filename.'"',
+        ]);
     }
 
     /**
@@ -72,6 +104,9 @@ class InvoicePdfService implements InvoicePdfServiceContract
     {
         $pdf = $this->generatePdf($invoice);
 
-        return $pdf->stream();
+        return response($pdf, 200, [
+            'Content-Type' => 'application/pdf',
+            'Content-Disposition' => 'inline; filename="faktura-'.$invoice->invoice_number.'.pdf"',
+        ]);
     }
 }

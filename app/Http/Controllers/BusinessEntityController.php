@@ -8,10 +8,9 @@ use App\Http\Requests\BusinessEntities\CreateBusinessEntityRequest;
 use App\Http\Requests\BusinessEntities\UpdateBusinessEntityRequest;
 use App\Http\Requests\Companies\FetchCompanyByIcoRequest;
 use App\Http\Resources\BusinessEntityResource;
-use App\Models\BusinessEntity;
+use App\Models\UserCompany;
 use App\Repositories\Interfaces\BusinessEntityRepository;
 use App\Services\Interfaces\BusinessEntityDataService;
-use Illuminate\Http\JsonResponse;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\View\View;
 
@@ -42,17 +41,17 @@ class BusinessEntityController extends Controller
             ->with('success', 'Company was successfully created');
     }
 
-    public function show(BusinessEntity $businessEntity): View
+    public function show(UserCompany $businessEntity): View
     {
         return view('business-entities.show', ['businessEntity' => $businessEntity]);
     }
 
-    public function edit(BusinessEntity $businessEntity): View
+    public function edit(UserCompany $businessEntity): View
     {
         return view('business-entities.edit', ['businessEntity' => $businessEntity]);
     }
 
-    public function update(UpdateBusinessEntityRequest $request, BusinessEntity $businessEntity): RedirectResponse
+    public function update(UpdateBusinessEntityRequest $request, UserCompany $businessEntity): RedirectResponse
     {
         $this->businessEntityRepository->update($businessEntity, $request->validated());
 
@@ -60,7 +59,7 @@ class BusinessEntityController extends Controller
             ->with('success', 'Company data was successfully updated');
     }
 
-    public function destroy(BusinessEntity $businessEntity): RedirectResponse
+    public function destroy(UserCompany $businessEntity): RedirectResponse
     {
         $this->businessEntityRepository->delete($businessEntity);
 
@@ -68,15 +67,12 @@ class BusinessEntityController extends Controller
             ->with('success', 'Company was successfully deleted');
     }
 
-    public function fetchByIco(FetchCompanyByIcoRequest $request): JsonResponse|BusinessEntityResource
+    public function fetchByIco(FetchCompanyByIcoRequest $request): BusinessEntityResource
     {
         $businessEntityData = $this->businessEntityDataService->findOrCreateBusinessEntity($request->input('ico'));
 
         if (! $businessEntityData) {
-            return response()->json([
-                'success' => false,
-                'message' => 'Company data not found',
-            ], 404);
+            abort(404, 'Company data not found');
         }
 
         return new BusinessEntityResource($businessEntityData);

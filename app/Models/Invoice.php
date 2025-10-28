@@ -10,6 +10,7 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Database\Eloquent\Relations\MorphMany;
 use Illuminate\Support\Carbon;
 
 /**
@@ -21,7 +22,7 @@ use Illuminate\Support\Carbon;
  * @property Carbon $issue_date
  * @property Carbon $due_date
  * @property Carbon $delivery_date
- * @property int $business_entity_id
+ * @property int $company_id
  * @property int $supplier_company_id
  * @property float $total_amount
  * @property string $currency
@@ -31,8 +32,8 @@ use Illuminate\Support\Carbon;
  * @property Carbon $created_at
  * @property Carbon $updated_at
  * @property-read User $user
- * @property-read BusinessEntity $businessEntity
- * @property-read Company $supplierCompany
+ * @property-read Company $company
+ * @property-read UserCompany $supplierCompany
  * @property-read Collection|InvoiceItem[] $items
  */
 #[ObservedBy([InvoiceObserver::class])]
@@ -46,7 +47,7 @@ class Invoice extends Model
         'issue_date',
         'due_date',
         'delivery_date',
-        'business_entity_id',
+        'company_id',
         'supplier_company_id',
         'total_amount',
         'currency',
@@ -70,14 +71,14 @@ class Invoice extends Model
         return $this->belongsTo(User::class);
     }
 
-    public function businessEntity(): BelongsTo
+    public function company(): BelongsTo
     {
-        return $this->belongsTo(BusinessEntity::class);
+        return $this->belongsTo(Company::class);
     }
 
     public function supplierCompany(): BelongsTo
     {
-        return $this->belongsTo(Company::class, 'supplier_company_id');
+        return $this->belongsTo(UserCompany::class, 'supplier_company_id');
     }
 
     public function items(): HasMany
@@ -90,7 +91,7 @@ class Invoice extends Model
         return $this->belongsTo(Contact::class);
     }
 
-    public function notes(): \Illuminate\Database\Eloquent\Relations\MorphMany
+    public function notes(): MorphMany
     {
         return $this->morphMany(Note::class, 'noteable');
     }

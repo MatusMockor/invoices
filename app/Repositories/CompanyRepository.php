@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace App\Repositories;
 
-use App\Models\BusinessEntity;
 use App\Models\Company;
 use App\Models\Invoice;
 use App\Repositories\Interfaces\CompanyRepository as CompanyRepositoryContract;
@@ -42,7 +41,19 @@ class CompanyRepository implements CompanyRepositoryContract
      */
     public function findByIco(string $ico): ?Company
     {
-        return Company::where('ico', $ico)->first();
+        return Company::firstWhere('ico', $ico);
+    }
+
+    /**
+     * Search companies by ICO or name
+     */
+    public function searchByIcoOrName(string $query): Collection
+    {
+        return Company::where('ico', 'LIKE', "%{$query}%")
+            ->orWhere('name', 'LIKE', "%{$query}%")
+            ->orderBy('name')
+            ->limit(10)
+            ->get();
     }
 
     /**
@@ -136,25 +147,9 @@ class CompanyRepository implements CompanyRepositoryContract
      */
     public function getTotalExpenses(int $companyId): float
     {
-        // Get the company's ICO
-        $company = Company::find($companyId);
-        if (! $company) {
-            return 0.0;
-        }
-
-        $ico = $company->ico;
-
-        // Find business entities with the same ICO
-        $businessEntityIds = BusinessEntity::where('ico', $ico)
-            ->pluck('id')
-            ->toArray();
-
-        if (empty($businessEntityIds)) {
-            return 0.0;
-        }
-
-        // Calculate total amount of invoices where these business entities are recipients
-        return (float) Invoice::whereIn('business_entity_id', $businessEntityIds)
+        // Calculate total amount of invoices where this company is the recipient
+        // (company_id = the company receiving the invoice = expense)
+        return (float) Invoice::where('company_id', $companyId)
             ->sum('total_amount');
     }
 
@@ -186,31 +181,14 @@ class CompanyRepository implements CompanyRepositoryContract
     {
         $result = array_fill(1, 12, 0.0);
 
-        // Get the company's ICO
-        $company = Company::find($companyId);
-        if (! $company) {
-            return $result;
-        }
-
-        $ico = $company->ico;
-
-        // Find business entities with the same ICO
-        $businessEntityIds = BusinessEntity::where('ico', $ico)
-            ->pluck('id')
-            ->toArray();
-
-        if (empty($businessEntityIds)) {
-            return $result;
-        }
-
-        // Get all invoices where these business entities are recipients in the specified year
-        $invoices = Invoice::whereIn('business_entity_id', $businessEntityIds)
+        // Get all invoices where this company is the recipient in the specified year
+        $invoices = Invoice::where('company_id', $companyId)
             ->whereYear('issue_date', $year)
             ->get();
 
         // Group invoices by month and sum the total amounts
         foreach ($invoices as $invoice) {
-            $month = (int) date('n', strtotime($invoice->issue_date));
+            $month = $invoice->issue_date->month;
             $result[$month] += (float) $invoice->total_amount;
         }
 
