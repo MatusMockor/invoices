@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { Link } from "react-router-dom";
 import { DashboardLayout } from "@/components/dashboard/DashboardLayout";
-import { InvoicePreview } from "@/components/invoice/InvoicePreview";
+import { InvoicePreview } from "@/components/invoice/InvoicePreview.tsx";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import {
