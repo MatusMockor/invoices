@@ -1,4 +1,5 @@
 import { Building2, Menu, Moon, Sun } from "lucide-react";
+import { useEffect } from "react";
 import {
   Select,
   SelectContent,
@@ -19,8 +20,21 @@ interface TopBarProps {
 
 export const TopBar = ({ onMenuClick }: TopBarProps) => {
   const { selectedCompanyId, setSelectedCompanyId } = useCompanyContext();
-  const { companies, isLoading } = useCompaniesMinimal();
+  const { companies, isLoading, error } = useCompaniesMinimal();
   const { theme, setTheme } = useTheme();
+
+  // Initialize or validate selectedCompanyId when companies load
+  useEffect(() => {
+    if (!isLoading && companies.length > 0) {
+      const selectedExists = selectedCompanyId &&
+        companies.some(c => c.id.toString() === selectedCompanyId);
+
+      // Set first company if no selection or selected company was deleted
+      if (!selectedExists) {
+        setSelectedCompanyId(companies[0].id.toString());
+      }
+    }
+  }, [isLoading, companies.length, selectedCompanyId, setSelectedCompanyId]);
 
   return (
     <div className="fixed top-0 left-0 right-0 z-50 h-16 border-b border-border bg-card/95 backdrop-blur-lg">
@@ -63,41 +77,47 @@ export const TopBar = ({ onMenuClick }: TopBarProps) => {
             </TooltipContent>
           </Tooltip>
 
-          {companies && companies.length > 0 && (
-            <Select
-              value={selectedCompanyId || companies[0]?.id?.toString()}
-              onValueChange={setSelectedCompanyId}
-            >
-              <SelectTrigger className={cn(
-                "w-[240px] h-10 bg-secondary/50 border-border",
-                "hover:bg-secondary/80 transition-colors"
-              )}>
-                <div className="flex items-center gap-2">
-                  <Building2 className="h-4 w-4 text-primary" />
-                  <SelectValue placeholder="Vyberte firmu" />
-                </div>
-              </SelectTrigger>
-              <SelectContent
-                position="popper"
-                sideOffset={6}
-                align="start"
-                avoidCollisions={false}
-                className={cn(
-                  "z-50 w-[var(--radix-select-trigger-width)] rounded-md border border-border bg-popover shadow-lg",
-                  "data-[state=open]:animate-none data-[state=closed]:animate-none"
-                )}
+          {error ? (
+            <div className="text-destructive text-sm px-4 py-2 bg-destructive/10 rounded-lg border border-destructive/20">
+              Nepodarilo sa načítať firmy
+            </div>
+          ) : (
+            companies.length > 0 && selectedCompanyId && (
+              <Select
+                value={selectedCompanyId}
+                onValueChange={setSelectedCompanyId}
               >
-                {companies.map((company) => (
-                  <SelectItem
-                    key={company.id}
-                    value={company.id.toString()}
-                    className="cursor-pointer hover:bg-secondary/80"
-                  >
-                    {company.name}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
+                <SelectTrigger className={cn(
+                  "w-[240px] h-10 bg-secondary/50 border-border",
+                  "hover:bg-secondary/80 transition-colors"
+                )}>
+                  <div className="flex items-center gap-2">
+                    <Building2 className="h-4 w-4 text-primary" />
+                    <SelectValue placeholder="Vyberte firmu" />
+                  </div>
+                </SelectTrigger>
+                <SelectContent
+                  position="popper"
+                  sideOffset={6}
+                  align="start"
+                  avoidCollisions={false}
+                  className={cn(
+                    "z-50 w-[var(--radix-select-trigger-width)] rounded-md border border-border bg-popover shadow-lg",
+                    "data-[state=open]:animate-none data-[state=closed]:animate-none"
+                  )}
+                >
+                  {companies.map((company) => (
+                    <SelectItem
+                      key={company.id}
+                      value={company.id.toString()}
+                      className="cursor-pointer hover:bg-secondary/80"
+                    >
+                      {company.name}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            )
           )}
         </div>
       </div>
