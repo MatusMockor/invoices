@@ -7,15 +7,20 @@ import { useAuthContext } from "@/contexts/AuthContext";
 import { UserRegistrationStep, type UserFormData } from "@/components/auth/UserRegistrationStep";
 
 const Register = () => {
-  const { register: registerUser, isAuthenticated } = useAuthContext();
+  const { register: registerUser, isAuthenticated, user } = useAuthContext();
   const navigate = useNavigate();
 
-  // Redirect to dashboard if already authenticated
+  // Redirect authenticated users to appropriate page
   useEffect(() => {
-    if (isAuthenticated) {
-      navigate("/app/dashboard", { replace: true });
+    if (isAuthenticated && user) {
+      // If user has company, go to dashboard, otherwise go to onboarding
+      if (user.current_company_id) {
+        navigate("/app/dashboard", { replace: true });
+      } else {
+        navigate("/app/onboarding", { replace: true });
+      }
     }
-  }, [isAuthenticated, navigate]);
+  }, [isAuthenticated, user, navigate]);
 
   const handleUserSubmit = async (data: UserFormData) => {
     try {

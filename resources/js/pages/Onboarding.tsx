@@ -15,11 +15,11 @@ import { businessEntityService } from "@/services/businessEntityService";
 const companySchema = z.object({
   ico: z.string().trim().min(1, "IČO je povinné").max(20),
   name: z.string().trim().min(1, "Názov firmy je povinný").max(200),
-  street: z.string().trim().min(1, "Ulica je povinná").max(200),
+  street: z.string().trim().min(1, "Miesto podnikania / Sídlo firmy je povinné").max(200),
   city: z.string().trim().min(1, "Mesto je povinné").max(100),
   postal_code: z.string().trim().min(1, "PSČ je povinné").max(10),
   dic: z.string().trim().min(1, "DIČ je povinné").max(20),
-  ic_dph: z.string().trim().min(1, "IČ DPH je povinné").max(20),
+  ic_dph: z.string().trim().max(20).optional(),
 });
 
 type CompanyFormData = z.infer<typeof companySchema>;
@@ -159,7 +159,7 @@ const Onboarding = () => {
                     name="street"
                     render={({ field }) => (
                       <FormItem>
-                        <FormLabel>Ulica a číslo *</FormLabel>
+                        <FormLabel>Miesto podnikania / Sídlo firmy *</FormLabel>
                         <FormControl>
                           <Input placeholder="Hlavná 123" {...field} />
                         </FormControl>
@@ -218,7 +218,7 @@ const Onboarding = () => {
                       name="ic_dph"
                       render={({ field }) => (
                         <FormItem>
-                          <FormLabel>IČ DPH *</FormLabel>
+                          <FormLabel>IČ DPH</FormLabel>
                           <FormControl>
                             <Input placeholder="SK2023456789" {...field} />
                           </FormControl>

@@ -9,14 +9,7 @@ export const useAuth = () => {
     queryKey: ['user'],
     queryFn: async () => {
       try {
-        // Add a custom timeout wrapper (5 seconds max)
-        const timeoutPromise = new Promise<never>((_, reject) => {
-          setTimeout(() => reject(new Error('Request timeout')), 5000);
-        });
-
-        const fetchPromise = authService.getCurrentUser();
-        const response = await Promise.race([fetchPromise, timeoutPromise]);
-
+        const response = await authService.getCurrentUser();
         return response.user;
       } catch (error: any) {
         // Only remove token on 401 Unauthorized - invalid/expired token
@@ -24,11 +17,12 @@ export const useAuth = () => {
           authService.removeToken();
           return undefined;
         }
-        // For other errors (network, server down, timeout, etc.), keep token
-        return undefined;
+        // For other errors (network, server down, timeout, etc.), keep token and throw to trigger retry
+        throw error;
       }
     },
-    retry: false, // Disable retry to prevent infinite loading
+    retry: 1, // Retry failed requests once (total 2 attempts)
+    retryDelay: 1000, // Wait 1 second before retry
     staleTime: Infinity,
     refetchOnMount: false,
     refetchOnWindowFocus: false,
@@ -74,6 +68,7 @@ export const useAuth = () => {
   return {
     user,
     isLoading,
+    isError,
     isAuthenticated: !!user,
     login: loginMutation.mutateAsync,
     register: registerMutation.mutateAsync,

@@ -5,11 +5,12 @@ import type { User } from '@/types';
 interface AuthContextType {
   user: User | undefined;
   isLoading: boolean;
+  isError: boolean;
   isAuthenticated: boolean;
   login: (credentials: any) => Promise<any>;
   register: (data: any) => Promise<any>;
   logout: () => Promise<void>;
-  refetch: () => Promise<any>;
+  refetch: () => void;
   isLoggingIn: boolean;
   isRegistering: boolean;
   isLoggingOut: boolean;

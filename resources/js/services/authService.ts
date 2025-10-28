@@ -59,7 +59,8 @@ export const authService = {
 
   async getCurrentUser(): Promise<{ user: User }> {
     const response = await api.get('/user');
-    return response.data;
+    // Laravel Resource wraps data in 'data' key
+    return { user: response.data.data };
   },
 
   getToken(): string | null {
