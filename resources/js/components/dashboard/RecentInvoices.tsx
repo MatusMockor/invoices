@@ -4,11 +4,11 @@ import { useState } from "react";
 import { InvoicePreview } from "@/components/invoice/InvoicePreview";
 
 const invoices = [
-  { id: "INV-001", client: "ABC s.r.o.", amount: "€1,200", status: "paid", date: "15.10.2025" },
-  { id: "INV-002", client: "XYZ company", amount: "€850", status: "pending", date: "14.10.2025" },
-  { id: "INV-003", client: "Tech Solutions", amount: "€2,400", status: "paid", date: "12.10.2025" },
-  { id: "INV-004", client: "Digital Agency", amount: "€1,650", status: "overdue", date: "08.10.2025" },
-  { id: "INV-005", client: "StartupCo", amount: "€920", status: "pending", date: "05.10.2025" },
+  { id: "INV-001", numericId: 1, client: "ABC s.r.o.", amount: "€1,200", status: "paid", date: "15.10.2025" },
+  { id: "INV-002", numericId: 2, client: "XYZ company", amount: "€850", status: "pending", date: "14.10.2025" },
+  { id: "INV-003", numericId: 3, client: "Tech Solutions", amount: "€2,400", status: "paid", date: "12.10.2025" },
+  { id: "INV-004", numericId: 4, client: "Digital Agency", amount: "€1,650", status: "overdue", date: "08.10.2025" },
+  { id: "INV-005", numericId: 5, client: "StartupCo", amount: "€920", status: "pending", date: "05.10.2025" },
 ];
 
 const getStatusVariant = (status: string) => {
@@ -39,16 +39,16 @@ const getStatusLabel = (status: string) => {
 
 export const RecentInvoices = () => {
   const [previewOpen, setPreviewOpen] = useState(false);
-  const [selectedInvoice, setSelectedInvoice] = useState<string | null>(null);
+  const [selectedInvoice, setSelectedInvoice] = useState<number | null>(null);
 
-  const handleViewInvoice = (invoiceId: string) => {
+  const handleViewInvoice = (invoiceId: number) => {
     setSelectedInvoice(invoiceId);
     setPreviewOpen(true);
   };
 
   return (
     <>
-      <InvoicePreview open={previewOpen} onOpenChange={setPreviewOpen} invoiceId={0} />
+      <InvoicePreview open={previewOpen} onOpenChange={setPreviewOpen} invoiceId={selectedInvoice} />
     <div className="bg-gradient-card rounded-xl p-6 border border-border shadow-elegant-sm animate-fade-in">
       <div className="flex items-center justify-between mb-6">
         <h3 className="text-lg font-semibold text-foreground">Posledné faktúry</h3>
@@ -81,8 +81,8 @@ export const RecentInvoices = () => {
               <Badge variant={getStatusVariant(invoice.status)}>
                 {getStatusLabel(invoice.status)}
               </Badge>
-              <button 
-                onClick={() => handleViewInvoice(invoice.id)}
+              <button
+                onClick={() => handleViewInvoice(invoice.numericId)}
                 className="p-2 hover:bg-secondary rounded-lg transition-colors opacity-0 group-hover:opacity-100"
               >
                 <Eye className="w-4 h-4 text-muted-foreground" />
