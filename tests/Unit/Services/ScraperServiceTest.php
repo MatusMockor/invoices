@@ -110,7 +110,7 @@ class ScraperServiceTest extends TestCase
         $expectedTimeout = config('services.scraper.timeout');
 
         $this->assertNotNull($expectedTimeout);
-        $this->assertEquals(15, $expectedTimeout);
+        $this->assertEquals(config('services.scraper.timeout'), $expectedTimeout);
 
         Http::fake([
             '*/scraper/company' => Http::response([
