@@ -1,16 +1,13 @@
 import { Link, useNavigate } from "react-router-dom";
-import { useState, useEffect } from "react";
+import { useEffect } from "react";
 import { Card } from "@/components/ui/card";
 import { ArrowLeft } from "lucide-react";
 import { toast } from "sonner";
 import { useAuthContext } from "@/contexts/AuthContext";
 import { UserRegistrationStep, type UserFormData } from "@/components/auth/UserRegistrationStep";
-import { CompanyRegistrationStep } from "@/components/auth/CompanyRegistrationStep";
 
 const Register = () => {
-  const [step, setStep] = useState<"user" | "company">("user");
-  const [userData, setUserData] = useState<UserFormData | null>(null);
-  const { isAuthenticated } = useAuthContext();
+  const { register: registerUser, isAuthenticated } = useAuthContext();
   const navigate = useNavigate();
 
   // Redirect to dashboard if already authenticated
@@ -20,14 +17,20 @@ const Register = () => {
     }
   }, [isAuthenticated, navigate]);
 
-  const handleUserSubmit = (data: UserFormData) => {
-    setUserData(data);
-    toast.success("Teraz zadajte údaje o firme");
-    setStep("company");
-  };
+  const handleUserSubmit = async (data: UserFormData) => {
+    try {
+      await registerUser({
+        name: data.name,
+        email: data.email,
+        password: data.password,
+        password_confirmation: data.confirmPassword,
+      });
 
-  const handleBack = () => {
-    setStep("user");
+      toast.success("Registrácia úspešná!");
+      navigate("/app/onboarding");
+    } catch (error: any) {
+      toast.error(error.response?.data?.message || "Registrácia zlyhala");
+    }
   };
 
   return (
@@ -39,11 +42,7 @@ const Register = () => {
         </Link>
 
         <Card className="shadow-xl border-border/50 bg-card/95 backdrop-blur animate-scale-in">
-          {step === "user" ? (
-            <UserRegistrationStep onSubmit={handleUserSubmit} />
-          ) : (
-            <CompanyRegistrationStep userData={userData!} onBack={handleBack} />
-          )}
+          <UserRegistrationStep onSubmit={handleUserSubmit} />
         </Card>
       </div>
     </div>

@@ -1,28 +1,20 @@
-import { Navigate } from "react-router-dom";
+import { Navigate, useLocation } from "react-router-dom";
 import { useAuthContext } from "@/contexts/AuthContext";
 import { authService } from "@/services/authService";
 
 interface ProtectedRouteProps {
   children: React.ReactNode;
+  requireCompany?: boolean;
 }
 
-export const ProtectedRoute = ({ children }: ProtectedRouteProps) => {
-  const { isAuthenticated, isLoading } = useAuthContext();
+export const ProtectedRoute = ({ children, requireCompany = true }: ProtectedRouteProps) => {
+  const { user, isLoading } = useAuthContext();
   const hasToken = !!authService.getToken();
-
-  console.log('[ProtectedRoute]', { hasToken, isAuthenticated, isLoading });
-
-  // If we have a token, allow access immediately
-  // The token will be validated on API calls, and user will be logged out if invalid
-  if (hasToken) {
-    console.log('[ProtectedRoute] Has token - allowing access');
-    return <>{children}</>;
-  }
+  const location = useLocation();
 
   // If loading and no token yet, show spinner briefly
   // This handles the edge case during login flow
   if (isLoading) {
-    console.log('[ProtectedRoute] Loading - showing spinner');
     return (
       <div className="min-h-screen flex items-center justify-center">
         <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-primary"></div>
@@ -30,8 +22,18 @@ export const ProtectedRoute = ({ children }: ProtectedRouteProps) => {
     );
   }
 
-  // No token and not authenticated - redirect to login
-  console.log('[ProtectedRoute] No token - redirecting to login');
-  return <Navigate to="/login" replace />;
+  // No token - redirect to login
+  if (!hasToken) {
+    return <Navigate to="/login" replace />;
+  }
+
+  // If company is required and user doesn't have one, redirect to onboarding
+  // But don't redirect if we're already on the onboarding page
+  if (requireCompany && user && !user.current_company_id && location.pathname !== '/app/onboarding') {
+    return <Navigate to="/app/onboarding" replace />;
+  }
+
+  // All checks passed - render children
+  return <>{children}</>;
 };
 

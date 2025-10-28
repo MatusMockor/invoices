@@ -9,6 +9,7 @@ use App\Http\Controllers\Api\CompanyController;
 use App\Http\Controllers\Api\ContactController;
 use App\Http\Controllers\Api\InvoiceController;
 use App\Http\Controllers\Api\NoteController;
+use App\Http\Controllers\Api\OnboardingController;
 use App\Http\Controllers\Api\ProfileController;
 use App\Http\Controllers\Api\ReportsApiController;
 use App\Http\Controllers\Api\UserCompanyController;
@@ -44,6 +45,10 @@ Route::middleware('auth:sanctum')->group(function () {
     // Auth
     Route::get('/user', [AuthController::class, 'user'])->name('api.user');
     Route::post('/logout', [AuthController::class, 'logout'])->name('api.logout');
+
+    // Onboarding (doesn't require company)
+    Route::get('/onboarding/check', [OnboardingController::class, 'check'])->name('api.onboarding.check');
+    Route::post('/onboarding', [OnboardingController::class, 'store'])->name('api.onboarding.store');
 
     // Companies
     Route::get('/user/companies/minimal', [UserCompanyController::class, 'minimal'])->name('api.companies.minimal');

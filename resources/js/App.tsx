@@ -10,6 +10,7 @@ import { ProtectedRoute } from "@/components/ProtectedRoute";
 import Index from "./pages/Index";
 import Login from "./pages/Login";
 import Register from "./pages/Register";
+import Onboarding from "./pages/Onboarding";
 import Dashboard from "./pages/Dashboard";
 import Invoices from "./pages/Invoices";
 import NewInvoice from "./pages/NewInvoice";
@@ -50,7 +51,10 @@ const App = () => (
             <Route path="/login" element={<Login />} />
             <Route path="/register" element={<Register />} />
 
-            {/* Protected routes - require authentication */}
+            {/* Onboarding - requires auth but not company */}
+            <Route path="/app/onboarding" element={<ProtectedRoute requireCompany={false}><Onboarding /></ProtectedRoute>} />
+
+            {/* Protected routes - require authentication and company */}
             <Route path="/app/dashboard" element={<ProtectedRoute><Dashboard /></ProtectedRoute>} />
             <Route path="/app/invoices" element={<ProtectedRoute><Invoices /></ProtectedRoute>} />
             <Route path="/app/invoices/new" element={<ProtectedRoute><NewInvoice /></ProtectedRoute>} />

@@ -18,9 +18,6 @@ instance.interceptors.request.use(
     const token = localStorage.getItem(TOKEN_KEY);
     if (token) {
       config.headers.Authorization = `Bearer ${token}`;
-      console.log(`[Axios] Adding token to ${config.method?.toUpperCase()} ${config.url}`);
-    } else {
-      console.log(`[Axios] No token found for ${config.method?.toUpperCase()} ${config.url}`);
     }
     return config;
   },
@@ -34,7 +31,6 @@ instance.interceptors.response.use(
   (error) => {
     // If 401 unauthorized, remove invalid/expired token
     if (error.response?.status === 401) {
-      console.log('[Axios] 401 Unauthorized - removing invalid token');
       localStorage.removeItem(TOKEN_KEY);
     }
     return Promise.reject(error);

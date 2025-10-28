@@ -8,7 +8,6 @@ export const useAuth = () => {
   const { data: user, isLoading, refetch, isError } = useQuery<User | undefined>({
     queryKey: ['user'],
     queryFn: async () => {
-      console.log('[useAuth] Fetching user...');
       try {
         // Add a custom timeout wrapper (5 seconds max)
         const timeoutPromise = new Promise<never>((_, reject) => {
@@ -18,17 +17,14 @@ export const useAuth = () => {
         const fetchPromise = authService.getCurrentUser();
         const response = await Promise.race([fetchPromise, timeoutPromise]);
 
-        console.log('[useAuth] User fetched successfully:', response.user?.email);
         return response.user;
       } catch (error: any) {
         // Only remove token on 401 Unauthorized - invalid/expired token
         if (error?.response?.status === 401) {
-          console.log('[useAuth] 401 error - token invalid, logging out');
           authService.removeToken();
           return undefined;
         }
         // For other errors (network, server down, timeout, etc.), keep token
-        console.error('[useAuth] Error fetching user (keeping token):', error.message);
         return undefined;
       }
     },

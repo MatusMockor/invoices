@@ -34,7 +34,6 @@ export const authService = {
   async login(credentials: LoginCredentials): Promise<{ message: string; user: User; token: string }> {
     const response = await api.post('/login', credentials);
     const { token } = response.data;
-    console.log('[AuthService] Login successful, storing token:', token ? '✓' : '✗');
     localStorage.setItem(TOKEN_KEY, token);
     return response.data;
   },
@@ -42,7 +41,6 @@ export const authService = {
   async register(data: RegisterData): Promise<{ message: string; user: User; token: string }> {
     const response = await api.post('/register', data);
     const { token } = response.data;
-    console.log('[AuthService] Register successful, storing token:', token ? '✓' : '✗');
     localStorage.setItem(TOKEN_KEY, token);
     return response.data;
   },
@@ -50,7 +48,6 @@ export const authService = {
   async registerWithCompany(data: RegisterWithCompanyData): Promise<{ message: string; user: User; token: string }> {
     const response = await api.post('/register-with-company', data);
     const { token } = response.data;
-    console.log('[AuthService] Register with company successful, storing token:', token ? '✓' : '✗');
     localStorage.setItem(TOKEN_KEY, token);
     return response.data;
   },
