@@ -9,7 +9,7 @@ import { Card } from "@/components/ui/card";
 import { Separator } from "@/components/ui/separator";
 import { useToast } from "@/hooks/use-toast";
 import { useSettings } from "@/hooks/useSettings";
-import { InvoicePreview } from "@/components/Invoice/InvoicePreview";
+import { InvoicePreview } from "@/components/invoice/InvoicePreview";
 import {
   User,
   Building2,
