@@ -48,4 +48,12 @@ class UserRepository implements UserRepositoryContract
     {
         return $user->delete();
     }
+
+    /**
+     * Soft delete a user
+     */
+    public function softDelete(User $user): bool
+    {
+        return $user->delete();
+    }
 }

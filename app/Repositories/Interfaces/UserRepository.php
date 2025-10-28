@@ -32,4 +32,9 @@ interface UserRepository
      * Delete a user
      */
     public function delete(User $user): bool;
+
+    /**
+     * Soft delete a user
+     */
+    public function softDelete(User $user): bool;
 }
