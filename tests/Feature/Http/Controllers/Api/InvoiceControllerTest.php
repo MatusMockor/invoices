@@ -117,6 +117,22 @@ class InvoiceControllerTest extends TestCase
         $item2Quantity = fake()->numberBetween(1, 20);
         $item2Price = fake()->randomFloat(2, 10, 200);
 
+        Http::fake([
+            '*/scraper/company' => Http::response([
+                'data' => [
+                    'success' => true,
+                    'ico' => $clientIco,
+                    'name' => $clientName,
+                    'street' => $clientStreet,
+                    'city' => $clientCity,
+                    'postal_code' => $clientPostalCode,
+                    'country' => $clientCountry,
+                    'dic' => $clientDic,
+                    'ic_dph' => $clientIcDph,
+                ],
+            ], 200),
+        ]);
+
         $invoiceData = [
             'clientName' => $clientName,
             'clientIco' => $clientIco,
@@ -332,6 +348,22 @@ class InvoiceControllerTest extends TestCase
         $itemDescription = fake()->words(2, true);
         $itemQuantity = fake()->numberBetween(1, 20);
         $itemPrice = fake()->randomFloat(2, 10, 200);
+
+        Http::fake([
+            '*/scraper/company' => Http::response([
+                'data' => [
+                    'success' => true,
+                    'ico' => $clientIco,
+                    'name' => $clientName,
+                    'street' => $clientStreet,
+                    'city' => $clientCity,
+                    'postal_code' => $clientPostalCode,
+                    'country' => $clientCountry,
+                    'dic' => $clientDic,
+                    'ic_dph' => null,
+                ],
+            ], 200),
+        ]);
 
         $invoiceData = [
             'clientName' => $clientName,

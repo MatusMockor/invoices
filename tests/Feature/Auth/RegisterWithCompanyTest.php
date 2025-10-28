@@ -75,7 +75,6 @@ final class RegisterWithCompanyTest extends TestCase
             'company_city',
             'company_postal_code',
             'company_dic',
-            'company_ic_dph',
         ]);
     }
 
