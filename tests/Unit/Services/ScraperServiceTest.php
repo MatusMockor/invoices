@@ -124,7 +124,7 @@ class ScraperServiceTest extends TestCase
 
         $this->scraperService->fetchCompanyDataByIco($ico);
 
-        Http::assertSent(function ($request) use ($ico) {
+        Http::assertSent(static function ($request) use ($ico) {
             return str_contains($request->url(), '/scraper/company')
                 && $request['ico'] === $ico;
         });

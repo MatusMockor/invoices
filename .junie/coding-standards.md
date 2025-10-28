@@ -21,6 +21,58 @@ Senior Laravel Developer (20+ years experience) | Expert in Laravel, PHP, PHPUni
 * **Avoid `else` statements**; use guard clauses
 * For null checks, use `if (!$var)`
 * Add comments only for exceptions and specific business logic
+* **Always type-hint parameters in anonymous functions and callbacks**:
+
+  ```php
+  // ✅ Good
+  array_map(function (array $item): string {
+      return $item['name'];
+  }, $items);
+  
+  Collection::make($data)->map(function (User $user): array {
+      return $user->toArray();
+  });
+  
+  // ❌ Bad
+  array_map(function ($item) {
+      return $item['name'];
+  }, $items);
+  ```
+* **Use `static function` for callbacks when possible** (when not accessing `$this`):
+
+  ```php
+  // ✅ Good - callback doesn't need $this
+  array_map(static function (array $item): string {
+      return $item['name'];
+  }, $items);
+  
+  Collection::make($data)->filter(static function (int $value): bool {
+      return $value > 10;
+  });
+  
+  // ✅ Also good - needs $this
+  $users->map(function (User $user): array {
+      return $this->transformer->transform($user);
+  });
+  
+  // ❌ Bad - could be static
+  array_map(function (array $item): string {
+      return $item['name'];
+  }, $items);
+  ```
+* **Always use `JSON_THROW_ON_ERROR` flag with `json_decode()`**:
+
+  ```php
+  // ✅ Good
+  $data = json_decode($json, true, 512, JSON_THROW_ON_ERROR);
+  
+  $object = json_decode($json, false, 512, JSON_THROW_ON_ERROR);
+  
+  // ❌ Bad
+  $data = json_decode($json, true);
+  
+  $data = json_decode($json);
+  ```
 
 ## 2. Architecture & Project Structure
 
@@ -78,10 +130,10 @@ app/
 * Limit dependencies to 8; split Action if exceeding
 * Controller should only:
 
-    * Validate (FormRequest)
-    * Create DTO
-    * Call `Action->handle()`
-    * Return Resource
+  * Validate (FormRequest)
+  * Create DTO
+  * Call `Action->handle()`
+  * Return Resource
 
 **Example:**
 
@@ -146,7 +198,7 @@ final class DeliveryScheduleService
 * Use `assertDatabaseHas()` with model class:
 * In tests, always use the `route()` helper to generate route URLs.
 * The test name must clearly describe what the test is trying to verify.
-* Don’t use hardcoded values in tests — always use the `Faker` library or the `fake()` helper to generate realistic random data. 
+* Don't use hardcoded values in tests — always use the `Faker` library or the `fake()` helper to generate realistic random data.
 * Tests should follow the real application flow — make requests to endpoints, trigger actions, and validate responses rather than calling methods directly.
 
   ```php
