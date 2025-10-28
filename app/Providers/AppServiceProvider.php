@@ -5,7 +5,6 @@ declare(strict_types=1);
 namespace App\Providers;
 
 use App\Models\Invoice;
-use App\Modules\CRM\Models\CrmContact;
 use App\Policies\InvoicePolicy;
 use App\Repositories\BusinessEntityRepository;
 use App\Repositories\CompanyRepository;
@@ -72,7 +71,5 @@ class AppServiceProvider extends ServiceProvider
         // Register the InvoicePolicy for the Invoice model
         Gate::policy(Invoice::class, InvoicePolicy::class);
 
-        // Register the CrmContactPolicy for the CrmContact model
-        Gate::policy(CrmContact::class, CrmContactPolicy::class);
     }
 }
