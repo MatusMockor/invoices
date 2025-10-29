@@ -10,7 +10,7 @@ use App\Http\Requests\UpdateCompanyRequest;
 use App\Http\Resources\CompanyMinimalCollection;
 use App\Http\Resources\UserCompanyCollection;
 use App\Http\Resources\UserCompanyResource;
-use App\Models\Company;
+use App\Models\UserCompany;
 use App\Repositories\Interfaces\CompanyRepository;
 use Illuminate\Http\JsonResponse;
 
@@ -43,11 +43,11 @@ class UserCompanyController extends Controller
         return new CompanyMinimalCollection($companies);
     }
 
-    public function show(Company $company): UserCompanyResource
+    public function show(UserCompany $userCompany): UserCompanyResource
     {
-        $this->authorize('view', $company);
+        $this->authorize('view', $userCompany);
 
-        return new UserCompanyResource($company);
+        return new UserCompanyResource($userCompany);
     }
 
     public function store(StoreCompanyRequest $request): JsonResponse
@@ -59,23 +59,23 @@ class UserCompanyController extends Controller
             ->setStatusCode(201);
     }
 
-    public function update(UpdateCompanyRequest $request, Company $company): UserCompanyResource
+    public function update(UpdateCompanyRequest $request, UserCompany $userCompany): UserCompanyResource
     {
-        $this->authorize('update', $company);
+        $this->authorize('update', $userCompany);
 
-        $this->companyRepository->update($company, $request->getData());
+        $this->companyRepository->update($userCompany, $request->getData());
 
-        return new UserCompanyResource($company->fresh());
+        return new UserCompanyResource($userCompany->fresh());
     }
 
     /**
      * Delete a company.
      */
-    public function destroy(Company $company): JsonResponse
+    public function destroy(UserCompany $userCompany): JsonResponse
     {
-        $this->authorize('delete', $company);
+        $this->authorize('delete', $userCompany);
 
-        $this->companyRepository->delete($company);
+        $this->companyRepository->delete($userCompany);
 
         return response()->json([
             'message' => 'Company deleted successfully',
@@ -85,14 +85,14 @@ class UserCompanyController extends Controller
     /**
      * Switch the user's active company.
      */
-    public function switch(Company $company): UserCompanyResource
+    public function switch(UserCompany $userCompany): UserCompanyResource
     {
-        $this->authorize('view', $company);
+        $this->authorize('view', $userCompany);
 
         $user = auth()->user();
-        $user->current_company_id = $company->id;
+        $user->current_company_id = $userCompany->id;
         $user->save();
 
-        return new UserCompanyResource($company);
+        return new UserCompanyResource($userCompany);
     }
 }

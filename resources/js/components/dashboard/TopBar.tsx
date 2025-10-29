@@ -11,6 +11,7 @@ import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import { useCompanyContext } from "@/contexts/CompanyContext";
 import { useCompaniesMinimal } from "@/hooks/useCompanies";
+import { useSwitchCompany } from "@/hooks/useSwitchCompany";
 import { useTheme } from "next-themes";
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
 
@@ -19,8 +20,9 @@ interface TopBarProps {
 }
 
 export const TopBar = ({ onMenuClick }: TopBarProps) => {
-  const { selectedCompanyId, setSelectedCompanyId } = useCompanyContext();
+  const { selectedCompanyId, setSelectedCompanyId, isLoading: isContextLoading } = useCompanyContext();
   const { companies, isLoading, error } = useCompaniesMinimal();
+  const { switchCompany, isSwitching } = useSwitchCompany();
   const { theme, setTheme } = useTheme();
 
   // Initialize or validate selectedCompanyId when companies load
@@ -34,7 +36,26 @@ export const TopBar = ({ onMenuClick }: TopBarProps) => {
         setSelectedCompanyId(companies[0].id.toString());
       }
     }
-  }, [isLoading, companies.length, selectedCompanyId, setSelectedCompanyId]);
+  }, [isLoading, companies, selectedCompanyId, setSelectedCompanyId]);
+
+  // Handle company switch with backend call
+  const handleCompanySwitch = async (companyId: string) => {
+    // Don't switch if already selected
+    if (companyId === selectedCompanyId) {
+      return;
+    }
+
+    try {
+      // Call backend switch endpoint using the dedicated hook
+      await switchCompany(parseInt(companyId));
+
+      // Update frontend context after successful backend call
+      setSelectedCompanyId(companyId);
+    } catch (error) {
+      // Error handling is done in the useSwitchCompany hook
+      console.error('Company switch failed:', error);
+    }
+  };
 
   return (
     <div className="fixed top-0 left-0 right-0 z-50 h-16 border-b border-border bg-card/95 backdrop-blur-lg">
@@ -83,40 +104,54 @@ export const TopBar = ({ onMenuClick }: TopBarProps) => {
             </div>
           ) : (
             companies.length > 0 && selectedCompanyId && (
-              <Select
-                value={selectedCompanyId}
-                onValueChange={setSelectedCompanyId}
-              >
-                <SelectTrigger className={cn(
-                  "w-[240px] h-10 bg-secondary/50 border-border",
-                  "hover:bg-secondary/80 transition-colors"
-                )}>
-                  <div className="flex items-center gap-2">
-                    <Building2 className="h-4 w-4 text-primary" />
-                    <SelectValue placeholder="Vyberte firmu" />
-                  </div>
-                </SelectTrigger>
-                <SelectContent
-                  position="popper"
-                  sideOffset={6}
-                  align="start"
-                  avoidCollisions={false}
-                  className={cn(
-                    "z-50 w-[var(--radix-select-trigger-width)] rounded-md border border-border bg-popover shadow-lg",
-                    "data-[state=open]:animate-none data-[state=closed]:animate-none"
-                  )}
+              <>
+                <Select
+                  value={selectedCompanyId}
+                  onValueChange={handleCompanySwitch}
+                  disabled={isContextLoading || isSwitching}
                 >
-                  {companies.map((company) => (
-                    <SelectItem
-                      key={company.id}
-                      value={company.id.toString()}
-                      className="cursor-pointer hover:bg-secondary/80"
-                    >
-                      {company.name}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
+                  <SelectTrigger
+                    className={cn(
+                      "w-[240px] h-10 bg-secondary/50 border-border",
+                      "hover:bg-secondary/80 transition-colors",
+                      (isContextLoading || isSwitching) && "opacity-50 cursor-not-allowed"
+                    )}
+                    aria-label="Výber firmy"
+                    aria-busy={isContextLoading || isSwitching}
+                  >
+                    <div className="flex items-center gap-2">
+                      <Building2 className="h-4 w-4 text-primary" />
+                      <SelectValue placeholder="Vyberte firmu" />
+                    </div>
+                  </SelectTrigger>
+                  <SelectContent
+                    position="popper"
+                    sideOffset={6}
+                    align="start"
+                    avoidCollisions={false}
+                    className={cn(
+                      "z-50 w-[var(--radix-select-trigger-width)] rounded-md border border-border bg-popover shadow-lg",
+                      "data-[state=open]:animate-none data-[state=closed]:animate-none"
+                    )}
+                  >
+                    {companies.map((company) => (
+                      <SelectItem
+                        key={company.id}
+                        value={company.id.toString()}
+                        className="cursor-pointer hover:bg-secondary/80"
+                      >
+                        {company.name}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+
+                {(isContextLoading || isSwitching) && (
+                  <span className="sr-only" aria-live="polite">
+                    Prepínanie firmy...
+                  </span>
+                )}
+              </>
             )
           )}
         </div>

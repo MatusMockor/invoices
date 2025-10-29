@@ -5,7 +5,9 @@ declare(strict_types=1);
 namespace App\Providers;
 
 use App\Models\Invoice;
+use App\Models\UserCompany;
 use App\Policies\InvoicePolicy;
+use App\Policies\UserCompanyPolicy;
 use App\Repositories\BusinessEntityRepository;
 use App\Repositories\CompanyRepository;
 use App\Repositories\ContactRepository as AppContactRepository;
@@ -68,8 +70,8 @@ class AppServiceProvider extends ServiceProvider
      */
     public function boot(): void
     {
-        // Register the InvoicePolicy for the Invoice model
+        // Register policies for models
         Gate::policy(Invoice::class, InvoicePolicy::class);
-
+        Gate::policy(UserCompany::class, UserCompanyPolicy::class);
     }
 }

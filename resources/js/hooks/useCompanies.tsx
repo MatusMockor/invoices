@@ -31,6 +31,11 @@ export const useCompanies = () => {
     },
   });
 
+  /**
+   * @deprecated This mutation is legacy code that reloads the entire page.
+   * Use the `useSwitchCompany` hook instead for better UX and proper query invalidation.
+   * This is kept for backwards compatibility but should be removed in the future.
+   */
   const switchMutation = useMutation({
     mutationFn: (id: number) => companyService.switchCompany(id),
     onSuccess: () => {

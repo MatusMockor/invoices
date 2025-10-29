@@ -53,11 +53,11 @@ Route::middleware('auth:sanctum')->group(function () {
     // Companies
     Route::get('/user/companies/minimal', [UserCompanyController::class, 'minimal'])->name('api.companies.minimal');
     Route::get('/companies', [UserCompanyController::class, 'index'])->name('api.companies.index');
-    Route::get('/companies/{company}', [UserCompanyController::class, 'show'])->name('api.companies.show');
+    Route::get('/companies/{userCompany}', [UserCompanyController::class, 'show'])->name('api.companies.show');
     Route::post('/companies', [UserCompanyController::class, 'store'])->name('api.companies.store');
-    Route::put('/companies/{company}', [UserCompanyController::class, 'update'])->name('api.companies.update');
-    Route::delete('/companies/{company}', [UserCompanyController::class, 'destroy'])->name('api.companies.destroy');
-    Route::post('/companies/{company}/switch', [UserCompanyController::class, 'switch'])->name('api.companies.switch');
+    Route::put('/companies/{userCompany}', [UserCompanyController::class, 'update'])->name('api.companies.update');
+    Route::delete('/companies/{userCompany}', [UserCompanyController::class, 'destroy'])->name('api.companies.destroy');
+    Route::post('/companies/{userCompany}/switch', [UserCompanyController::class, 'switch'])->name('api.companies.switch');
 
     // Business Entities
     Route::get('/business-entities', [BusinessEntityController::class, 'index'])->name('api.business-entities.index');
