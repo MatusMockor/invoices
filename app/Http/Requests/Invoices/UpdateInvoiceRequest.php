@@ -45,6 +45,15 @@ class UpdateInvoiceRequest extends FormRequest
             'items.*.description' => 'required|string|max:255',
             'items.*.quantity' => 'required|numeric|min:1',
             'items.*.unit_price' => 'required|numeric|min:0',
+            'useCustomCompany' => 'nullable|boolean',
+            'customCompanyIco' => 'nullable|required_if:useCustomCompany,true|string|max:12',
+            'customCompanyDic' => 'nullable|string|max:20',
+            'customCompanyIcDph' => 'nullable|string|max:20',
+            'customCompanyName' => 'nullable|required_if:useCustomCompany,true|string|max:255',
+            'customCompanyAddress' => 'nullable|string|max:500',
+            'customCompanyCity' => 'nullable|string|max:100',
+            'customCompanyZip' => 'nullable|string|max:20',
+            'customCompanyCountry' => 'nullable|string|max:100',
         ];
     }
 
@@ -69,6 +78,15 @@ class UpdateInvoiceRequest extends FormRequest
             'items.*.description' => 'popis položky',
             'items.*.quantity' => 'množstvo',
             'items.*.unit_price' => 'jednotková cena',
+            'useCustomCompany' => 'vlastné údaje spoločnosti',
+            'customCompanyIco' => 'IČO spoločnosti',
+            'customCompanyDic' => 'DIČ spoločnosti',
+            'customCompanyIcDph' => 'IČ DPH spoločnosti',
+            'customCompanyName' => 'názov spoločnosti',
+            'customCompanyAddress' => 'adresa spoločnosti',
+            'customCompanyCity' => 'mesto spoločnosti',
+            'customCompanyZip' => 'PSČ spoločnosti',
+            'customCompanyCountry' => 'krajina spoločnosti',
         ];
     }
 

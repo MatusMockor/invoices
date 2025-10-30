@@ -39,14 +39,25 @@ class InvoiceFactory extends Factory
         $year = 2025;
         $invoiceNumber = $year.str_pad((string) self::$invoiceCounter++, 4, '0', STR_PAD_LEFT);
 
+        // Create company first so we can copy its data
+        $company = Company::factory()->create();
+
         return [
             'user_id' => User::factory(),
             'invoice_number' => $invoiceNumber,
             'issue_date' => $this->faker->dateTimeBetween('-30 days', 'now'),
             'due_date' => $this->faker->dateTimeBetween('now', '+30 days'),
             'delivery_date' => $this->faker->dateTimeBetween('-15 days', '+15 days'),
-            'company_id' => Company::factory(),
+            'company_id' => $company->id,
             'supplier_company_id' => UserCompany::factory(),
+            'company_ico' => $company->ico,
+            'company_dic' => $company->dic,
+            'company_ic_dph' => $company->ic_dph,
+            'company_name' => $company->name,
+            'company_address' => $company->street,
+            'company_city' => $company->city,
+            'company_zip' => $company->postal_code,
+            'company_country' => $company->country,
             'total_amount' => $this->faker->randomFloat(2, 100, 10000),
             'currency' => 'EUR',
             'constant_symbol' => $this->faker->optional(0.7)->numerify('####'),
@@ -99,6 +110,26 @@ class InvoiceFactory extends Factory
         return $this->state(function (array $attributes) {
             return [
                 'status' => 'cancelled',
+            ];
+        });
+    }
+
+    /**
+     * Indicate that the invoice uses custom company data instead of a company_id.
+     */
+    public function withCustomCompany(): Factory
+    {
+        return $this->state(function (array $attributes) {
+            return [
+                'company_id' => null,
+                'company_ico' => $this->faker->numerify('########'),
+                'company_dic' => $this->faker->numerify('##########'),
+                'company_ic_dph' => $this->faker->optional(0.8)->regexify('SK[0-9]{10}'),
+                'company_name' => $this->faker->company(),
+                'company_address' => $this->faker->streetAddress(),
+                'company_city' => $this->faker->city(),
+                'company_zip' => $this->faker->postcode(),
+                'company_country' => $this->faker->country(),
             ];
         });
     }

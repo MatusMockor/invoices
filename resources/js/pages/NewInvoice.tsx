@@ -19,13 +19,22 @@ import { companyService } from "@/services/companyService";
 
 const invoiceSchema = z.object({
   invoiceNumber: z.string().trim().min(1, "Číslo faktúry je povinné"),
-  clientName: z.string().trim().min(1, "Meno klienta je povinné").max(100),
-  clientStreet: z.string().trim().min(1, "Ulica je povinná").max(255),
-  clientCity: z.string().trim().min(1, "Mesto je povinné").max(100),
-  clientPostalCode: z.string().trim().min(1, "PSČ je povinné").max(20),
-  clientIco: z.string().trim().min(1, "IČO je povinné").max(20),
-  clientDic: z.string().trim().min(1, "DIČ je povinné").max(20),
+  clientName: z.string().trim().max(100).optional(),
+  clientStreet: z.string().trim().max(255).optional(),
+  clientCity: z.string().trim().max(100).optional(),
+  clientPostalCode: z.string().trim().max(20).optional(),
+  clientIco: z.string().trim().max(20).optional(),
+  clientDic: z.string().trim().max(20).optional(),
   clientIcDph: z.string().trim().max(20).optional(),
+  useCustomCompany: z.boolean().optional().default(false),
+  customCompanyIco: z.string().trim().max(12).optional(),
+  customCompanyDic: z.string().trim().max(20).optional(),
+  customCompanyIcDph: z.string().trim().max(20).optional(),
+  customCompanyName: z.string().trim().max(255).optional(),
+  customCompanyAddress: z.string().trim().max(500).optional(),
+  customCompanyCity: z.string().trim().max(100).optional(),
+  customCompanyZip: z.string().trim().max(20).optional(),
+  customCompanyCountry: z.string().trim().max(100).optional(),
   issueDate: z.date({ required_error: "Dátum vystavenia je povinný" }),
   dueDate: z.date({ required_error: "Dátum splatnosti je povinný" }),
   deliveryDate: z.date({ required_error: "Dátum dodania je povinný" }),
@@ -39,6 +48,19 @@ const invoiceSchema = z.object({
       price: z.number().min(0, "Cena musí byť nezáporná"),
     })
   ).min(1, "Aspoň jedna položka je povinná"),
+}).refine((data) => {
+  // Conditional validation based on useCustomCompany
+  if (data.useCustomCompany) {
+    // Custom company mode - require custom fields
+    return !!(data.customCompanyIco && data.customCompanyName);
+  } else {
+    // Standard company mode - require client fields
+    return !!(data.clientIco && data.clientName && data.clientStreet &&
+              data.clientCity && data.clientPostalCode && data.clientDic);
+  }
+}, {
+  message: "Vyplňte všetky povinné polia",
+  path: ["clientName"], // Error will be shown on the form
 });
 
 type InvoiceFormData = z.infer<typeof invoiceSchema>;
@@ -94,6 +116,7 @@ const NewInvoice = () => {
       issueDate: new Date(),
       deliveryDate: new Date(),
       dueDate: new Date(new Date().setDate(new Date().getDate() + 15)),
+      useCustomCompany: false,
     },
   });
 
@@ -120,12 +143,26 @@ const NewInvoice = () => {
   }, [variableSymbol, setValue]);
 
   const items = watch("items");
+  const useCustomCompany = watch("useCustomCompany");
 
   // Load invoice data in edit mode
   useEffect(() => {
     if (isEditMode && invoice) {
-      // Set client information from business_entity
-      if (invoice.business_entity) {
+      // Check if invoice has custom company data (company_ico present but no company_id)
+      if (invoice.company_ico && !invoice.company_id) {
+        // Load custom company data
+        setValue("useCustomCompany", true);
+        setValue("customCompanyIco", invoice.company_ico);
+        setValue("customCompanyDic", invoice.company_dic || "");
+        setValue("customCompanyIcDph", invoice.company_ic_dph || "");
+        setValue("customCompanyName", invoice.company_name || "");
+        setValue("customCompanyAddress", invoice.company_address || "");
+        setValue("customCompanyCity", invoice.company_city || "");
+        setValue("customCompanyZip", invoice.company_zip || "");
+        setValue("customCompanyCountry", invoice.company_country || "");
+      } else if (invoice.business_entity) {
+        // Load from business_entity (existing logic)
+        setValue("useCustomCompany", false);
         setValue("clientName", invoice.business_entity.name);
         setValue("clientStreet", invoice.business_entity.address || "");
         setValue("clientCity", invoice.business_entity.city || "");
@@ -202,6 +239,15 @@ const NewInvoice = () => {
         clientCity: data.clientCity,
         clientPostalCode: data.clientPostalCode,
         clientCountry: 'SK',
+        useCustomCompany: data.useCustomCompany || false,
+        customCompanyIco: data.customCompanyIco,
+        customCompanyDic: data.customCompanyDic,
+        customCompanyIcDph: data.customCompanyIcDph,
+        customCompanyName: data.customCompanyName,
+        customCompanyAddress: data.customCompanyAddress,
+        customCompanyCity: data.customCompanyCity,
+        customCompanyZip: data.customCompanyZip,
+        customCompanyCountry: data.customCompanyCountry,
         invoiceNumber: data.invoiceNumber,
         issue_date: data.issueDate.toISOString().split('T')[0], // Format: YYYY-MM-DD
         due_date: data.dueDate.toISOString().split('T')[0], // Format: YYYY-MM-DD
@@ -302,9 +348,26 @@ const NewInvoice = () => {
               <span className="w-8 h-8 bg-primary text-primary-foreground rounded-full flex items-center justify-center text-sm">1</span>
               Informácie o klientovi
             </h3>
+
+            {/* Toggle between standard and custom company */}
+            <div className="flex items-center space-x-2 mb-6 p-4 bg-card/50 rounded-lg border border-primary/20">
+              <input
+                type="checkbox"
+                id="useCustomCompany"
+                {...register("useCustomCompany")}
+                className="h-4 w-4 rounded border-primary/30 text-primary focus:ring-primary"
+              />
+              <Label htmlFor="useCustomCompany" className="cursor-pointer text-sm">
+                Zadať vlastné údaje o spoločnosti (neregistrovaná v databáze)
+              </Label>
+            </div>
+
             <div className="space-y-4">
-              {/* IČO s autocomplete */}
-              <div className="space-y-2">
+              {!useCustomCompany ? (
+                <>
+                  {/* Standard company fields with autocomplete */}
+                  {/* IČO s autocomplete */}
+                  <div className="space-y-2">
                 <Label htmlFor="clientIco">IČO klienta *</Label>
                 <div className="relative">
                   <div className="relative">
@@ -446,6 +509,115 @@ const NewInvoice = () => {
                   )}
                 </div>
               </div>
+                </>
+              ) : (
+                <>
+                  {/* Custom company fields */}
+                  <div className="space-y-2">
+                    <Label htmlFor="customCompanyIco">IČO spoločnosti *</Label>
+                    <Input
+                      id="customCompanyIco"
+                      {...register("customCompanyIco")}
+                      placeholder="12345678"
+                      className="border-primary/30"
+                    />
+                    {errors.customCompanyIco && (
+                      <p className="text-sm text-destructive">{errors.customCompanyIco.message}</p>
+                    )}
+                  </div>
+
+                  <div className="space-y-2">
+                    <Label htmlFor="customCompanyDic">DIČ</Label>
+                    <Input
+                      id="customCompanyDic"
+                      {...register("customCompanyDic")}
+                      placeholder="1234567890"
+                      className="border-primary/30"
+                    />
+                    {errors.customCompanyDic && (
+                      <p className="text-sm text-destructive">{errors.customCompanyDic.message}</p>
+                    )}
+                  </div>
+
+                  <div className="space-y-2">
+                    <Label htmlFor="customCompanyIcDph">IČ DPH</Label>
+                    <Input
+                      id="customCompanyIcDph"
+                      {...register("customCompanyIcDph")}
+                      placeholder="SK1234567890"
+                      className="border-primary/30"
+                    />
+                    {errors.customCompanyIcDph && (
+                      <p className="text-sm text-destructive">{errors.customCompanyIcDph.message}</p>
+                    )}
+                  </div>
+
+                  <div className="space-y-2">
+                    <Label htmlFor="customCompanyName">Názov spoločnosti *</Label>
+                    <Input
+                      id="customCompanyName"
+                      {...register("customCompanyName")}
+                      placeholder="XYZ s.r.o."
+                      className="border-primary/30"
+                    />
+                    {errors.customCompanyName && (
+                      <p className="text-sm text-destructive">{errors.customCompanyName.message}</p>
+                    )}
+                  </div>
+
+                  <div className="space-y-2">
+                    <Label htmlFor="customCompanyAddress">Adresa</Label>
+                    <Input
+                      id="customCompanyAddress"
+                      {...register("customCompanyAddress")}
+                      placeholder="Hlavná 123"
+                      className="border-primary/30"
+                    />
+                    {errors.customCompanyAddress && (
+                      <p className="text-sm text-destructive">{errors.customCompanyAddress.message}</p>
+                    )}
+                  </div>
+
+                  <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                    <div className="space-y-2">
+                      <Label htmlFor="customCompanyZip">PSČ</Label>
+                      <Input
+                        id="customCompanyZip"
+                        {...register("customCompanyZip")}
+                        placeholder="811 01"
+                        className="border-primary/30"
+                      />
+                      {errors.customCompanyZip && (
+                        <p className="text-sm text-destructive">{errors.customCompanyZip.message}</p>
+                      )}
+                    </div>
+                    <div className="space-y-2">
+                      <Label htmlFor="customCompanyCity">Mesto</Label>
+                      <Input
+                        id="customCompanyCity"
+                        {...register("customCompanyCity")}
+                        placeholder="Bratislava"
+                        className="border-primary/30"
+                      />
+                      {errors.customCompanyCity && (
+                        <p className="text-sm text-destructive">{errors.customCompanyCity.message}</p>
+                      )}
+                    </div>
+                    <div className="space-y-2">
+                      <Label htmlFor="customCompanyCountry">Krajina</Label>
+                      <Input
+                        id="customCompanyCountry"
+                        {...register("customCompanyCountry")}
+                        placeholder="SK"
+                        className="border-primary/30"
+                      />
+                      {errors.customCompanyCountry && (
+                        <p className="text-sm text-destructive">{errors.customCompanyCountry.message}</p>
+                      )}
+                    </div>
+                  </div>
+                </>
+              )}
             </div>
           </div>
 

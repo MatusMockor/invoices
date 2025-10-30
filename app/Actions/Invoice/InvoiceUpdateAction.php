@@ -13,7 +13,6 @@ use App\Repositories\Interfaces\InvoiceRepository;
 use App\Services\Invoice\InvoiceTotalCalculatorService;
 use Illuminate\Support\Arr;
 use Illuminate\Support\Facades\DB;
-use InvalidArgumentException;
 
 final class InvoiceUpdateAction
 {
@@ -37,16 +36,50 @@ final class InvoiceUpdateAction
                 'constant_symbol' => $dto->constantSymbol,
                 'note' => $dto->notes,
                 'status' => $dto->status,
-            ], static fn ($value) => $value !== null);
+            ], static fn (mixed $value): bool => $value !== null);
 
-            if ($dto->clientIco !== null) {
+            // Handle custom company case with early return
+            if ($dto->useCustomCompany === true) {
+                $updateData = array_merge($updateData, [
+                    'company_id' => null,
+                    'company_ico' => $dto->customCompanyIco,
+                    'company_dic' => $dto->customCompanyDic,
+                    'company_ic_dph' => $dto->customCompanyIcDph,
+                    'company_name' => $dto->customCompanyName,
+                    'company_address' => $dto->customCompanyAddress,
+                    'company_city' => $dto->customCompanyCity,
+                    'company_zip' => $dto->customCompanyZip,
+                    'company_country' => $dto->customCompanyCountry,
+                ]);
+
+                if ($dto->items !== null) {
+                    $updateData['total_amount'] = $this->totalCalculator->calculate($dto->items);
+                    $this->updateInvoiceItems($invoice, $dto->items);
+                }
+
+                $this->invoiceRepository->update($invoice, $updateData);
+
+                return $invoice->fresh()->load(['company', 'items']);
+            }
+
+            // Handle standard company case - copy all company data to invoice
+            if ($dto->useCustomCompany === false && $dto->clientIco !== null) {
                 $customerCompany = $this->findOrCreateCompany($dto);
 
                 $updateData = array_merge($updateData, [
                     'company_id' => $customerCompany->id,
+                    'company_ico' => $customerCompany->ico,
+                    'company_dic' => $customerCompany->dic,
+                    'company_ic_dph' => $customerCompany->ic_dph,
+                    'company_name' => $customerCompany->name,
+                    'company_address' => $customerCompany->street,
+                    'company_city' => $customerCompany->city,
+                    'company_zip' => $customerCompany->postal_code,
+                    'company_country' => $customerCompany->country,
                 ]);
             }
 
+            // Handle remaining updates (items only, company unchanged)
             if ($dto->items !== null) {
                 $updateData['total_amount'] = $this->totalCalculator->calculate($dto->items);
                 $this->updateInvoiceItems($invoice, $dto->items);
@@ -60,10 +93,6 @@ final class InvoiceUpdateAction
 
     private function findOrCreateCompany(InvoiceUpdateDTO $dto): Company
     {
-        if ($dto->clientIco === null) {
-            throw new InvalidArgumentException('Client ICO is required');
-        }
-
         return $this->companyFetchOrCreate->handle($dto->clientIco, [
             'name' => $dto->clientName,
             'dic' => $dto->clientDic,
