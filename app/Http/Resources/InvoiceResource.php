@@ -35,6 +35,17 @@ class InvoiceResource extends JsonResource
             'created_at' => $this->created_at?->toISOString(),
             'updated_at' => $this->updated_at?->toISOString(),
 
+            // Company data stored directly on invoice (snapshot at creation time)
+            'company_id' => $this->company_id,
+            'company_ico' => $this->company_ico,
+            'company_dic' => $this->company_dic,
+            'company_ic_dph' => $this->company_ic_dph,
+            'company_name' => $this->company_name,
+            'company_address' => $this->company_address,
+            'company_city' => $this->company_city,
+            'company_zip' => $this->company_zip,
+            'company_country' => $this->company_country,
+
             'business_entity' => new BusinessEntityResource($this->whenLoaded('company')),
             'supplier_company' => new UserCompanyResource($this->whenLoaded('supplierCompany')),
             'items' => InvoiceItemResource::collection($this->whenLoaded('items')),

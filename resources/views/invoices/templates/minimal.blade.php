@@ -27,14 +27,14 @@
         <!-- Client -->
         <div>
             <p class="text-xs text-gray-500 uppercase tracking-wider mb-3">Odberateľ</p>
-            <p class="font-semibold text-lg mb-1">{{ $invoice->company->name ?? 'N/A' }}</p>
-            <p class="text-sm text-gray-600">{{ $invoice->company->street ?? '' }}</p>
-            <p class="text-sm text-gray-600">{{ $invoice->company->postal_code ?? '' }} {{ $invoice->company->city ?? '' }}</p>
+            <p class="font-semibold text-lg mb-1">{{ $invoice->company_name ?? 'N/A' }}</p>
+            <p class="text-sm text-gray-600">{{ $invoice->company_address ?? '' }}</p>
+            <p class="text-sm text-gray-600">{{ $invoice->company_zip ?? '' }} {{ $invoice->company_city ?? '' }}</p>
             <div class="mt-3 text-sm text-gray-600 space-y-0.5">
-                <p>IČO: {{ $invoice->company->ico ?? 'N/A' }}</p>
-                <p>DIČ: {{ $invoice->company->dic ?? 'N/A' }}</p>
-                @if($invoice->company->ic_dph ?? false)
-                    <p>IČ DPH: {{ $invoice->company->ic_dph }}</p>
+                <p>IČO: {{ $invoice->company_ico ?? 'N/A' }}</p>
+                <p>DIČ: {{ $invoice->company_dic ?? 'N/A' }}</p>
+                @if($invoice->company_ic_dph ?? false)
+                    <p>IČ DPH: {{ $invoice->company_ic_dph }}</p>
                 @endif
             </div>
         </div>

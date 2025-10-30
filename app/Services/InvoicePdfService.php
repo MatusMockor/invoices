@@ -29,7 +29,7 @@ final class InvoicePdfService implements InvoicePdfServiceContract
      */
     public function generatePdf(Invoice $invoice): string
     {
-        $invoice->load(['company', 'items', 'supplierCompany', 'user.settings']);
+        $invoice->load(['items', 'supplierCompany', 'user.settings']);
 
         // Get user's invoice template preference
         $template = $invoice->user->settings?->invoice_template?->value ?? InvoiceTemplate::default()->value;
