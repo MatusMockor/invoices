@@ -25,25 +25,53 @@ final class InvoiceCreateAction
     public function handle(InvoiceCreateDTO $dto, int $userId, int $supplierCompanyId): Invoice
     {
         return DB::transaction(function () use ($dto, $userId, $supplierCompanyId) {
-            $customerCompany = $this->findOrCreateCompany($dto);
-
             $totalAmount = $this->totalCalculator->calculate($dto->items);
 
-            $invoice = $this->invoiceRepository->create([
+            $invoiceData = [
                 'invoice_number' => $dto->invoiceNumber,
                 'user_id' => $userId,
                 'issue_date' => $dto->issueDate,
                 'due_date' => $dto->dueDate,
                 'delivery_date' => $dto->deliveryDate,
-                'company_id' => $customerCompany->id,
                 'supplier_company_id' => $supplierCompanyId,
                 'total_amount' => $totalAmount,
                 'currency' => $dto->currency ?? config('invoices.default_currency'),
                 'constant_symbol' => $dto->constantSymbol,
                 'note' => $dto->notes,
                 'status' => $dto->status ?? config('invoices.default_status'),
-            ]);
+            ];
 
+            // Handle custom company case with early return
+            if ($dto->useCustomCompany) {
+                $invoiceData['company_id'] = null;
+                $invoiceData['company_ico'] = $dto->customCompanyIco;
+                $invoiceData['company_dic'] = $dto->customCompanyDic;
+                $invoiceData['company_ic_dph'] = $dto->customCompanyIcDph;
+                $invoiceData['company_name'] = $dto->customCompanyName;
+                $invoiceData['company_address'] = $dto->customCompanyAddress;
+                $invoiceData['company_city'] = $dto->customCompanyCity;
+                $invoiceData['company_zip'] = $dto->customCompanyZip;
+                $invoiceData['company_country'] = $dto->customCompanyCountry;
+
+                $invoice = $this->invoiceRepository->create($invoiceData);
+                $this->createInvoiceItems($invoice, $dto->items);
+
+                return $invoice->load(['company', 'items']);
+            }
+
+            // Standard company case - copy all company data to invoice
+            $customerCompany = $this->findOrCreateCompany($dto);
+            $invoiceData['company_id'] = $customerCompany->id;
+            $invoiceData['company_ico'] = $customerCompany->ico;
+            $invoiceData['company_dic'] = $customerCompany->dic;
+            $invoiceData['company_ic_dph'] = $customerCompany->ic_dph;
+            $invoiceData['company_name'] = $customerCompany->name;
+            $invoiceData['company_address'] = $customerCompany->street;
+            $invoiceData['company_city'] = $customerCompany->city;
+            $invoiceData['company_zip'] = $customerCompany->postal_code;
+            $invoiceData['company_country'] = $customerCompany->country;
+
+            $invoice = $this->invoiceRepository->create($invoiceData);
             $this->createInvoiceItems($invoice, $dto->items);
 
             return $invoice->load(['company', 'items']);
@@ -65,7 +93,7 @@ final class InvoiceCreateAction
 
     private function createInvoiceItems(Invoice $invoice, array $items): void
     {
-        $preparedItems = array_map(static function ($item) use ($invoice) {
+        $preparedItems = array_map(static function (array $item) use ($invoice): array {
             $unitPrice = $item['price'];
 
             return [

@@ -22,8 +22,16 @@ use Illuminate\Support\Carbon;
  * @property Carbon $issue_date
  * @property Carbon $due_date
  * @property Carbon $delivery_date
- * @property int $company_id
- * @property int $supplier_company_id
+ * @property int|null $company_id
+ * @property int|null $supplier_company_id
+ * @property string|null $company_ico
+ * @property string|null $company_dic
+ * @property string|null $company_ic_dph
+ * @property string|null $company_name
+ * @property string|null $company_address
+ * @property string|null $company_city
+ * @property string|null $company_zip
+ * @property string|null $company_country
  * @property float $total_amount
  * @property string $currency
  * @property string|null $constant_symbol
@@ -32,8 +40,8 @@ use Illuminate\Support\Carbon;
  * @property Carbon $created_at
  * @property Carbon $updated_at
  * @property-read User $user
- * @property-read Company $company
- * @property-read UserCompany $supplierCompany
+ * @property-read Company|null $company
+ * @property-read UserCompany|null $supplierCompany
  * @property-read Collection|InvoiceItem[] $items
  */
 #[ObservedBy([InvoiceObserver::class])]
@@ -49,6 +57,14 @@ class Invoice extends Model
         'delivery_date',
         'company_id',
         'supplier_company_id',
+        'company_ico',
+        'company_dic',
+        'company_ic_dph',
+        'company_name',
+        'company_address',
+        'company_city',
+        'company_zip',
+        'company_country',
         'total_amount',
         'currency',
         'constant_symbol',
