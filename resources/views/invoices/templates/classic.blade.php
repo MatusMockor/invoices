@@ -26,14 +26,14 @@
             <!-- Client Info -->
             <div class="flex-1 bg-gray-50 p-4 rounded-lg border border-gray-200">
                 <h3 class="font-bold text-gray-700 mb-2 text-xs uppercase tracking-wide">Odberateľ</h3>
-                <p class="font-semibold text-base mb-1">{{ $invoice->company->name ?? 'N/A' }}</p>
-                <p class="text-xs text-gray-600">{{ $invoice->company->street ?? '' }}</p>
-                <p class="text-xs text-gray-600">{{ $invoice->company->postal_code ?? '' }} {{ $invoice->company->city ?? '' }}</p>
+                <p class="font-semibold text-base mb-1">{{ $invoice->company_name ?? 'N/A' }}</p>
+                <p class="text-xs text-gray-600">{{ $invoice->company_address ?? '' }}</p>
+                <p class="text-xs text-gray-600">{{ $invoice->company_zip ?? '' }} {{ $invoice->company_city ?? '' }}</p>
                 <div class="mt-2 pt-2 border-t border-gray-200">
-                    <p class="text-xs text-gray-600">IČO: {{ $invoice->company->ico ?? 'N/A' }}</p>
-                    <p class="text-xs text-gray-600">DIČ: {{ $invoice->company->dic ?? 'N/A' }}</p>
-                    @if($invoice->company->ic_dph ?? false)
-                        <p class="text-xs text-gray-600">IČ DPH: {{ $invoice->company->ic_dph }}</p>
+                    <p class="text-xs text-gray-600">IČO: {{ $invoice->company_ico ?? 'N/A' }}</p>
+                    <p class="text-xs text-gray-600">DIČ: {{ $invoice->company_dic ?? 'N/A' }}</p>
+                    @if($invoice->company_ic_dph ?? false)
+                        <p class="text-xs text-gray-600">IČ DPH: {{ $invoice->company_ic_dph }}</p>
                     @endif
                 </div>
             </div>

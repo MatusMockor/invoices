@@ -41,14 +41,14 @@
                 <div class="h-6 w-1 bg-cyan-500 rounded-full"></div>
                 <p class="text-[10px] font-bold text-cyan-400 uppercase tracking-wider">Odberateľ</p>
             </div>
-            <p class="font-bold text-white mb-1 text-base">{{ $invoice->company->name ?? 'N/A' }}</p>
-            <p class="text-xs text-slate-300 mb-0.5">{{ $invoice->company->street ?? '' }}</p>
-            <p class="text-xs text-slate-300 mb-2">{{ $invoice->company->postal_code ?? '' }} {{ $invoice->company->city ?? '' }}</p>
+            <p class="font-bold text-white mb-1 text-base">{{ $invoice->company_name ?? 'N/A' }}</p>
+            <p class="text-xs text-slate-300 mb-0.5">{{ $invoice->company_address ?? '' }}</p>
+            <p class="text-xs text-slate-300 mb-2">{{ $invoice->company_zip ?? '' }} {{ $invoice->company_city ?? '' }}</p>
             <div class="space-y-0.5 pt-2 border-t border-cyan-500/30">
-                <p class="text-[10px] text-slate-400">IČO: <span class="text-white font-semibold">{{ $invoice->company->ico ?? 'N/A' }}</span></p>
-                <p class="text-[10px] text-slate-400">DIČ: <span class="text-white font-semibold">{{ $invoice->company->dic ?? 'N/A' }}</span></p>
-                @if($invoice->company->ic_dph ?? false)
-                    <p class="text-[10px] text-slate-400">IČ DPH: <span class="text-white font-semibold">{{ $invoice->company->ic_dph }}</span></p>
+                <p class="text-[10px] text-slate-400">IČO: <span class="text-white font-semibold">{{ $invoice->company_ico ?? 'N/A' }}</span></p>
+                <p class="text-[10px] text-slate-400">DIČ: <span class="text-white font-semibold">{{ $invoice->company_dic ?? 'N/A' }}</span></p>
+                @if($invoice->company_ic_dph ?? false)
+                    <p class="text-[10px] text-slate-400">IČ DPH: <span class="text-white font-semibold">{{ $invoice->company_ic_dph }}</span></p>
                 @endif
             </div>
         </div>
