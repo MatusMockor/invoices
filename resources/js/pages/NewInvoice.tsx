@@ -171,6 +171,16 @@ const NewInvoice = () => {
         setValue("clientDic", invoice.business_entity.dic || "");
         setValue("clientIcDph", invoice.business_entity.ic_dph || "");
         setIcoSearch(invoice.business_entity.ico);
+
+        // Also pre-fill custom company fields from invoice snapshot data for when user toggles checkbox
+        setValue("customCompanyIco", invoice.company_ico || "");
+        setValue("customCompanyDic", invoice.company_dic || "");
+        setValue("customCompanyIcDph", invoice.company_ic_dph || "");
+        setValue("customCompanyName", invoice.company_name || "");
+        setValue("customCompanyAddress", invoice.company_address || "");
+        setValue("customCompanyCity", invoice.company_city || "");
+        setValue("customCompanyZip", invoice.company_zip || "");
+        setValue("customCompanyCountry", invoice.company_country || "");
       }
 
       // Set invoice number and variable symbol
@@ -349,11 +359,11 @@ const NewInvoice = () => {
               Informácie o klientovi
             </h3>
 
-            {/* Info badge in edit mode */}
-            {isEditMode && (
-              <div className="mb-4 p-3 bg-muted/50 rounded-lg border border-muted-foreground/20">
-                <p className="text-sm text-muted-foreground">
-                  ℹ️ Údaje o klientovi sú uložené z času vytvorenia faktúry a nie je možné ich upraviť.
+            {/* Info in edit mode */}
+            {isEditMode && !useCustomCompany && (
+              <div className="mb-4 p-3 bg-blue-50 rounded-lg border border-blue-200">
+                <p className="text-sm text-blue-700">
+                  💡 Údaje o klientovi sú uložené z času vytvorenia. Pre úpravu zaškrtnite "Zadať vlastné údaje o spoločnosti".
                 </p>
               </div>
             )}
@@ -364,10 +374,9 @@ const NewInvoice = () => {
                 type="checkbox"
                 id="useCustomCompany"
                 {...register("useCustomCompany")}
-                disabled={isEditMode}
-                className="h-4 w-4 rounded border-primary/30 text-primary focus:ring-primary disabled:opacity-50 disabled:cursor-not-allowed"
+                className="h-4 w-4 rounded border-primary/30 text-primary focus:ring-primary"
               />
-              <Label htmlFor="useCustomCompany" className={cn("text-sm", isEditMode ? "cursor-not-allowed opacity-50" : "cursor-pointer")}>
+              <Label htmlFor="useCustomCompany" className="cursor-pointer text-sm">
                 Zadať vlastné údaje o spoločnosti (neregistrovaná v databáze)
               </Label>
             </div>
@@ -396,7 +405,7 @@ const NewInvoice = () => {
                       }}
                       placeholder="Začnite písať IČO alebo názov firmy..."
                       className="border-primary/30"
-                      disabled={isEditMode}
+                      disabled={isEditMode && !useCustomCompany}
                     />
                     {isSearching && (
                       <Loader2 className="absolute right-3 top-3 h-4 w-4 animate-spin text-primary" />
@@ -448,7 +457,7 @@ const NewInvoice = () => {
                   {...register("clientName")}
                   placeholder="ABC s.r.o."
                   className="border-primary/30"
-                  disabled={isEditMode}
+                  disabled={isEditMode && !useCustomCompany}
                 />
                 {errors.clientName && (
                   <p className="text-sm text-destructive">{errors.clientName.message}</p>
@@ -463,7 +472,7 @@ const NewInvoice = () => {
                     {...register("clientDic")}
                     placeholder="2023456789"
                     className="border-primary/30"
-                    disabled={isEditMode}
+                    disabled={isEditMode && !useCustomCompany}
                   />
                   {errors.clientDic && (
                     <p className="text-sm text-destructive">{errors.clientDic.message}</p>
@@ -476,7 +485,7 @@ const NewInvoice = () => {
                     {...register("clientIcDph")}
                     placeholder="SK2023456789"
                     className="border-primary/30"
-                    disabled={isEditMode}
+                    disabled={isEditMode && !useCustomCompany}
                   />
                   {errors.clientIcDph && (
                     <p className="text-sm text-destructive">{errors.clientIcDph.message}</p>
@@ -491,7 +500,7 @@ const NewInvoice = () => {
                   {...register("clientStreet")}
                   placeholder="Hlavná 123"
                   className="border-primary/30"
-                  disabled={isEditMode}
+                  disabled={isEditMode && !useCustomCompany}
                 />
                 {errors.clientStreet && (
                   <p className="text-sm text-destructive">{errors.clientStreet.message}</p>
@@ -506,7 +515,7 @@ const NewInvoice = () => {
                     {...register("clientPostalCode")}
                     placeholder="811 01"
                     className="border-primary/30"
-                    disabled={isEditMode}
+                    disabled={isEditMode && !useCustomCompany}
                   />
                   {errors.clientPostalCode && (
                     <p className="text-sm text-destructive">{errors.clientPostalCode.message}</p>
@@ -519,7 +528,7 @@ const NewInvoice = () => {
                     {...register("clientCity")}
                     placeholder="Bratislava"
                     className="border-primary/30"
-                    disabled={isEditMode}
+                    disabled={isEditMode && !useCustomCompany}
                   />
                   {errors.clientCity && (
                     <p className="text-sm text-destructive">{errors.clientCity.message}</p>
@@ -537,7 +546,7 @@ const NewInvoice = () => {
                       {...register("customCompanyIco")}
                       placeholder="12345678"
                       className="border-primary/30"
-                      disabled={isEditMode}
+                      disabled={isEditMode && !useCustomCompany}
                     />
                     {errors.customCompanyIco && (
                       <p className="text-sm text-destructive">{errors.customCompanyIco.message}</p>
@@ -551,7 +560,7 @@ const NewInvoice = () => {
                       {...register("customCompanyDic")}
                       placeholder="1234567890"
                       className="border-primary/30"
-                      disabled={isEditMode}
+                      disabled={isEditMode && !useCustomCompany}
                     />
                     {errors.customCompanyDic && (
                       <p className="text-sm text-destructive">{errors.customCompanyDic.message}</p>
@@ -565,7 +574,7 @@ const NewInvoice = () => {
                       {...register("customCompanyIcDph")}
                       placeholder="SK1234567890"
                       className="border-primary/30"
-                      disabled={isEditMode}
+                      disabled={isEditMode && !useCustomCompany}
                     />
                     {errors.customCompanyIcDph && (
                       <p className="text-sm text-destructive">{errors.customCompanyIcDph.message}</p>
@@ -579,7 +588,7 @@ const NewInvoice = () => {
                       {...register("customCompanyName")}
                       placeholder="XYZ s.r.o."
                       className="border-primary/30"
-                      disabled={isEditMode}
+                      disabled={isEditMode && !useCustomCompany}
                     />
                     {errors.customCompanyName && (
                       <p className="text-sm text-destructive">{errors.customCompanyName.message}</p>
@@ -593,7 +602,7 @@ const NewInvoice = () => {
                       {...register("customCompanyAddress")}
                       placeholder="Hlavná 123"
                       className="border-primary/30"
-                      disabled={isEditMode}
+                      disabled={isEditMode && !useCustomCompany}
                     />
                     {errors.customCompanyAddress && (
                       <p className="text-sm text-destructive">{errors.customCompanyAddress.message}</p>
@@ -608,7 +617,7 @@ const NewInvoice = () => {
                         {...register("customCompanyZip")}
                         placeholder="811 01"
                         className="border-primary/30"
-                        disabled={isEditMode}
+                        disabled={isEditMode && !useCustomCompany}
                       />
                       {errors.customCompanyZip && (
                         <p className="text-sm text-destructive">{errors.customCompanyZip.message}</p>
@@ -621,7 +630,7 @@ const NewInvoice = () => {
                         {...register("customCompanyCity")}
                         placeholder="Bratislava"
                         className="border-primary/30"
-                        disabled={isEditMode}
+                        disabled={isEditMode && !useCustomCompany}
                       />
                       {errors.customCompanyCity && (
                         <p className="text-sm text-destructive">{errors.customCompanyCity.message}</p>
@@ -634,7 +643,7 @@ const NewInvoice = () => {
                         {...register("customCompanyCountry")}
                         placeholder="SK"
                         className="border-primary/30"
-                        disabled={isEditMode}
+                        disabled={isEditMode && !useCustomCompany}
                       />
                       {errors.customCompanyCountry && (
                         <p className="text-sm text-destructive">{errors.customCompanyCountry.message}</p>
