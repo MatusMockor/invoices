@@ -148,9 +148,11 @@ const NewInvoice = () => {
   // Load invoice data in edit mode
   useEffect(() => {
     if (isEditMode && invoice) {
-      // Check if invoice has custom company data (company_ico present but no company_id)
+      // Always load from invoice snapshot data (not through relationship)
+      // This preserves the historical data from when the invoice was created
+
+      // Check if invoice has custom company data (no company_id means it was custom)
       if (invoice.company_ico && !invoice.company_id) {
-        // Load custom company data
         setValue("useCustomCompany", true);
         setValue("customCompanyIco", invoice.company_ico);
         setValue("customCompanyDic", invoice.company_dic || "");
@@ -160,17 +162,17 @@ const NewInvoice = () => {
         setValue("customCompanyCity", invoice.company_city || "");
         setValue("customCompanyZip", invoice.company_zip || "");
         setValue("customCompanyCountry", invoice.company_country || "");
-      } else if (invoice.business_entity) {
-        // Load from business_entity (existing logic)
+      } else {
+        // Load from invoice snapshot data (NOT from business_entity relationship)
         setValue("useCustomCompany", false);
-        setValue("clientName", invoice.business_entity.name);
-        setValue("clientStreet", invoice.business_entity.address || "");
-        setValue("clientCity", invoice.business_entity.city || "");
-        setValue("clientPostalCode", invoice.business_entity.postal_code || "");
-        setValue("clientIco", invoice.business_entity.ico);
-        setValue("clientDic", invoice.business_entity.dic || "");
-        setValue("clientIcDph", invoice.business_entity.ic_dph || "");
-        setIcoSearch(invoice.business_entity.ico);
+        setValue("clientName", invoice.company_name || "");
+        setValue("clientStreet", invoice.company_address || "");
+        setValue("clientCity", invoice.company_city || "");
+        setValue("clientPostalCode", invoice.company_zip || "");
+        setValue("clientIco", invoice.company_ico || "");
+        setValue("clientDic", invoice.company_dic || "");
+        setValue("clientIcDph", invoice.company_ic_dph || "");
+        setIcoSearch(invoice.company_ico || "");
 
         // Also pre-fill custom company fields from invoice snapshot data for when user toggles checkbox
         setValue("customCompanyIco", invoice.company_ico || "");
