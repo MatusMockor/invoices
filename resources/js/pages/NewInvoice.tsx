@@ -22,18 +22,18 @@ const invoiceSchema = z.object({
   clientName: z.string().trim().max(100).optional(),
   clientStreet: z.string().trim().max(255).optional(),
   clientCity: z.string().trim().max(100).optional(),
-  clientPostalCode: z.string().trim().max(20).optional(),
-  clientIco: z.string().trim().max(20).optional(),
-  clientDic: z.string().trim().max(20).optional(),
+  clientPostalCode: z.string().trim().regex(/^[\d\s]*$/, "PSČ musí obsahovať len číslice a medzery").max(20).optional(),
+  clientIco: z.string().trim().regex(/^\d*$/, "IČO musí obsahovať len číslice").max(20).optional(),
+  clientDic: z.string().trim().regex(/^\d*$/, "DIČ musí obsahovať len číslice").max(20).optional(),
   clientIcDph: z.string().trim().max(20).optional(),
   useCustomCompany: z.boolean().optional().default(false),
-  customCompanyIco: z.string().trim().max(12).optional(),
-  customCompanyDic: z.string().trim().max(20).optional(),
+  customCompanyIco: z.string().trim().regex(/^\d*$/, "IČO musí obsahovať len číslice").max(12).optional(),
+  customCompanyDic: z.string().trim().regex(/^\d*$/, "DIČ musí obsahovať len číslice").max(20).optional(),
   customCompanyIcDph: z.string().trim().max(20).optional(),
   customCompanyName: z.string().trim().max(255).optional(),
   customCompanyAddress: z.string().trim().max(500).optional(),
   customCompanyCity: z.string().trim().max(100).optional(),
-  customCompanyZip: z.string().trim().max(20).optional(),
+  customCompanyZip: z.string().trim().regex(/^[\d\s]*$/, "PSČ musí obsahovať len číslice a medzery").max(20).optional(),
   customCompanyCountry: z.string().trim().max(100).optional(),
   issueDate: z.date({ required_error: "Dátum vystavenia je povinný" }),
   dueDate: z.date({ required_error: "Dátum splatnosti je povinný" }),
@@ -406,6 +406,8 @@ const NewInvoice = () => {
                       placeholder="Začnite písať IČO alebo názov firmy..."
                       className="border-primary/30"
                       disabled={isEditMode && !useCustomCompany}
+                      inputMode="numeric"
+                      pattern="[0-9]*"
                     />
                     {isSearching && (
                       <Loader2 className="absolute right-3 top-3 h-4 w-4 animate-spin text-primary" />
@@ -473,6 +475,8 @@ const NewInvoice = () => {
                     placeholder="2023456789"
                     className="border-primary/30"
                     disabled={isEditMode && !useCustomCompany}
+                    inputMode="numeric"
+                    pattern="[0-9]*"
                   />
                   {errors.clientDic && (
                     <p className="text-sm text-destructive">{errors.clientDic.message}</p>
@@ -516,6 +520,8 @@ const NewInvoice = () => {
                     placeholder="811 01"
                     className="border-primary/30"
                     disabled={isEditMode && !useCustomCompany}
+                    inputMode="numeric"
+                    pattern="[0-9\s]*"
                   />
                   {errors.clientPostalCode && (
                     <p className="text-sm text-destructive">{errors.clientPostalCode.message}</p>
@@ -547,6 +553,8 @@ const NewInvoice = () => {
                       placeholder="12345678"
                       className="border-primary/30"
                       disabled={isEditMode && !useCustomCompany}
+                      inputMode="numeric"
+                      pattern="[0-9]*"
                     />
                     {errors.customCompanyIco && (
                       <p className="text-sm text-destructive">{errors.customCompanyIco.message}</p>
@@ -561,6 +569,8 @@ const NewInvoice = () => {
                       placeholder="1234567890"
                       className="border-primary/30"
                       disabled={isEditMode && !useCustomCompany}
+                      inputMode="numeric"
+                      pattern="[0-9]*"
                     />
                     {errors.customCompanyDic && (
                       <p className="text-sm text-destructive">{errors.customCompanyDic.message}</p>
@@ -618,6 +628,8 @@ const NewInvoice = () => {
                         placeholder="811 01"
                         className="border-primary/30"
                         disabled={isEditMode && !useCustomCompany}
+                        inputMode="numeric"
+                        pattern="[0-9\s]*"
                       />
                       {errors.customCompanyZip && (
                         <p className="text-sm text-destructive">{errors.customCompanyZip.message}</p>
