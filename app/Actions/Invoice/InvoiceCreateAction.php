@@ -36,7 +36,9 @@ final class InvoiceCreateAction
                 'supplier_company_id' => $supplierCompanyId,
                 'total_amount' => $totalAmount,
                 'currency' => $dto->currency ?? config('invoices.default_currency'),
+                'variable_symbol' => $dto->variableSymbol,
                 'constant_symbol' => $dto->constantSymbol,
+                'specific_symbol' => $dto->specificSymbol,
                 'note' => $dto->notes,
                 'status' => $dto->status ?? config('invoices.default_status'),
             ];

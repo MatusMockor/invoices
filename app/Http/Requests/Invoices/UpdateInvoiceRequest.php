@@ -24,9 +24,10 @@ class UpdateInvoiceRequest extends FormRequest
      */
     public function rules(): array
     {
+        $useCustomCompany = $this->boolean('useCustomCompany', false);
+
         return [
-            'ico' => 'required|string|max:12',
-            'invoice_number' => [
+            'invoiceNumber' => [
                 'required',
                 'string',
                 'max:20',
@@ -35,25 +36,34 @@ class UpdateInvoiceRequest extends FormRequest
             'issue_date' => 'required|date',
             'due_date' => 'required|date|after_or_equal:issue_date',
             'delivery_date' => 'required|date',
-            'total_amount' => 'required|numeric|min:0',
-            'currency' => 'required|string|in:EUR,USD,CZK',
-            'constant_symbol' => 'nullable|string|max:4',
-            'note' => 'nullable|string|max:1000',
-            'status' => 'required|string|in:draft,sent,paid,overdue',
+            'currency' => 'nullable|string|in:EUR,USD,CZK',
+            'variableSymbol' => 'nullable|string|max:20',
+            'constantSymbol' => 'nullable|string|max:20',
+            'specificSymbol' => 'nullable|string|max:20',
+            'notes' => 'nullable|string|max:1000',
+            'status' => 'nullable|string|in:draft,sent,paid,overdue',
             'items' => 'required|array|min:1',
             'items.*.id' => 'nullable|integer|exists:invoice_items,id',
             'items.*.description' => 'required|string|max:255',
             'items.*.quantity' => 'required|numeric|min:1',
-            'items.*.unit_price' => 'required|numeric|min:0',
-            'useCustomCompany' => 'nullable|boolean',
-            'customCompanyIco' => 'nullable|required_if:useCustomCompany,true|string|max:12',
-            'customCompanyDic' => 'nullable|string|max:20',
+            'items.*.price' => 'required|numeric|min:0',
+            'useCustomCompany' => 'boolean',
+            'customCompanyIco' => $useCustomCompany ? 'required|string|max:12|regex:/^\d+$/' : 'nullable|string|max:12|regex:/^\d+$/',
+            'customCompanyDic' => 'nullable|string|max:20|regex:/^\d*$/',
             'customCompanyIcDph' => 'nullable|string|max:20',
-            'customCompanyName' => 'nullable|required_if:useCustomCompany,true|string|max:255',
+            'customCompanyName' => $useCustomCompany ? 'required|string|max:255' : 'nullable|string|max:255',
             'customCompanyAddress' => 'nullable|string|max:500',
             'customCompanyCity' => 'nullable|string|max:100',
             'customCompanyZip' => 'nullable|string|max:20',
             'customCompanyCountry' => 'nullable|string|max:100',
+            'clientIco' => ! $useCustomCompany ? 'required|string|max:20|regex:/^\d+$/' : 'nullable|string|max:20|regex:/^\d+$/',
+            'clientName' => ! $useCustomCompany ? 'required|string|max:100' : 'nullable|string|max:100',
+            'clientDic' => ! $useCustomCompany ? 'required|string|max:20|regex:/^\d*$/' : 'nullable|string|max:20|regex:/^\d*$/',
+            'clientIcDph' => 'nullable|string|max:20',
+            'clientStreet' => ! $useCustomCompany ? 'required|string|max:255' : 'nullable|string|max:255',
+            'clientCity' => ! $useCustomCompany ? 'required|string|max:100' : 'nullable|string|max:100',
+            'clientPostalCode' => ! $useCustomCompany ? 'required|string|max:20' : 'nullable|string|max:20',
+            'clientCountry' => 'nullable|string|max:100',
         ];
     }
 
@@ -65,19 +75,20 @@ class UpdateInvoiceRequest extends FormRequest
     public function attributes(): array
     {
         return [
-            'ico' => 'IČO',
-            'invoice_number' => 'číslo faktúry',
+            'invoiceNumber' => 'číslo faktúry',
             'issue_date' => 'dátum vystavenia',
             'due_date' => 'dátum splatnosti',
             'delivery_date' => 'dátum dodania',
-            'total_amount' => 'celková suma',
             'currency' => 'mena',
-            'note' => 'poznámka',
+            'variableSymbol' => 'variabilný symbol',
+            'constantSymbol' => 'konštantný symbol',
+            'specificSymbol' => 'špecifický symbol',
+            'notes' => 'poznámka',
             'status' => 'stav faktúry',
             'items' => 'položky faktúry',
             'items.*.description' => 'popis položky',
             'items.*.quantity' => 'množstvo',
-            'items.*.unit_price' => 'jednotková cena',
+            'items.*.price' => 'jednotková cena',
             'useCustomCompany' => 'vlastné údaje spoločnosti',
             'customCompanyIco' => 'IČO spoločnosti',
             'customCompanyDic' => 'DIČ spoločnosti',
@@ -87,6 +98,14 @@ class UpdateInvoiceRequest extends FormRequest
             'customCompanyCity' => 'mesto spoločnosti',
             'customCompanyZip' => 'PSČ spoločnosti',
             'customCompanyCountry' => 'krajina spoločnosti',
+            'clientIco' => 'IČO klienta',
+            'clientName' => 'názov klienta',
+            'clientDic' => 'DIČ klienta',
+            'clientIcDph' => 'IČ DPH klienta',
+            'clientStreet' => 'ulica klienta',
+            'clientCity' => 'mesto klienta',
+            'clientPostalCode' => 'PSČ klienta',
+            'clientCountry' => 'krajina klienta',
         ];
     }
 

@@ -2,27 +2,26 @@ import { useNavigate, useParams } from "react-router-dom";
 import { useForm, useFieldArray } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";
-import { format } from "date-fns";
-import { CalendarIcon, Plus, Trash2, Save, ArrowLeft, Loader2 } from "lucide-react";
+import { Save, ArrowLeft, Loader2 } from "lucide-react";
 import { DashboardLayout } from "@/components/dashboard/DashboardLayout";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
-import { Calendar } from "@/components/ui/calendar";
-import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
-import { Command, CommandEmpty, CommandGroup, CommandItem, CommandList } from "@/components/ui/command";
-import { cn } from "@/lib/utils";
 import { useToast } from "@/hooks/use-toast";
 import { useState, useEffect } from "react";
 import { useInvoice, useInvoices } from "@/hooks/useInvoices";
 import { companyService } from "@/services/companyService";
+import { ClientInformationSection } from "@/components/invoices/ClientInformationSection";
+import { CustomCompanySection } from "@/components/invoices/CustomCompanySection";
+import { InvoiceDateSection } from "@/components/invoices/InvoiceDateSection";
+import { PaymentSymbolsSection } from "@/components/invoices/PaymentSymbolsSection";
+import { InvoiceItemsSection } from "@/components/invoices/InvoiceItemsSection";
+import type { InvoiceFormData } from "@/components/invoices/ClientInformationSection";
 
 const invoiceSchema = z.object({
   invoiceNumber: z.string().trim().min(1, "Číslo faktúry je povinné"),
   clientName: z.string().trim().max(100).optional(),
   clientStreet: z.string().trim().max(255).optional(),
   clientCity: z.string().trim().max(100).optional(),
-  clientPostalCode: z.string().trim().regex(/^[\d\s]*$/, "PSČ musí obsahovať len číslice a medzery").max(20).optional(),
+  clientPostalCode: z.string().trim().max(20).optional(),
   clientIco: z.string().trim().regex(/^\d*$/, "IČO musí obsahovať len číslice").max(20).optional(),
   clientDic: z.string().trim().regex(/^\d*$/, "DIČ musí obsahovať len číslice").max(20).optional(),
   clientIcDph: z.string().trim().max(20).optional(),
@@ -33,7 +32,7 @@ const invoiceSchema = z.object({
   customCompanyName: z.string().trim().max(255).optional(),
   customCompanyAddress: z.string().trim().max(500).optional(),
   customCompanyCity: z.string().trim().max(100).optional(),
-  customCompanyZip: z.string().trim().regex(/^[\d\s]*$/, "PSČ musí obsahovať len číslice a medzery").max(20).optional(),
+  customCompanyZip: z.string().trim().max(20).optional(),
   customCompanyCountry: z.string().trim().max(100).optional(),
   issueDate: z.date({ required_error: "Dátum vystavenia je povinný" }),
   dueDate: z.date({ required_error: "Dátum splatnosti je povinný" }),
@@ -48,22 +47,71 @@ const invoiceSchema = z.object({
       price: z.number().min(0, "Cena musí byť nezáporná"),
     })
   ).min(1, "Aspoň jedna položka je povinná"),
-}).refine((data) => {
+}).superRefine((data, ctx) => {
   // Conditional validation based on useCustomCompany
   if (data.useCustomCompany) {
     // Custom company mode - require custom fields
-    return !!(data.customCompanyIco && data.customCompanyName);
-  } else {
-    // Standard company mode - require client fields
-    return !!(data.clientIco && data.clientName && data.clientStreet &&
-              data.clientCity && data.clientPostalCode && data.clientDic);
+    if (!data.customCompanyIco || data.customCompanyIco.trim() === '') {
+      ctx.addIssue({
+        code: z.ZodIssueCode.custom,
+        message: "IČO je povinné",
+        path: ["customCompanyIco"],
+      });
+    }
+    if (!data.customCompanyName || data.customCompanyName.trim() === '') {
+      ctx.addIssue({
+        code: z.ZodIssueCode.custom,
+        message: "Názov spoločnosti je povinný",
+        path: ["customCompanyName"],
+      });
+    }
+    return;
   }
-}, {
-  message: "Vyplňte všetky povinné polia",
-  path: ["clientName"], // Error will be shown on the form
-});
 
-type InvoiceFormData = z.infer<typeof invoiceSchema>;
+  // Standard company mode - require client fields
+  if (!data.clientIco || data.clientIco.trim() === '') {
+    ctx.addIssue({
+      code: z.ZodIssueCode.custom,
+      message: "IČO klienta je povinné",
+      path: ["clientIco"],
+    });
+  }
+  if (!data.clientName || data.clientName.trim() === '') {
+    ctx.addIssue({
+      code: z.ZodIssueCode.custom,
+      message: "Názov klienta je povinný",
+      path: ["clientName"],
+    });
+  }
+  if (!data.clientStreet || data.clientStreet.trim() === '') {
+    ctx.addIssue({
+      code: z.ZodIssueCode.custom,
+      message: "Ulica je povinná",
+      path: ["clientStreet"],
+    });
+  }
+  if (!data.clientCity || data.clientCity.trim() === '') {
+    ctx.addIssue({
+      code: z.ZodIssueCode.custom,
+      message: "Mesto je povinné",
+      path: ["clientCity"],
+    });
+  }
+  if (!data.clientPostalCode || data.clientPostalCode.trim() === '') {
+    ctx.addIssue({
+      code: z.ZodIssueCode.custom,
+      message: "PSČ je povinné",
+      path: ["clientPostalCode"],
+    });
+  }
+  if (!data.clientDic || data.clientDic.trim() === '') {
+    ctx.addIssue({
+      code: z.ZodIssueCode.custom,
+      message: "DIČ je povinné",
+      path: ["clientDic"],
+    });
+  }
+});
 
 const NewInvoice = () => {
   const navigate = useNavigate();
@@ -300,14 +348,6 @@ const NewInvoice = () => {
     }
   };
 
-  const calculateTotal = () => {
-    return items.reduce((total, item) => {
-      const quantity = item.quantity || 0;
-      const price = item.price || 0;
-      return total + (quantity * price);
-    }, 0);
-  };
-
   const handleCompanySelect = (company: any) => {
     setValue("clientIco", company.ico);
     setValue("clientName", company.name);
@@ -355,603 +395,87 @@ const NewInvoice = () => {
 
         <form onSubmit={handleSubmit(onSubmit)} className="space-y-8">
           {/* Client Information */}
-          <div className="bg-gradient-card rounded-xl p-6 border-2 border-primary/30 shadow-elegant-sm">
-            <h3 className="text-lg font-bold text-primary mb-4 flex items-center gap-2">
-              <span className="w-8 h-8 bg-primary text-primary-foreground rounded-full flex items-center justify-center text-sm">1</span>
-              Informácie o klientovi
-            </h3>
+          {!useCustomCompany ? (
+            <ClientInformationSection
+              form={{ register, control, handleSubmit, formState: { errors }, setValue, watch, reset }}
+              isEditMode={isEditMode}
+              useCustomCompany={useCustomCompany}
+              icoSearch={icoSearch}
+              setIcoSearch={setIcoSearch}
+              isSearching={isSearching}
+              showSuggestions={showSuggestions}
+              setShowSuggestions={setShowSuggestions}
+              filteredCompanies={filteredCompanies}
+              onCompanySelect={handleCompanySelect}
+            />
+          ) : (
+            <div className="bg-gradient-card rounded-xl p-6 border-2 border-primary/30 shadow-elegant-sm">
+              <h3 className="text-lg font-bold text-primary mb-4 flex items-center gap-2">
+                <span className="w-8 h-8 bg-primary text-primary-foreground rounded-full flex items-center justify-center text-sm">1</span>
+                Informácie o klientovi
+              </h3>
 
-            {/* Info in edit mode */}
-            {isEditMode && !useCustomCompany && (
-              <div className="mb-4 p-3 bg-blue-50 rounded-lg border border-blue-200">
-                <p className="text-sm text-blue-700">
-                  💡 Údaje o klientovi sú uložené z času vytvorenia. Pre úpravu zaškrtnite "Zadať vlastné údaje o spoločnosti".
-                </p>
+              {/* Toggle between standard and custom company */}
+              <div className="flex items-center space-x-2 mb-6 p-4 bg-card/50 rounded-lg border border-primary/20">
+                <input
+                  type="checkbox"
+                  id="useCustomCompany"
+                  {...register("useCustomCompany")}
+                  className="h-4 w-4 rounded border-primary/30 text-primary focus:ring-primary"
+                />
+                <label htmlFor="useCustomCompany" className="cursor-pointer text-sm">
+                  Zadať vlastné údaje o spoločnosti (neregistrovaná v databáze)
+                </label>
               </div>
-            )}
 
-            {/* Toggle between standard and custom company */}
-            <div className="flex items-center space-x-2 mb-6 p-4 bg-card/50 rounded-lg border border-primary/20">
-              <input
-                type="checkbox"
-                id="useCustomCompany"
-                {...register("useCustomCompany")}
-                className="h-4 w-4 rounded border-primary/30 text-primary focus:ring-primary"
+              <CustomCompanySection
+                form={{ register, control, handleSubmit, formState: { errors }, setValue, watch, reset }}
+                isEditMode={isEditMode}
+                useCustomCompany={useCustomCompany}
               />
-              <Label htmlFor="useCustomCompany" className="cursor-pointer text-sm">
-                Zadať vlastné údaje o spoločnosti (neregistrovaná v databáze)
-              </Label>
             </div>
-
-            <div className="space-y-4">
-              {!useCustomCompany ? (
-                <>
-                  {/* Standard company fields with autocomplete */}
-                  {/* IČO s autocomplete */}
-                  <div className="space-y-2">
-                <Label htmlFor="clientIco">IČO klienta *</Label>
-                <div className="relative">
-                  <div className="relative">
-                    <Input
-                      id="clientIco"
-                      value={icoSearch}
-                      onChange={(e) => {
-                        setIcoSearch(e.target.value);
-                        setValue("clientIco", e.target.value);
-                        setShowSuggestions(true);
-                      }}
-                      onFocus={() => {
-                        if (icoSearch.length > 0) {
-                          setShowSuggestions(true);
-                        }
-                      }}
-                      placeholder="Začnite písať IČO alebo názov firmy..."
-                      className="border-primary/30"
-                      disabled={isEditMode && !useCustomCompany}
-                      inputMode="numeric"
-                      pattern="[0-9]*"
-                    />
-                    {isSearching && (
-                      <Loader2 className="absolute right-3 top-3 h-4 w-4 animate-spin text-primary" />
-                    )}
-                  </div>
-
-                  {/* Dropdown s návrhmi */}
-                  {showSuggestions && icoSearch.length > 0 && (
-                    <div className="absolute z-50 w-full mt-1 bg-popover border border-border rounded-md shadow-lg">
-                      <Command>
-                        <CommandList>
-                          {filteredCompanies.length === 0 ? (
-                            <CommandEmpty className="py-6 text-center text-sm">
-                              Žiadne výsledky
-                            </CommandEmpty>
-                          ) : (
-                            <CommandGroup>
-                              {filteredCompanies.map((company) => (
-                                <CommandItem
-                                  key={company.ico}
-                                  onSelect={() => handleCompanySelect(company)}
-                                  className="cursor-pointer"
-                                >
-                                  <div className="flex flex-col gap-1">
-                                    <div className="font-semibold">{company.name}</div>
-                                    <div className="text-sm text-muted-foreground">
-                                      IČO: {company.ico} | {company.address}, {company.postal_code} {company.city}
-                                    </div>
-                                  </div>
-                                </CommandItem>
-                              ))}
-                            </CommandGroup>
-                          )}
-                        </CommandList>
-                      </Command>
-                    </div>
-                  )}
-                </div>
-                {errors.clientIco && (
-                  <p className="text-sm text-destructive">{errors.clientIco.message}</p>
-                )}
-              </div>
-
-              {/* Ostatné polia */}
-              <div className="space-y-2">
-                <Label htmlFor="clientName">Názov / Meno klienta *</Label>
-                <Input
-                  id="clientName"
-                  {...register("clientName")}
-                  placeholder="ABC s.r.o."
-                  className="border-primary/30"
-                  disabled={isEditMode && !useCustomCompany}
-                />
-                {errors.clientName && (
-                  <p className="text-sm text-destructive">{errors.clientName.message}</p>
-                )}
-              </div>
-
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <div className="space-y-2">
-                  <Label htmlFor="clientDic">DIČ *</Label>
-                  <Input
-                    id="clientDic"
-                    {...register("clientDic")}
-                    placeholder="2023456789"
-                    className="border-primary/30"
-                    disabled={isEditMode && !useCustomCompany}
-                    inputMode="numeric"
-                    pattern="[0-9]*"
-                  />
-                  {errors.clientDic && (
-                    <p className="text-sm text-destructive">{errors.clientDic.message}</p>
-                  )}
-                </div>
-                <div className="space-y-2">
-                  <Label htmlFor="clientIcDph">IČ DPH</Label>
-                  <Input
-                    id="clientIcDph"
-                    {...register("clientIcDph")}
-                    placeholder="SK2023456789"
-                    className="border-primary/30"
-                    disabled={isEditMode && !useCustomCompany}
-                  />
-                  {errors.clientIcDph && (
-                    <p className="text-sm text-destructive">{errors.clientIcDph.message}</p>
-                  )}
-                </div>
-              </div>
-
-              <div className="space-y-2">
-                <Label htmlFor="clientStreet">Ulica a číslo *</Label>
-                <Input
-                  id="clientStreet"
-                  {...register("clientStreet")}
-                  placeholder="Hlavná 123"
-                  className="border-primary/30"
-                  disabled={isEditMode && !useCustomCompany}
-                />
-                {errors.clientStreet && (
-                  <p className="text-sm text-destructive">{errors.clientStreet.message}</p>
-                )}
-              </div>
-
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                <div className="space-y-2">
-                  <Label htmlFor="clientPostalCode">PSČ *</Label>
-                  <Input
-                    id="clientPostalCode"
-                    {...register("clientPostalCode")}
-                    placeholder="811 01"
-                    className="border-primary/30"
-                    disabled={isEditMode && !useCustomCompany}
-                    inputMode="numeric"
-                    pattern="[0-9\s]*"
-                  />
-                  {errors.clientPostalCode && (
-                    <p className="text-sm text-destructive">{errors.clientPostalCode.message}</p>
-                  )}
-                </div>
-                <div className="md:col-span-2 space-y-2">
-                  <Label htmlFor="clientCity">Mesto *</Label>
-                  <Input
-                    id="clientCity"
-                    {...register("clientCity")}
-                    placeholder="Bratislava"
-                    className="border-primary/30"
-                    disabled={isEditMode && !useCustomCompany}
-                  />
-                  {errors.clientCity && (
-                    <p className="text-sm text-destructive">{errors.clientCity.message}</p>
-                  )}
-                </div>
-              </div>
-                </>
-              ) : (
-                <>
-                  {/* Custom company fields */}
-                  <div className="space-y-2">
-                    <Label htmlFor="customCompanyIco">IČO spoločnosti *</Label>
-                    <Input
-                      id="customCompanyIco"
-                      {...register("customCompanyIco")}
-                      placeholder="12345678"
-                      className="border-primary/30"
-                      disabled={isEditMode && !useCustomCompany}
-                      inputMode="numeric"
-                      pattern="[0-9]*"
-                    />
-                    {errors.customCompanyIco && (
-                      <p className="text-sm text-destructive">{errors.customCompanyIco.message}</p>
-                    )}
-                  </div>
-
-                  <div className="space-y-2">
-                    <Label htmlFor="customCompanyDic">DIČ</Label>
-                    <Input
-                      id="customCompanyDic"
-                      {...register("customCompanyDic")}
-                      placeholder="1234567890"
-                      className="border-primary/30"
-                      disabled={isEditMode && !useCustomCompany}
-                      inputMode="numeric"
-                      pattern="[0-9]*"
-                    />
-                    {errors.customCompanyDic && (
-                      <p className="text-sm text-destructive">{errors.customCompanyDic.message}</p>
-                    )}
-                  </div>
-
-                  <div className="space-y-2">
-                    <Label htmlFor="customCompanyIcDph">IČ DPH</Label>
-                    <Input
-                      id="customCompanyIcDph"
-                      {...register("customCompanyIcDph")}
-                      placeholder="SK1234567890"
-                      className="border-primary/30"
-                      disabled={isEditMode && !useCustomCompany}
-                    />
-                    {errors.customCompanyIcDph && (
-                      <p className="text-sm text-destructive">{errors.customCompanyIcDph.message}</p>
-                    )}
-                  </div>
-
-                  <div className="space-y-2">
-                    <Label htmlFor="customCompanyName">Názov spoločnosti *</Label>
-                    <Input
-                      id="customCompanyName"
-                      {...register("customCompanyName")}
-                      placeholder="XYZ s.r.o."
-                      className="border-primary/30"
-                      disabled={isEditMode && !useCustomCompany}
-                    />
-                    {errors.customCompanyName && (
-                      <p className="text-sm text-destructive">{errors.customCompanyName.message}</p>
-                    )}
-                  </div>
-
-                  <div className="space-y-2">
-                    <Label htmlFor="customCompanyAddress">Adresa</Label>
-                    <Input
-                      id="customCompanyAddress"
-                      {...register("customCompanyAddress")}
-                      placeholder="Hlavná 123"
-                      className="border-primary/30"
-                      disabled={isEditMode && !useCustomCompany}
-                    />
-                    {errors.customCompanyAddress && (
-                      <p className="text-sm text-destructive">{errors.customCompanyAddress.message}</p>
-                    )}
-                  </div>
-
-                  <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                    <div className="space-y-2">
-                      <Label htmlFor="customCompanyZip">PSČ</Label>
-                      <Input
-                        id="customCompanyZip"
-                        {...register("customCompanyZip")}
-                        placeholder="811 01"
-                        className="border-primary/30"
-                        disabled={isEditMode && !useCustomCompany}
-                        inputMode="numeric"
-                        pattern="[0-9\s]*"
-                      />
-                      {errors.customCompanyZip && (
-                        <p className="text-sm text-destructive">{errors.customCompanyZip.message}</p>
-                      )}
-                    </div>
-                    <div className="space-y-2">
-                      <Label htmlFor="customCompanyCity">Mesto</Label>
-                      <Input
-                        id="customCompanyCity"
-                        {...register("customCompanyCity")}
-                        placeholder="Bratislava"
-                        className="border-primary/30"
-                        disabled={isEditMode && !useCustomCompany}
-                      />
-                      {errors.customCompanyCity && (
-                        <p className="text-sm text-destructive">{errors.customCompanyCity.message}</p>
-                      )}
-                    </div>
-                    <div className="space-y-2">
-                      <Label htmlFor="customCompanyCountry">Krajina</Label>
-                      <Input
-                        id="customCompanyCountry"
-                        {...register("customCompanyCountry")}
-                        placeholder="SK"
-                        className="border-primary/30"
-                        disabled={isEditMode && !useCustomCompany}
-                      />
-                      {errors.customCompanyCountry && (
-                        <p className="text-sm text-destructive">{errors.customCompanyCountry.message}</p>
-                      )}
-                    </div>
-                  </div>
-                </>
-              )}
-            </div>
-          </div>
+          )}
 
           {/* Dates */}
-          <div className="bg-gradient-card rounded-xl p-6 border-2 border-border shadow-elegant-sm">
-            <h3 className="text-lg font-bold text-foreground mb-4 flex items-center gap-2">
-              <span className="w-8 h-8 bg-accent text-accent-foreground rounded-full flex items-center justify-center text-sm">2</span>
-              Dátumy
-            </h3>
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-              <div className="space-y-2">
-                <Label>Dátum vystavenia *</Label>
-                <Popover>
-                  <PopoverTrigger asChild>
-                    <Button
-                      type="button"
-                      variant="outline"
-                      className={cn(
-                        "w-full justify-start text-left font-normal",
-                        !issueDate && "text-muted-foreground"
-                      )}
-                    >
-                      <CalendarIcon className="mr-2 h-4 w-4" />
-                      {issueDate ? format(issueDate, "dd.MM.yyyy") : "Vyberte dátum"}
-                    </Button>
-                  </PopoverTrigger>
-                  <PopoverContent className="w-auto p-0" align="start">
-                    <Calendar
-                      mode="single"
-                      selected={issueDate}
-                      onSelect={(date) => {
-                        setIssueDate(date);
-                        setValue("issueDate", date as Date);
-                      }}
-                      initialFocus
-                      className="pointer-events-auto"
-                    />
-                  </PopoverContent>
-                </Popover>
-                {errors.issueDate && (
-                  <p className="text-sm text-destructive">{errors.issueDate.message}</p>
-                )}
-              </div>
-              <div className="space-y-2">
-                <Label>Dátum dodania *</Label>
-                <Popover>
-                  <PopoverTrigger asChild>
-                    <Button
-                      type="button"
-                      variant="outline"
-                      className={cn(
-                        "w-full justify-start text-left font-normal",
-                        !deliveryDate && "text-muted-foreground"
-                      )}
-                    >
-                      <CalendarIcon className="mr-2 h-4 w-4" />
-                      {deliveryDate ? format(deliveryDate, "dd.MM.yyyy") : "Vyberte dátum"}
-                    </Button>
-                  </PopoverTrigger>
-                  <PopoverContent className="w-auto p-0" align="start">
-                    <Calendar
-                      mode="single"
-                      selected={deliveryDate}
-                      onSelect={(date) => {
-                        setDeliveryDate(date);
-                        setValue("deliveryDate", date as Date);
-                      }}
-                      initialFocus
-                      className="pointer-events-auto"
-                    />
-                  </PopoverContent>
-                </Popover>
-                {errors.deliveryDate && (
-                  <p className="text-sm text-destructive">{errors.deliveryDate.message}</p>
-                )}
-              </div>
-              <div className="space-y-2 md:col-span-1">
-                <Label>Dátum splatnosti *</Label>
-                <div className="grid grid-cols-3 gap-2">
-                  <div className="col-span-1">
-                    <Input
-                      type="number"
-                      value={dueDateDays}
-                      onChange={(e) => setDueDateDays(Number(e.target.value))}
-                      className="border-primary/30 text-center"
-                    />
-                  </div>
-                  <div className="col-span-2">
-                    <Popover>
-                      <PopoverTrigger asChild>
-                        <Button
-                          type="button"
-                          variant="outline"
-                          className={cn(
-                            "w-full justify-start text-left font-normal",
-                            !dueDate && "text-muted-foreground"
-                          )}
-                        >
-                          <CalendarIcon className="mr-2 h-4 w-4" />
-                          {dueDate ? format(dueDate, "dd.MM.yyyy") : "Vyberte dátum"}
-                        </Button>
-                      </PopoverTrigger>
-                      <PopoverContent className="w-auto p-0" align="start">
-                        <Calendar
-                          mode="single"
-                          selected={dueDate}
-                          onSelect={(date) => {
-                            if (date && issueDate) {
-                              const diffTime = Math.abs(date.getTime() - issueDate.getTime());
-                              const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
-                              setDueDateDays(diffDays);
-                            }
-                            setDueDate(date as Date);
-                            setValue("dueDate", date as Date);
-                          }}
-                          initialFocus
-                          className="pointer-events-auto"
-                        />
-                      </PopoverContent>
-                    </Popover>
-                  </div>
-                </div>
-                {errors.dueDate && (
-                  <p className="text-sm text-destructive">{errors.dueDate.message}</p>
-                )}
-              </div>
-            </div>
-          </div>
+          <InvoiceDateSection
+            form={{ register, control, handleSubmit, formState: { errors }, setValue, watch, reset }}
+            issueDate={issueDate}
+            setIssueDate={setIssueDate}
+            dueDate={dueDate}
+            setDueDate={setDueDate}
+            deliveryDate={deliveryDate}
+            setDeliveryDate={setDeliveryDate}
+            dueDateDays={dueDateDays}
+            setDueDateDays={setDueDateDays}
+          />
 
           {/* Payment Symbols */}
-          <div className="bg-gradient-card rounded-xl p-6 border-2 border-border shadow-elegant-sm">
-            <h3 className="text-lg font-bold text-foreground mb-4 flex items-center gap-2">
-              <span className="w-8 h-8 bg-accent text-accent-foreground rounded-full flex items-center justify-center text-sm">3</span>
-              Platobné symboly
-            </h3>
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-              <div className="space-y-2">
-                <Label htmlFor="variableSymbol">Variabilný symbol *</Label>
-                <Input
-                  id="variableSymbol"
-                  {...register("variableSymbol")}
-                  placeholder="Napr. číslo faktúry"
-                  className="border-primary/30"
-                />
-                {errors.variableSymbol && (
-                  <p className="text-sm text-destructive">{errors.variableSymbol.message}</p>
-                )}
-              </div>
-              <div className="space-y-2">
-                <Label htmlFor="constantSymbol">Konštantný symbol</Label>
-                <Input
-                  id="constantSymbol"
-                  {...register("constantSymbol")}
-                  placeholder="0308"
-                  maxLength={20}
-                />
-                {errors.constantSymbol && (
-                  <p className="text-sm text-destructive">{errors.constantSymbol.message}</p>
-                )}
-              </div>
-              <div className="space-y-2">
-                <Label htmlFor="specificSymbol">Špecifický symbol</Label>
-                <Input
-                  id="specificSymbol"
-                  {...register("specificSymbol")}
-                  placeholder="123456"
-                  maxLength={20}
-                />
-                {errors.specificSymbol && (
-                  <p className="text-sm text-destructive">{errors.specificSymbol.message}</p>
-                )}
-              </div>
-            </div>
-          </div>
+          <PaymentSymbolsSection
+            form={{ register, control, handleSubmit, formState: { errors }, setValue, watch, reset }}
+          />
 
           {/* Items */}
-          <div className="bg-gradient-card rounded-xl p-6 border-2 border-primary/30 shadow-elegant-sm">
-            <h3 className="text-lg font-bold text-primary mb-4 flex items-center gap-2">
-              <span className="w-8 h-8 bg-primary text-primary-foreground rounded-full flex items-center justify-center text-sm">4</span>
-              Položky faktúry
-            </h3>
-            <div className="space-y-4">
-              {fields.map((field, index) => (
-                <div
-                  key={field.id}
-                  className="grid grid-cols-12 gap-3 p-4 bg-card rounded-lg border border-primary/20"
-                >
-                  <div className="col-span-5 space-y-2">
-                    <Label htmlFor={`description-${index}`}>Popis</Label>
-                    <Input
-                      id={`description-${index}`}
-                      {...register(`items.${index}.description`)}
-                      placeholder="Webový dizajn"
-                      className="border-primary/30"
-                    />
-                    {errors.items?.[index]?.description && (
-                      <p className="text-sm text-destructive">
-                        {errors.items[index]?.description?.message}
-                      </p>
-                    )}
-                  </div>
-                  <div className="col-span-2 space-y-2">
-                    <Label htmlFor={`quantity-${index}`}>Počet</Label>
-                    <Input
-                      id={`quantity-${index}`}
-                      type="number"
-                      {...register(`items.${index}.quantity`, {
-                        valueAsNumber: true,
-                      })}
-                      placeholder="1"
-                      min="1"
-                      className="border-primary/30"
-                    />
-                    {errors.items?.[index]?.quantity && (
-                      <p className="text-sm text-destructive">
-                        {errors.items[index]?.quantity?.message}
-                      </p>
-                    )}
-                  </div>
-                  <div className="col-span-3 space-y-2">
-                    <Label htmlFor={`price-${index}`}>Cena/ks (€)</Label>
-                    <Input
-                      id={`price-${index}`}
-                      type="number"
-                      {...register(`items.${index}.price`, {
-                        valueAsNumber: true,
-                      })}
-                      placeholder="0.00"
-                      min="0"
-                      step="0.01"
-                      className="border-primary/30"
-                    />
-                    {errors.items?.[index]?.price && (
-                      <p className="text-sm text-destructive">
-                        {errors.items[index]?.price?.message}
-                      </p>
-                    )}
-                  </div>
-                  <div className="col-span-2 flex items-end">
-                    {fields.length > 1 && (
-                      <Button
-                        type="button"
-                        variant="outline"
-                        size="icon"
-                        onClick={() => remove(index)}
-                        className="border-destructive/30 text-destructive hover:bg-destructive/10"
-                      >
-                        <Trash2 className="h-4 w-4" />
-                      </Button>
-                    )}
-                  </div>
-                </div>
-              ))}
-              <Button
-                type="button"
-                variant="outline"
-                onClick={() => append({ description: "", quantity: 1, price: 0 })}
-                className="w-full border-primary/30 text-primary hover:bg-primary/10"
-              >
-                <Plus className="h-4 w-4 mr-2" />
-                Pridať položku
-              </Button>
-              {errors.items && (
-                <p className="text-sm text-destructive">{errors.items.message}</p>
-              )}
-            </div>
-          </div>
+          <InvoiceItemsSection
+            form={{ register, control, handleSubmit, formState: { errors }, setValue, watch, reset }}
+            fields={fields}
+            append={append}
+            remove={remove}
+            items={items}
+          />
 
           {/* Actions */}
-          <div className="flex justify-between items-center pt-6 pb-8 border-t border-border bg-card rounded-xl p-6 shadow-elegant-sm">
-            <div className="text-lg font-semibold text-foreground">
-              Celkom: <span className="text-2xl text-primary ml-2">€{calculateTotal().toFixed(2)}</span>
-            </div>
-            <div className="flex gap-3">
-              <Button
-                type="button"
-                variant="outline"
-                onClick={() => navigate("/app/dashboard")}
-              >
-                Zrušiť
-              </Button>
-              <Button type="submit" className="bg-primary hover:bg-primary/90">
-                <Save className="h-4 w-4 mr-2" />
-                {isEditMode ? "Uložiť zmeny" : "Vytvoriť faktúru"}
-              </Button>
-            </div>
+          <div className="flex gap-3 justify-end">
+            <Button
+              type="button"
+              variant="outline"
+              onClick={() => navigate("/app/dashboard")}
+            >
+              Zrušiť
+            </Button>
+            <Button type="submit" className="bg-primary hover:bg-primary/90">
+              <Save className="h-4 w-4 mr-2" />
+              {isEditMode ? "Uložiť zmeny" : "Vytvoriť faktúru"}
+            </Button>
           </div>
         </form>
       </div>
