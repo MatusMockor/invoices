@@ -38,7 +38,7 @@ final class InvoiceUpdateAction
                 'status' => $dto->status,
             ], static fn (mixed $value): bool => $value !== null);
 
-            // Handle custom company case with early return
+            // Handle custom company case explicitly (useCustomCompany === true)
             if ($dto->useCustomCompany === true) {
                 $updateData = array_merge($updateData, [
                     'company_id' => null,
@@ -62,7 +62,8 @@ final class InvoiceUpdateAction
                 return $invoice->fresh()->load(['company', 'items']);
             }
 
-            // Handle standard company case - copy all company data to invoice
+            // Handle standard company case explicitly (useCustomCompany === false)
+            // Only update company fields if client data is provided
             if ($dto->useCustomCompany === false && $dto->clientIco !== null) {
                 $customerCompany = $this->findOrCreateCompany($dto);
 
@@ -79,7 +80,8 @@ final class InvoiceUpdateAction
                 ]);
             }
 
-            // Handle remaining updates (items only, company unchanged)
+            // If useCustomCompany is null, company fields remain unchanged
+            // Handle items update regardless of company field changes
             if ($dto->items !== null) {
                 $updateData['total_amount'] = $this->totalCalculator->calculate($dto->items);
                 $this->updateInvoiceItems($invoice, $dto->items);

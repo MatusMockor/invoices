@@ -7,13 +7,13 @@ namespace App\DTOs\Invoice;
 final readonly class InvoiceCreateDTO
 {
     public function __construct(
-        public string $clientName,
-        public string $clientIco,
-        public string $clientDic,
+        public ?string $clientName,
+        public ?string $clientIco,
+        public ?string $clientDic,
         public ?string $clientIcDph,
-        public string $clientStreet,
-        public string $clientCity,
-        public string $clientPostalCode,
+        public ?string $clientStreet,
+        public ?string $clientCity,
+        public ?string $clientPostalCode,
         public ?string $clientCountry,
         public string $invoiceNumber,
         public string $issueDate,
@@ -40,13 +40,13 @@ final readonly class InvoiceCreateDTO
     public static function fromRequest(array $data): self
     {
         return new self(
-            clientName: $data['clientName'],
-            clientIco: $data['clientIco'],
-            clientDic: $data['clientDic'],
+            clientName: $data['clientName'] ?? null,
+            clientIco: $data['clientIco'] ?? null,
+            clientDic: $data['clientDic'] ?? null,
             clientIcDph: $data['clientIcDph'] ?? null,
-            clientStreet: $data['clientStreet'],
-            clientCity: $data['clientCity'],
-            clientPostalCode: $data['clientPostalCode'],
+            clientStreet: $data['clientStreet'] ?? null,
+            clientCity: $data['clientCity'] ?? null,
+            clientPostalCode: $data['clientPostalCode'] ?? null,
             clientCountry: $data['clientCountry'] ?? null,
             invoiceNumber: $data['invoiceNumber'],
             issueDate: $data['issue_date'],

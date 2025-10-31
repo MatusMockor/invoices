@@ -13,17 +13,29 @@ trait HasInvoiceValidationRules
      */
     protected function getClientValidationRules(bool $required = true): array
     {
-        $requiredRule = $required ? 'required' : 'sometimes|required';
+        $useCustomCompany = $this->boolean('useCustomCompany', false);
+
+        $clientRequired = ! $useCustomCompany && $required ? 'required' : 'nullable';
+        $customCompanyRequired = $useCustomCompany && $required ? 'required' : 'nullable';
 
         return [
-            'clientName' => "{$requiredRule}|string|max:255",
-            'clientIco' => "{$requiredRule}|string|max:20",
-            'clientDic' => "{$requiredRule}|string|max:20",
+            'useCustomCompany' => 'boolean',
+            'clientName' => "{$clientRequired}|string|max:255",
+            'clientIco' => "{$clientRequired}|string|max:20|regex:/^\d+\$/",
+            'clientDic' => "{$clientRequired}|string|max:20|regex:/^\d*\$/",
             'clientIcDph' => 'nullable|string|max:20',
-            'clientStreet' => "{$requiredRule}|string|max:255",
-            'clientCity' => "{$requiredRule}|string|max:100",
-            'clientPostalCode' => "{$requiredRule}|string|max:20",
+            'clientStreet' => "{$clientRequired}|string|max:255",
+            'clientCity' => "{$clientRequired}|string|max:100",
+            'clientPostalCode' => "{$clientRequired}|string|max:20",
             'clientCountry' => 'nullable|string|max:2',
+            'customCompanyIco' => "{$customCompanyRequired}|string|max:12|regex:/^\d+\$/",
+            'customCompanyDic' => 'nullable|string|max:20|regex:/^\d*\$/',
+            'customCompanyIcDph' => 'nullable|string|max:20',
+            'customCompanyName' => "{$customCompanyRequired}|string|max:255",
+            'customCompanyAddress' => 'nullable|string|max:500',
+            'customCompanyCity' => 'nullable|string|max:100',
+            'customCompanyZip' => 'nullable|string|max:20',
+            'customCompanyCountry' => 'nullable|string|max:100',
         ];
     }
 
