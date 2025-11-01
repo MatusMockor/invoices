@@ -11,6 +11,8 @@ use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Storage;
 use RuntimeException;
+use SimpleXMLElement;
+use XMLReader;
 use ZipArchive;
 
 class FinancialDataService implements FinancialDataServiceContract
@@ -296,9 +298,7 @@ class FinancialDataService implements FinancialDataServiceContract
     }
 
     /**
-     * Process the company data from the extracted XML file.
-     * Note: Uses SimpleXML which loads entire file into memory.
-     * For production, install php-xml extension and use XMLReader instead.
+     * Process the company data from the extracted XML file using XMLReader for streaming.
      *
      * @return Generator<array<string, mixed>>
      */
@@ -312,22 +312,33 @@ class FinancialDataService implements FinancialDataServiceContract
             throw new RuntimeException('Extracted file does not exist: '.$extractedPath);
         }
 
-        Log::info('Loading XML file (this may take a moment for large files)...');
+        Log::info('Streaming XML file with XMLReader for efficient processing...');
 
-        // Load XML file - this loads entire file into memory
-        // For better memory efficiency, install XMLReader extension
-        $xml = simplexml_load_file($extractedFullPath);
+        $reader = new XMLReader;
 
-        if ($xml === false) {
-            throw new RuntimeException('Failed to parse XML file: '.$extractedFullPath);
+        if (! $reader->open($extractedFullPath)) {
+            throw new RuntimeException('Failed to open XML file: '.$extractedFullPath);
         }
 
         $processedCount = 0;
         $skippedCount = 0;
 
-        // Iterate through ITEM elements using foreach with yield for memory efficiency
-        foreach ($xml->DS_DSRDP->ITEM as $item) {
-            // Convert SimpleXMLElement to array
+        // Stream through XML and process ITEM elements one by one
+        while ($reader->read()) {
+            if ($reader->nodeType !== XMLReader::ELEMENT || $reader->name !== 'ITEM') {
+                continue;
+            }
+
+            // Read ITEM element as SimpleXMLElement for easier parsing
+            $itemXml = $reader->readOuterXml();
+
+            if ($itemXml === false) {
+                continue;
+            }
+
+            $item = new SimpleXMLElement($itemXml);
+
+            // Convert to array
             $itemArray = [];
             foreach ($item->children() as $child) {
                 $itemArray[(string) $child->getName()] = (string) $child;
@@ -344,14 +355,14 @@ class FinancialDataService implements FinancialDataServiceContract
             $processedCount++;
             yield $companyData;
 
-            // Unset to free memory periodically
+            // Memory cleanup every 5000 records
             if ($processedCount % 5000 === 0) {
-                unset($item);
                 gc_collect_cycles();
             }
         }
 
-        unset($xml);
+        $reader->close();
+        unset($reader);
 
         Log::info('Processed company data from XML', [
             'processed' => $processedCount,
@@ -470,7 +481,7 @@ class FinancialDataService implements FinancialDataServiceContract
     }
 
     /**
-     * Process the VAT data from the extracted XML file.
+     * Process the VAT data from the extracted XML file using XMLReader for streaming.
      *
      * @return Generator<array<string, mixed>>
      */
@@ -484,18 +495,33 @@ class FinancialDataService implements FinancialDataServiceContract
             throw new RuntimeException('Extracted VAT file does not exist: '.$extractedPath);
         }
 
-        Log::info('Loading VAT XML file (this may take a moment for large files)...');
+        Log::info('Streaming VAT XML file with XMLReader for efficient processing...');
 
-        $xml = simplexml_load_file($extractedFullPath);
+        $reader = new XMLReader;
 
-        if ($xml === false) {
-            throw new RuntimeException('Failed to parse VAT XML file: '.$extractedFullPath);
+        if (! $reader->open($extractedFullPath)) {
+            throw new RuntimeException('Failed to open VAT XML file: '.$extractedFullPath);
         }
 
         $processedCount = 0;
         $skippedCount = 0;
 
-        foreach ($xml->DS_DPHS->ITEM as $item) {
+        // Stream through XML and process ITEM elements one by one
+        while ($reader->read()) {
+            if ($reader->nodeType !== XMLReader::ELEMENT || $reader->name !== 'ITEM') {
+                continue;
+            }
+
+            // Read ITEM element as SimpleXMLElement for easier parsing
+            $itemXml = $reader->readOuterXml();
+
+            if ($itemXml === false) {
+                continue;
+            }
+
+            $item = new SimpleXMLElement($itemXml);
+
+            // Convert to array
             $itemArray = [];
             foreach ($item->children() as $child) {
                 $itemArray[(string) $child->getName()] = (string) $child;
@@ -512,13 +538,14 @@ class FinancialDataService implements FinancialDataServiceContract
             $processedCount++;
             yield $vatData;
 
+            // Memory cleanup every 5000 records
             if ($processedCount % 5000 === 0) {
-                unset($item);
                 gc_collect_cycles();
             }
         }
 
-        unset($xml);
+        $reader->close();
+        unset($reader);
 
         Log::info('Processed VAT data from XML', [
             'processed' => $processedCount,

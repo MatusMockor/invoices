@@ -49,8 +49,6 @@ class CompanySeeder extends Seeder
                     'city' => $company->city,
                     'postal_code' => $company->postal_code,
                     'country' => $company->country,
-                    'company_type' => $company->company_type,
-                    'registration_number' => $company->registration_number,
                 ]);
             }
         }
