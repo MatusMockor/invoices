@@ -21,6 +21,8 @@ final class SyncCompaniesVatAction
      * Sync VAT data for companies from financial data source.
      *
      * @return array{updated: int, not_found: int, errors: int}
+     *
+     * @throws Throwable
      */
     public function handle(): array
     {
@@ -80,13 +82,15 @@ final class SyncCompaniesVatAction
      */
     private function processBatch(array $batch, array &$stats): void
     {
+        $companyRepository = $this->companyRepository;
+
         foreach ($batch as $vatData) {
             try {
-                DB::transaction(function () use ($vatData, &$stats): void {
+                DB::transaction(static function () use ($vatData, &$stats, $companyRepository): void {
                     $ico = $vatData['ico'];
                     unset($vatData['ico']);
 
-                    $updated = $this->companyRepository->updateVatData($ico, $vatData);
+                    $updated = $companyRepository->updateVatData($ico, $vatData);
 
                     if ($updated) {
                         $stats['updated']++;

@@ -86,8 +86,10 @@ final class SyncCompaniesAction
         }
 
         try {
-            DB::transaction(function () use ($batch, &$stats): void {
-                $affectedRows = $this->companyRepository->upsertBatch($batch);
+            $companyRepository = $this->companyRepository;
+
+            DB::transaction(static function () use ($batch, &$stats, $companyRepository): void {
+                $affectedRows = $companyRepository->upsertBatch($batch);
 
                 // Laravel's upsert() returns total affected rows (both created and updated)
                 // We cannot distinguish between creates and updates, so we track all as processed
