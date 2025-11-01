@@ -83,8 +83,6 @@ class FinancialDataService implements FinancialDataServiceContract
             'country' => $this->extractValue($item, 'NAZOV_STATU'),
             'dic' => $this->extractValue($item, 'DIC'),
             'ic_dph' => $this->extractValue($item, 'IC_DPH'),
-            'company_type' => null, // Not available in XML
-            'registration_number' => null, // Not available in XML
         ];
     }
 

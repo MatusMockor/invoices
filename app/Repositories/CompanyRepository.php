@@ -210,7 +210,7 @@ class CompanyRepository implements CompanyRepositoryContract
         }
 
         if ($update === null) {
-            $update = ['name', 'street', 'city', 'postal_code', 'country', 'dic', 'ic_dph', 'company_type', 'registration_number'];
+            $update = ['name', 'street', 'city', 'postal_code', 'country', 'dic', 'ic_dph'];
         }
 
         return Company::upsert($companies, $uniqueBy, $update);
