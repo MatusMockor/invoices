@@ -66,20 +66,10 @@ class SyncCompaniesCommand extends Command
     {
         $this->info('Phase 1: Syncing company data');
 
-        // Create progress bar
-        $progressBar = $this->output->createProgressBar();
-        $progressBar->setFormat('verbose');
-        $progressBar->start();
-
         $startTime = microtime(true);
 
         try {
-            $stats = $action->handle(function (int $processed) use ($progressBar): void {
-                $progressBar->setProgress($processed);
-            });
-
-            $progressBar->finish();
-            $this->newLine();
+            $stats = $action->handle();
 
             $duration = $this->formatDuration(microtime(true) - $startTime);
 
@@ -94,8 +84,6 @@ class SyncCompaniesCommand extends Command
 
             return self::SUCCESS;
         } catch (Throwable $e) {
-            $progressBar->finish();
-            $this->newLine();
             $this->error('Phase 1 failed: '.$e->getMessage());
 
             return self::FAILURE;
@@ -109,20 +97,10 @@ class SyncCompaniesCommand extends Command
     {
         $this->info('Phase 2: Syncing VAT data');
 
-        // Create progress bar
-        $progressBar = $this->output->createProgressBar();
-        $progressBar->setFormat('verbose');
-        $progressBar->start();
-
         $startTime = microtime(true);
 
         try {
-            $stats = $action->handle(function (int $processed) use ($progressBar): void {
-                $progressBar->setProgress($processed);
-            });
-
-            $progressBar->finish();
-            $this->newLine();
+            $stats = $action->handle();
 
             $duration = $this->formatDuration(microtime(true) - $startTime);
 
@@ -138,8 +116,6 @@ class SyncCompaniesCommand extends Command
 
             return self::SUCCESS;
         } catch (Throwable $e) {
-            $progressBar->finish();
-            $this->newLine();
             $this->error('Phase 2 failed: '.$e->getMessage());
 
             return self::FAILURE;

@@ -22,12 +22,9 @@ final class SyncCompaniesAction
      *
      * @return array{created: int, errors: int}
      */
-    public function handle(?callable $progressCallback = null): array
+    public function handle(): array
     {
         Log::info('Starting company sync from financial data source');
-
-        // Disable query log for better performance during bulk operations
-        DB::connection()->disableQueryLog();
 
         $stats = [
             'created' => 0,
@@ -47,11 +44,6 @@ final class SyncCompaniesAction
                     $totalProcessed += count($batch);
                     $batch = [];
 
-                    // Update progress bar if callback provided
-                    if ($progressCallback !== null) {
-                        $progressCallback($totalProcessed);
-                    }
-
                     Log::info("Processed {$totalProcessed} companies so far");
                 }
             }
@@ -59,11 +51,6 @@ final class SyncCompaniesAction
             if (! empty($batch)) {
                 $this->processBatch($batch, $stats);
                 $totalProcessed += count($batch);
-
-                // Final progress update
-                if ($progressCallback !== null) {
-                    $progressCallback($totalProcessed);
-                }
             }
 
             Log::info('Company sync completed', [
@@ -80,9 +67,6 @@ final class SyncCompaniesAction
             ]);
 
             throw $e;
-        } finally {
-            // Re-enable query log
-            DB::connection()->enableQueryLog();
         }
     }
 
