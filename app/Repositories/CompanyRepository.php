@@ -194,4 +194,44 @@ class CompanyRepository implements CompanyRepositoryContract
 
         return $result;
     }
+
+    /**
+     * Upsert multiple companies in batch.
+     *
+     * @param  array<int, array<string, mixed>>  $companies
+     * @param  array<int, string>  $uniqueBy
+     * @param  array<int, string>|null  $update
+     * @return int Number of rows affected
+     */
+    public function upsertBatch(array $companies, array $uniqueBy = ['ico'], ?array $update = null): int
+    {
+        if (empty($companies)) {
+            return 0;
+        }
+
+        if ($update === null) {
+            $update = ['name', 'street', 'city', 'postal_code', 'country', 'dic', 'ic_dph', 'company_type', 'registration_number'];
+        }
+
+        return Company::upsert($companies, $uniqueBy, $update);
+    }
+
+    /**
+     * Update VAT data (ic_dph) for a company by ICO.
+     *
+     * @param  array<string, mixed>  $vatData  Should contain 'ic_dph' key
+     */
+    public function updateVatData(string $ico, array $vatData): bool
+    {
+        $company = $this->findByIco($ico);
+
+        if (! $company) {
+            return false;
+        }
+
+        // Only update ic_dph field
+        return $company->update([
+            'ic_dph' => $vatData['ic_dph'] ?? null,
+        ]);
+    }
 }
