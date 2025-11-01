@@ -99,4 +99,21 @@ interface CompanyRepository
      * Get monthly expenses for a company for the current year
      */
     public function getMonthlyExpenses(int $companyId, int $year): array;
+
+    /**
+     * Upsert multiple companies in batch.
+     *
+     * @param  array<int, array<string, mixed>>  $companies
+     * @param  array<int, string>  $uniqueBy
+     * @param  array<int, string>|null  $update
+     * @return int Number of rows affected
+     */
+    public function upsertBatch(array $companies, array $uniqueBy = ['ico'], ?array $update = null): int;
+
+    /**
+     * Update VAT data for a company by ICO.
+     *
+     * @param  array<string, mixed>  $vatData
+     */
+    public function updateVatData(string $ico, array $vatData): bool;
 }

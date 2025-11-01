@@ -26,8 +26,10 @@ use App\Repositories\UserCompanyRepository;
 use App\Repositories\UserRepository;
 use App\Services\BusinessEntityDataService as BusinessEntityDataServiceImpl;
 use App\Services\CompanyAnalyticsService;
+use App\Services\FinancialDataService as FinancialDataServiceImpl;
 use App\Services\Interfaces\BusinessEntityDataService as BusinessEntityDataServiceContract;
 use App\Services\Interfaces\CompanyAnalyticsService as CompanyAnalyticsServiceContract;
+use App\Services\Interfaces\FinancialDataService as FinancialDataServiceContract;
 use App\Services\Interfaces\InvoicePdfService as InvoicePdfServiceContract;
 use App\Services\Interfaces\PayBySquare as PayBySquareContract;
 use App\Services\Interfaces\ReportService as ReportServiceContract;
@@ -63,6 +65,7 @@ class AppServiceProvider extends ServiceProvider
         $this->app->bind(PayBySquareContract::class, PayBySquareService::class);
         $this->app->bind(CompanyAnalyticsServiceContract::class, CompanyAnalyticsService::class);
         $this->app->bind(ReportServiceContract::class, ReportService::class);
+        $this->app->bind(FinancialDataServiceContract::class, FinancialDataServiceImpl::class);
     }
 
     /**
