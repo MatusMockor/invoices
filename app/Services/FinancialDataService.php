@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Services;
 
+use App\DataTransferObjects\FinancialDataState;
 use App\Services\Interfaces\FinancialDataService as FinancialDataServiceContract;
 use Generator;
 use Illuminate\Support\Facades\Http;
@@ -22,10 +23,6 @@ class FinancialDataService implements FinancialDataServiceContract
 
     private string $vatZipFileName = 'vat.zip';
 
-    private ?string $extractedFileName = null;
-
-    private ?string $vatExtractedFileName = null;
-
     public function __construct()
     {
         $this->tempDir = config('financial_data.temp_path');
@@ -42,9 +39,9 @@ class FinancialDataService implements FinancialDataServiceContract
 
         try {
             $this->downloadZipFile();
-            $this->extractZipFile();
+            $state = $this->extractZipFile();
 
-            yield from $this->processCompanyData();
+            yield from $this->processCompanyData($state);
         } finally {
             $this->cleanup();
         }
@@ -78,12 +75,12 @@ class FinancialDataService implements FinancialDataServiceContract
         return [
             'ico' => $ico,
             'name' => trim($item['NAZOV_DS']),
-            'street' => ! empty(trim($item['ULICA_CISLO'] ?? '')) ? trim($item['ULICA_CISLO']) : null,
-            'city' => ! empty(trim($item['OBEC'] ?? '')) ? trim($item['OBEC']) : null,
-            'postal_code' => ! empty(trim($item['PSC'] ?? '')) ? trim($item['PSC']) : null,
-            'country' => ! empty(trim($item['NAZOV_STATU'] ?? '')) ? trim($item['NAZOV_STATU']) : null,
-            'dic' => ! empty(trim($item['DIC'] ?? '')) ? trim($item['DIC']) : null,
-            'ic_dph' => ! empty(trim($item['IC_DPH'] ?? '')) ? trim($item['IC_DPH']) : null,
+            'street' => $this->extractValue($item, 'ULICA_CISLO'),
+            'city' => $this->extractValue($item, 'OBEC'),
+            'postal_code' => $this->extractValue($item, 'PSC'),
+            'country' => $this->extractValue($item, 'NAZOV_STATU'),
+            'dic' => $this->extractValue($item, 'DIC'),
+            'ic_dph' => $this->extractValue($item, 'IC_DPH'),
             'company_type' => null, // Not available in XML
             'registration_number' => null, // Not available in XML
         ];
@@ -100,9 +97,9 @@ class FinancialDataService implements FinancialDataServiceContract
 
         try {
             $this->downloadVatZipFile();
-            $this->extractVatZipFile();
+            $state = $this->extractVatZipFile();
 
-            yield from $this->processVatData();
+            yield from $this->processVatData($state);
         } finally {
             $this->cleanupVatFiles();
         }
@@ -132,7 +129,7 @@ class FinancialDataService implements FinancialDataServiceContract
 
         return [
             'ico' => $ico,
-            'ic_dph' => ! empty(trim($item['IC_DPH'] ?? '')) ? trim($item['IC_DPH']) : null,
+            'ic_dph' => $this->extractValue($item, 'IC_DPH'),
         ];
     }
 
@@ -143,24 +140,27 @@ class FinancialDataService implements FinancialDataServiceContract
     {
         $disk = Storage::disk($this->diskName);
 
+        // Clean up company ZIP file
         $zipPath = $this->tempDir.'/'.$this->zipFileName;
         if ($disk->exists($zipPath)) {
             $disk->delete($zipPath);
         }
 
-        if ($this->extractedFileName) {
-            $extractedPath = $this->tempDir.'/'.$this->extractedFileName;
-            if ($disk->exists($extractedPath)) {
-                $disk->delete($extractedPath);
-            }
-        }
-
+        // Clean up VAT files
         $this->cleanupVatFiles();
 
-        // Clean up directory if empty
+        // Clean up all XML files in temp directory
         if ($disk->exists($this->tempDir)) {
             $files = $disk->files($this->tempDir);
-            if (empty($files)) {
+            foreach ($files as $file) {
+                if (str_ends_with(strtolower($file), '.xml')) {
+                    $disk->delete($file);
+                }
+            }
+
+            // Clean up directory if empty
+            $remainingFiles = $disk->files($this->tempDir);
+            if (empty($remainingFiles)) {
                 $disk->deleteDirectory($this->tempDir);
             }
         }
@@ -195,19 +195,19 @@ class FinancialDataService implements FinancialDataServiceContract
 
         // Use sink option to stream directly to file - more reliable for large files
         $response = Http::timeout(600) // Increase timeout to 10 minutes for 50MB download
-        ->withOptions([
-            'sink' => $fullPath,
-            'progress' => static function (int $downloadTotal, int $downloadedBytes): void {
-                if ($downloadTotal > 0 && $downloadedBytes > 0 && $downloadedBytes % 10485760 === 0) {
-                    // Log every 10MB
-                    Log::debug('Download progress', [
-                        'downloaded_mb' => round($downloadedBytes / 1048576, 2),
-                        'total_mb' => round($downloadTotal / 1048576, 2),
-                        'progress' => round(($downloadedBytes / $downloadTotal) * 100, 2).'%',
-                    ]);
-                }
-            },
-        ])
+            ->withOptions([
+                'sink' => $fullPath,
+                'progress' => static function (int $downloadTotal, int $downloadedBytes): void {
+                    if ($downloadTotal > 0 && $downloadedBytes > 0 && $downloadedBytes % 10485760 === 0) {
+                        // Log every 10MB
+                        Log::debug('Download progress', [
+                            'downloaded_mb' => round($downloadedBytes / 1048576, 2),
+                            'total_mb' => round($downloadTotal / 1048576, 2),
+                            'progress' => round(($downloadedBytes / $downloadTotal) * 100, 2).'%',
+                        ]);
+                    }
+                },
+            ])
             ->get($url);
 
         if (! $response->successful()) {
@@ -234,7 +234,7 @@ class FinancialDataService implements FinancialDataServiceContract
     /**
      * Extract the ZIP file and find the XML file.
      */
-    private function extractZipFile(): void
+    private function extractZipFile(): FinancialDataState
     {
         $disk = Storage::disk($this->diskName);
         $zipPath = $this->tempDir.'/'.$this->zipFileName;
@@ -288,10 +288,11 @@ class FinancialDataService implements FinancialDataServiceContract
 
         $zip->close();
 
-        // Store only the filename (not the full path) for later use
-        $this->extractedFileName = basename($fileName);
+        $extractedFileName = basename($fileName);
 
-        Log::info('Extracted file successfully', ['file' => $this->extractedFileName]);
+        Log::info('Extracted file successfully', ['file' => $extractedFileName]);
+
+        return new FinancialDataState($extractedFileName);
     }
 
     /**
@@ -301,14 +302,10 @@ class FinancialDataService implements FinancialDataServiceContract
      *
      * @return Generator<array<string, mixed>>
      */
-    private function processCompanyData(): Generator
+    private function processCompanyData(FinancialDataState $state): Generator
     {
-        if (! $this->extractedFileName) {
-            throw new RuntimeException('No extracted file available');
-        }
-
         $disk = Storage::disk($this->diskName);
-        $extractedPath = $this->tempDir.'/'.$this->extractedFileName;
+        $extractedPath = $this->tempDir.'/'.$state->extractedFileName;
         $extractedFullPath = $disk->path($extractedPath);
 
         if (! $disk->exists($extractedPath)) {
@@ -415,7 +412,7 @@ class FinancialDataService implements FinancialDataServiceContract
     /**
      * Extract the VAT ZIP file and find the XML file.
      */
-    private function extractVatZipFile(): void
+    private function extractVatZipFile(): FinancialDataState
     {
         $disk = Storage::disk($this->diskName);
         $zipPath = $this->tempDir.'/'.$this->vatZipFileName;
@@ -465,9 +462,11 @@ class FinancialDataService implements FinancialDataServiceContract
 
         $zip->close();
 
-        $this->vatExtractedFileName = basename($fileName);
+        $extractedFileName = basename($fileName);
 
-        Log::info('Extracted VAT file successfully', ['file' => $this->vatExtractedFileName]);
+        Log::info('Extracted VAT file successfully', ['file' => $extractedFileName]);
+
+        return new FinancialDataState($extractedFileName);
     }
 
     /**
@@ -475,14 +474,10 @@ class FinancialDataService implements FinancialDataServiceContract
      *
      * @return Generator<array<string, mixed>>
      */
-    private function processVatData(): Generator
+    private function processVatData(FinancialDataState $state): Generator
     {
-        if (! $this->vatExtractedFileName) {
-            throw new RuntimeException('No extracted VAT file available');
-        }
-
         $disk = Storage::disk($this->diskName);
-        $extractedPath = $this->tempDir.'/'.$this->vatExtractedFileName;
+        $extractedPath = $this->tempDir.'/'.$state->extractedFileName;
         $extractedFullPath = $disk->path($extractedPath);
 
         if (! $disk->exists($extractedPath)) {
@@ -543,12 +538,15 @@ class FinancialDataService implements FinancialDataServiceContract
         if ($disk->exists($vatZipPath)) {
             $disk->delete($vatZipPath);
         }
+    }
 
-        if ($this->vatExtractedFileName) {
-            $vatExtractedPath = $this->tempDir.'/'.$this->vatExtractedFileName;
-            if ($disk->exists($vatExtractedPath)) {
-                $disk->delete($vatExtractedPath);
-            }
-        }
+    /**
+     * Extract and trim value from array, returning null if empty.
+     */
+    private function extractValue(array $item, string $key): ?string
+    {
+        $value = trim($item[$key] ?? '');
+
+        return $value !== '' ? $value : null;
     }
 }

@@ -16,12 +16,12 @@ interface FinancialDataService
     public function downloadAndExtractCompanyData(): Generator;
 
     /**
-     * Parse a single CSV line into company data array.
+     * Parse XML element into company data array.
      *
-     * @param  array<int, string>  $line
+     * @param  array<string, string>  $item
      * @return array<string, mixed>|null
      */
-    public function parseCompanyData(array $line): ?array;
+    public function parseCompanyData(array $item): ?array;
 
     /**
      * Download and extract VAT data from the VAT data source.
