@@ -42,6 +42,7 @@ class SyncCompaniesCommand extends Command
             return $phase1Result;
         }
 
+        dd(123123);
         $this->newLine();
 
         // Phase 2: Sync VAT data

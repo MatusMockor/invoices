@@ -78,6 +78,13 @@ final class SyncCompaniesAction
      */
     private function processBatch(array $batch, array &$stats): void
     {
+        // Filter out duplicate ICOs in batch - keep only the last occurrence
+        $batch = $this->filterDuplicateIcos($batch);
+
+        if (empty($batch)) {
+            return;
+        }
+
         try {
             DB::transaction(function () use ($batch, &$stats): void {
                 $affectedRows = $this->companyRepository->upsertBatch($batch);
@@ -92,7 +99,35 @@ final class SyncCompaniesAction
             Log::error('Batch processing failed', [
                 'batch_size' => count($batch),
                 'error' => $e->getMessage(),
+                'error_code' => $e->getCode(),
+                'sql_state' => method_exists($e, 'getSql') ? $e->getSql() : null,
+                'first_3_icos' => array_slice(array_column($batch, 'ico'), 0, 3),
+                'trace' => $e->getTraceAsString(),
             ]);
         }
+    }
+
+    /**
+     * Filter duplicate ICOs from batch, keeping only the last occurrence.
+     *
+     * @param  array<int, array<string, mixed>>  $batch
+     * @return array<int, array<string, mixed>>
+     */
+    private function filterDuplicateIcos(array $batch): array
+    {
+        $seen = [];
+
+        foreach ($batch as $company) {
+            $ico = $company['ico'] ?? null;
+
+            if (! $ico) {
+                continue;
+            }
+
+            // Overwrite previous occurrence - keeps the last one
+            $seen[$ico] = $company;
+        }
+
+        return array_values($seen);
     }
 }

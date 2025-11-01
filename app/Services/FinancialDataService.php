@@ -69,19 +69,19 @@ class FinancialDataService implements FinancialDataServiceContract
      */
     public function parseCompanyData(array $item): ?array
     {
-        $ico = trim($item['ICO'] ?? '');
-
-        if (strlen($ico) !== 8 || ! ctype_digit($ico)) {
+        if (! array_key_exists('ICO', $item)) {
             return null;
         }
 
+        $ico = trim($item['ICO']);
+
         return [
             'ico' => $ico,
-            'name' => trim($item['NAZOV_DS'] ?? '') ?: 'N/A',
-            'street' => trim($item['ULICA_CISLO'] ?? '') ?: 'N/A',
-            'city' => trim($item['OBEC'] ?? '') ?: 'N/A',
-            'postal_code' => trim($item['PSC'] ?? '') ?: 'N/A',
-            'country' => trim($item['NAZOV_STATU'] ?? '') ?: 'Slovensko',
+            'name' => trim($item['NAZOV_DS']),
+            'street' => ! empty(trim($item['ULICA_CISLO'] ?? '')) ? trim($item['ULICA_CISLO']) : null,
+            'city' => ! empty(trim($item['OBEC'] ?? '')) ? trim($item['OBEC']) : null,
+            'postal_code' => ! empty(trim($item['PSC'] ?? '')) ? trim($item['PSC']) : null,
+            'country' => ! empty(trim($item['NAZOV_STATU'] ?? '')) ? trim($item['NAZOV_STATU']) : null,
             'dic' => ! empty(trim($item['DIC'] ?? '')) ? trim($item['DIC']) : null,
             'ic_dph' => ! empty(trim($item['IC_DPH'] ?? '')) ? trim($item['IC_DPH']) : null,
             'company_type' => null, // Not available in XML
@@ -195,19 +195,19 @@ class FinancialDataService implements FinancialDataServiceContract
 
         // Use sink option to stream directly to file - more reliable for large files
         $response = Http::timeout(600) // Increase timeout to 10 minutes for 50MB download
-            ->withOptions([
-                'sink' => $fullPath,
-                'progress' => static function (int $downloadTotal, int $downloadedBytes): void {
-                    if ($downloadTotal > 0 && $downloadedBytes > 0 && $downloadedBytes % 10485760 === 0) {
-                        // Log every 10MB
-                        Log::debug('Download progress', [
-                            'downloaded_mb' => round($downloadedBytes / 1048576, 2),
-                            'total_mb' => round($downloadTotal / 1048576, 2),
-                            'progress' => round(($downloadedBytes / $downloadTotal) * 100, 2).'%',
-                        ]);
-                    }
-                },
-            ])
+        ->withOptions([
+            'sink' => $fullPath,
+            'progress' => static function (int $downloadTotal, int $downloadedBytes): void {
+                if ($downloadTotal > 0 && $downloadedBytes > 0 && $downloadedBytes % 10485760 === 0) {
+                    // Log every 10MB
+                    Log::debug('Download progress', [
+                        'downloaded_mb' => round($downloadedBytes / 1048576, 2),
+                        'total_mb' => round($downloadTotal / 1048576, 2),
+                        'progress' => round(($downloadedBytes / $downloadTotal) * 100, 2).'%',
+                    ]);
+                }
+            },
+        ])
             ->get($url);
 
         if (! $response->successful()) {
