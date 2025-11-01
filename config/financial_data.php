@@ -32,9 +32,10 @@ return [
     |
     | The number of records to process in each database transaction batch.
     | Adjust this value based on available memory and performance requirements.
+    | Increased from 1000 to 5000 for better performance (fewer DB round trips).
     |
     */
-    'batch_size' => env('FINANCIAL_DATA_BATCH_SIZE', 1000),
+    'batch_size' => env('FINANCIAL_DATA_BATCH_SIZE', 5000),
 
     /*
     |--------------------------------------------------------------------------

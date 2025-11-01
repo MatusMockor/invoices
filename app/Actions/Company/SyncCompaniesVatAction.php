@@ -24,9 +24,12 @@ final class SyncCompaniesVatAction
      *
      * @throws Throwable
      */
-    public function handle(): array
+    public function handle(?callable $progressCallback = null): array
     {
         Log::info('Starting VAT data sync from financial data source');
+
+        // Disable query log for better performance during bulk operations
+        DB::connection()->disableQueryLog();
 
         $stats = [
             'updated' => 0,
@@ -34,7 +37,7 @@ final class SyncCompaniesVatAction
             'errors' => 0,
         ];
 
-        $batchSize = config('financial_data.batch_size', 1000);
+        $batchSize = config('financial_data.batch_size', 5000);
         $batch = [];
         $totalProcessed = 0;
 
@@ -47,6 +50,11 @@ final class SyncCompaniesVatAction
                     $totalProcessed += count($batch);
                     $batch = [];
 
+                    // Update progress bar if callback provided
+                    if ($progressCallback !== null) {
+                        $progressCallback($totalProcessed);
+                    }
+
                     Log::info("Processed {$totalProcessed} VAT records so far");
                 }
             }
@@ -54,6 +62,11 @@ final class SyncCompaniesVatAction
             if (! empty($batch)) {
                 $this->processBatch($batch, $stats);
                 $totalProcessed += count($batch);
+
+                // Final progress update
+                if ($progressCallback !== null) {
+                    $progressCallback($totalProcessed);
+                }
             }
 
             Log::info('VAT data sync completed', [
@@ -71,6 +84,9 @@ final class SyncCompaniesVatAction
             ]);
 
             throw $e;
+        } finally {
+            // Re-enable query log
+            DB::connection()->enableQueryLog();
         }
     }
 
