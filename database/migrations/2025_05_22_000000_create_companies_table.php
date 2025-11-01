@@ -19,10 +19,10 @@ return new class extends Migration
             $table->string('dic')->nullable();
             $table->string('ic_dph')->nullable();
             $table->string('name');
-            $table->string('city');
-            $table->string('street');
-            $table->string('postal_code');
-            $table->string('country');
+            $table->string('city')->nullable();
+            $table->string('street')->nullable();
+            $table->string('postal_code')->nullable();
+            $table->string('country')->nullable();
             $table->string('phone')->nullable();
             $table->string('email')->nullable();
             $table->string('website')->nullable();
