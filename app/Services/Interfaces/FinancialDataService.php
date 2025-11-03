@@ -24,6 +24,21 @@ interface FinancialDataService
     public function parseCompanyData(array $item): ?array;
 
     /**
+     * Download and extract DIC data from the financial data source.
+     *
+     * @return Generator<array<string, mixed>>
+     */
+    public function downloadAndExtractDicData(): Generator;
+
+    /**
+     * Parse DIC XML element into data array.
+     *
+     * @param  array<string, string>  $item
+     * @return array<string, mixed>|null
+     */
+    public function parseDicData(array $item): ?array;
+
+    /**
      * Download and extract VAT data from the VAT data source.
      *
      * @return Generator<array<string, mixed>>

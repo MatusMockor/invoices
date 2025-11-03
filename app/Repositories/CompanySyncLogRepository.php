@@ -18,6 +18,16 @@ final class CompanySyncLogRepository implements CompanySyncLogRepositoryContract
     }
 
     /**
+     * Find a sync log by date and type
+     */
+    public function findByDateAndType(string $date, string $type): ?CompanySyncLog
+    {
+        return CompanySyncLog::where('sync_date', $date)
+            ->where('sync_type', $type)
+            ->first();
+    }
+
+    /**
      * Update or create a sync log
      *
      * @param  array<string, mixed>  $attributes

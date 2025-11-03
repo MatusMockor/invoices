@@ -214,6 +214,25 @@ class CompanyRepository implements CompanyRepositoryContract
     }
 
     /**
+     * Update DIC data for a company by ICO.
+     *
+     * @param  array<string, mixed>  $dicData  Should contain 'dic' key
+     */
+    public function updateDicData(string $ico, array $dicData): bool
+    {
+        $company = $this->findByIco($ico);
+
+        if (! $company) {
+            return false;
+        }
+
+        // Only update dic field
+        return $company->update([
+            'dic' => $dicData['dic'] ?? null,
+        ]);
+    }
+
+    /**
      * Get companies count grouped by country
      *
      * @return array<string, int> Array with country as key and count as value

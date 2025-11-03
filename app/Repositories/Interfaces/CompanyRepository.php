@@ -118,6 +118,13 @@ interface CompanyRepository
     public function updateVatData(string $ico, array $vatData): bool;
 
     /**
+     * Update DIC data for a company by ICO.
+     *
+     * @param  array<string, mixed>  $dicData
+     */
+    public function updateDicData(string $ico, array $dicData): bool;
+
+    /**
      * Get companies count grouped by country
      *
      * @return array<string, int> Array with country as key and count as value
