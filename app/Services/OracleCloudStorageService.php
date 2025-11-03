@@ -14,13 +14,45 @@ use RuntimeException;
 use SimpleXMLElement;
 use Throwable;
 
-class OracleCloudStorageService implements OracleCloudStorageServiceContract
+final class OracleCloudStorageService implements OracleCloudStorageServiceContract
 {
-    private string $diskName = 'local';
+    private const DISK_NAME = 'local';
 
-    private string $tempDir = 'temp/company-sync';
+    private const TEMP_DIR = 'temp/company-sync';
 
-    private string $bucketUrl;
+    private const BATCH_DAILY_PREFIX = 'batch-daily/';
+
+    private const BATCH_INIT_PREFIX = 'batch-init/';
+
+    private const BATCH_INIT_LIST_PATTERN = 'batch-init/init_%s_list.txt';
+
+    private const BATCH_INIT_DATE_REGEX = '/init_(\d{4}-\d{2}-\d{2})_list\.txt$/';
+
+    private const GZIP_CHUNK_SIZE = 8192;
+
+    private const JSON_STREAM_CHUNK_SIZE = 4194304;
+
+    private const GC_INTERVAL = 10000;
+
+    private const JSON_DECODE_DEPTH = 512;
+
+    private const HTTP_TIMEOUT = 60;
+
+    private const HTTP_TIMEOUT_LONG = 600;
+
+    private const HTTP_TIMEOUT_SHORT = 30;
+
+    private const BUFFER_KEEP_SIZE = 20;
+
+    private const RESULTS_ARRAY_MARKER = '"results":[';
+
+    private const RESULTS_ARRAY_MARKER_LENGTH = 11;
+
+    private readonly string $diskName;
+
+    private readonly string $tempDir;
+
+    private readonly string $bucketUrl;
 
     /**
      * @var array<string>
@@ -29,6 +61,8 @@ class OracleCloudStorageService implements OracleCloudStorageServiceContract
 
     public function __construct()
     {
+        $this->diskName = self::DISK_NAME;
+        $this->tempDir = self::TEMP_DIR;
         $this->bucketUrl = config('oracle_cloud.bucket_url', 'https://frkqbrydxwdp.compat.objectstorage.eu-frankfurt-1.oraclecloud.com/susr-rpo/');
     }
 
@@ -39,7 +73,7 @@ class OracleCloudStorageService implements OracleCloudStorageServiceContract
      */
     public function listFiles(): array
     {
-        $response = Http::timeout(30)->get($this->bucketUrl);
+        $response = Http::timeout(self::HTTP_TIMEOUT_SHORT)->get($this->bucketUrl);
 
         if (! $response->successful()) {
             throw new RuntimeException('Failed to fetch bucket listing: HTTP '.$response->status());
@@ -98,7 +132,7 @@ class OracleCloudStorageService implements OracleCloudStorageServiceContract
         $files = $this->listFiles();
 
         $dailyFiles = array_filter($files, static function (array $file): bool {
-            return str_starts_with($file['key'], 'batch-daily/');
+            return str_starts_with($file['key'], self::BATCH_DAILY_PREFIX);
         });
 
         if (empty($dailyFiles)) {
@@ -123,7 +157,7 @@ class OracleCloudStorageService implements OracleCloudStorageServiceContract
         $files = $this->listFiles();
 
         $initFiles = array_filter($files, static function (array $file): bool {
-            return str_starts_with($file['key'], 'batch-init/');
+            return str_starts_with($file['key'], self::BATCH_INIT_PREFIX);
         });
 
         // Sort by key (filename) to ensure correct order (_001, _002, etc.)
@@ -143,14 +177,14 @@ class OracleCloudStorageService implements OracleCloudStorageServiceContract
      */
     public function getBatchInitFileList(string $date): array
     {
-        $listFileKey = "batch-init/init_{$date}_list.txt";
+        $listFileKey = sprintf(self::BATCH_INIT_LIST_PATTERN, $date);
         $url = $this->bucketUrl.$listFileKey;
 
         try {
-            $response = Http::timeout(60)->get($url);
+            $response = Http::timeout(self::HTTP_TIMEOUT)->get($url);
 
             if (! $response->successful()) {
-                return [];
+                throw new RuntimeException("Failed to fetch batch init file list: HTTP {$response->status()}");
             }
 
             $content = $response->body();
@@ -161,13 +195,13 @@ class OracleCloudStorageService implements OracleCloudStorageServiceContract
             foreach ($lines as $line) {
                 $filename = trim($line);
                 if ($filename !== '' && str_ends_with($filename, '.json.gz')) {
-                    $fileKeys[] = "batch-init/{$filename}";
+                    $fileKeys[] = self::BATCH_INIT_PREFIX.$filename;
                 }
             }
 
             return $fileKeys;
         } catch (Throwable $e) {
-            return [];
+            throw new RuntimeException("Failed to retrieve batch init file list: {$e->getMessage()}", 0, $e);
         }
     }
 
@@ -183,7 +217,7 @@ class OracleCloudStorageService implements OracleCloudStorageServiceContract
 
         // Filter for batch-init list files
         $listFiles = array_filter($files, static function (array $file): bool {
-            return str_starts_with($file['key'], 'batch-init/init_') && str_ends_with($file['key'], '_list.txt');
+            return str_starts_with($file['key'], self::BATCH_INIT_PREFIX.'init_') && str_ends_with($file['key'], '_list.txt');
         });
 
         if (empty($listFiles)) {
@@ -194,7 +228,7 @@ class OracleCloudStorageService implements OracleCloudStorageServiceContract
         $dates = [];
         foreach ($listFiles as $file) {
             // Extract date from: batch-init/init_2025-11-01_list.txt
-            if (preg_match('/init_(\d{4}-\d{2}-\d{2})_list\.txt$/', $file['key'], $matches)) {
+            if (preg_match(self::BATCH_INIT_DATE_REGEX, $file['key'], $matches)) {
                 $dates[] = $matches[1];
             }
         }
@@ -218,9 +252,7 @@ class OracleCloudStorageService implements OracleCloudStorageServiceContract
     {
         $disk = Storage::disk($this->diskName);
 
-        $localFileName = basename($fileKey);
-        $gzPath = $this->tempDir.'/'.$localFileName;
-        $jsonPath = str_replace('.gz', '', $gzPath);
+        [$gzPath, $jsonPath] = $this->getLocalFilePaths($fileKey);
 
         // Delete .gz file
         if ($disk->exists($gzPath)) {
@@ -284,6 +316,11 @@ class OracleCloudStorageService implements OracleCloudStorageServiceContract
 
     /**
      * Download a file from Oracle Cloud Storage.
+     *
+     * @param  string  $fileKey  The file key to download
+     * @return string The local path to the downloaded file
+     *
+     * @throws RuntimeException If download fails or file doesn't exist after download
      */
     private function downloadFile(string $fileKey): string
     {
@@ -294,7 +331,7 @@ class OracleCloudStorageService implements OracleCloudStorageServiceContract
         $disk = Storage::disk($this->diskName);
         $fullPath = $disk->path($localPath);
 
-        $response = Http::timeout(600)
+        $response = Http::timeout(self::HTTP_TIMEOUT_LONG)
             ->withOptions(['sink' => $fullPath])
             ->get($url);
 
@@ -331,7 +368,7 @@ class OracleCloudStorageService implements OracleCloudStorageServiceContract
         }
 
         // Create path for decompressed JSON file
-        $jsonPath = str_replace('.gz', '', $localPath);
+        [, $jsonPath] = $this->getLocalFilePaths(basename($localPath));
         $jsonFullPath = $disk->path($jsonPath);
 
         // Decompress .gz file to disk
@@ -349,7 +386,7 @@ class OracleCloudStorageService implements OracleCloudStorageServiceContract
         try {
             // Decompress in chunks
             while (! gzeof($gzHandle)) {
-                $chunk = gzread($gzHandle, 8192);
+                $chunk = gzread($gzHandle, self::GZIP_CHUNK_SIZE);
                 if ($chunk === false) {
                     break;
                 }
@@ -386,7 +423,7 @@ class OracleCloudStorageService implements OracleCloudStorageServiceContract
             $buffer = '';
             $inResultsArray = false;
             $recordCount = 0;
-            $chunkSize = 4194304; // 4MB chunks for better performance
+            $chunkSize = self::JSON_STREAM_CHUNK_SIZE; // 4MB chunks for better performance
 
             // Read file in chunks
             while (! feof($handle)) {
@@ -399,15 +436,15 @@ class OracleCloudStorageService implements OracleCloudStorageServiceContract
 
                 // Look for the start of "results" array if not found yet
                 if (! $inResultsArray) {
-                    $pos = strpos($buffer, '"results":[');
+                    $pos = strpos($buffer, self::RESULTS_ARRAY_MARKER);
                     if ($pos !== false) {
                         $inResultsArray = true;
                         // Move buffer to start of results array content
-                        $buffer = substr($buffer, $pos + 11); // 11 = length of '"results":['
+                        $buffer = substr($buffer, $pos + self::RESULTS_ARRAY_MARKER_LENGTH);
                     } else {
-                        // Keep last 20 chars in case '"results":[' is split across chunks
-                        if (strlen($buffer) > 20) {
-                            $buffer = substr($buffer, -20);
+                        // Keep last chars in case marker is split across chunks
+                        if (strlen($buffer) > self::BUFFER_KEEP_SIZE) {
+                            $buffer = substr($buffer, -self::BUFFER_KEEP_SIZE);
                         }
 
                         continue;
@@ -426,61 +463,29 @@ class OracleCloudStorageService implements OracleCloudStorageServiceContract
                 for ($i = 0; $i < $bufferLen; $i++) {
                     $char = $buffer[$i];
 
-                    // Handle string escaping to properly track braces inside strings
-                    if ($escapeNext) {
-                        $escapeNext = false;
+                    $result = $this->processJsonCharacter(
+                        $char,
+                        $depth,
+                        $inString,
+                        $escapeNext,
+                        $start,
+                        $i,
+                        $buffer,
+                        $recordCount
+                    );
 
-                        continue;
-                    }
-
-                    if ($char === '\\') {
-                        $escapeNext = true;
-
-                        continue;
-                    }
-
-                    if ($char === '"') {
-                        $inString = ! $inString;
-
-                        continue;
-                    }
-
-                    // Only process structural characters outside of strings
-                    if ($inString) {
-                        continue;
-                    }
-
-                    if ($char === '{') {
-                        if ($depth === 0) {
-                            $start = $i;
+                    if ($result !== null) {
+                        if ($result['break']) {
+                            break 2;
                         }
-                        $depth++;
-                    } elseif ($char === '}') {
-                        $depth--;
 
-                        // Complete object found
-                        if ($depth === 0 && $start !== -1) {
-                            $objectJson = substr($buffer, $start, $i - $start + 1);
-
-                            try {
-                                $record = json_decode($objectJson, true, 512, JSON_THROW_ON_ERROR);
-                                yield $record;
-                                $recordCount++;
-
-                                // Garbage collection every 10000 records (reduced logging)
-                                if ($recordCount % 10000 === 0) {
-                                    gc_collect_cycles();
-                                }
-                            } catch (JsonException $e) {
-                                // Skip invalid records silently for better performance
-                            }
-
-                            $processed = $i + 1;
-                            $start = -1;
+                        if (isset($result['record'])) {
+                            yield $result['record'];
                         }
-                    } elseif ($char === ']' && $depth === 0) {
-                        // End of results array reached
-                        break 2;
+
+                        if (isset($result['processed'])) {
+                            $processed = $result['processed'];
+                        }
                     }
                 }
 
@@ -492,5 +497,121 @@ class OracleCloudStorageService implements OracleCloudStorageServiceContract
         } finally {
             fclose($handle);
         }
+    }
+
+    /**
+     * Get local file paths for a given file key.
+     *
+     * @param  string  $fileKey  The file key
+     * @return array{0: string, 1: string} [$gzPath, $jsonPath]
+     */
+    private function getLocalFilePaths(string $fileKey): array
+    {
+        $localFileName = basename($fileKey);
+        $gzPath = $this->tempDir.'/'.$localFileName;
+        $jsonPath = str_replace('.gz', '', $gzPath);
+
+        return [$gzPath, $jsonPath];
+    }
+
+    /**
+     * Process a single JSON character during streaming.
+     *
+     * @param  string  $char  The character to process
+     * @param  int  &$depth  Current depth in JSON structure
+     * @param  bool  &$inString  Whether we're currently inside a string
+     * @param  bool  &$escapeNext  Whether the next character is escaped
+     * @param  int  &$start  Start position of current object
+     * @param  int  $i  Current position in buffer
+     * @param  string  $buffer  The buffer being processed
+     * @param  int  &$recordCount  Total records processed
+     * @return array<string, mixed>|null Result array with 'break', 'record', or 'processed' keys, or null
+     */
+    private function processJsonCharacter(
+        string $char,
+        int &$depth,
+        bool &$inString,
+        bool &$escapeNext,
+        int &$start,
+        int $i,
+        string $buffer,
+        int &$recordCount
+    ): ?array {
+        // Handle string escaping to properly track braces inside strings
+        if ($escapeNext) {
+            $escapeNext = false;
+
+            return null;
+        }
+
+        if ($char === '\\') {
+            $escapeNext = true;
+
+            return null;
+        }
+
+        if ($char === '"') {
+            $inString = ! $inString;
+
+            return null;
+        }
+
+        // Only process structural characters outside of strings
+        if ($inString) {
+            return null;
+        }
+
+        if ($char === '{') {
+            if ($depth === 0) {
+                $start = $i;
+            }
+            $depth++;
+
+            return null;
+        }
+
+        if ($char === '}') {
+            $depth--;
+
+            // Complete object found
+            if ($depth === 0 && $start !== -1) {
+                $objectJson = substr($buffer, $start, $i - $start + 1);
+
+                try {
+                    $record = json_decode($objectJson, true, self::JSON_DECODE_DEPTH, JSON_THROW_ON_ERROR);
+                    $recordCount++;
+
+                    // Garbage collection every N records (reduced logging)
+                    if ($recordCount % self::GC_INTERVAL === 0) {
+                        gc_collect_cycles();
+                    }
+
+                    $start = -1;
+
+                    return [
+                        'break' => false,
+                        'record' => $record,
+                        'processed' => $i + 1,
+                    ];
+                } catch (JsonException $e) {
+                    // Skip invalid records silently for better performance
+                    $start = -1;
+
+                    return [
+                        'break' => false,
+                        'processed' => $i + 1,
+                    ];
+                }
+            }
+
+            return null;
+        }
+
+        if ($char === ']' && $depth === 0) {
+            // End of results array reached
+            return ['break' => true];
+        }
+
+        return null;
     }
 }
