@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Console\Commands;
 
-use App\Actions\Company\SyncCompaniesAction;
+use App\Actions\Company\SyncCompaniesFromOracleAction;
 use App\Actions\Company\SyncCompaniesVatAction;
 use Illuminate\Console\Command;
 use Throwable;
@@ -23,28 +23,31 @@ class SyncCompaniesCommand extends Command
      *
      * @var string
      */
-    protected $description = 'Sync Slovak company data from Financial Administration';
+    protected $description = 'Sync Slovak company data: Phase 1 from Oracle Cloud, Phase 2 VAT from Financial Administration';
 
     /**
      * Execute the console command.
      */
-    public function handle(SyncCompaniesAction $companiesAction, SyncCompaniesVatAction $vatAction): int
-    {
+    public function handle(
+        SyncCompaniesFromOracleAction $oracleAction,
+        SyncCompaniesVatAction $vatAction
+    ): int {
         $this->info('Company synchronization started...');
         $this->newLine();
 
         $overallStartTime = microtime(true);
 
-        // Phase 1: Sync company data
-        $phase1Result = $this->executePhase1($companiesAction);
+        // Phase 1: Sync company data from Oracle Cloud
+        $phase1Result = $this->executePhase1($oracleAction);
 
         if ($phase1Result !== self::SUCCESS) {
             return $phase1Result;
         }
 
+        dd(123);
         $this->newLine();
 
-        // Phase 2: Sync VAT data
+        // Phase 2: Sync VAT data from Financial Administration
         $phase2Result = $this->executePhase2($vatAction);
 
         if ($phase2Result !== self::SUCCESS) {
@@ -60,11 +63,11 @@ class SyncCompaniesCommand extends Command
     }
 
     /**
-     * Execute Phase 1: Sync company data.
+     * Execute Phase 1: Sync company data from Oracle Cloud.
      */
-    private function executePhase1(SyncCompaniesAction $action): int
+    private function executePhase1(SyncCompaniesFromOracleAction $action): int
     {
-        $this->info('Phase 1: Syncing company data');
+        $this->info('Phase 1: Syncing company data from Oracle Cloud');
 
         $startTime = microtime(true);
 
@@ -76,6 +79,7 @@ class SyncCompaniesCommand extends Command
             $this->table(
                 ['Metric', 'Value'],
                 [
+                    ['Files', number_format($stats['files_processed'] ?? 0)],
                     ['Processed', number_format($stats['created'])],
                     ['Errors', number_format($stats['errors'])],
                     ['Duration', $duration],
