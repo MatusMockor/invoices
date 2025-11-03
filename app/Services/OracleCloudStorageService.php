@@ -333,24 +333,10 @@ class OracleCloudStorageService implements OracleCloudStorageServiceContract
         $disk = Storage::disk($this->diskName);
         $fullPath = $disk->path($localPath);
 
-        Log::info('Downloading file from Oracle Cloud Storage', [
-            'url' => $url,
-            'local_path' => $localPath,
-        ]);
+        Log::info('Downloading', ['file' => basename($fileKey)]);
 
         $response = Http::timeout(600)
-            ->withOptions([
-                'sink' => $fullPath,
-                'progress' => static function (int $downloadTotal, int $downloadedBytes): void {
-                    if ($downloadTotal > 0 && $downloadedBytes > 0 && $downloadedBytes % 10485760 === 0) {
-                        Log::debug('Download progress', [
-                            'downloaded_mb' => round($downloadedBytes / 1048576, 2),
-                            'total_mb' => round($downloadTotal / 1048576, 2),
-                            'progress' => round(($downloadedBytes / $downloadTotal) * 100, 2).'%',
-                        ]);
-                    }
-                },
-            ])
+            ->withOptions(['sink' => $fullPath])
             ->get($url);
 
         if (! $response->successful()) {
@@ -367,8 +353,8 @@ class OracleCloudStorageService implements OracleCloudStorageServiceContract
 
         $fileSize = $disk->size($localPath);
 
-        Log::info('File downloaded successfully', [
-            'path' => $localPath,
+        Log::info('Downloaded', [
+            'file' => basename($fileKey),
             'size_mb' => round($fileSize / 1048576, 2),
         ]);
 
@@ -391,8 +377,6 @@ class OracleCloudStorageService implements OracleCloudStorageServiceContract
         if (! $disk->exists($localPath)) {
             throw new RuntimeException('File does not exist: '.$localPath);
         }
-
-        Log::info('Decompressing gzip file', ['path' => $localPath]);
 
         // Create path for decompressed JSON file
         $jsonPath = str_replace('.gz', '', $localPath);
@@ -423,18 +407,10 @@ class OracleCloudStorageService implements OracleCloudStorageServiceContract
             gzclose($gzHandle);
             fclose($jsonHandle);
 
-            $decompressedSize = filesize($jsonFullPath);
-            Log::info('File decompressed successfully', [
-                'json_path' => $jsonPath,
-                'size_mb' => round($decompressedSize / 1048576, 2),
-            ]);
-
             // Track decompressed file for cleanup
             $this->downloadedFiles[] = $jsonPath;
 
             // Stream and parse JSON from decompressed file
-            Log::info('Streaming JSON from decompressed file', ['path' => $jsonPath]);
-
             yield from $this->streamJsonRecords($jsonFullPath);
         } catch (JsonException $e) {
             Log::error('Failed to parse JSON file', [
@@ -462,7 +438,7 @@ class OracleCloudStorageService implements OracleCloudStorageServiceContract
             $buffer = '';
             $inResultsArray = false;
             $recordCount = 0;
-            $chunkSize = 1048576; // 1MB chunks for better performance
+            $chunkSize = 4194304; // 4MB chunks for better performance
 
             // Read file in chunks
             while (! feof($handle)) {
@@ -490,19 +466,36 @@ class OracleCloudStorageService implements OracleCloudStorageServiceContract
                     }
                 }
 
-                // Extract complete JSON objects using brace matching
+                // Extract complete JSON objects using optimized brace matching
                 $processed = 0;
-                $len = strlen($buffer);
+                $bufferLen = strlen($buffer);
                 $depth = 0;
                 $start = -1;
+                $inString = false;
+                $escapeNext = false;
 
-                for ($i = 0; $i < $len; $i++) {
+                // Use byte array for faster access
+                for ($i = 0; $i < $bufferLen; $i++) {
                     $char = $buffer[$i];
 
-                    // Skip whitespace and commas outside of objects
-                    if ($depth === 0 && ($char === ' ' || $char === "\n" || $char === "\r" || $char === "\t" || $char === ',')) {
-                        $processed = $i + 1;
+                    // Handle string escaping to properly track braces inside strings
+                    if ($escapeNext) {
+                        $escapeNext = false;
+                        continue;
+                    }
 
+                    if ($char === '\\') {
+                        $escapeNext = true;
+                        continue;
+                    }
+
+                    if ($char === '"') {
+                        $inString = ! $inString;
+                        continue;
+                    }
+
+                    // Only process structural characters outside of strings
+                    if ($inString) {
                         continue;
                     }
 
@@ -523,16 +516,12 @@ class OracleCloudStorageService implements OracleCloudStorageServiceContract
                                 yield $record;
                                 $recordCount++;
 
-                                // Log progress and cleanup every 5000 records
-                                if ($recordCount % 5000 === 0) {
-                                    Log::debug('Streaming progress', ['records' => $recordCount]);
+                                // Garbage collection every 10000 records (reduced logging)
+                                if ($recordCount % 10000 === 0) {
                                     gc_collect_cycles();
                                 }
                             } catch (JsonException $e) {
-                                Log::warning('Failed to parse JSON object', [
-                                    'error' => $e->getMessage(),
-                                    'object_preview' => substr($objectJson, 0, 100),
-                                ]);
+                                // Skip invalid records silently for better performance
                             }
 
                             $processed = $i + 1;
@@ -545,13 +534,8 @@ class OracleCloudStorageService implements OracleCloudStorageServiceContract
                 }
 
                 // Keep only unprocessed part in buffer
-                $buffer = substr($buffer, $processed);
-
-                // If buffer is getting too large (>10MB), we might have a problem
-                if (strlen($buffer) > 10485760) {
-                    Log::warning('Buffer size exceeding 10MB, possible malformed JSON', [
-                        'buffer_size_mb' => round(strlen($buffer) / 1048576, 2),
-                    ]);
+                if ($processed > 0) {
+                    $buffer = substr($buffer, $processed);
                 }
             }
 
