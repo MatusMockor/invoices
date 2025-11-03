@@ -8,6 +8,7 @@ use App\Services\Interfaces\OracleCloudStorageService as OracleCloudStorageServi
 use Exception;
 use Generator;
 use Illuminate\Support\Facades\Http;
+use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Storage;
 use JsonException;
 use RuntimeException;
@@ -63,7 +64,7 @@ final class OracleCloudStorageService implements OracleCloudStorageServiceContra
     {
         $this->diskName = self::DISK_NAME;
         $this->tempDir = self::TEMP_DIR;
-        $this->bucketUrl = config('oracle_cloud.bucket_url', 'https://frkqbrydxwdp.compat.objectstorage.eu-frankfurt-1.oraclecloud.com/susr-rpo/');
+        $this->bucketUrl = config('oracle_cloud.bucket_url');
     }
 
     /**
@@ -183,6 +184,11 @@ final class OracleCloudStorageService implements OracleCloudStorageServiceContra
         try {
             $response = Http::timeout(self::HTTP_TIMEOUT)->get($url);
 
+            // 404 is expected when no files exist for this date
+            if ($response->status() === 404) {
+                return [];
+            }
+
             if (! $response->successful()) {
                 throw new RuntimeException("Failed to fetch batch init file list: HTTP {$response->status()}");
             }
@@ -200,6 +206,8 @@ final class OracleCloudStorageService implements OracleCloudStorageServiceContra
             }
 
             return $fileKeys;
+        } catch (RuntimeException $e) {
+            throw $e;
         } catch (Throwable $e) {
             throw new RuntimeException("Failed to retrieve batch init file list: {$e->getMessage()}", 0, $e);
         }
@@ -371,6 +379,25 @@ final class OracleCloudStorageService implements OracleCloudStorageServiceContra
         [, $jsonPath] = $this->getLocalFilePaths(basename($localPath));
         $jsonFullPath = $disk->path($jsonPath);
 
+        // Ensure directory exists using full filesystem path
+        $jsonDir = dirname($jsonFullPath);
+
+        // Debug: Log path information
+        Log::debug('Decompression paths', [
+            'gzipPath' => $gzipPath,
+            'jsonPath_relative' => $jsonPath,
+            'jsonFullPath' => $jsonFullPath,
+            'jsonDir' => $jsonDir,
+            'dir_exists' => is_dir($jsonDir),
+            'dir_writable' => is_dir($jsonDir) ? is_writable($jsonDir) : false,
+        ]);
+
+        if (! is_dir($jsonDir)) {
+            if (! mkdir($jsonDir, 0755, true) && ! is_dir($jsonDir)) {
+                throw new RuntimeException('Failed to create directory: '.$jsonDir);
+            }
+        }
+
         // Decompress .gz file to disk
         $gzHandle = gzopen($gzipPath, 'rb');
         if ($gzHandle === false) {
@@ -380,7 +407,8 @@ final class OracleCloudStorageService implements OracleCloudStorageServiceContra
         $jsonHandle = fopen($jsonFullPath, 'wb');
         if ($jsonHandle === false) {
             gzclose($gzHandle);
-            throw new RuntimeException('Failed to create decompressed file: '.$jsonFullPath);
+            $error = error_get_last();
+            throw new RuntimeException('Failed to create decompressed file: '.$jsonFullPath.' Error: '.($error['message'] ?? 'unknown'));
         }
 
         try {
