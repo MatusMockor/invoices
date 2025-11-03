@@ -249,6 +249,11 @@ final class SyncCompaniesFromOracleAction
      */
     private function parseCompanyData(array $data): ?array
     {
+        // Skip terminated companies (those that no longer exist)
+        if (isset($data['termination']) && ! empty($data['termination'])) {
+            return null;
+        }
+
         // Extract ICO from identifiers array
         $identifiers = $data['identifiers'] ?? [];
         if (empty($identifiers) || ! isset($identifiers[0]['value'])) {
