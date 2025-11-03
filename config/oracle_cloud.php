@@ -21,7 +21,7 @@ return [
     | The number of records to process in each database transaction batch.
     |
     */
-    'batch_size' => env('ORACLE_CLOUD_BATCH_SIZE', 5000),
+    'batch_size' => env('ORACLE_CLOUD_BATCH_SIZE', 10000),
 
     /*
     |--------------------------------------------------------------------------

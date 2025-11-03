@@ -171,7 +171,7 @@ final class SyncCompaniesFromOracleAction
     {
         Log::info('Processing file', ['file' => $fileKey]);
 
-        $batchSize = config('oracle_cloud.batch_size', 5000);
+        $batchSize = config('oracle_cloud.batch_size', 10000);
         $batch = [];
         $totalProcessed = 0;
 
@@ -189,11 +189,7 @@ final class SyncCompaniesFromOracleAction
                     $this->processBatch($batch, $stats);
                     $totalProcessed += count($batch);
                     $batch = [];
-
-                    Log::info('File progress', [
-                        'file' => $fileKey,
-                        'processed' => $totalProcessed,
-                    ]);
+                    // Removed progress logging for better performance
                 }
             }
 
@@ -202,13 +198,10 @@ final class SyncCompaniesFromOracleAction
                 $totalProcessed += count($batch);
             }
 
-            Log::info('File processing completed', [
-                'file' => $fileKey,
-                'total_processed' => $totalProcessed,
-            ]);
+            Log::info('File completed', ['file' => basename($fileKey), 'records' => $totalProcessed]);
         } catch (Throwable $e) {
-            Log::error('File processing failed', [
-                'file' => $fileKey,
+            Log::error('File failed', [
+                'file' => basename($fileKey),
                 'error' => $e->getMessage(),
             ]);
 
