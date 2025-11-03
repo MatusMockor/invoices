@@ -172,11 +172,13 @@ final class OracleCloudStorageServiceTest extends TestCase
             ['ico' => '87654321', 'name' => 'Company 2'],
         ];
 
-        $jsonLines = implode("\n", array_map(static function (array $item): string {
-            return json_encode($item, JSON_THROW_ON_ERROR);
-        }, $jsonData));
+        // Oracle format: {"exportDate":"...","results":[{...},{...}]}
+        $oracleFormat = json_encode([
+            'exportDate' => '2025-11-03',
+            'results' => $jsonData,
+        ], JSON_THROW_ON_ERROR);
 
-        $gzippedContent = gzencode($jsonLines);
+        $gzippedContent = gzencode($oracleFormat);
 
         Http::fake([
             '*test.json.gz' => Http::response($gzippedContent, 200),
