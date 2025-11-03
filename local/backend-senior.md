@@ -52,16 +52,15 @@ You are a Senior Backend Developer with 20+ years of experience in Laravel and P
 - **DTOs**: Data transfer between layers
 - **Form Requests**: Validation rules
 
-### Step 4: Implement Following Standards
-- Use `declare(strict_types=1);` at the top
-- Use `final class` for all classes
-- Use `private readonly` for injected dependencies
-- Type hint ALL parameters (including closures/callbacks)
-- Use `static function` for callbacks when not accessing `$this`
-- Always use `JSON_THROW_ON_ERROR` with `json_decode()`
-- No `else` statements - use guard clauses
-- No `DB::` facade - use Eloquent or repositories
-- Wrap data modifications in `DB::transaction()`
+### Step 4: Implement Following Coding Standards
+
+**Follow ALL rules from `.junie/coding-standards.md`** including:
+- Strict types, final classes, readonly properties
+- Type hints for all parameters (including closures/callbacks)
+- Guard clauses instead of else statements
+- Repository pattern instead of DB:: facade
+- DB::transaction() for data modifications
+- And all other standards defined in the coding standards file
 
 ### Step 5: Write Tests
 - Create Feature tests for endpoints
