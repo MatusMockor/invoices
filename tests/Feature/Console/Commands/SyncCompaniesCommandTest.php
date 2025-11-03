@@ -6,6 +6,7 @@ namespace Tests\Feature\Console\Commands;
 
 use App\Repositories\Interfaces\CompanyRepository as CompanyRepositoryContract;
 use App\Services\Interfaces\FinancialDataService as FinancialDataServiceContract;
+use App\Services\Interfaces\OracleCloudStorageService as OracleCloudStorageServiceContract;
 use Exception;
 use Generator;
 use Tests\TestCase;
@@ -14,13 +15,24 @@ final class SyncCompaniesCommandTest extends TestCase
 {
     public function test_successful_execution_of_both_phases(): void
     {
-        $financialDataService = $this->createMock(FinancialDataServiceContract::class);
-        $financialDataService
-            ->method('downloadAndExtractCompanyData')
+        $oracleService = $this->createMock(OracleCloudStorageServiceContract::class);
+        $oracleService
+            ->method('getLatestDailyFile')
+            ->willReturn([
+                'key' => 'batch-daily/actual_2025-11-03.json.gz',
+                'last_modified' => '2025-11-03T03:00:06.000Z',
+                'size' => 128754,
+            ]);
+        $oracleService
+            ->method('downloadAndStreamJson')
             ->willReturn($this->arrayToGenerator([
                 ['ico' => '12345678', 'name' => 'Test Company 1'],
                 ['ico' => '87654321', 'name' => 'Test Company 2'],
             ]));
+        $oracleService
+            ->method('cleanup');
+
+        $financialDataService = $this->createMock(FinancialDataServiceContract::class);
         $financialDataService
             ->method('downloadAndExtractVatData')
             ->willReturn($this->arrayToGenerator([
@@ -35,12 +47,13 @@ final class SyncCompaniesCommandTest extends TestCase
             ->method('updateVatData')
             ->willReturn(true);
 
+        $this->app->instance(OracleCloudStorageServiceContract::class, $oracleService);
         $this->app->instance(FinancialDataServiceContract::class, $financialDataService);
         $this->app->instance(CompanyRepositoryContract::class, $companyRepository);
 
         $this->artisan('app:sync-companies')
             ->expectsOutput('Company synchronization started...')
-            ->expectsOutput('Phase 1: Syncing company data')
+            ->expectsOutput('Phase 1: Syncing company data from Oracle Cloud')
             ->expectsOutput('Phase 2: Syncing VAT data')
             ->expectsOutputToContain('Total duration:')
             ->assertExitCode(0);
@@ -48,31 +61,44 @@ final class SyncCompaniesCommandTest extends TestCase
 
     public function test_phase_1_failure_returns_failure_code(): void
     {
-        $financialDataService = $this->createMock(FinancialDataServiceContract::class);
-        $financialDataService
-            ->method('downloadAndExtractCompanyData')
-            ->willThrowException(new Exception('Database connection failed'));
+        $oracleService = $this->createMock(OracleCloudStorageServiceContract::class);
+        $oracleService
+            ->method('getLatestDailyFile')
+            ->willThrowException(new Exception('Oracle Cloud connection failed'));
+        $oracleService
+            ->method('cleanup');
 
         $companyRepository = $this->createMock(CompanyRepositoryContract::class);
 
-        $this->app->instance(FinancialDataServiceContract::class, $financialDataService);
+        $this->app->instance(OracleCloudStorageServiceContract::class, $oracleService);
         $this->app->instance(CompanyRepositoryContract::class, $companyRepository);
 
         $this->artisan('app:sync-companies')
             ->expectsOutput('Company synchronization started...')
-            ->expectsOutput('Phase 1: Syncing company data')
-            ->expectsOutput('Phase 1 failed: Database connection failed')
+            ->expectsOutput('Phase 1: Syncing company data from Oracle Cloud')
+            ->expectsOutput('Phase 1 failed: Oracle Cloud connection failed')
             ->assertExitCode(1);
     }
 
     public function test_phase_2_failure_returns_failure_code(): void
     {
-        $financialDataService = $this->createMock(FinancialDataServiceContract::class);
-        $financialDataService
-            ->method('downloadAndExtractCompanyData')
+        $oracleService = $this->createMock(OracleCloudStorageServiceContract::class);
+        $oracleService
+            ->method('getLatestDailyFile')
+            ->willReturn([
+                'key' => 'batch-daily/actual_2025-11-03.json.gz',
+                'last_modified' => '2025-11-03T03:00:06.000Z',
+                'size' => 128754,
+            ]);
+        $oracleService
+            ->method('downloadAndStreamJson')
             ->willReturn($this->arrayToGenerator([
                 ['ico' => '12345678', 'name' => 'Test Company'],
             ]));
+        $oracleService
+            ->method('cleanup');
+
+        $financialDataService = $this->createMock(FinancialDataServiceContract::class);
         $financialDataService
             ->method('downloadAndExtractVatData')
             ->willThrowException(new Exception('VAT data download failed'));
@@ -82,12 +108,13 @@ final class SyncCompaniesCommandTest extends TestCase
             ->method('upsertBatch')
             ->willReturn(1);
 
+        $this->app->instance(OracleCloudStorageServiceContract::class, $oracleService);
         $this->app->instance(FinancialDataServiceContract::class, $financialDataService);
         $this->app->instance(CompanyRepositoryContract::class, $companyRepository);
 
         $this->artisan('app:sync-companies')
             ->expectsOutput('Company synchronization started...')
-            ->expectsOutput('Phase 1: Syncing company data')
+            ->expectsOutput('Phase 1: Syncing company data from Oracle Cloud')
             ->expectsOutput('Phase 2: Syncing VAT data')
             ->expectsOutput('Phase 2 failed: VAT data download failed')
             ->assertExitCode(1);
@@ -98,10 +125,21 @@ final class SyncCompaniesCommandTest extends TestCase
         $companyData = array_fill(0, 100, ['ico' => '12345678', 'name' => 'Test Company']);
         $vatData = array_fill(0, 50, ['ico' => '12345678', 'ic_dph' => 'SK1234567890']);
 
-        $financialDataService = $this->createMock(FinancialDataServiceContract::class);
-        $financialDataService
-            ->method('downloadAndExtractCompanyData')
+        $oracleService = $this->createMock(OracleCloudStorageServiceContract::class);
+        $oracleService
+            ->method('getLatestDailyFile')
+            ->willReturn([
+                'key' => 'batch-daily/actual_2025-11-03.json.gz',
+                'last_modified' => '2025-11-03T03:00:06.000Z',
+                'size' => 128754,
+            ]);
+        $oracleService
+            ->method('downloadAndStreamJson')
             ->willReturn($this->arrayToGenerator($companyData));
+        $oracleService
+            ->method('cleanup');
+
+        $financialDataService = $this->createMock(FinancialDataServiceContract::class);
         $financialDataService
             ->method('downloadAndExtractVatData')
             ->willReturn($this->arrayToGenerator($vatData));
@@ -114,6 +152,7 @@ final class SyncCompaniesCommandTest extends TestCase
             ->method('updateVatData')
             ->willReturn(true);
 
+        $this->app->instance(OracleCloudStorageServiceContract::class, $oracleService);
         $this->app->instance(FinancialDataServiceContract::class, $financialDataService);
         $this->app->instance(CompanyRepositoryContract::class, $companyRepository);
 
@@ -123,17 +162,21 @@ final class SyncCompaniesCommandTest extends TestCase
 
     public function test_phase_1_stops_execution_when_exception_is_thrown(): void
     {
-        $financialDataService = $this->createMock(FinancialDataServiceContract::class);
-        $financialDataService
-            ->method('downloadAndExtractCompanyData')
+        $oracleService = $this->createMock(OracleCloudStorageServiceContract::class);
+        $oracleService
+            ->method('getLatestDailyFile')
             ->willThrowException(new Exception('Critical error in Phase 1'));
+        $oracleService
+            ->method('cleanup');
 
         $companyRepository = $this->createMock(CompanyRepositoryContract::class);
 
-        $this->app->instance(FinancialDataServiceContract::class, $financialDataService);
+        $this->app->instance(OracleCloudStorageServiceContract::class, $oracleService);
         $this->app->instance(CompanyRepositoryContract::class, $companyRepository);
 
         $this->artisan('app:sync-companies')
+            ->expectsOutput('Company synchronization started...')
+            ->expectsOutput('Phase 1: Syncing company data from Oracle Cloud')
             ->expectsOutput('Phase 1 failed: Critical error in Phase 1')
             ->doesntExpectOutput('Phase 2: Syncing VAT data')
             ->assertExitCode(1);
@@ -141,12 +184,23 @@ final class SyncCompaniesCommandTest extends TestCase
 
     public function test_successful_execution_displays_total_duration(): void
     {
-        $financialDataService = $this->createMock(FinancialDataServiceContract::class);
-        $financialDataService
-            ->method('downloadAndExtractCompanyData')
+        $oracleService = $this->createMock(OracleCloudStorageServiceContract::class);
+        $oracleService
+            ->method('getLatestDailyFile')
+            ->willReturn([
+                'key' => 'batch-daily/actual_2025-11-03.json.gz',
+                'last_modified' => '2025-11-03T03:00:06.000Z',
+                'size' => 128754,
+            ]);
+        $oracleService
+            ->method('downloadAndStreamJson')
             ->willReturn($this->arrayToGenerator([
                 ['ico' => '12345678', 'name' => 'Test Company'],
             ]));
+        $oracleService
+            ->method('cleanup');
+
+        $financialDataService = $this->createMock(FinancialDataServiceContract::class);
         $financialDataService
             ->method('downloadAndExtractVatData')
             ->willReturn($this->arrayToGenerator([
@@ -161,6 +215,7 @@ final class SyncCompaniesCommandTest extends TestCase
             ->method('updateVatData')
             ->willReturn(true);
 
+        $this->app->instance(OracleCloudStorageServiceContract::class, $oracleService);
         $this->app->instance(FinancialDataServiceContract::class, $financialDataService);
         $this->app->instance(CompanyRepositoryContract::class, $companyRepository);
 
@@ -171,16 +226,28 @@ final class SyncCompaniesCommandTest extends TestCase
 
     public function test_command_handles_zero_statistics(): void
     {
-        $financialDataService = $this->createMock(FinancialDataServiceContract::class);
-        $financialDataService
-            ->method('downloadAndExtractCompanyData')
+        $oracleService = $this->createMock(OracleCloudStorageServiceContract::class);
+        $oracleService
+            ->method('getLatestDailyFile')
+            ->willReturn([
+                'key' => 'batch-daily/actual_2025-11-03.json.gz',
+                'last_modified' => '2025-11-03T03:00:06.000Z',
+                'size' => 128754,
+            ]);
+        $oracleService
+            ->method('downloadAndStreamJson')
             ->willReturn($this->arrayToGenerator([]));
+        $oracleService
+            ->method('cleanup');
+
+        $financialDataService = $this->createMock(FinancialDataServiceContract::class);
         $financialDataService
             ->method('downloadAndExtractVatData')
             ->willReturn($this->arrayToGenerator([]));
 
         $companyRepository = $this->createMock(CompanyRepositoryContract::class);
 
+        $this->app->instance(OracleCloudStorageServiceContract::class, $oracleService);
         $this->app->instance(FinancialDataServiceContract::class, $financialDataService);
         $this->app->instance(CompanyRepositoryContract::class, $companyRepository);
 
@@ -208,10 +275,21 @@ final class SyncCompaniesCommandTest extends TestCase
         $companyData = array_fill(0, 100, ['ico' => '12345678', 'name' => 'Test Company']);
         $vatData = array_fill(0, 50, ['ico' => '12345678', 'ic_dph' => 'SK1234567890']);
 
-        $financialDataService = $this->createMock(FinancialDataServiceContract::class);
-        $financialDataService
-            ->method('downloadAndExtractCompanyData')
+        $oracleService = $this->createMock(OracleCloudStorageServiceContract::class);
+        $oracleService
+            ->method('getLatestDailyFile')
+            ->willReturn([
+                'key' => 'batch-daily/actual_2025-11-03.json.gz',
+                'last_modified' => '2025-11-03T03:00:06.000Z',
+                'size' => 128754,
+            ]);
+        $oracleService
+            ->method('downloadAndStreamJson')
             ->willReturn($this->arrayToGenerator($companyData));
+        $oracleService
+            ->method('cleanup');
+
+        $financialDataService = $this->createMock(FinancialDataServiceContract::class);
         $financialDataService
             ->method('downloadAndExtractVatData')
             ->willReturn($this->arrayToGenerator($vatData));
@@ -224,6 +302,7 @@ final class SyncCompaniesCommandTest extends TestCase
             ->method('updateVatData')
             ->willReturn(true);
 
+        $this->app->instance(OracleCloudStorageServiceContract::class, $oracleService);
         $this->app->instance(FinancialDataServiceContract::class, $financialDataService);
         $this->app->instance(CompanyRepositoryContract::class, $companyRepository);
 
@@ -233,12 +312,23 @@ final class SyncCompaniesCommandTest extends TestCase
 
     public function test_return_code_is_success_when_both_phases_complete(): void
     {
-        $financialDataService = $this->createMock(FinancialDataServiceContract::class);
-        $financialDataService
-            ->method('downloadAndExtractCompanyData')
+        $oracleService = $this->createMock(OracleCloudStorageServiceContract::class);
+        $oracleService
+            ->method('getLatestDailyFile')
+            ->willReturn([
+                'key' => 'batch-daily/actual_2025-11-03.json.gz',
+                'last_modified' => '2025-11-03T03:00:06.000Z',
+                'size' => 128754,
+            ]);
+        $oracleService
+            ->method('downloadAndStreamJson')
             ->willReturn($this->arrayToGenerator([
                 ['ico' => '12345678', 'name' => 'Test Company'],
             ]));
+        $oracleService
+            ->method('cleanup');
+
+        $financialDataService = $this->createMock(FinancialDataServiceContract::class);
         $financialDataService
             ->method('downloadAndExtractVatData')
             ->willReturn($this->arrayToGenerator([
@@ -253,6 +343,7 @@ final class SyncCompaniesCommandTest extends TestCase
             ->method('updateVatData')
             ->willReturn(true);
 
+        $this->app->instance(OracleCloudStorageServiceContract::class, $oracleService);
         $this->app->instance(FinancialDataServiceContract::class, $financialDataService);
         $this->app->instance(CompanyRepositoryContract::class, $companyRepository);
 
@@ -262,14 +353,16 @@ final class SyncCompaniesCommandTest extends TestCase
 
     public function test_return_code_is_failure_when_phase_1_fails(): void
     {
-        $financialDataService = $this->createMock(FinancialDataServiceContract::class);
-        $financialDataService
-            ->method('downloadAndExtractCompanyData')
+        $oracleService = $this->createMock(OracleCloudStorageServiceContract::class);
+        $oracleService
+            ->method('getLatestDailyFile')
             ->willThrowException(new Exception('Phase 1 error'));
+        $oracleService
+            ->method('cleanup');
 
         $companyRepository = $this->createMock(CompanyRepositoryContract::class);
 
-        $this->app->instance(FinancialDataServiceContract::class, $financialDataService);
+        $this->app->instance(OracleCloudStorageServiceContract::class, $oracleService);
         $this->app->instance(CompanyRepositoryContract::class, $companyRepository);
 
         $this->artisan('app:sync-companies')
@@ -278,12 +371,23 @@ final class SyncCompaniesCommandTest extends TestCase
 
     public function test_return_code_is_failure_when_phase_2_fails(): void
     {
-        $financialDataService = $this->createMock(FinancialDataServiceContract::class);
-        $financialDataService
-            ->method('downloadAndExtractCompanyData')
+        $oracleService = $this->createMock(OracleCloudStorageServiceContract::class);
+        $oracleService
+            ->method('getLatestDailyFile')
+            ->willReturn([
+                'key' => 'batch-daily/actual_2025-11-03.json.gz',
+                'last_modified' => '2025-11-03T03:00:06.000Z',
+                'size' => 128754,
+            ]);
+        $oracleService
+            ->method('downloadAndStreamJson')
             ->willReturn($this->arrayToGenerator([
                 ['ico' => '12345678', 'name' => 'Test Company'],
             ]));
+        $oracleService
+            ->method('cleanup');
+
+        $financialDataService = $this->createMock(FinancialDataServiceContract::class);
         $financialDataService
             ->method('downloadAndExtractVatData')
             ->willThrowException(new Exception('Phase 2 error'));
@@ -293,6 +397,7 @@ final class SyncCompaniesCommandTest extends TestCase
             ->method('upsertBatch')
             ->willReturn(1);
 
+        $this->app->instance(OracleCloudStorageServiceContract::class, $oracleService);
         $this->app->instance(FinancialDataServiceContract::class, $financialDataService);
         $this->app->instance(CompanyRepositoryContract::class, $companyRepository);
 

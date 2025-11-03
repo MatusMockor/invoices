@@ -31,10 +31,12 @@ use App\Services\Interfaces\BusinessEntityDataService as BusinessEntityDataServi
 use App\Services\Interfaces\CompanyAnalyticsService as CompanyAnalyticsServiceContract;
 use App\Services\Interfaces\FinancialDataService as FinancialDataServiceContract;
 use App\Services\Interfaces\InvoicePdfService as InvoicePdfServiceContract;
+use App\Services\Interfaces\OracleCloudStorageService as OracleCloudStorageServiceContract;
 use App\Services\Interfaces\PayBySquare as PayBySquareContract;
 use App\Services\Interfaces\ReportService as ReportServiceContract;
 use App\Services\Interfaces\ScraperService as ScraperServiceContract;
 use App\Services\InvoicePdfService as InvoicePdfServiceImpl;
+use App\Services\OracleCloudStorageService;
 use App\Services\PayBySquareService;
 use App\Services\ReportService;
 use App\Services\ScraperService as ScraperServiceImpl;
@@ -66,6 +68,7 @@ class AppServiceProvider extends ServiceProvider
         $this->app->bind(CompanyAnalyticsServiceContract::class, CompanyAnalyticsService::class);
         $this->app->bind(ReportServiceContract::class, ReportService::class);
         $this->app->bind(FinancialDataServiceContract::class, FinancialDataServiceImpl::class);
+        $this->app->bind(OracleCloudStorageServiceContract::class, OracleCloudStorageService::class);
     }
 
     /**
