@@ -54,7 +54,7 @@ final class SyncCompaniesFromOracleAction
         // Check if sync already exists for this date
         $existingSync = $this->companySyncLogRepository->findByDate($syncDate);
 
-        if ($existingSync && $existingSync->status === CompanySyncStatus::Completed) {
+        if ($existingSync && $existingSync->status === CompanySyncStatus::COMPLETED) {
 
             return [
                 'created' => $existingSync->companies_created,
@@ -67,8 +67,8 @@ final class SyncCompaniesFromOracleAction
         $syncLog = $this->companySyncLogRepository->updateOrCreate(
             ['sync_date' => $syncDate],
             [
-                'sync_type' => CompanySyncType::BatchInit->value,
-                'status' => CompanySyncStatus::Processing->value,
+                'sync_type' => CompanySyncType::BATCHINIT->value,
+                'status' => CompanySyncStatus::PROCESSING->value,
                 'started_at' => now(),
                 'files_processed' => 0,
                 'companies_created' => 0,
@@ -90,7 +90,7 @@ final class SyncCompaniesFromOracleAction
 
             if (empty($fileKeys)) {
                 $this->companySyncLogRepository->update($syncLog, [
-                    'status' => CompanySyncStatus::Completed->value,
+                    'status' => CompanySyncStatus::COMPLETED->value,
                     'completed_at' => now(),
                 ]);
 
@@ -115,7 +115,7 @@ final class SyncCompaniesFromOracleAction
 
             // Mark sync as completed
             $this->companySyncLogRepository->update($syncLog, [
-                'status' => CompanySyncStatus::Completed->value,
+                'status' => CompanySyncStatus::COMPLETED->value,
                 'completed_at' => now(),
                 'files_processed' => $stats['files_processed'],
                 'companies_created' => $stats['created'],
@@ -126,7 +126,7 @@ final class SyncCompaniesFromOracleAction
         } catch (Throwable $e) {
             // Mark sync as failed
             $this->companySyncLogRepository->update($syncLog, [
-                'status' => CompanySyncStatus::Failed->value,
+                'status' => CompanySyncStatus::FAILED->value,
                 'completed_at' => now(),
             ]);
 

@@ -6,7 +6,7 @@ namespace App\Enums;
 
 enum CompanySyncType: string
 {
-    case BatchInit = 'batch-init';
-    case DicUpdate = 'dic-update';
-    case VatUpdate = 'vat-update';
+    case BATCHINIT = 'batch-init';
+    case DICUPDATE = 'dic-update';
+    case VATUPDATE = 'vat-update';
 }
