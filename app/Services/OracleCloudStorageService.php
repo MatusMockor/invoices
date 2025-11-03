@@ -12,6 +12,7 @@ use Illuminate\Support\Facades\Storage;
 use JsonException;
 use RuntimeException;
 use SimpleXMLElement;
+use Throwable;
 
 class OracleCloudStorageService implements OracleCloudStorageServiceContract
 {
