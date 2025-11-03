@@ -8,7 +8,6 @@ use App\Models\CompanySyncLog;
 use App\Repositories\Interfaces\CompanyRepository as CompanyRepositoryContract;
 use App\Services\Interfaces\OracleCloudStorageService as OracleCloudStorageServiceContract;
 use Illuminate\Support\Facades\DB;
-use Illuminate\Support\Facades\Log;
 use Throwable;
 
 final class SyncCompaniesFromOracleAction
@@ -28,20 +27,14 @@ final class SyncCompaniesFromOracleAction
     {
         $today = today()->toDateString();
 
-        Log::info('Starting company sync from Oracle Cloud Storage');
-
         // Try to find batch-init for today first
         $fileKeys = $this->oracleCloudStorageService->getBatchInitFileList($today);
 
         // If no files for today, find the latest available date
         if (empty($fileKeys)) {
-            Log::info('No batch-init found for today, searching for latest available date', ['today' => $today]);
-
             $latestDate = $this->oracleCloudStorageService->getLatestBatchInitDate();
 
             if (! $latestDate) {
-                Log::warning('No batch-init dates found at all');
-
                 return [
                     'created' => 0,
                     'errors' => 0,
@@ -50,17 +43,14 @@ final class SyncCompaniesFromOracleAction
             }
 
             $syncDate = $latestDate;
-            Log::info('Found latest batch-init date', ['date' => $syncDate]);
         } else {
             $syncDate = $today;
-            Log::info('Found batch-init for today', ['date' => $syncDate]);
         }
 
         // Check if sync already exists for this date
         $existingSync = CompanySyncLog::where('sync_date', $syncDate)->first();
 
         if ($existingSync && $existingSync->status === 'completed') {
-            Log::info('Sync already completed for this date', ['date' => $syncDate]);
 
             return [
                 'created' => $existingSync->companies_created,
@@ -95,8 +85,6 @@ final class SyncCompaniesFromOracleAction
             }
 
             if (empty($fileKeys)) {
-                Log::warning('No batch-init files found', ['date' => $syncDate]);
-
                 $syncLog->update([
                     'status' => 'completed',
                     'completed_at' => now(),
@@ -104,11 +92,6 @@ final class SyncCompaniesFromOracleAction
 
                 return $stats;
             }
-
-            Log::info('Processing batch-init files', [
-                'date' => $syncDate,
-                'files_count' => count($fileKeys),
-            ]);
 
             // Process each file from the list
             foreach ($fileKeys as $fileKey) {
@@ -135,25 +118,12 @@ final class SyncCompaniesFromOracleAction
                 'errors' => $stats['errors'],
             ]);
 
-            Log::info('Company sync completed', [
-                'date' => $syncDate,
-                'files_processed' => $stats['files_processed'],
-                'created' => $stats['created'],
-                'errors' => $stats['errors'],
-            ]);
-
             return $stats;
         } catch (Throwable $e) {
             // Mark sync as failed
             $syncLog->update([
                 'status' => 'failed',
                 'completed_at' => now(),
-            ]);
-
-            Log::error('Company sync failed', [
-                'date' => $syncDate,
-                'error' => $e->getMessage(),
-                'trace' => $e->getTraceAsString(),
             ]);
 
             throw $e;
@@ -169,8 +139,6 @@ final class SyncCompaniesFromOracleAction
      */
     private function processFile(string $fileKey, array &$stats): void
     {
-        Log::info('Processing file', ['file' => $fileKey]);
-
         $batchSize = config('oracle_cloud.batch_size', 10000);
         $batch = [];
         $totalProcessed = 0;
@@ -197,14 +165,7 @@ final class SyncCompaniesFromOracleAction
                 $this->processBatch($batch, $stats);
                 $totalProcessed += count($batch);
             }
-
-            Log::info('File completed', ['file' => basename($fileKey), 'records' => $totalProcessed]);
         } catch (Throwable $e) {
-            Log::error('File failed', [
-                'file' => basename($fileKey),
-                'error' => $e->getMessage(),
-            ]);
-
             throw $e;
         }
     }
@@ -232,12 +193,6 @@ final class SyncCompaniesFromOracleAction
             });
         } catch (Throwable $e) {
             $stats['errors'] += count($batch);
-
-            Log::error('Batch processing failed', [
-                'batch_size' => count($batch),
-                'error' => $e->getMessage(),
-                'first_3_icos' => array_slice(array_column($batch, 'ico'), 0, 3),
-            ]);
         }
     }
 
