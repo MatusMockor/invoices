@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace App\Actions\Company;
 
+use App\Enums\CompanySyncStatus;
+use App\Enums\CompanySyncType;
 use App\Repositories\Interfaces\CompanyRepository as CompanyRepositoryContract;
 use App\Repositories\Interfaces\CompanySyncLogRepository as CompanySyncLogRepositoryContract;
 use App\Services\Interfaces\FinancialDataService as FinancialDataServiceContract;
@@ -33,9 +35,9 @@ final class SyncCompaniesVatAction
         $today = today()->toDateString();
 
         // Check if VAT sync already completed for today
-        $existingSync = $this->syncLogRepository->findByDateAndType($today, 'vat-update');
+        $existingSync = $this->syncLogRepository->findByDateAndType($today, CompanySyncType::VatUpdate->value);
 
-        if ($existingSync?->status === 'completed') {
+        if ($existingSync?->status === CompanySyncStatus::Completed) {
             Log::info('VAT sync already completed for today', ['date' => $today]);
 
             return [
@@ -49,10 +51,10 @@ final class SyncCompaniesVatAction
         $syncLog = $this->syncLogRepository->updateOrCreate(
             [
                 'sync_date' => $today,
-                'sync_type' => 'vat-update',
+                'sync_type' => CompanySyncType::VatUpdate->value,
             ],
             [
-                'status' => 'processing',
+                'status' => CompanySyncStatus::Processing->value,
                 'started_at' => now(),
                 'companies_updated' => 0,
                 'companies_not_found' => 0,
@@ -97,7 +99,7 @@ final class SyncCompaniesVatAction
 
             // Mark sync as completed
             $this->syncLogRepository->update($syncLog, [
-                'status' => 'completed',
+                'status' => CompanySyncStatus::Completed->value,
                 'completed_at' => now(),
                 'companies_updated' => $stats['updated'],
                 'companies_not_found' => $stats['not_found'],
@@ -108,7 +110,7 @@ final class SyncCompaniesVatAction
         } catch (Throwable $e) {
             // Mark sync as failed
             $this->syncLogRepository->update($syncLog, [
-                'status' => 'failed',
+                'status' => CompanySyncStatus::Failed->value,
                 'completed_at' => now(),
             ]);
 
@@ -129,13 +131,15 @@ final class SyncCompaniesVatAction
      */
     private function processBatch(array $batch, array &$stats): void
     {
+        $companyRepository = $this->companyRepository;
+
         try {
-            DB::transaction(function () use ($batch, &$stats): void {
+            DB::transaction(static function () use ($batch, &$stats, $companyRepository): void {
                 foreach ($batch as $vatData) {
                     $ico = $vatData['ico'];
                     unset($vatData['ico']);
 
-                    $updated = $this->companyRepository->updateVatData($ico, $vatData);
+                    $updated = $companyRepository->updateVatData($ico, $vatData);
 
                     if ($updated) {
                         $stats['updated']++;
