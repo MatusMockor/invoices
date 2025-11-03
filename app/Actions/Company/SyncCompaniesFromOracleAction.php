@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace App\Actions\Company;
 
-use App\Models\CompanySyncLog;
 use App\Repositories\Interfaces\CompanyRepository as CompanyRepositoryContract;
+use App\Repositories\Interfaces\CompanySyncLogRepository as CompanySyncLogRepositoryContract;
 use App\Services\Interfaces\OracleCloudStorageService as OracleCloudStorageServiceContract;
 use Illuminate\Support\Facades\DB;
 use Throwable;
@@ -15,6 +15,7 @@ final class SyncCompaniesFromOracleAction
     public function __construct(
         private readonly OracleCloudStorageServiceContract $oracleCloudStorageService,
         private readonly CompanyRepositoryContract $companyRepository,
+        private readonly CompanySyncLogRepositoryContract $companySyncLogRepository,
     ) {}
 
     /**
@@ -30,6 +31,9 @@ final class SyncCompaniesFromOracleAction
         // Try to find batch-init for today first
         $fileKeys = $this->oracleCloudStorageService->getBatchInitFileList($today);
 
+        // Default to today's date
+        $syncDate = $today;
+
         // If no files for today, find the latest available date
         if (empty($fileKeys)) {
             $latestDate = $this->oracleCloudStorageService->getLatestBatchInitDate();
@@ -43,12 +47,10 @@ final class SyncCompaniesFromOracleAction
             }
 
             $syncDate = $latestDate;
-        } else {
-            $syncDate = $today;
         }
 
         // Check if sync already exists for this date
-        $existingSync = CompanySyncLog::where('sync_date', $syncDate)->first();
+        $existingSync = $this->companySyncLogRepository->findByDate($syncDate);
 
         if ($existingSync && $existingSync->status === 'completed') {
 
@@ -60,7 +62,7 @@ final class SyncCompaniesFromOracleAction
         }
 
         // Create or update sync log
-        $syncLog = CompanySyncLog::updateOrCreate(
+        $syncLog = $this->companySyncLogRepository->updateOrCreate(
             ['sync_date' => $syncDate],
             [
                 'sync_type' => 'batch-init',
@@ -85,7 +87,7 @@ final class SyncCompaniesFromOracleAction
             }
 
             if (empty($fileKeys)) {
-                $syncLog->update([
+                $this->companySyncLogRepository->update($syncLog, [
                     'status' => 'completed',
                     'completed_at' => now(),
                 ]);
@@ -102,7 +104,7 @@ final class SyncCompaniesFromOracleAction
                 $this->oracleCloudStorageService->cleanupFile($fileKey);
 
                 // Update progress in database
-                $syncLog->update([
+                $this->companySyncLogRepository->update($syncLog, [
                     'files_processed' => $stats['files_processed'],
                     'companies_created' => $stats['created'],
                     'errors' => $stats['errors'],
@@ -110,7 +112,7 @@ final class SyncCompaniesFromOracleAction
             }
 
             // Mark sync as completed
-            $syncLog->update([
+            $this->companySyncLogRepository->update($syncLog, [
                 'status' => 'completed',
                 'completed_at' => now(),
                 'files_processed' => $stats['files_processed'],
@@ -121,7 +123,7 @@ final class SyncCompaniesFromOracleAction
             return $stats;
         } catch (Throwable $e) {
             // Mark sync as failed
-            $syncLog->update([
+            $this->companySyncLogRepository->update($syncLog, [
                 'status' => 'failed',
                 'completed_at' => now(),
             ]);
@@ -141,32 +143,25 @@ final class SyncCompaniesFromOracleAction
     {
         $batchSize = config('oracle_cloud.batch_size', 10000);
         $batch = [];
-        $totalProcessed = 0;
 
-        try {
-            foreach ($this->oracleCloudStorageService->downloadAndStreamJson($fileKey) as $companyData) {
-                $parsedData = $this->parseCompanyData($companyData);
+        foreach ($this->oracleCloudStorageService->downloadAndStreamJson($fileKey) as $companyData) {
+            $parsedData = $this->parseCompanyData($companyData);
 
-                if (! $parsedData) {
-                    continue;
-                }
-
-                $batch[] = $parsedData;
-
-                if (count($batch) >= $batchSize) {
-                    $this->processBatch($batch, $stats);
-                    $totalProcessed += count($batch);
-                    $batch = [];
-                    // Removed progress logging for better performance
-                }
+            if (! $parsedData) {
+                continue;
             }
 
-            if (! empty($batch)) {
+            $batch[] = $parsedData;
+
+            if (count($batch) >= $batchSize) {
                 $this->processBatch($batch, $stats);
-                $totalProcessed += count($batch);
+                $batch = [];
+                // Removed progress logging for better performance
             }
-        } catch (Throwable $e) {
-            throw $e;
+        }
+
+        if (! empty($batch)) {
+            $this->processBatch($batch, $stats);
         }
     }
 
@@ -193,6 +188,12 @@ final class SyncCompaniesFromOracleAction
             });
         } catch (Throwable $e) {
             $stats['errors'] += count($batch);
+
+            logger()->error('Failed to process batch in company sync', [
+                'exception' => $e->getMessage(),
+                'batch_size' => count($batch),
+                'trace' => $e->getTraceAsString(),
+            ]);
         }
     }
 
@@ -205,7 +206,7 @@ final class SyncCompaniesFromOracleAction
     private function parseCompanyData(array $data): ?array
     {
         // Skip terminated companies (those that no longer exist)
-        if (isset($data['termination']) && ! empty($data['termination'])) {
+        if (! empty($data['termination'])) {
             return null;
         }
 
@@ -259,11 +260,11 @@ final class SyncCompaniesFromOracleAction
             return null;
         }
 
-        $ulica = null;
+        $streetAddress = null;
 
         // Format 1: street with optional regNumber/buildingNumber
         if (isset($address['street']) && trim($address['street']) !== '') {
-            $ulica = trim($address['street']);
+            $streetAddress = trim($address['street']);
 
             // Add house numbers in format: regNumber/buildingNumber
             $numbers = [];
@@ -275,22 +276,22 @@ final class SyncCompaniesFromOracleAction
             }
 
             if (! empty($numbers)) {
-                $ulica .= ' '.implode('/', $numbers);
+                $streetAddress .= ' '.implode('/', $numbers);
             }
         }
         // Format 2: district + regNumber (for živnostníci)
         elseif (isset($address['district']['value']) && trim($address['district']['value']) !== '') {
-            $ulica = trim($address['district']['value']);
+            $streetAddress = trim($address['district']['value']);
             if (isset($address['regNumber']) && $address['regNumber'] !== 0) {
-                $ulica .= ' '.$address['regNumber'];
+                $streetAddress .= ' '.$address['regNumber'];
             }
         }
         // Format 3: only house number available
         elseif (isset($address['regNumber']) && $address['regNumber'] !== 0) {
-            $ulica = (string) $address['regNumber'];
+            $streetAddress = (string) $address['regNumber'];
         }
 
-        return $ulica;
+        return $streetAddress;
     }
 
     /**
