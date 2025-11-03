@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Actions\Company;
 
+use App\Models\CompanySyncLog;
 use App\Repositories\Interfaces\CompanyRepository as CompanyRepositoryContract;
 use App\Services\Interfaces\FinancialDataService as FinancialDataServiceContract;
 use Illuminate\Support\Facades\DB;
@@ -27,6 +28,38 @@ final class SyncCompaniesVatAction
     public function handle(): array
     {
         Log::info('Starting VAT data sync from financial data source');
+
+        $today = today()->toDateString();
+
+        // Check if VAT sync already completed for today
+        $existingSync = CompanySyncLog::where('sync_date', $today)
+            ->where('sync_type', 'vat-update')
+            ->first();
+
+        if ($existingSync?->status === 'completed') {
+            Log::info('VAT sync already completed for today', ['date' => $today]);
+
+            return [
+                'updated' => $existingSync->companies_updated ?? 0,
+                'not_found' => $existingSync->companies_not_found ?? 0,
+                'errors' => $existingSync->errors,
+            ];
+        }
+
+        // Create or update sync log
+        $syncLog = CompanySyncLog::updateOrCreate(
+            [
+                'sync_date' => $today,
+                'sync_type' => 'vat-update',
+            ],
+            [
+                'status' => 'processing',
+                'started_at' => now(),
+                'companies_updated' => 0,
+                'companies_not_found' => 0,
+                'errors' => 0,
+            ]
+        );
 
         $stats = [
             'updated' => 0,
@@ -63,8 +96,23 @@ final class SyncCompaniesVatAction
                 'errors' => $stats['errors'],
             ]);
 
+            // Mark sync as completed
+            $syncLog->update([
+                'status' => 'completed',
+                'completed_at' => now(),
+                'companies_updated' => $stats['updated'],
+                'companies_not_found' => $stats['not_found'],
+                'errors' => $stats['errors'],
+            ]);
+
             return $stats;
         } catch (Throwable $e) {
+            // Mark sync as failed
+            $syncLog->update([
+                'status' => 'failed',
+                'completed_at' => now(),
+            ]);
+
             Log::error('VAT data sync failed', [
                 'error' => $e->getMessage(),
                 'trace' => $e->getTraceAsString(),
@@ -82,33 +130,29 @@ final class SyncCompaniesVatAction
      */
     private function processBatch(array $batch, array &$stats): void
     {
-        $companyRepository = $this->companyRepository;
-
-        foreach ($batch as $vatData) {
-            try {
-                DB::transaction(static function () use ($vatData, &$stats, $companyRepository): void {
+        try {
+            DB::transaction(function () use ($batch, &$stats): void {
+                foreach ($batch as $vatData) {
                     $ico = $vatData['ico'];
                     unset($vatData['ico']);
 
-                    $updated = $companyRepository->updateVatData($ico, $vatData);
+                    $updated = $this->companyRepository->updateVatData($ico, $vatData);
 
                     if ($updated) {
                         $stats['updated']++;
-
-                        return;
+                    } else {
+                        $stats['not_found']++;
+                        Log::debug('Company not found for VAT update', ['ico' => $ico]);
                     }
+                }
+            });
+        } catch (Throwable $e) {
+            $stats['errors'] += count($batch);
 
-                    $stats['not_found']++;
-                    Log::debug('Company not found for VAT update', ['ico' => $ico]);
-                });
-            } catch (Throwable $e) {
-                $stats['errors']++;
-
-                Log::error('VAT record processing failed', [
-                    'ico' => $vatData['ico'] ?? 'unknown',
-                    'error' => $e->getMessage(),
-                ]);
-            }
+            Log::error('VAT batch processing failed', [
+                'batch_size' => count($batch),
+                'error' => $e->getMessage(),
+            ]);
         }
     }
 }

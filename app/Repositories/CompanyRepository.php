@@ -220,14 +220,10 @@ class CompanyRepository implements CompanyRepositoryContract
      */
     public function getCountByCountry(): array
     {
-        $result = Company::groupBy('country')
+        return Company::groupBy('country')
             ->selectRaw('country, COUNT(*) as count')
             ->pluck('count', 'country')
             ->toArray();
-
-        return array_map(static function (int $count): int {
-            return $count;
-        }, $result);
     }
 
     /**
@@ -237,15 +233,11 @@ class CompanyRepository implements CompanyRepositoryContract
      */
     public function getCountByYear(): array
     {
-        $result = Company::selectRaw('EXTRACT(YEAR FROM created_at)::integer as year, COUNT(*) as count')
+        return Company::selectRaw('EXTRACT(YEAR FROM created_at)::integer as year, COUNT(*) as count')
             ->groupBy('year')
             ->orderBy('year')
             ->pluck('count', 'year')
             ->toArray();
-
-        return array_map(static function (int $count): int {
-            return $count;
-        }, $result);
     }
 
     /**
