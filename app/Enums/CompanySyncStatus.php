@@ -6,7 +6,7 @@ namespace App\Enums;
 
 enum CompanySyncStatus: string
 {
-    case Processing = 'processing';
-    case Completed = 'completed';
-    case Failed = 'failed';
+    case PROCESSING = 'processing';
+    case COMPLETED = 'completed';
+    case FAILED = 'failed';
 }

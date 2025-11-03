@@ -35,9 +35,9 @@ final class SyncCompaniesDicAction
         $today = today()->toDateString();
 
         // Check if DIC sync already completed for today
-        $existingSync = $this->syncLogRepository->findByDateAndType($today, CompanySyncType::DicUpdate->value);
+        $existingSync = $this->syncLogRepository->findByDateAndType($today, CompanySyncType::DICUPDATE->value);
 
-        if ($existingSync?->status === CompanySyncStatus::Completed) {
+        if ($existingSync?->status === CompanySyncStatus::COMPLETED) {
             Log::info('DIC sync already completed for today', ['date' => $today]);
 
             return [
@@ -51,10 +51,10 @@ final class SyncCompaniesDicAction
         $syncLog = $this->syncLogRepository->updateOrCreate(
             [
                 'sync_date' => $today,
-                'sync_type' => CompanySyncType::DicUpdate->value,
+                'sync_type' => CompanySyncType::DICUPDATE->value,
             ],
             [
-                'status' => CompanySyncStatus::Processing->value,
+                'status' => CompanySyncStatus::PROCESSING->value,
                 'started_at' => now(),
                 'companies_updated' => 0,
                 'companies_not_found' => 0,
@@ -99,7 +99,7 @@ final class SyncCompaniesDicAction
 
             // Mark sync as completed
             $this->syncLogRepository->update($syncLog, [
-                'status' => CompanySyncStatus::Completed->value,
+                'status' => CompanySyncStatus::COMPLETED->value,
                 'completed_at' => now(),
                 'companies_updated' => $stats['updated'],
                 'companies_not_found' => $stats['not_found'],
@@ -110,7 +110,7 @@ final class SyncCompaniesDicAction
         } catch (Throwable $e) {
             // Mark sync as failed
             $this->syncLogRepository->update($syncLog, [
-                'status' => CompanySyncStatus::Failed->value,
+                'status' => CompanySyncStatus::FAILED->value,
                 'completed_at' => now(),
             ]);
 
