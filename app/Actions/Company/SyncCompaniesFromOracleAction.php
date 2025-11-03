@@ -223,15 +223,16 @@ final class SyncCompaniesFromOracleAction
             return null;
         }
 
-        // Extract company name from fullNames array
+        // Extract company name from fullNames array (use currently valid entry)
         $fullNames = $data['fullNames'] ?? [];
-        $name = ! empty($fullNames) && isset($fullNames[0]['value'])
-            ? trim($fullNames[0]['value'])
+        $currentName = $this->findCurrentlyValidEntry($fullNames);
+        $name = $currentName !== null && isset($currentName['value'])
+            ? trim($currentName['value'])
             : '';
 
-        // Extract address from addresses array
+        // Extract address from addresses array (use currently valid entry)
         $addresses = $data['addresses'] ?? [];
-        $address = ! empty($addresses) ? $addresses[0] : [];
+        $address = $this->findCurrentlyValidEntry($addresses) ?? [];
 
         $street = $this->buildStreetAddress($address);
         $city = $address['municipality']['value'] ?? null;
@@ -294,6 +295,47 @@ final class SyncCompaniesFromOracleAction
         }
 
         return $streetAddress;
+    }
+
+    /**
+     * Find the currently valid entry from an array of temporal entries.
+     * Returns entry without 'validTo' field (currently valid).
+     * If all have 'validTo', returns the one with latest 'validFrom'.
+     *
+     * @param  array<int, array<string, mixed>>  $entries
+     * @return array<string, mixed>|null
+     */
+    private function findCurrentlyValidEntry(array $entries): ?array
+    {
+        if (empty($entries)) {
+            return null;
+        }
+
+        // First pass: find entry without validTo (currently valid)
+        foreach ($entries as $entry) {
+            if (! isset($entry['validTo']) || $entry['validTo'] === null) {
+                return $entry;
+            }
+        }
+
+        // All entries have validTo, find the one with latest validFrom
+        $latestEntry = null;
+        $latestDate = null;
+
+        foreach ($entries as $entry) {
+            $validFrom = $entry['validFrom'] ?? null;
+
+            if (! $validFrom) {
+                continue;
+            }
+
+            if ($latestDate === null || $validFrom > $latestDate) {
+                $latestDate = $validFrom;
+                $latestEntry = $entry;
+            }
+        }
+
+        return $latestEntry;
     }
 
     /**
