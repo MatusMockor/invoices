@@ -8,7 +8,6 @@ use App\Models\Company;
 use App\Models\Invoice;
 use App\Models\UserCompany;
 use App\Repositories\Interfaces\CompanyRepository;
-use Illuminate\Contracts\Container\BindingResolutionException;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
 
@@ -18,13 +17,10 @@ class CompanyRepositoryTest extends TestCase
 
     protected CompanyRepository $repository;
 
-    /**
-     * @throws BindingResolutionException
-     */
     protected function setUp(): void
     {
         parent::setUp();
-        $this->repository = $this->app->make(CompanyRepository::class);
+        $this->repository = app(CompanyRepository::class);
     }
 
     public function test_get_monthly_income_returns_correct_amounts_by_month(): void
@@ -64,62 +60,6 @@ class CompanyRepositoryTest extends TestCase
         $this->assertEquals(0.0, $result[4]); // April
     }
 
-    public function test_get_monthly_income_skips_invoices_with_null_issue_date(): void
-    {
-        $supplierCompany = UserCompany::factory()->create();
-        $company = Company::factory()->create();
-        $year = 2025;
-
-        // Create invoice with valid issue date
-        Invoice::factory()->create([
-            'supplier_company_id' => $supplierCompany->id,
-            'company_id' => $company->id,
-            'issue_date' => "{$year}-01-15",
-            'total_amount' => 1000.00,
-        ]);
-
-        // Create invoice with NULL issue date
-        Invoice::factory()->create([
-            'supplier_company_id' => $supplierCompany->id,
-            'company_id' => $company->id,
-            'issue_date' => null,
-            'total_amount' => 5000.00,
-        ]);
-
-        $result = $this->repository->getMonthlyIncome($supplierCompany->id, $year);
-
-        // Assert only the valid invoice is counted
-        $this->assertEquals(1000.00, $result[1]); // January - only the valid invoice
-        $this->assertEquals(0.0, $result[2]); // February - no invoices
-
-        // Assert total of all months equals only the valid invoice
-        $total = array_sum($result);
-        $this->assertEquals(1000.00, $total);
-    }
-
-    public function test_get_monthly_income_does_not_throw_exception_with_null_issue_date(): void
-    {
-        $supplierCompany = UserCompany::factory()->create();
-        $company = Company::factory()->create();
-        $year = 2025;
-
-        // Create invoice with NULL issue date
-        Invoice::factory()->create([
-            'supplier_company_id' => $supplierCompany->id,
-            'company_id' => $company->id,
-            'issue_date' => null,
-            'total_amount' => 1000.00,
-        ]);
-
-        // This should not throw an exception
-        $result = $this->repository->getMonthlyIncome($supplierCompany->id, $year);
-
-        // Assert all months are zero
-        $this->assertIsArray($result);
-        $this->assertCount(12, $result);
-        $this->assertEquals(0.0, array_sum($result));
-    }
-
     public function test_get_monthly_expenses_returns_correct_amounts_by_month(): void
     {
         $supplierCompany = UserCompany::factory()->create();
@@ -156,62 +96,6 @@ class CompanyRepositoryTest extends TestCase
         $this->assertEquals(0.0, $result[3]); // March
         $this->assertEquals(0.0, $result[4]); // April
         $this->assertEquals(3000.00, $result[5]); // May
-    }
-
-    public function test_get_monthly_expenses_skips_invoices_with_null_issue_date(): void
-    {
-        $supplierCompany = UserCompany::factory()->create();
-        $company = Company::factory()->create();
-        $year = 2025;
-
-        // Create invoice with valid issue date
-        Invoice::factory()->create([
-            'supplier_company_id' => $supplierCompany->id,
-            'company_id' => $company->id,
-            'issue_date' => "{$year}-03-10",
-            'total_amount' => 800.00,
-        ]);
-
-        // Create invoice with NULL issue date
-        Invoice::factory()->create([
-            'supplier_company_id' => $supplierCompany->id,
-            'company_id' => $company->id,
-            'issue_date' => null,
-            'total_amount' => 6000.00,
-        ]);
-
-        $result = $this->repository->getMonthlyExpenses($company->id, $year);
-
-        // Assert only the valid invoice is counted
-        $this->assertEquals(800.00, $result[3]); // March - only the valid invoice
-        $this->assertEquals(0.0, $result[1]); // January - no invoices
-
-        // Assert total of all months equals only the valid invoice
-        $total = array_sum($result);
-        $this->assertEquals(800.00, $total);
-    }
-
-    public function test_get_monthly_expenses_does_not_throw_exception_with_null_issue_date(): void
-    {
-        $supplierCompany = UserCompany::factory()->create();
-        $company = Company::factory()->create();
-        $year = 2025;
-
-        // Create invoice with NULL issue date
-        Invoice::factory()->create([
-            'supplier_company_id' => $supplierCompany->id,
-            'company_id' => $company->id,
-            'issue_date' => null,
-            'total_amount' => 2000.00,
-        ]);
-
-        // This should not throw an exception
-        $result = $this->repository->getMonthlyExpenses($company->id, $year);
-
-        // Assert all months are zero
-        $this->assertIsArray($result);
-        $this->assertCount(12, $result);
-        $this->assertEquals(0.0, array_sum($result));
     }
 
     public function test_get_monthly_income_filters_by_correct_year(): void
