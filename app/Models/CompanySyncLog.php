@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace App\Models;
 
+use App\Enums\CompanySyncStatus;
+use App\Enums\CompanySyncType;
 use Illuminate\Database\Eloquent\Model;
 
 final class CompanySyncLog extends Model
@@ -30,5 +32,7 @@ final class CompanySyncLog extends Model
         'companies_updated' => 'integer',
         'companies_not_found' => 'integer',
         'errors' => 'integer',
+        'status' => CompanySyncStatus::class,
+        'sync_type' => CompanySyncType::class,
     ];
 }

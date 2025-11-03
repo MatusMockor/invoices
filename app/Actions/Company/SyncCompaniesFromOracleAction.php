@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace App\Actions\Company;
 
+use App\Enums\CompanySyncStatus;
+use App\Enums\CompanySyncType;
 use App\Repositories\Interfaces\CompanyRepository as CompanyRepositoryContract;
 use App\Repositories\Interfaces\CompanySyncLogRepository as CompanySyncLogRepositoryContract;
 use App\Services\Interfaces\OracleCloudStorageService as OracleCloudStorageServiceContract;
@@ -52,7 +54,7 @@ final class SyncCompaniesFromOracleAction
         // Check if sync already exists for this date
         $existingSync = $this->companySyncLogRepository->findByDate($syncDate);
 
-        if ($existingSync && $existingSync->status === 'completed') {
+        if ($existingSync && $existingSync->status === CompanySyncStatus::Completed) {
 
             return [
                 'created' => $existingSync->companies_created,
@@ -65,8 +67,8 @@ final class SyncCompaniesFromOracleAction
         $syncLog = $this->companySyncLogRepository->updateOrCreate(
             ['sync_date' => $syncDate],
             [
-                'sync_type' => 'batch-init',
-                'status' => 'processing',
+                'sync_type' => CompanySyncType::BatchInit->value,
+                'status' => CompanySyncStatus::Processing->value,
                 'started_at' => now(),
                 'files_processed' => 0,
                 'companies_created' => 0,
@@ -88,7 +90,7 @@ final class SyncCompaniesFromOracleAction
 
             if (empty($fileKeys)) {
                 $this->companySyncLogRepository->update($syncLog, [
-                    'status' => 'completed',
+                    'status' => CompanySyncStatus::Completed->value,
                     'completed_at' => now(),
                 ]);
 
@@ -113,7 +115,7 @@ final class SyncCompaniesFromOracleAction
 
             // Mark sync as completed
             $this->companySyncLogRepository->update($syncLog, [
-                'status' => 'completed',
+                'status' => CompanySyncStatus::Completed->value,
                 'completed_at' => now(),
                 'files_processed' => $stats['files_processed'],
                 'companies_created' => $stats['created'],
@@ -124,7 +126,7 @@ final class SyncCompaniesFromOracleAction
         } catch (Throwable $e) {
             // Mark sync as failed
             $this->companySyncLogRepository->update($syncLog, [
-                'status' => 'failed',
+                'status' => CompanySyncStatus::Failed->value,
                 'completed_at' => now(),
             ]);
 

@@ -40,11 +40,11 @@ class SyncCompaniesCommand extends Command
         $overallStartTime = microtime(true);
 
         // Phase 1: Sync company data from Oracle Cloud
-        //        $phase1Result = $this->executePhase1($oracleAction);
-        //
-        //        if ($phase1Result !== self::SUCCESS) {
-        //            return $phase1Result;
-        //        }
+        $phase1Result = $this->executePhase1($oracleAction);
+
+        if ($phase1Result !== self::SUCCESS) {
+            return $phase1Result;
+        }
 
         $this->newLine();
 
@@ -77,31 +77,15 @@ class SyncCompaniesCommand extends Command
      */
     private function executePhase1(SyncCompaniesFromOracleAction $action): int
     {
-        $this->info('Phase 1: Syncing company data from Oracle Cloud');
-
-        $startTime = microtime(true);
-
-        try {
-            $stats = $action->handle();
-
-            $duration = $this->formatDuration(microtime(true) - $startTime);
-
-            $this->table(
-                ['Metric', 'Value'],
-                [
-                    ['Files', number_format($stats['files_processed'] ?? 0)],
-                    ['Processed', number_format($stats['created'])],
-                    ['Errors', number_format($stats['errors'])],
-                    ['Duration', $duration],
-                ]
-            );
-
-            return self::SUCCESS;
-        } catch (Throwable $e) {
-            $this->error('Phase 1 failed: '.$e->getMessage());
-
-            return self::FAILURE;
-        }
+        return $this->executePhase(
+            'Phase 1: Syncing company data from Oracle Cloud',
+            fn (): array => $action->handle(),
+            [
+                'Files' => 'files_processed',
+                'Processed' => 'created',
+                'Errors' => 'errors',
+            ]
+        );
     }
 
     /**
@@ -109,31 +93,15 @@ class SyncCompaniesCommand extends Command
      */
     private function executePhase2(SyncCompaniesDicAction $action): int
     {
-        $this->info('Phase 2: Syncing DIC data from Financial Administration');
-
-        $startTime = microtime(true);
-
-        try {
-            $stats = $action->handle();
-
-            $duration = $this->formatDuration(microtime(true) - $startTime);
-
-            $this->table(
-                ['Metric', 'Value'],
-                [
-                    ['Updated', number_format($stats['updated'])],
-                    ['Not found', number_format($stats['not_found'])],
-                    ['Errors', number_format($stats['errors'])],
-                    ['Duration', $duration],
-                ]
-            );
-
-            return self::SUCCESS;
-        } catch (Throwable $e) {
-            $this->error('Phase 2 failed: '.$e->getMessage());
-
-            return self::FAILURE;
-        }
+        return $this->executePhase(
+            'Phase 2: Syncing DIC data from Financial Administration',
+            fn (): array => $action->handle(),
+            [
+                'Updated' => 'updated',
+                'Not found' => 'not_found',
+                'Errors' => 'errors',
+            ]
+        );
     }
 
     /**
@@ -141,28 +109,45 @@ class SyncCompaniesCommand extends Command
      */
     private function executePhase3(SyncCompaniesVatAction $action): int
     {
-        $this->info('Phase 3: Syncing IC DPH data from Financial Administration');
+        return $this->executePhase(
+            'Phase 3: Syncing IC DPH data from Financial Administration',
+            fn (): array => $action->handle(),
+            [
+                'Updated' => 'updated',
+                'Not found' => 'not_found',
+                'Errors' => 'errors',
+            ]
+        );
+    }
+
+    /**
+     * Execute a sync phase with common error handling and stats display.
+     *
+     * @param  array<string, string>  $statsKeys
+     */
+    private function executePhase(string $phaseName, callable $action, array $statsKeys): int
+    {
+        $this->info($phaseName);
 
         $startTime = microtime(true);
 
         try {
-            $stats = $action->handle();
+            $stats = $action();
 
             $duration = $this->formatDuration(microtime(true) - $startTime);
 
-            $this->table(
-                ['Metric', 'Value'],
-                [
-                    ['Updated', number_format($stats['updated'])],
-                    ['Not found', number_format($stats['not_found'])],
-                    ['Errors', number_format($stats['errors'])],
-                    ['Duration', $duration],
-                ]
-            );
+            $tableData = [];
+            foreach ($statsKeys as $label => $key) {
+                $tableData[] = [$label, number_format($stats[$key] ?? 0)];
+            }
+            $tableData[] = ['Duration', $duration];
+
+            $this->table(['Metric', 'Value'], $tableData);
 
             return self::SUCCESS;
         } catch (Throwable $e) {
-            $this->error('Phase 3 failed: '.$e->getMessage());
+            $phaseNumber = explode(':', $phaseName)[0];
+            $this->error("{$phaseNumber} failed: ".$e->getMessage());
 
             return self::FAILURE;
         }
