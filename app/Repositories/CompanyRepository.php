@@ -154,45 +154,23 @@ class CompanyRepository implements CompanyRepositoryContract
     }
 
     /**
-     * Get monthly income for a company for the current year
+     * Get monthly income for a company for the specified year
+     *
+     * @return array<int, float> Array indexed by month number (1-12) with total amounts
      */
     public function getMonthlyIncome(int $companyId, int $year): array
     {
-        $result = array_fill(1, 12, 0.0);
-
-        // Get all invoices for the company in the specified year
-        $invoices = Invoice::where('supplier_company_id', $companyId)
-            ->whereYear('issue_date', $year)
-            ->get();
-
-        // Group invoices by month and sum the total amounts
-        foreach ($invoices as $invoice) {
-            $month = $invoice->issue_date->month;
-            $result[$month] += (float) $invoice->total_amount;
-        }
-
-        return $result;
+        return $this->getMonthlyAmounts($companyId, $year, 'supplier_company_id');
     }
 
     /**
-     * Get monthly expenses for a company for the current year
+     * Get monthly expenses for a company for the specified year
+     *
+     * @return array<int, float> Array indexed by month number (1-12) with total amounts
      */
     public function getMonthlyExpenses(int $companyId, int $year): array
     {
-        $result = array_fill(1, 12, 0.0);
-
-        // Get all invoices where this company is the recipient in the specified year
-        $invoices = Invoice::where('company_id', $companyId)
-            ->whereYear('issue_date', $year)
-            ->get();
-
-        // Group invoices by month and sum the total amounts
-        foreach ($invoices as $invoice) {
-            $month = $invoice->issue_date->month;
-            $result[$month] += (float) $invoice->total_amount;
-        }
-
-        return $result;
+        return $this->getMonthlyAmounts($companyId, $year, 'company_id');
     }
 
     /**
@@ -233,5 +211,121 @@ class CompanyRepository implements CompanyRepositoryContract
         return $company->update([
             'ic_dph' => $vatData['ic_dph'] ?? null,
         ]);
+    }
+
+    /**
+     * Get companies count grouped by country
+     *
+     * @return array<string, int> Array with country as key and count as value
+     */
+    public function getCountByCountry(): array
+    {
+        $result = Company::groupBy('country')
+            ->selectRaw('country, COUNT(*) as count')
+            ->pluck('count', 'country')
+            ->toArray();
+
+        return array_map(static function (int $count): int {
+            return $count;
+        }, $result);
+    }
+
+    /**
+     * Get companies count grouped by year
+     *
+     * @return array<int, int> Array with year as key and count as value
+     */
+    public function getCountByYear(): array
+    {
+        $result = Company::selectRaw('EXTRACT(YEAR FROM created_at)::integer as year, COUNT(*) as count')
+            ->groupBy('year')
+            ->orderBy('year')
+            ->pluck('count', 'year')
+            ->toArray();
+
+        return array_map(static function (int $count): int {
+            return $count;
+        }, $result);
+    }
+
+    /**
+     * Get companies count grouped by month for a specific year
+     *
+     * @return array<int, int> Array with month (1-12) as key and count as value
+     */
+    public function getCountByMonth(int $year): array
+    {
+        $monthlyData = Company::whereYear('created_at', $year)
+            ->selectRaw('EXTRACT(MONTH FROM created_at)::integer as month, COUNT(*) as count')
+            ->groupBy('month')
+            ->pluck('count', 'month')
+            ->toArray();
+
+        $result = array_fill(1, 12, 0);
+
+        foreach ($monthlyData as $month => $count) {
+            $result[(int) $month] = (int) $count;
+        }
+
+        return $result;
+    }
+
+    /**
+     * Count companies with VAT number
+     */
+    public function countWithVatNumber(): int
+    {
+        return Company::whereNotNull('ic_dph')->count();
+    }
+
+    /**
+     * Count companies without VAT number
+     */
+    public function countWithoutVatNumber(): int
+    {
+        return Company::whereNull('ic_dph')->count();
+    }
+
+    /**
+     * Count companies created in a specific year
+     */
+    public function countByYear(int $year): int
+    {
+        return Company::whereYear('created_at', $year)->count();
+    }
+
+    /**
+     * Get companies created in a date range
+     */
+    public function getByDateRange(string $startDate, string $endDate): Collection
+    {
+        return Company::whereBetween('created_at', [$startDate, $endDate])
+            ->orderBy('name')
+            ->get();
+    }
+
+    /**
+     * Get monthly invoice amounts grouped by month using database aggregation
+     *
+     * @param  string  $companyField  Either 'supplier_company_id' or 'company_id'
+     * @return array<int, float> Array indexed by month number (1-12) with total amounts
+     */
+    private function getMonthlyAmounts(int $companyId, int $year, string $companyField): array
+    {
+        $result = array_fill(1, 12, 0.0);
+
+        $monthlyTotals = Invoice::where($companyField, $companyId)
+            ->whereNotNull('issue_date')
+            ->whereYear('issue_date', $year)
+            ->selectRaw('EXTRACT(MONTH FROM issue_date)::integer as month, SUM(total_amount) as total')
+            ->groupBy('month')
+            ->pluck('total', 'month')
+            ->toArray();
+
+        foreach ($monthlyTotals as $month => $total) {
+            $result[(int) $month] = (float) $total;
+        }
+
+        return $result;
     }
 }

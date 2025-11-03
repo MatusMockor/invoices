@@ -28,18 +28,7 @@ class CompanyAnalyticsService implements CompanyAnalyticsServiceContract
      */
     public function getCompaniesByCountry(): array
     {
-        $companies = $this->companyRepository->getAllOrderedByName();
-        $result = [];
-
-        foreach ($companies as $company) {
-            $country = $company->country;
-            if (! isset($result[$country])) {
-                $result[$country] = 0;
-            }
-            $result[$country]++;
-        }
-
-        return $result;
+        return $this->companyRepository->getCountByCountry();
     }
 
     /**
@@ -47,20 +36,7 @@ class CompanyAnalyticsService implements CompanyAnalyticsServiceContract
      */
     public function getCompaniesPerYear(): array
     {
-        $companies = $this->companyRepository->getAllOrderedByName();
-        $result = [];
-
-        foreach ($companies as $company) {
-            $year = Carbon::parse($company->created_at)->year;
-            if (! isset($result[$year])) {
-                $result[$year] = 0;
-            }
-            $result[$year]++;
-        }
-
-        ksort($result);
-
-        return $result;
+        return $this->companyRepository->getCountByYear();
     }
 
     /**
@@ -68,15 +44,7 @@ class CompanyAnalyticsService implements CompanyAnalyticsServiceContract
      */
     public function getCompaniesPerMonth(int $year): array
     {
-        $result = array_fill(1, 12, 0);
-        $companies = $this->companyRepository->getByYear($year);
-
-        foreach ($companies as $company) {
-            $month = Carbon::parse($company->created_at)->month;
-            $result[$month]++;
-        }
-
-        return $result;
+        return $this->companyRepository->getCountByMonth($year);
     }
 
     /**
@@ -90,7 +58,7 @@ class CompanyAnalyticsService implements CompanyAnalyticsServiceContract
             return 0;
         }
 
-        $companiesWithVat = $this->companyRepository->getWithVatNumber()->count();
+        $companiesWithVat = $this->companyRepository->countWithVatNumber();
 
         return round(($companiesWithVat / $totalCompanies) * 100, 2);
     }
@@ -105,14 +73,14 @@ class CompanyAnalyticsService implements CompanyAnalyticsServiceContract
     public function getStatisticsSummary(?int $currentCompanyId = null): array
     {
         $totalCompanies = $this->getTotalCompanies();
-        $companiesWithVat = $this->companyRepository->getWithVatNumber()->count();
-        $companiesWithoutVat = $this->companyRepository->getWithoutVatNumber()->count();
+        $companiesWithVat = $this->companyRepository->countWithVatNumber();
+        $companiesWithoutVat = $this->companyRepository->countWithoutVatNumber();
 
         $currentYear = Carbon::now()->year;
-        $companiesThisYear = $this->companyRepository->getByYear($currentYear)->count();
+        $companiesThisYear = $this->companyRepository->countByYear($currentYear);
 
         $lastYear = $currentYear - 1;
-        $companiesLastYear = $this->companyRepository->getByYear($lastYear)->count();
+        $companiesLastYear = $this->companyRepository->countByYear($lastYear);
 
         $yearGrowth = 0;
         if ($companiesLastYear > 0) {
@@ -154,11 +122,7 @@ class CompanyAnalyticsService implements CompanyAnalyticsServiceContract
         $start = Carbon::parse($startDate)->startOfDay();
         $end = Carbon::parse($endDate)->endOfDay();
 
-        return $this->companyRepository->getAllOrderedByName()->filter(function ($company) use ($start, $end) {
-            $createdAt = Carbon::parse($company->created_at);
-
-            return $createdAt->between($start, $end);
-        });
+        return $this->companyRepository->getByDateRange($start->toDateTimeString(), $end->toDateTimeString());
     }
 
     /**

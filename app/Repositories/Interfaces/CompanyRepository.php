@@ -116,4 +116,45 @@ interface CompanyRepository
      * @param  array<string, mixed>  $vatData
      */
     public function updateVatData(string $ico, array $vatData): bool;
+
+    /**
+     * Get companies count grouped by country
+     *
+     * @return array<string, int> Array with country as key and count as value
+     */
+    public function getCountByCountry(): array;
+
+    /**
+     * Get companies count grouped by year
+     *
+     * @return array<int, int> Array with year as key and count as value
+     */
+    public function getCountByYear(): array;
+
+    /**
+     * Get companies count grouped by month for a specific year
+     *
+     * @return array<int, int> Array with month (1-12) as key and count as value
+     */
+    public function getCountByMonth(int $year): array;
+
+    /**
+     * Count companies with VAT number
+     */
+    public function countWithVatNumber(): int;
+
+    /**
+     * Count companies without VAT number
+     */
+    public function countWithoutVatNumber(): int;
+
+    /**
+     * Count companies created in a specific year
+     */
+    public function countByYear(int $year): int;
+
+    /**
+     * Get companies created in a date range
+     */
+    public function getByDateRange(string $startDate, string $endDate): Collection;
 }
