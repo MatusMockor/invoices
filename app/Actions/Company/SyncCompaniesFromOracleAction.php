@@ -21,8 +21,14 @@ final class SyncCompaniesFromOracleAction
     ) {}
 
     /**
-     * Sync companies from Oracle Cloud Storage batch-init files.
-     * Automatically finds the latest available batch-init date.
+     * Sync companies from Oracle Cloud Storage.
+     * Supports both batch-init (full import) and batch-daily (incremental updates).
+     *
+     * Priority logic:
+     * 1. Check for batch-init for today
+     * 2. If not found, check for latest available batch-init date
+     * 3. If still not found, check for batch-daily for today
+     * 4. If no files at all, return empty stats
      *
      * @return array{created: int, errors: int, files_processed: int}
      */
@@ -30,25 +36,39 @@ final class SyncCompaniesFromOracleAction
     {
         $today = today()->toDateString();
 
-        // Try to find batch-init for today first
+        // Step 1: Try to find batch-init for today first (highest priority)
         $fileKeys = $this->oracleCloudStorageService->getBatchInitFileList($today);
-
-        // Default to today's date
         $syncDate = $today;
+        $syncType = CompanySyncType::BATCHINIT;
 
-        // If no files for today, find the latest available date
+        // Step 2: If no batch-init for today, find the latest available batch-init date
         if (empty($fileKeys)) {
             $latestDate = $this->oracleCloudStorageService->getLatestBatchInitDate();
 
-            if (! $latestDate) {
-                return [
-                    'created' => 0,
-                    'errors' => 0,
-                    'files_processed' => 0,
-                ];
+            if ($latestDate) {
+                $syncDate = $latestDate;
+                $fileKeys = $this->oracleCloudStorageService->getBatchInitFileList($syncDate);
             }
+        }
 
-            $syncDate = $latestDate;
+        // Step 3: If still no files, try batch-daily for today (fallback)
+        if (empty($fileKeys)) {
+            $dailyFile = $this->oracleCloudStorageService->getLatestDailyFile();
+
+            if ($dailyFile) {
+                $fileKeys = [$dailyFile['key']];
+                $syncDate = $today;
+                $syncType = CompanySyncType::BATCHDAILY;
+            }
+        }
+
+        // Step 4: If no files at all, return empty stats
+        if (empty($fileKeys)) {
+            return [
+                'created' => 0,
+                'errors' => 0,
+                'files_processed' => 0,
+            ];
         }
 
         // Check if sync already exists for this date
@@ -63,11 +83,11 @@ final class SyncCompaniesFromOracleAction
             ];
         }
 
-        // Create or update sync log
+        // Create or update sync log with determined sync type
         $syncLog = $this->companySyncLogRepository->updateOrCreate(
             ['sync_date' => $syncDate],
             [
-                'sync_type' => CompanySyncType::BATCHINIT->value,
+                'sync_type' => $syncType->value,
                 'status' => CompanySyncStatus::PROCESSING->value,
                 'started_at' => now(),
                 'files_processed' => 0,
@@ -83,11 +103,7 @@ final class SyncCompaniesFromOracleAction
         ];
 
         try {
-            // Get file list if not already fetched
-            if (! isset($fileKeys) || empty($fileKeys)) {
-                $fileKeys = $this->oracleCloudStorageService->getBatchInitFileList($syncDate);
-            }
-
+            // File keys are already determined above
             if (empty($fileKeys)) {
                 $this->companySyncLogRepository->update($syncLog, [
                     'status' => CompanySyncStatus::COMPLETED->value,
