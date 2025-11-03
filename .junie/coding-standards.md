@@ -1,8 +1,8 @@
-Senior Laravel Developer (20+ years experience) | Expert in Laravel, PHP, PHPUnit, React, Tailwind CSS
+Senior Laravel Developer (20+ years experience) | Expert in Laravel, PHP, PHPUnit, React, Tailwind CSS | Design Patterns Specialist
 
 ---
 
-# Laravel Coding Standards (v2.0 – Unified & AI-friendly)
+# Laravel Coding Standards (v2.1 – Unified & AI-friendly)
 
 ## 1. Coding & Language Standards
 
@@ -10,6 +10,7 @@ Senior Laravel Developer (20+ years experience) | Expert in Laravel, PHP, PHPUni
 * Laravel **v12**
 * Use **strict types** and **typed properties**
 * Follow **SOLID principles**
+* **Apply design patterns where appropriate** – I am an expert in design patterns and expect their proper use
 * Run `./vendor/bin/pint` after modifying files
 * Each Repository and Service has an **interface** (without `Interface` suffix)
 * Interface aliases in `AppServiceProvider` end with `Contract`
@@ -74,9 +75,70 @@ Senior Laravel Developer (20+ years experience) | Expert in Laravel, PHP, PHPUni
   $data = json_decode($json);
   ```
 
-## 2. Architecture & Project Structure
+## 2. Design Patterns & Best Practices
 
-### 2.1 Directory Structure
+### 2.1 Core Principles
+
+* **I am an expert in design patterns** – leverage this expertise
+* Apply appropriate patterns to solve recurring problems elegantly
+* Common patterns in use:
+  * **Repository Pattern** – data access abstraction
+  * **Strategy Pattern** – interchangeable algorithms (e.g., payment methods, notification channels)
+  * **Factory Pattern** – complex object creation
+  * **Observer Pattern** – event handling (Laravel events/observers)
+  * **Decorator Pattern** – extending functionality without inheritance
+  * **Chain of Responsibility** – request processing pipelines
+  * **Command Pattern** – encapsulating actions (Laravel Jobs/Actions)
+  * **Adapter Pattern** – third-party API integration
+  * **Builder Pattern** – complex DTO or query construction
+
+### 2.2 When to Apply Patterns
+
+* **Don't force patterns** – use them when they genuinely solve a problem
+* **Prefer composition over inheritance**
+* **Keep it simple** – pattern should reduce complexity, not add it
+* **Document pattern choice** – brief comment explaining why a pattern was used
+
+**Example – Strategy Pattern for Notifications:**
+
+```php
+interface NotificationStrategy
+{
+    public function send(User $user, string $message): void;
+}
+
+final class EmailNotificationStrategy implements NotificationStrategy
+{
+    public function send(User $user, string $message): void
+    {
+        Mail::to($user)->send(new GenericEmail($message));
+    }
+}
+
+final class SmsNotificationStrategy implements NotificationStrategy
+{
+    public function send(User $user, string $message): void
+    {
+        // SMS implementation
+    }
+}
+
+final class NotificationService
+{
+    public function __construct(
+        private readonly NotificationStrategy $strategy
+    ) {}
+
+    public function notify(User $user, string $message): void
+    {
+        $this->strategy->send($user, $message);
+    }
+}
+```
+
+## 3. Architecture & Project Structure
+
+### 3.1 Directory Structure
 
 ```
 app/
@@ -103,7 +165,7 @@ app/
 │   ├── Resources/
 ```
 
-### 2.2 General Rules
+### 3.2 General Rules
 
 * No `.gitkeep` after adding real files
 * Avoid `DB::`; always use model or repository methods
@@ -116,9 +178,9 @@ app/
   ```
 * Use **DTOs** to transfer data between layers
 
-## 3. Actions & Services (Business Logic Layer)
+## 4. Actions & Services (Business Logic Layer)
 
-### 3.1 Actions
+### 4.1 Actions
 
 * Located in `app/Actions/{Domain}`
 * Naming: `[Domain][Object][Verb]Action` (e.g., `OrderCreateAction`)
@@ -160,7 +222,7 @@ final class OrderCreateAction
 }
 ```
 
-### 3.2 Services
+### 4.2 Services
 
 * Located in `app/Services/{Domain}`
 * Naming: `[Domain][Purpose]Service` (e.g., `CartItemValidator`)
@@ -186,7 +248,7 @@ final class DeliveryScheduleService
 }
 ```
 
-## 4. Testing
+## 5. Testing
 
 * Run tests with Sail:
 
@@ -218,7 +280,7 @@ tests/
 │   ├── Jobs/
 ```
 
-## 5. Styling & Frontend
+## 6. Styling & Frontend
 
 * Use **Tailwind CSS**
 * Minimalist, responsive UI
@@ -228,7 +290,7 @@ tests/
   npm run build
   ```
 
-## 6. Task Completion Checklist ✅
+## 7. Task Completion Checklist ✅
 
 * Pint ran successfully
 * Tests passed (`sail test`)
@@ -236,4 +298,5 @@ tests/
 * Repositories, Services, and Actions are tested
 * DTOs and FormRequests are used
 * No `else`, no `DB::`, no magic numbers
+* Design patterns applied appropriately where beneficial
 * Assets recompiled
