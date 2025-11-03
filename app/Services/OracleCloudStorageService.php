@@ -8,7 +8,6 @@ use App\Services\Interfaces\OracleCloudStorageService as OracleCloudStorageServi
 use Exception;
 use Generator;
 use Illuminate\Support\Facades\Http;
-use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Storage;
 use JsonException;
 use RuntimeException;
@@ -39,8 +38,6 @@ class OracleCloudStorageService implements OracleCloudStorageServiceContract
      */
     public function listFiles(): array
     {
-        Log::info('Fetching Oracle Cloud Storage bucket listing');
-
         $response = Http::timeout(30)->get($this->bucketUrl);
 
         if (! $response->successful()) {
@@ -68,8 +65,6 @@ class OracleCloudStorageService implements OracleCloudStorageServiceContract
                 'size' => $size,
             ];
         }
-
-        Log::info('Found files in bucket', ['count' => count($files)]);
 
         return $files;
     }
@@ -150,20 +145,10 @@ class OracleCloudStorageService implements OracleCloudStorageServiceContract
         $listFileKey = "batch-init/init_{$date}_list.txt";
         $url = $this->bucketUrl.$listFileKey;
 
-        Log::info('Downloading batch-init file list', [
-            'date' => $date,
-            'url' => $url,
-        ]);
-
         try {
             $response = Http::timeout(60)->get($url);
 
             if (! $response->successful()) {
-                Log::warning('Failed to download file list', [
-                    'date' => $date,
-                    'status' => $response->status(),
-                ]);
-
                 return [];
             }
 
@@ -179,18 +164,8 @@ class OracleCloudStorageService implements OracleCloudStorageServiceContract
                 }
             }
 
-            Log::info('Parsed file list', [
-                'date' => $date,
-                'files_count' => count($fileKeys),
-            ]);
-
             return $fileKeys;
         } catch (Throwable $e) {
-            Log::error('Failed to fetch file list', [
-                'date' => $date,
-                'error' => $e->getMessage(),
-            ]);
-
             return [];
         }
     }
@@ -203,8 +178,6 @@ class OracleCloudStorageService implements OracleCloudStorageServiceContract
      */
     public function getLatestBatchInitDate(): ?string
     {
-        Log::info('Searching for latest batch-init date');
-
         $files = $this->listFiles();
 
         // Filter for batch-init list files
@@ -213,8 +186,6 @@ class OracleCloudStorageService implements OracleCloudStorageServiceContract
         });
 
         if (empty($listFiles)) {
-            Log::warning('No batch-init list files found');
-
             return null;
         }
 
@@ -228,21 +199,13 @@ class OracleCloudStorageService implements OracleCloudStorageServiceContract
         }
 
         if (empty($dates)) {
-            Log::warning('No valid dates found in batch-init list files');
-
             return null;
         }
 
         // Sort dates descending and get the latest
         rsort($dates);
-        $latestDate = $dates[0];
 
-        Log::info('Found latest batch-init date', [
-            'date' => $latestDate,
-            'total_dates' => count($dates),
-        ]);
-
-        return $latestDate;
+        return $dates[0];
     }
 
     /**
@@ -261,7 +224,6 @@ class OracleCloudStorageService implements OracleCloudStorageServiceContract
         // Delete .gz file
         if ($disk->exists($gzPath)) {
             $disk->delete($gzPath);
-            Log::debug('Cleaned up gzip file', ['path' => $gzPath]);
 
             // Remove from tracking array
             $this->downloadedFiles = array_filter(
@@ -273,7 +235,6 @@ class OracleCloudStorageService implements OracleCloudStorageServiceContract
         // Delete decompressed .json file
         if ($disk->exists($jsonPath)) {
             $disk->delete($jsonPath);
-            Log::debug('Cleaned up decompressed file', ['path' => $jsonPath]);
 
             // Remove from tracking array
             $this->downloadedFiles = array_filter(
@@ -293,7 +254,6 @@ class OracleCloudStorageService implements OracleCloudStorageServiceContract
         foreach ($this->downloadedFiles as $filePath) {
             if ($disk->exists($filePath)) {
                 $disk->delete($filePath);
-                Log::debug('Cleaned up temporary file', ['path' => $filePath]);
             }
         }
 
@@ -333,8 +293,6 @@ class OracleCloudStorageService implements OracleCloudStorageServiceContract
         $disk = Storage::disk($this->diskName);
         $fullPath = $disk->path($localPath);
 
-        Log::info('Downloading', ['file' => basename($fileKey)]);
-
         $response = Http::timeout(600)
             ->withOptions(['sink' => $fullPath])
             ->get($url);
@@ -350,13 +308,6 @@ class OracleCloudStorageService implements OracleCloudStorageServiceContract
         if (! $disk->exists($localPath)) {
             throw new RuntimeException('Download completed but file does not exist: '.$localPath);
         }
-
-        $fileSize = $disk->size($localPath);
-
-        Log::info('Downloaded', [
-            'file' => basename($fileKey),
-            'size_mb' => round($fileSize / 1048576, 2),
-        ]);
 
         $this->downloadedFiles[] = $localPath;
 
@@ -413,10 +364,6 @@ class OracleCloudStorageService implements OracleCloudStorageServiceContract
             // Stream and parse JSON from decompressed file
             yield from $this->streamJsonRecords($jsonFullPath);
         } catch (JsonException $e) {
-            Log::error('Failed to parse JSON file', [
-                'error' => $e->getMessage(),
-                'path' => $jsonPath,
-            ]);
             throw new RuntimeException('Failed to parse JSON file: '.$e->getMessage(), 0, $e);
         }
     }
@@ -481,16 +428,19 @@ class OracleCloudStorageService implements OracleCloudStorageServiceContract
                     // Handle string escaping to properly track braces inside strings
                     if ($escapeNext) {
                         $escapeNext = false;
+
                         continue;
                     }
 
                     if ($char === '\\') {
                         $escapeNext = true;
+
                         continue;
                     }
 
                     if ($char === '"') {
                         $inString = ! $inString;
+
                         continue;
                     }
 
@@ -538,8 +488,6 @@ class OracleCloudStorageService implements OracleCloudStorageServiceContract
                     $buffer = substr($buffer, $processed);
                 }
             }
-
-            Log::info('Finished streaming JSON records', ['total_records' => $recordCount]);
         } finally {
             fclose($handle);
         }
