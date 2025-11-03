@@ -87,6 +87,52 @@ class FinancialDataService implements FinancialDataServiceContract
     }
 
     /**
+     * Download and extract DIC data from the financial data source.
+     *
+     * @return Generator<array<string, mixed>>
+     */
+    public function downloadAndExtractDicData(): Generator
+    {
+        $this->ensureTempDirectoryExists();
+
+        try {
+            $this->downloadZipFile();
+            $state = $this->extractZipFile();
+
+            yield from $this->processDicData($state);
+        } finally {
+            $this->cleanup();
+        }
+    }
+
+    /**
+     * Parse DIC XML element into data array.
+     *
+     * XML structure:
+     * <ITEM>
+     *   <ICO>36553689</ICO>
+     *   <DIC>2021738367</DIC>
+     *   ...
+     * </ITEM>
+     *
+     * @param  array<string, string>  $item
+     * @return array<string, mixed>|null
+     */
+    public function parseDicData(array $item): ?array
+    {
+        $ico = trim($item['ICO'] ?? '');
+
+        if (strlen($ico) !== 8 || ! ctype_digit($ico)) {
+            return null;
+        }
+
+        return [
+            'ico' => $ico,
+            'dic' => $this->extractValue($item, 'DIC'),
+        ];
+    }
+
+    /**
      * Download and extract VAT data from the VAT data source.
      *
      * @return Generator<array<string, mixed>>
@@ -363,6 +409,80 @@ class FinancialDataService implements FinancialDataServiceContract
         unset($reader);
 
         Log::info('Processed company data from XML', [
+            'processed' => $processedCount,
+            'skipped' => $skippedCount,
+            'total' => $processedCount + $skippedCount,
+        ]);
+    }
+
+    /**
+     * Process the DIC data from the extracted XML file using XMLReader for streaming.
+     *
+     * @return Generator<array<string, mixed>>
+     */
+    private function processDicData(FinancialDataState $state): Generator
+    {
+        $disk = Storage::disk($this->diskName);
+        $extractedPath = $this->tempDir.'/'.$state->extractedFileName;
+        $extractedFullPath = $disk->path($extractedPath);
+
+        if (! $disk->exists($extractedPath)) {
+            throw new RuntimeException('Extracted file does not exist: '.$extractedPath);
+        }
+
+        Log::info('Streaming XML file for DIC data with XMLReader...');
+
+        $reader = new XMLReader;
+
+        if (! $reader->open($extractedFullPath)) {
+            throw new RuntimeException('Failed to open XML file: '.$extractedFullPath);
+        }
+
+        $processedCount = 0;
+        $skippedCount = 0;
+
+        // Stream through XML and process ITEM elements one by one
+        while ($reader->read()) {
+            if ($reader->nodeType !== XMLReader::ELEMENT || $reader->name !== 'ITEM') {
+                continue;
+            }
+
+            // Read ITEM element as SimpleXMLElement for easier parsing
+            $itemXml = $reader->readOuterXml();
+
+            if ($itemXml === false) {
+                continue;
+            }
+
+            $item = new SimpleXMLElement($itemXml);
+
+            // Convert to array
+            $itemArray = [];
+            foreach ($item->children() as $child) {
+                $itemArray[(string) $child->getName()] = (string) $child;
+            }
+
+            $dicData = $this->parseDicData($itemArray);
+
+            if (! $dicData) {
+                $skippedCount++;
+
+                continue;
+            }
+
+            $processedCount++;
+            yield $dicData;
+
+            // Memory cleanup every 5000 records
+            if ($processedCount % 5000 === 0) {
+                gc_collect_cycles();
+            }
+        }
+
+        $reader->close();
+        unset($reader);
+
+        Log::info('Processed DIC data from XML', [
             'processed' => $processedCount,
             'skipped' => $skippedCount,
             'total' => $processedCount + $skippedCount,

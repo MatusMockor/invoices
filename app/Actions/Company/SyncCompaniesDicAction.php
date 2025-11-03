@@ -11,7 +11,7 @@ use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 use Throwable;
 
-final class SyncCompaniesVatAction
+final class SyncCompaniesDicAction
 {
     public function __construct(
         private readonly FinancialDataServiceContract $financialDataService,
@@ -20,7 +20,7 @@ final class SyncCompaniesVatAction
     ) {}
 
     /**
-     * Sync VAT data for companies from financial data source.
+     * Sync DIC data for companies from financial data source.
      *
      * @return array{updated: int, not_found: int, errors: int}
      *
@@ -28,15 +28,15 @@ final class SyncCompaniesVatAction
      */
     public function handle(): array
     {
-        Log::info('Starting VAT data sync from financial data source');
+        Log::info('Starting DIC data sync from financial data source');
 
         $today = today()->toDateString();
 
-        // Check if VAT sync already completed for today
-        $existingSync = $this->syncLogRepository->findByDateAndType($today, 'vat-update');
+        // Check if DIC sync already completed for today
+        $existingSync = $this->syncLogRepository->findByDateAndType($today, 'dic-update');
 
         if ($existingSync?->status === 'completed') {
-            Log::info('VAT sync already completed for today', ['date' => $today]);
+            Log::info('DIC sync already completed for today', ['date' => $today]);
 
             return [
                 'updated' => $existingSync->companies_updated ?? 0,
@@ -49,7 +49,7 @@ final class SyncCompaniesVatAction
         $syncLog = $this->syncLogRepository->updateOrCreate(
             [
                 'sync_date' => $today,
-                'sync_type' => 'vat-update',
+                'sync_type' => 'dic-update',
             ],
             [
                 'status' => 'processing',
@@ -71,15 +71,15 @@ final class SyncCompaniesVatAction
         $totalProcessed = 0;
 
         try {
-            foreach ($this->financialDataService->downloadAndExtractVatData() as $vatData) {
-                $batch[] = $vatData;
+            foreach ($this->financialDataService->downloadAndExtractDicData() as $dicData) {
+                $batch[] = $dicData;
 
                 if (count($batch) >= $batchSize) {
                     $this->processBatch($batch, $stats);
                     $totalProcessed += count($batch);
                     $batch = [];
 
-                    Log::info("Processed {$totalProcessed} VAT records so far");
+                    Log::info("Processed {$totalProcessed} DIC records so far");
                 }
             }
 
@@ -88,7 +88,7 @@ final class SyncCompaniesVatAction
                 $totalProcessed += count($batch);
             }
 
-            Log::info('VAT data sync completed', [
+            Log::info('DIC data sync completed', [
                 'total_processed' => $totalProcessed,
                 'updated' => $stats['updated'],
                 'not_found' => $stats['not_found'],
@@ -112,7 +112,7 @@ final class SyncCompaniesVatAction
                 'completed_at' => now(),
             ]);
 
-            Log::error('VAT data sync failed', [
+            Log::error('DIC data sync failed', [
                 'error' => $e->getMessage(),
                 'trace' => $e->getTraceAsString(),
             ]);
@@ -122,7 +122,7 @@ final class SyncCompaniesVatAction
     }
 
     /**
-     * Process a batch of VAT data records.
+     * Process a batch of DIC data records.
      *
      * @param  array<int, array<string, mixed>>  $batch
      * @param  array{updated: int, not_found: int, errors: int}  $stats
@@ -131,24 +131,24 @@ final class SyncCompaniesVatAction
     {
         try {
             DB::transaction(function () use ($batch, &$stats): void {
-                foreach ($batch as $vatData) {
-                    $ico = $vatData['ico'];
-                    unset($vatData['ico']);
+                foreach ($batch as $dicData) {
+                    $ico = $dicData['ico'];
+                    unset($dicData['ico']);
 
-                    $updated = $this->companyRepository->updateVatData($ico, $vatData);
+                    $updated = $this->companyRepository->updateDicData($ico, $dicData);
 
                     if ($updated) {
                         $stats['updated']++;
                     } else {
                         $stats['not_found']++;
-                        Log::debug('Company not found for VAT update', ['ico' => $ico]);
+                        Log::debug('Company not found for DIC update', ['ico' => $ico]);
                     }
                 }
             });
         } catch (Throwable $e) {
             $stats['errors'] += count($batch);
 
-            Log::error('VAT batch processing failed', [
+            Log::error('DIC batch processing failed', [
                 'batch_size' => count($batch),
                 'error' => $e->getMessage(),
             ]);

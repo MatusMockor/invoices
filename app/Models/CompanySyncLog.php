@@ -6,13 +6,15 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
 
-class CompanySyncLog extends Model
+final class CompanySyncLog extends Model
 {
     protected $fillable = [
         'sync_date',
         'sync_type',
         'files_processed',
         'companies_created',
+        'companies_updated',
+        'companies_not_found',
         'errors',
         'status',
         'started_at',
@@ -25,6 +27,8 @@ class CompanySyncLog extends Model
         'completed_at' => 'datetime',
         'files_processed' => 'integer',
         'companies_created' => 'integer',
+        'companies_updated' => 'integer',
+        'companies_not_found' => 'integer',
         'errors' => 'integer',
     ];
 }

@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Console\Commands;
 
+use App\Actions\Company\SyncCompaniesDicAction;
 use App\Actions\Company\SyncCompaniesFromOracleAction;
 use App\Actions\Company\SyncCompaniesVatAction;
 use Illuminate\Console\Command;
@@ -23,13 +24,14 @@ class SyncCompaniesCommand extends Command
      *
      * @var string
      */
-    protected $description = 'Sync Slovak company data: Phase 1 from Oracle Cloud, Phase 2 VAT from Financial Administration';
+    protected $description = 'Sync Slovak company data: Phase 1 from Oracle Cloud, Phase 2 DIC, Phase 3 IC DPH from Financial Administration';
 
     /**
      * Execute the console command.
      */
     public function handle(
         SyncCompaniesFromOracleAction $oracleAction,
+        SyncCompaniesDicAction $dicAction,
         SyncCompaniesVatAction $vatAction
     ): int {
         $this->info('Company synchronization started...');
@@ -38,20 +40,28 @@ class SyncCompaniesCommand extends Command
         $overallStartTime = microtime(true);
 
         // Phase 1: Sync company data from Oracle Cloud
-        $phase1Result = $this->executePhase1($oracleAction);
+        //        $phase1Result = $this->executePhase1($oracleAction);
+        //
+        //        if ($phase1Result !== self::SUCCESS) {
+        //            return $phase1Result;
+        //        }
 
-        if ($phase1Result !== self::SUCCESS) {
-            return $phase1Result;
-        }
-
-        dd(123);
         $this->newLine();
 
-        // Phase 2: Sync VAT data from Financial Administration
-        $phase2Result = $this->executePhase2($vatAction);
+        // Phase 2: Sync DIC data from Financial Administration
+        $phase2Result = $this->executePhase2($dicAction);
 
         if ($phase2Result !== self::SUCCESS) {
             return $phase2Result;
+        }
+
+        $this->newLine();
+
+        // Phase 3: Sync IC DPH data from Financial Administration
+        $phase3Result = $this->executePhase3($vatAction);
+
+        if ($phase3Result !== self::SUCCESS) {
+            return $phase3Result;
         }
 
         $totalDuration = $this->formatDuration(microtime(true) - $overallStartTime);
@@ -95,11 +105,11 @@ class SyncCompaniesCommand extends Command
     }
 
     /**
-     * Execute Phase 2: Sync VAT data.
+     * Execute Phase 2: Sync DIC data from Financial Administration.
      */
-    private function executePhase2(SyncCompaniesVatAction $action): int
+    private function executePhase2(SyncCompaniesDicAction $action): int
     {
-        $this->info('Phase 2: Syncing VAT data');
+        $this->info('Phase 2: Syncing DIC data from Financial Administration');
 
         $startTime = microtime(true);
 
@@ -121,6 +131,38 @@ class SyncCompaniesCommand extends Command
             return self::SUCCESS;
         } catch (Throwable $e) {
             $this->error('Phase 2 failed: '.$e->getMessage());
+
+            return self::FAILURE;
+        }
+    }
+
+    /**
+     * Execute Phase 3: Sync IC DPH data from Financial Administration.
+     */
+    private function executePhase3(SyncCompaniesVatAction $action): int
+    {
+        $this->info('Phase 3: Syncing IC DPH data from Financial Administration');
+
+        $startTime = microtime(true);
+
+        try {
+            $stats = $action->handle();
+
+            $duration = $this->formatDuration(microtime(true) - $startTime);
+
+            $this->table(
+                ['Metric', 'Value'],
+                [
+                    ['Updated', number_format($stats['updated'])],
+                    ['Not found', number_format($stats['not_found'])],
+                    ['Errors', number_format($stats['errors'])],
+                    ['Duration', $duration],
+                ]
+            );
+
+            return self::SUCCESS;
+        } catch (Throwable $e) {
+            $this->error('Phase 3 failed: '.$e->getMessage());
 
             return self::FAILURE;
         }
