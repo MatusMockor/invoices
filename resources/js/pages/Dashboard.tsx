@@ -4,7 +4,7 @@ import { DashboardLayout } from "@/components/dashboard/DashboardLayout";
 import { MetricCard } from "@/components/dashboard/MetricCard";
 import { RevenueChart } from "@/components/dashboard/RevenueChart";
 import { RecentInvoices } from "@/components/dashboard/RecentInvoices";
-import { Euro, FileText, Users, TrendingUp } from "lucide-react";
+import { Euro, FileText, TrendingUp } from "lucide-react";
 import { useAnalytics } from "@/hooks/useAnalytics";
 
 const Dashboard = () => {
@@ -57,7 +57,7 @@ const Dashboard = () => {
           </div>
         ) : (
           <>
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
               <MetricCard
                 title="Celkové príjmy"
                 value={formatCurrency(statistics?.totalIncome || 0)}
@@ -70,13 +70,6 @@ const Dashboard = () => {
                 value={formatCurrency(statistics?.totalExpenses || 0)}
                 changeType="neutral"
                 icon={FileText}
-              />
-              <MetricCard
-                title="Firmy celkom"
-                value={String(statistics?.totalCompanies || 0)}
-                change={`${statistics?.companiesThisYear || 0} tento rok`}
-                changeType="positive"
-                icon={Users}
               />
               <MetricCard
                 title="Rast tento rok"
