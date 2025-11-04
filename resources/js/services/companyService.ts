@@ -4,20 +4,32 @@ import type { Company, ApiResponse, PaginatedResponse } from '@/types';
 export interface CompanyCreateData {
   name: string;
   ico: string;
-  dic?: string;
-  ic_dph?: string;
-  address: string;
+  dic?: string | null;
+  ic_dph?: string | null;
+  street: string;
   city: string;
   postal_code: string;
   country: string;
-  phone?: string;
-  email?: string;
-  bank_account?: string;
-  iban?: string;
-  swift?: string;
+  phone?: string | null;
+  email?: string | null;
+  iban?: string | null;
+  swift?: string | null;
 }
 
-export type CompanyUpdateData = Partial<CompanyCreateData>;
+export interface CompanyUpdateData {
+  name: string;
+  ico: string;
+  dic?: string | null;
+  ic_dph?: string | null;
+  street: string;
+  city: string;
+  postal_code: string;
+  country: string;
+  phone?: string | null;
+  email?: string | null;
+  iban?: string | null;
+  swift?: string | null;
+}
 
 export const companyService = {
   async getAll(): Promise<ApiResponse<Company[]>> {

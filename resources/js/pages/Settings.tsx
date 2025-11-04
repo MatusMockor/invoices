@@ -13,6 +13,7 @@ import { InvoicePreview } from "@/components/invoice/InvoicePreview";
 import { useTheme } from "next-themes";
 import { useAuth } from "@/hooks/useAuth";
 import api from "@/lib/axios";
+import { companyService } from "@/services/companyService";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -63,10 +64,45 @@ const Settings = () => {
   const [deletePassword, setDeletePassword] = useState("");
   const [isDeletingAccount, setIsDeletingAccount] = useState(false);
 
+  // Company form state
+  const [companyData, setCompanyData] = useState({
+    name: '',
+    ico: '',
+    dic: '',
+    ic_dph: '',
+    street: '',
+    city: '',
+    postal_code: '',
+    country: '',
+    phone: '',
+    email: '',
+    iban: '',
+    swift: '',
+  });
+  const [isSavingCompany, setIsSavingCompany] = useState(false);
+
   // Load settings from API
   useEffect(() => {
     if (settings) {
       setInvoiceTemplate(settings.invoice_template);
+
+      // Load company data if available
+      if (settings.company) {
+        setCompanyData({
+          name: settings.company.name || '',
+          ico: settings.company.ico || '',
+          dic: settings.company.dic || '',
+          ic_dph: settings.company.ic_dph || '',
+          street: settings.company.address || '',
+          city: settings.company.city || '',
+          postal_code: settings.company.postal_code || '',
+          country: settings.company.country || '',
+          phone: settings.company.phone || '',
+          email: settings.company.email || '',
+          iban: settings.company.iban || '',
+          swift: settings.company.swift || '',
+        });
+      }
     }
   }, [settings]);
 
@@ -88,18 +124,114 @@ const Settings = () => {
 
   const handleSaveCompany = async (e: React.FormEvent) => {
     e.preventDefault();
-    try {
-      await updateSettings({ invoice_template: invoiceTemplate });
-      toast({
-        title: "Nastavenia uložené",
-        description: "Dizajn faktúry bol úspešne uložený.",
-      });
-    } catch (error) {
+
+    // Validation
+    if (!companyData.name.trim()) {
       toast({
         title: "Chyba",
-        description: "Nepodarilo sa uložiť nastavenia.",
+        description: "Názov firmy je povinný.",
         variant: "destructive",
       });
+      return;
+    }
+
+    if (!companyData.ico.trim()) {
+      toast({
+        title: "Chyba",
+        description: "IČO je povinné.",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    if (!companyData.street.trim()) {
+      toast({
+        title: "Chyba",
+        description: "Adresa je povinná.",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    if (!companyData.city.trim()) {
+      toast({
+        title: "Chyba",
+        description: "Mesto je povinné.",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    if (!companyData.postal_code.trim()) {
+      toast({
+        title: "Chyba",
+        description: "PSČ je povinné.",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    if (!companyData.country.trim()) {
+      toast({
+        title: "Chyba",
+        description: "Krajina je povinná.",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    if (!settings?.company?.id) {
+      toast({
+        title: "Chyba",
+        description: "ID firmy nebolo nájdené.",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    setIsSavingCompany(true);
+
+    try {
+      // Save company data
+      await companyService.update(settings.company.id, {
+        name: companyData.name,
+        ico: companyData.ico,
+        dic: companyData.dic.trim() || null,
+        ic_dph: companyData.ic_dph.trim() || null,
+        street: companyData.street,
+        city: companyData.city,
+        postal_code: companyData.postal_code,
+        country: companyData.country,
+        phone: companyData.phone.trim() || null,
+        email: companyData.email.trim() || null,
+        iban: companyData.iban.trim() || null,
+        swift: companyData.swift.trim() || null,
+      });
+
+      // Also save invoice template
+      await updateSettings({ invoice_template: invoiceTemplate });
+
+      toast({
+        title: "Nastavenia uložené",
+        description: "Firemné údaje a dizajn faktúry boli úspešne uložené.",
+      });
+    } catch (error: any) {
+      const message = error?.response?.data?.message || "Nepodarilo sa uložiť nastavenia.";
+      const errors = error?.response?.data?.errors;
+
+      let description = message;
+      if (errors) {
+        const errorMessages = Object.values(errors).flat() as string[];
+        description = errorMessages[0] || message;
+      }
+
+      toast({
+        title: "Chyba",
+        description,
+        variant: "destructive",
+      });
+    } finally {
+      setIsSavingCompany(false);
     }
   };
 
@@ -347,8 +479,10 @@ const Settings = () => {
                   <Label htmlFor="companyName">Názov firmy *</Label>
                   <Input
                     id="companyName"
-                    defaultValue="Vaša firma s.r.o."
+                    value={companyData.name}
+                    onChange={(e) => setCompanyData({ ...companyData, name: e.target.value })}
                     placeholder="Názov firmy"
+                    disabled={isSavingCompany}
                   />
                 </div>
 
@@ -357,27 +491,108 @@ const Settings = () => {
                     <Label htmlFor="companyIco">IČO *</Label>
                     <Input
                       id="companyIco"
-                      defaultValue="87654321"
+                      value={companyData.ico}
+                      onChange={(e) => setCompanyData({ ...companyData, ico: e.target.value })}
                       placeholder="12345678"
+                      disabled={isSavingCompany}
                     />
                   </div>
                   <div className="space-y-2">
-                    <Label htmlFor="companyDic">DIČ *</Label>
+                    <Label htmlFor="companyDic">DIČ</Label>
                     <Input
                       id="companyDic"
-                      defaultValue="9876543210"
+                      value={companyData.dic}
+                      onChange={(e) => setCompanyData({ ...companyData, dic: e.target.value })}
                       placeholder="2023456789"
+                      disabled={isSavingCompany}
+                    />
+                  </div>
+                  <div className="space-y-2">
+                    <Label htmlFor="companyIcDph">IČ DPH</Label>
+                    <Input
+                      id="companyIcDph"
+                      value={companyData.ic_dph}
+                      onChange={(e) => setCompanyData({ ...companyData, ic_dph: e.target.value })}
+                      placeholder="SK2023456789"
+                      disabled={isSavingCompany}
                     />
                   </div>
                 </div>
 
                 <div className="space-y-2">
-                  <Label htmlFor="companyAddress">Adresa *</Label>
+                  <Label htmlFor="companyStreet">Adresa *</Label>
                   <Input
-                    id="companyAddress"
-                    defaultValue="Podnikateľská 456, 811 02 Bratislava"
-                    placeholder="Ulica, PSČ Mesto"
+                    id="companyStreet"
+                    value={companyData.street}
+                    onChange={(e) => setCompanyData({ ...companyData, street: e.target.value })}
+                    placeholder="Ulica a číslo"
+                    disabled={isSavingCompany}
                   />
+                </div>
+
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                  <div className="space-y-2">
+                    <Label htmlFor="companyCity">Mesto *</Label>
+                    <Input
+                      id="companyCity"
+                      value={companyData.city}
+                      onChange={(e) => setCompanyData({ ...companyData, city: e.target.value })}
+                      placeholder="Mesto"
+                      disabled={isSavingCompany}
+                    />
+                  </div>
+                  <div className="space-y-2">
+                    <Label htmlFor="companyPostalCode">PSČ *</Label>
+                    <Input
+                      id="companyPostalCode"
+                      value={companyData.postal_code}
+                      onChange={(e) => setCompanyData({ ...companyData, postal_code: e.target.value })}
+                      placeholder="PSČ"
+                      disabled={isSavingCompany}
+                    />
+                  </div>
+                </div>
+
+                <div className="space-y-2">
+                  <Label htmlFor="companyCountry">Krajina *</Label>
+                  <Input
+                    id="companyCountry"
+                    value={companyData.country}
+                    onChange={(e) => setCompanyData({ ...companyData, country: e.target.value })}
+                    placeholder="Slovensko"
+                    disabled={isSavingCompany}
+                  />
+                </div>
+
+                <Separator />
+
+                <div className="space-y-6">
+                  <h4 className="text-lg font-semibold text-foreground">
+                    Kontaktné údaje
+                  </h4>
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <div className="space-y-2">
+                      <Label htmlFor="companyPhone">Telefón</Label>
+                      <Input
+                        id="companyPhone"
+                        value={companyData.phone}
+                        onChange={(e) => setCompanyData({ ...companyData, phone: e.target.value })}
+                        placeholder="+421 XXX XXX XXX"
+                        disabled={isSavingCompany}
+                      />
+                    </div>
+                    <div className="space-y-2">
+                      <Label htmlFor="companyEmail">Email</Label>
+                      <Input
+                        id="companyEmail"
+                        type="email"
+                        value={companyData.email}
+                        onChange={(e) => setCompanyData({ ...companyData, email: e.target.value })}
+                        placeholder="info@firma.sk"
+                        disabled={isSavingCompany}
+                      />
+                    </div>
+                  </div>
                 </div>
 
                 <Separator />
@@ -388,28 +603,45 @@ const Settings = () => {
                   </h4>
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                     <div className="space-y-2">
-                      <Label htmlFor="iban">IBAN *</Label>
+                      <Label htmlFor="iban">IBAN</Label>
                       <Input
                         id="iban"
-                        defaultValue="SK12 3456 7890 1234 5678 9012"
+                        value={companyData.iban}
+                        onChange={(e) => setCompanyData({ ...companyData, iban: e.target.value })}
                         placeholder="SK00 0000 0000 0000 0000 0000"
+                        disabled={isSavingCompany}
                       />
                     </div>
                     <div className="space-y-2">
                       <Label htmlFor="swift">SWIFT/BIC</Label>
                       <Input
                         id="swift"
-                        defaultValue="SUBASKBX"
+                        value={companyData.swift}
+                        onChange={(e) => setCompanyData({ ...companyData, swift: e.target.value })}
                         placeholder="SWIFT kód"
+                        disabled={isSavingCompany}
                       />
                     </div>
                   </div>
                 </div>
 
                 <div className="flex justify-end pt-4">
-                  <Button type="submit" className="bg-primary hover:bg-primary/90">
-                    <Save className="h-4 w-4 mr-2" />
-                    Uložiť zmeny
+                  <Button
+                    type="submit"
+                    className="bg-primary hover:bg-primary/90"
+                    disabled={isSavingCompany}
+                  >
+                    {isSavingCompany ? (
+                      <>
+                        <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                        Ukladám...
+                      </>
+                    ) : (
+                      <>
+                        <Save className="h-4 w-4 mr-2" />
+                        Uložiť zmeny
+                      </>
+                    )}
                   </Button>
                 </div>
               </form>

@@ -6,6 +6,7 @@ namespace App\Repositories;
 
 use App\Models\UserCompany;
 use App\Repositories\Interfaces\UserCompanyRepository as UserCompanyRepositoryContract;
+use Illuminate\Database\Eloquent\Collection;
 
 final class UserCompanyRepository implements UserCompanyRepositoryContract
 {
@@ -14,8 +15,28 @@ final class UserCompanyRepository implements UserCompanyRepositoryContract
         return UserCompany::create($data);
     }
 
+    public function update(UserCompany $company, array $data): bool
+    {
+        return $company->update($data);
+    }
+
     public function findByUserId(int $userId): ?UserCompany
     {
         return UserCompany::where('user_id', $userId)->first();
+    }
+
+    public function findAllByUserId(int $userId): Collection
+    {
+        return UserCompany::where('user_id', $userId)
+            ->orderBy('name')
+            ->get();
+    }
+
+    public function findMinimalByUserId(int $userId): Collection
+    {
+        return UserCompany::where('user_id', $userId)
+            ->select('id', 'name')
+            ->orderBy('name')
+            ->get();
     }
 }

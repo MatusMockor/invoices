@@ -12,6 +12,9 @@ final class UserSettingShowAction
 {
     public function handle(User $user): UserSetting
     {
+        // Eager load the current company relationship for use in the resource
+        $user->load('currentCompany');
+
         return UserSetting::firstOrCreate(
             ['user_id' => $user->id],
             ['invoice_template' => InvoiceTemplate::default()->value]

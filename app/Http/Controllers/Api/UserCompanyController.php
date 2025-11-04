@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Http\Controllers\Api;
 
+use App\Actions\Company\UpdateCompanyAction;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\StoreCompanyRequest;
 use App\Http\Requests\UpdateCompanyRequest;
@@ -12,12 +13,15 @@ use App\Http\Resources\UserCompanyCollection;
 use App\Http\Resources\UserCompanyResource;
 use App\Models\UserCompany;
 use App\Repositories\Interfaces\CompanyRepository;
+use App\Repositories\Interfaces\UserCompanyRepository;
 use Illuminate\Http\JsonResponse;
 
 class UserCompanyController extends Controller
 {
     public function __construct(
-        private readonly CompanyRepository $companyRepository
+        private readonly CompanyRepository $companyRepository,
+        private readonly UserCompanyRepository $userCompanyRepository,
+        private readonly UpdateCompanyAction $updateCompanyAction,
     ) {}
 
     /**
@@ -25,7 +29,7 @@ class UserCompanyController extends Controller
      */
     public function index(): UserCompanyCollection
     {
-        $companies = auth()->user()->companies()->orderBy('name')->get();
+        $companies = $this->userCompanyRepository->findAllByUserId(auth()->id());
 
         return new UserCompanyCollection($companies);
     }
@@ -35,10 +39,7 @@ class UserCompanyController extends Controller
      */
     public function minimal(): CompanyMinimalCollection
     {
-        $companies = auth()->user()->companies()
-            ->select('id', 'name')
-            ->orderBy('name')
-            ->get();
+        $companies = $this->userCompanyRepository->findMinimalByUserId(auth()->id());
 
         return new CompanyMinimalCollection($companies);
     }
@@ -63,9 +64,9 @@ class UserCompanyController extends Controller
     {
         $this->authorize('update', $userCompany);
 
-        $this->companyRepository->update($userCompany, $request->getData());
+        $updatedCompany = $this->updateCompanyAction->handle($userCompany, $request->getData());
 
-        return new UserCompanyResource($userCompany->fresh());
+        return new UserCompanyResource($updatedCompany);
     }
 
     /**
