@@ -51,7 +51,7 @@ class CreateInvoiceRequest extends FormRequest
             'customCompanyCountry' => 'nullable|string|max:100',
             'clientIco' => ! $useCustomCompany ? 'required|string|max:20|regex:/^\d+$/' : 'nullable|string|max:20|regex:/^\d+$/',
             'clientName' => ! $useCustomCompany ? 'required|string|max:100' : 'nullable|string|max:100',
-            'clientDic' => ! $useCustomCompany ? 'required|string|max:20|regex:/^\d*$/' : 'nullable|string|max:20|regex:/^\d*$/',
+            'clientDic' => 'nullable|string|max:20|regex:/^\d*$/',
             'clientIcDph' => 'nullable|string|max:20',
             'clientStreet' => ! $useCustomCompany ? 'required|string|max:255' : 'nullable|string|max:255',
             'clientCity' => ! $useCustomCompany ? 'required|string|max:100' : 'nullable|string|max:100',

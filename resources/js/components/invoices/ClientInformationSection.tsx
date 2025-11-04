@@ -175,7 +175,7 @@ export const ClientInformationSection = ({
 
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           <div className="space-y-2">
-            <Label htmlFor="clientDic">DIČ *</Label>
+            <Label htmlFor="clientDic">DIČ</Label>
             <Input
               id="clientDic"
               {...register("clientDic")}

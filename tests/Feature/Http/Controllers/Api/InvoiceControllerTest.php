@@ -208,7 +208,7 @@ class InvoiceControllerTest extends TestCase
         $response = $this->postJson(route('api.invoices.store'), $invalidData);
 
         $response->assertStatus(422);
-        $response->assertJsonValidationErrors(['clientName', 'clientDic', 'clientStreet', 'clientCity', 'clientPostalCode', 'invoiceNumber', 'issue_date', 'due_date', 'delivery_date', 'items']);
+        $response->assertJsonValidationErrors(['clientName', 'clientStreet', 'clientCity', 'clientPostalCode', 'invoiceNumber', 'issue_date', 'due_date', 'delivery_date', 'items']);
     }
 
     public function test_update_updates_existing_invoice(): void
@@ -368,7 +368,6 @@ class InvoiceControllerTest extends TestCase
         $invoiceData = [
             'clientName' => $clientName,
             'clientIco' => $clientIco,
-            'clientDic' => $clientDic,
             'clientIcDph' => null,
             'clientStreet' => $clientStreet,
             'clientCity' => $clientCity,
@@ -416,7 +415,6 @@ class InvoiceControllerTest extends TestCase
         $invoiceData = [
             'clientName' => fake()->company(),
             'clientIco' => fake()->numerify('########'),
-            'clientDic' => fake()->numerify('20########'),
             'clientStreet' => fake()->streetAddress(),
             'clientCity' => fake()->city(),
             'clientPostalCode' => fake()->postcode(),
@@ -474,7 +472,6 @@ class InvoiceControllerTest extends TestCase
         $invoiceData = [
             'clientName' => fake()->company(),
             'clientIco' => $clientIco,
-            'clientDic' => fake()->numerify('20########'),
             'clientStreet' => fake()->streetAddress(),
             'clientCity' => fake()->city(),
             'clientPostalCode' => fake()->postcode(),
@@ -531,7 +528,6 @@ class InvoiceControllerTest extends TestCase
         $invoiceData = [
             'clientName' => $clientName,
             'clientIco' => $clientIco,
-            'clientDic' => $clientDic,
             'clientStreet' => $clientStreet,
             'clientCity' => $clientCity,
             'clientPostalCode' => $clientPostalCode,
@@ -576,7 +572,6 @@ class InvoiceControllerTest extends TestCase
         $invoiceData = [
             'clientName' => $existingCompany->name,
             'clientIco' => $existingCompany->ico,
-            'clientDic' => $existingCompany->dic,
             'clientStreet' => $existingCompany->street,
             'clientCity' => $existingCompany->city,
             'clientPostalCode' => $existingCompany->postal_code,
@@ -601,5 +596,73 @@ class InvoiceControllerTest extends TestCase
 
         $invoice = Invoice::where('invoice_number', $invoiceNumber)->first();
         $this->assertEquals($existingCompany->id, $invoice->company_id);
+    }
+
+    public function test_store_creates_invoice_without_client_dic(): void
+    {
+        $clientName = fake()->company();
+        $clientIco = fake()->numerify('########');
+        $clientStreet = fake()->streetAddress();
+        $clientCity = fake()->city();
+        $clientPostalCode = fake()->postcode();
+        $clientCountry = fake()->countryCode();
+        $invoiceNumber = fake()->unique()->numerify('INV-####-####');
+        $itemDescription = fake()->words(2, true);
+        $itemQuantity = fake()->numberBetween(1, 20);
+        $itemPrice = fake()->randomFloat(2, 10, 200);
+
+        Http::fake([
+            '*/scraper/company' => Http::response([
+                'data' => [
+                    'success' => true,
+                    'ico' => $clientIco,
+                    'name' => $clientName,
+                    'street' => $clientStreet,
+                    'city' => $clientCity,
+                    'postal_code' => $clientPostalCode,
+                    'country' => $clientCountry,
+                    'dic' => null,
+                    'ic_dph' => null,
+                ],
+            ], 200),
+        ]);
+
+        $invoiceData = [
+            'clientName' => $clientName,
+            'clientIco' => $clientIco,
+            'clientStreet' => $clientStreet,
+            'clientCity' => $clientCity,
+            'clientPostalCode' => $clientPostalCode,
+            'clientCountry' => $clientCountry,
+            'invoiceNumber' => $invoiceNumber,
+            'issue_date' => now()->format('Y-m-d'),
+            'due_date' => now()->addDays(14)->format('Y-m-d'),
+            'delivery_date' => now()->format('Y-m-d'),
+            'items' => [
+                [
+                    'description' => $itemDescription,
+                    'quantity' => $itemQuantity,
+                    'price' => $itemPrice,
+                ],
+            ],
+        ];
+
+        $response = $this->postJson(route('api.invoices.store'), $invoiceData);
+
+        $response->assertStatus(201);
+        $response->assertJsonStructure([
+            'data' => [
+                'id',
+                'invoice_number',
+                'total_amount',
+                'items',
+            ],
+        ]);
+
+        $this->assertDatabaseHas(Company::class, [
+            'ico' => $clientIco,
+            'name' => $clientName,
+            'dic' => null,
+        ]);
     }
 }

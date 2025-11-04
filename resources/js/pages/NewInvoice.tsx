@@ -104,13 +104,6 @@ const invoiceSchema = z.object({
       path: ["clientPostalCode"],
     });
   }
-  if (!data.clientDic || data.clientDic.trim() === '') {
-    ctx.addIssue({
-      code: z.ZodIssueCode.custom,
-      message: "DIČ je povinné",
-      path: ["clientDic"],
-    });
-  }
 });
 
 const NewInvoice = () => {
