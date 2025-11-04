@@ -15,7 +15,7 @@ final readonly class UserRegistrationDTO
         public string $companyStreet,
         public string $companyCity,
         public string $companyPostalCode,
-        public string $companyDic,
+        public ?string $companyDic,
         public ?string $companyIcDph,
     ) {}
 
@@ -30,7 +30,7 @@ final readonly class UserRegistrationDTO
             companyStreet: $data['company_street'],
             companyCity: $data['company_city'],
             companyPostalCode: $data['company_postal_code'],
-            companyDic: $data['company_dic'],
+            companyDic: $data['company_dic'] ?? null,
             companyIcDph: $data['company_ic_dph'] ?? null,
         );
     }

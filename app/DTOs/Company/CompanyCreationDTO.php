@@ -12,7 +12,7 @@ final readonly class CompanyCreationDTO
         public string $street,
         public string $city,
         public string $postalCode,
-        public string $dic,
+        public ?string $dic,
         public ?string $icDph,
     ) {}
 
@@ -24,7 +24,7 @@ final readonly class CompanyCreationDTO
             street: $data['street'],
             city: $data['city'],
             postalCode: $data['postal_code'],
-            dic: $data['dic'],
+            dic: $data['dic'] ?? null,
             icDph: $data['ic_dph'] ?? null,
         );
     }

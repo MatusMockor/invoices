@@ -74,7 +74,6 @@ final class RegisterWithCompanyTest extends TestCase
             'company_street',
             'company_city',
             'company_postal_code',
-            'company_dic',
         ]);
     }
 
@@ -188,5 +187,46 @@ final class RegisterWithCompanyTest extends TestCase
         }
 
         $response->assertStatus(429);
+    }
+
+    public function test_registration_works_without_dic_and_ic_dph(): void
+    {
+        $response = $this->postJson(route('api.register-with-company'), [
+            'name' => fake()->name(),
+            'email' => fake()->unique()->safeEmail(),
+            'password' => 'password123',
+            'password_confirmation' => 'password123',
+            'company_ico' => '12345678',
+            'company_name' => 'Test Company s.r.o.',
+            'company_street' => 'Hlavná 123',
+            'company_city' => 'Bratislava',
+            'company_postal_code' => '811 01',
+        ]);
+
+        $response->assertStatus(201);
+        $response->assertJsonStructure([
+            'message',
+            'user' => [
+                'id',
+                'name',
+                'email',
+            ],
+            'token',
+        ]);
+
+        $user = User::where('email', $response->json('user.email'))->first();
+
+        $this->assertDatabaseHas(UserCompany::class, [
+            'user_id' => $user->id,
+            'ico' => '12345678',
+            'name' => 'Test Company s.r.o.',
+            'street' => 'Hlavná 123',
+            'city' => 'Bratislava',
+            'postal_code' => '811 01',
+            'dic' => null,
+            'ic_dph' => null,
+        ]);
+
+        $this->assertNotNull($user->current_company_id);
     }
 }

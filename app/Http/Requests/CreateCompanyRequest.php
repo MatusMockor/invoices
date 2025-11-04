@@ -21,7 +21,7 @@ final class CreateCompanyRequest extends FormRequest
             'street' => 'required|string|max:200',
             'city' => 'required|string|max:100',
             'postal_code' => 'required|string|max:10',
-            'dic' => 'required|string|max:20',
+            'dic' => 'nullable|string|max:20',
             'ic_dph' => 'nullable|string|max:20',
         ];
     }
@@ -51,7 +51,7 @@ final class CreateCompanyRequest extends FormRequest
         return $this->input('postal_code');
     }
 
-    public function getDic(): string
+    public function getDic(): ?string
     {
         return $this->input('dic');
     }

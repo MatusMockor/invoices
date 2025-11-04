@@ -7,8 +7,8 @@ export interface CompanyData {
   street: string;
   city: string;
   postal_code: string;
-  dic: string;
-  ic_dph: string;
+  dic?: string;
+  ic_dph?: string;
 }
 
 export const onboardingService = {
