@@ -28,6 +28,7 @@ export const CustomCompanySection = ({
           disabled={isEditMode && !useCustomCompany}
           inputMode="numeric"
           pattern="[0-9]*"
+          autoComplete="off"
         />
         {errors.customCompanyIco && (
           <p className="text-sm text-destructive">{errors.customCompanyIco.message}</p>
@@ -44,6 +45,7 @@ export const CustomCompanySection = ({
           disabled={isEditMode && !useCustomCompany}
           inputMode="numeric"
           pattern="[0-9]*"
+          autoComplete="off"
         />
         {errors.customCompanyDic && (
           <p className="text-sm text-destructive">{errors.customCompanyDic.message}</p>
@@ -58,6 +60,7 @@ export const CustomCompanySection = ({
           placeholder="SK1234567890"
           className="border-primary/30"
           disabled={isEditMode && !useCustomCompany}
+          autoComplete="off"
         />
         {errors.customCompanyIcDph && (
           <p className="text-sm text-destructive">{errors.customCompanyIcDph.message}</p>
@@ -72,6 +75,7 @@ export const CustomCompanySection = ({
           placeholder="XYZ s.r.o."
           className="border-primary/30"
           disabled={isEditMode && !useCustomCompany}
+          autoComplete="organization"
         />
         {errors.customCompanyName && (
           <p className="text-sm text-destructive">{errors.customCompanyName.message}</p>
@@ -86,6 +90,7 @@ export const CustomCompanySection = ({
           placeholder="Hlavná 123"
           className="border-primary/30"
           disabled={isEditMode && !useCustomCompany}
+          autoComplete="street-address"
         />
         {errors.customCompanyAddress && (
           <p className="text-sm text-destructive">{errors.customCompanyAddress.message}</p>
@@ -101,6 +106,7 @@ export const CustomCompanySection = ({
             placeholder="811 01"
             className="border-primary/30"
             disabled={isEditMode && !useCustomCompany}
+            autoComplete="postal-code"
           />
           {errors.customCompanyZip && (
             <p className="text-sm text-destructive">{errors.customCompanyZip.message}</p>
@@ -114,6 +120,7 @@ export const CustomCompanySection = ({
             placeholder="Bratislava"
             className="border-primary/30"
             disabled={isEditMode && !useCustomCompany}
+            autoComplete="address-level2"
           />
           {errors.customCompanyCity && (
             <p className="text-sm text-destructive">{errors.customCompanyCity.message}</p>
@@ -127,6 +134,7 @@ export const CustomCompanySection = ({
             placeholder="SK"
             className="border-primary/30"
             disabled={isEditMode && !useCustomCompany}
+            autoComplete="country"
           />
           {errors.customCompanyCountry && (
             <p className="text-sm text-destructive">{errors.customCompanyCountry.message}</p>

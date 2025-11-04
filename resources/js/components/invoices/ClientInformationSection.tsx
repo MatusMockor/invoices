@@ -115,6 +115,7 @@ export const ClientInformationSection = ({
                 disabled={isEditMode && !useCustomCompany}
                 inputMode="numeric"
                 pattern="[0-9]*"
+                autoComplete="off"
               />
               {isSearching && (
                 <Loader2 className="absolute right-3 top-3 h-4 w-4 animate-spin text-primary" />
@@ -140,7 +141,7 @@ export const ClientInformationSection = ({
                           >
                             <div className="flex flex-col gap-1">
                               <div className="font-semibold">{company.name}</div>
-                              <div className="text-sm text-muted-foreground">
+                              <div className="text-sm">
                                 IČO: {company.ico} | {company.address}, {company.postal_code} {company.city}
                               </div>
                             </div>
@@ -167,6 +168,7 @@ export const ClientInformationSection = ({
             placeholder="ABC s.r.o."
             className="border-primary/30"
             disabled={isEditMode && !useCustomCompany}
+            autoComplete="organization"
           />
           {errors.clientName && (
             <p className="text-sm text-destructive">{errors.clientName.message}</p>
@@ -184,6 +186,7 @@ export const ClientInformationSection = ({
               disabled={isEditMode && !useCustomCompany}
               inputMode="numeric"
               pattern="[0-9]*"
+              autoComplete="off"
             />
             {errors.clientDic && (
               <p className="text-sm text-destructive">{errors.clientDic.message}</p>
@@ -197,6 +200,7 @@ export const ClientInformationSection = ({
               placeholder="SK2023456789"
               className="border-primary/30"
               disabled={isEditMode && !useCustomCompany}
+              autoComplete="off"
             />
             {errors.clientIcDph && (
               <p className="text-sm text-destructive">{errors.clientIcDph.message}</p>
@@ -212,6 +216,7 @@ export const ClientInformationSection = ({
             placeholder="Hlavná 123"
             className="border-primary/30"
             disabled={isEditMode && !useCustomCompany}
+            autoComplete="street-address"
           />
           {errors.clientStreet && (
             <p className="text-sm text-destructive">{errors.clientStreet.message}</p>
@@ -227,6 +232,7 @@ export const ClientInformationSection = ({
               placeholder="811 01"
               className="border-primary/30"
               disabled={isEditMode && !useCustomCompany}
+              autoComplete="postal-code"
             />
             {errors.clientPostalCode && (
               <p className="text-sm text-destructive">{errors.clientPostalCode.message}</p>
@@ -240,6 +246,7 @@ export const ClientInformationSection = ({
               placeholder="Bratislava"
               className="border-primary/30"
               disabled={isEditMode && !useCustomCompany}
+              autoComplete="address-level2"
             />
             {errors.clientCity && (
               <p className="text-sm text-destructive">{errors.clientCity.message}</p>

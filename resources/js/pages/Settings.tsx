@@ -491,6 +491,7 @@ const Settings = () => {
                     onChange={(e) => setCompanyData({ ...companyData, name: e.target.value })}
                     placeholder="Názov firmy"
                     disabled={isSavingCompany}
+                    autoComplete="organization"
                   />
                 </div>
 
@@ -503,6 +504,7 @@ const Settings = () => {
                       onChange={(e) => setCompanyData({ ...companyData, ico: e.target.value })}
                       placeholder="12345678"
                       disabled={isSavingCompany}
+                      autoComplete="off"
                     />
                   </div>
                   <div className="space-y-2">
@@ -513,6 +515,7 @@ const Settings = () => {
                       onChange={(e) => setCompanyData({ ...companyData, dic: e.target.value })}
                       placeholder="2023456789"
                       disabled={isSavingCompany}
+                      autoComplete="off"
                     />
                   </div>
                   <div className="space-y-2">
@@ -523,6 +526,7 @@ const Settings = () => {
                       onChange={(e) => setCompanyData({ ...companyData, ic_dph: e.target.value })}
                       placeholder="SK2023456789"
                       disabled={isSavingCompany}
+                      autoComplete="off"
                     />
                   </div>
                 </div>
@@ -535,6 +539,7 @@ const Settings = () => {
                     onChange={(e) => setCompanyData({ ...companyData, street: e.target.value })}
                     placeholder="Ulica a číslo"
                     disabled={isSavingCompany}
+                    autoComplete="street-address"
                   />
                 </div>
 
@@ -547,6 +552,7 @@ const Settings = () => {
                       onChange={(e) => setCompanyData({ ...companyData, city: e.target.value })}
                       placeholder="Mesto"
                       disabled={isSavingCompany}
+                      autoComplete="address-level2"
                     />
                   </div>
                   <div className="space-y-2">
@@ -557,6 +563,7 @@ const Settings = () => {
                       onChange={(e) => setCompanyData({ ...companyData, postal_code: e.target.value })}
                       placeholder="PSČ"
                       disabled={isSavingCompany}
+                      autoComplete="postal-code"
                     />
                   </div>
                 </div>
@@ -569,6 +576,7 @@ const Settings = () => {
                     onChange={(e) => setCompanyData({ ...companyData, country: e.target.value })}
                     placeholder="Slovensko"
                     disabled={isSavingCompany}
+                    autoComplete="country"
                   />
                 </div>
 
@@ -587,6 +595,7 @@ const Settings = () => {
                         onChange={(e) => setCompanyData({ ...companyData, phone: e.target.value })}
                         placeholder="+421 XXX XXX XXX"
                         disabled={isSavingCompany}
+                        autoComplete="tel"
                       />
                     </div>
                     <div className="space-y-2">
@@ -598,6 +607,7 @@ const Settings = () => {
                         onChange={(e) => setCompanyData({ ...companyData, email: e.target.value })}
                         placeholder="info@firma.sk"
                         disabled={isSavingCompany}
+                        autoComplete="email"
                       />
                     </div>
                   </div>
@@ -618,6 +628,7 @@ const Settings = () => {
                         onChange={(e) => setCompanyData({ ...companyData, iban: e.target.value })}
                         placeholder="SK00 0000 0000 0000 0000 0000"
                         disabled={isSavingCompany}
+                        autoComplete="off"
                       />
                     </div>
                     <div className="space-y-2">
@@ -628,6 +639,7 @@ const Settings = () => {
                         onChange={(e) => setCompanyData({ ...companyData, swift: e.target.value })}
                         placeholder="SWIFT kód"
                         disabled={isSavingCompany}
+                        autoComplete="off"
                       />
                     </div>
                   </div>
@@ -963,6 +975,7 @@ const Settings = () => {
                       value={currentPassword}
                       onChange={(e) => setCurrentPassword(e.target.value)}
                       disabled={isChangingPassword}
+                      autoComplete="current-password"
                     />
                   </div>
 
@@ -975,6 +988,7 @@ const Settings = () => {
                       value={newPassword}
                       onChange={(e) => setNewPassword(e.target.value)}
                       disabled={isChangingPassword}
+                      autoComplete="new-password"
                     />
                     <p className="text-sm text-muted-foreground">
                       Heslo musí obsahovať aspoň 8 znakov
@@ -990,6 +1004,7 @@ const Settings = () => {
                       value={confirmPassword}
                       onChange={(e) => setConfirmPassword(e.target.value)}
                       disabled={isChangingPassword}
+                      autoComplete="new-password"
                     />
                   </div>
 
@@ -1098,6 +1113,7 @@ const Settings = () => {
               value={deletePassword}
               onChange={(e) => setDeletePassword(e.target.value)}
               disabled={isDeletingAccount}
+              autoComplete="current-password"
             />
           </div>
           <AlertDialogFooter>
