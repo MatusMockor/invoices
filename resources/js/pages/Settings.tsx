@@ -7,7 +7,6 @@ import { Switch } from "@/components/ui/switch";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Card } from "@/components/ui/card";
 import { Separator } from "@/components/ui/separator";
-import { Skeleton } from "@/components/ui/skeleton";
 import { useToast } from "@/hooks/use-toast";
 import { useSettings } from "@/hooks/useSettings";
 import { InvoicePreview } from "@/components/invoice/InvoicePreview";
@@ -39,59 +38,6 @@ import {
   Palette,
   Loader2,
 } from "lucide-react";
-
-const SettingsLoadingSkeleton = () => {
-  return (
-    <div className="max-w-5xl mx-auto space-y-6 animate-fade-in">
-      <div>
-        <Skeleton className="h-9 w-48 mb-2" />
-        <Skeleton className="h-5 w-80" />
-      </div>
-
-      <div className="space-y-6">
-        <div className="bg-card border border-border rounded-lg p-2">
-          <div className="flex gap-2">
-            {[...Array(5)].map((_, i) => (
-              <Skeleton key={i} className="h-10 w-32" />
-            ))}
-          </div>
-        </div>
-
-        <Card className="bg-gradient-card p-6 border border-border shadow-elegant-sm">
-          <div className="mb-6">
-            <Skeleton className="h-7 w-40 mb-2" />
-            <Skeleton className="h-4 w-64" />
-          </div>
-
-          <div className="space-y-6">
-            <div className="flex items-center gap-6 mb-6">
-              <Skeleton className="w-20 h-20 rounded-full" />
-              <div className="space-y-2">
-                <Skeleton className="h-9 w-32" />
-                <Skeleton className="h-4 w-40" />
-              </div>
-            </div>
-
-            <Separator />
-
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-              {[...Array(4)].map((_, i) => (
-                <div key={i} className="space-y-2">
-                  <Skeleton className="h-4 w-24" />
-                  <Skeleton className="h-10 w-full" />
-                </div>
-              ))}
-            </div>
-
-            <div className="flex justify-end pt-4">
-              <Skeleton className="h-10 w-40" />
-            </div>
-          </div>
-        </Card>
-      </div>
-    </div>
-  );
-};
 
 const Settings = () => {
   const { toast } = useToast();
@@ -412,7 +358,10 @@ const Settings = () => {
   return (
     <DashboardLayout disableLoading={true}>
       {isFetching ? (
-        <SettingsLoadingSkeleton />
+        <div className="flex flex-col items-center justify-center min-h-[500px]">
+          <Loader2 className="h-8 w-8 animate-spin text-primary mb-3" />
+          <p className="text-sm text-muted-foreground">Načítavam nastavenia...</p>
+        </div>
       ) : (
       <div className="max-w-5xl mx-auto space-y-6 animate-fade-in">
         <div>
