@@ -228,13 +228,15 @@ final class SyncCompaniesFromOracleAction
             return null;
         }
 
-        // Extract ICO from identifiers array
+        // Extract ICO from identifiers array (use currently valid entry)
         $identifiers = $data['identifiers'] ?? [];
-        if (empty($identifiers) || ! isset($identifiers[0]['value'])) {
+        $currentIdentifier = $this->findCurrentlyValidEntry($identifiers);
+
+        if ($currentIdentifier === null || ! isset($currentIdentifier['value'])) {
             return null;
         }
 
-        $ico = trim($identifiers[0]['value']);
+        $ico = trim($currentIdentifier['value']);
         if ($ico === '') {
             return null;
         }
