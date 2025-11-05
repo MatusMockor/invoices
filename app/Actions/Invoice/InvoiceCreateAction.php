@@ -12,6 +12,7 @@ use App\Repositories\Interfaces\InvoiceItemRepository;
 use App\Repositories\Interfaces\InvoiceRepository;
 use App\Services\Invoice\InvoiceTotalCalculatorService;
 use Illuminate\Support\Facades\DB;
+use Throwable;
 
 final class InvoiceCreateAction
 {
@@ -22,6 +23,9 @@ final class InvoiceCreateAction
         private readonly InvoiceTotalCalculatorService $totalCalculator
     ) {}
 
+    /**
+     * @throws Throwable
+     */
     public function handle(InvoiceCreateDTO $dto, int $userId, int $supplierCompanyId): Invoice
     {
         return DB::transaction(function () use ($dto, $userId, $supplierCompanyId) {
