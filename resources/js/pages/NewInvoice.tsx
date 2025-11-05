@@ -273,7 +273,10 @@ const NewInvoice = () => {
         }
       }, 500);
 
-      return () => clearTimeout(timer);
+      return () => {
+        clearTimeout(timer);
+        setIsSearching(false);
+      };
     } else if (icoSearch.length === 0) {
       setFilteredCompanies([]);
       setIsSearching(false);

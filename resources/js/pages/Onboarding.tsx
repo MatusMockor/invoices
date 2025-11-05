@@ -7,10 +7,12 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
-import { Search, Building2 } from "lucide-react";
+import { Command, CommandEmpty, CommandGroup, CommandItem, CommandList } from "@/components/ui/command";
+import { Search, Building2, Loader2 } from "lucide-react";
 import { toast } from "sonner";
-import { onboardingService } from "@/services/onboardingService";
+import { onboardingService, type CompanyData } from "@/services/onboardingService";
 import { businessEntityService } from "@/services/businessEntityService";
+import { companyService } from "@/services/companyService";
 import { useAuthContext } from "@/contexts/AuthContext";
 
 const companySchema = z.object({
@@ -29,6 +31,8 @@ const Onboarding = () => {
   const [icoSearch, setIcoSearch] = useState("");
   const [isSearching, setIsSearching] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [showSuggestions, setShowSuggestions] = useState(false);
+  const [filteredCompanies, setFilteredCompanies] = useState<any[]>([]);
   const navigate = useNavigate();
   const { user, refetch } = useAuthContext();
 
@@ -52,34 +56,47 @@ const Onboarding = () => {
     },
   });
 
-  const handleIcoSearch = async (ico: string) => {
-    if (!ico || ico.length < 3) {
-      return;
-    }
+  // Search companies with debounce
+  useEffect(() => {
+    if (icoSearch.length >= 2 && showSuggestions) {
+      setIsSearching(true);
 
-    setIsSearching(true);
+      // Real API call with debounce
+      const timer = setTimeout(async () => {
+        try {
+          const response = await companyService.searchCustomerCompanies(icoSearch);
+          setFilteredCompanies(response.data);
+        } catch (error) {
+          console.error('Error searching companies:', error);
+          setFilteredCompanies([]);
+        } finally {
+          setIsSearching(false);
+        }
+      }, 500);
 
-    try {
-      const response = await businessEntityService.fetchByIco(ico);
-
-      if (response.data) {
-        const data = response.data;
-
-        companyForm.setValue("ico", data.ico || ico);
-        companyForm.setValue("name", data.name || "");
-        companyForm.setValue("street", data.street || "");
-        companyForm.setValue("city", data.city || "");
-        companyForm.setValue("postal_code", data.postal_code || "");
-        companyForm.setValue("dic", data.dic || "");
-        companyForm.setValue("ic_dph", data.ic_dph || "");
-
-        toast.success("Údaje o firme boli načítané");
-      }
-    } catch (error: any) {
-      toast.error(error.response?.data?.message || "Nepodarilo sa načítať údaje o firme");
-    } finally {
+      return () => {
+        clearTimeout(timer);
+        setIsSearching(false);
+      };
+    } else if (icoSearch.length === 0) {
+      setFilteredCompanies([]);
       setIsSearching(false);
     }
+  }, [icoSearch, showSuggestions]);
+
+  const onCompanySelect = (company: any) => {
+    companyForm.setValue("ico", company.ico || "");
+    companyForm.setValue("name", company.name || "");
+    companyForm.setValue("street", company.address || "");
+    companyForm.setValue("city", company.city || "");
+    companyForm.setValue("postal_code", company.postal_code || "");
+    companyForm.setValue("dic", company.dic || "");
+    companyForm.setValue("ic_dph", company.ic_dph || "");
+
+    setIcoSearch(company.ico || "");
+    setShowSuggestions(false);
+
+    toast.success("Údaje o firme boli načítané");
   };
 
   const onSubmit = async (data: CompanyFormData) => {
@@ -87,7 +104,7 @@ const Onboarding = () => {
 
     try {
       // Convert empty strings to undefined for optional fields
-      const submissionData = {
+      const submissionData: CompanyData = {
         ...data,
         dic: data.dic?.trim() || undefined,
         ic_dph: data.ic_dph?.trim() || undefined,
@@ -138,21 +155,67 @@ const Onboarding = () => {
                         <FormControl>
                           <div className="relative">
                             <Input
-                              placeholder="Zadajte IČO"
+                              placeholder="Začnite písať IČO alebo názov firmy..."
                               value={icoSearch}
                               onChange={(e) => {
                                 setIcoSearch(e.target.value);
                                 field.onChange(e.target.value);
+                                setShowSuggestions(true);
                               }}
-                              onBlur={() => {
-                                if (icoSearch && icoSearch !== field.value) {
-                                  handleIcoSearch(icoSearch);
+                              onFocus={() => {
+                                if (icoSearch.length > 0) {
+                                  setShowSuggestions(true);
                                 }
                               }}
-                              disabled={isSearching}
                               className="pr-10"
+                              autoComplete="off"
+                              inputMode="numeric"
+                              pattern="[0-9]*"
+                              data-form-type="other"
+                              data-lpignore="true"
+                              data-1p-ignore="true"
                             />
-                            <Search className="absolute right-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                            {isSearching ? (
+                              <Loader2 className="absolute right-3 top-1/2 -translate-y-1/2 h-4 w-4 animate-spin text-primary" />
+                            ) : (
+                              <Search className="absolute right-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                            )}
+
+                            {showSuggestions && icoSearch.length > 0 && (
+                              <div className="absolute z-50 w-full mt-1 bg-popover border border-border rounded-md shadow-lg">
+                                <Command>
+                                  <CommandList>
+                                    {isSearching ? (
+                                      <div className="py-6 text-center text-sm flex items-center justify-center gap-2">
+                                        <Loader2 className="h-4 w-4 animate-spin text-primary" />
+                                        <span>Vyhľadávam...</span>
+                                      </div>
+                                    ) : filteredCompanies.length === 0 ? (
+                                      <CommandEmpty className="py-6 text-center text-sm">
+                                        Žiadne výsledky
+                                      </CommandEmpty>
+                                    ) : (
+                                      <CommandGroup>
+                                        {filteredCompanies.map((company) => (
+                                          <CommandItem
+                                            key={company.ico}
+                                            onSelect={() => onCompanySelect(company)}
+                                            className="cursor-pointer"
+                                          >
+                                            <div className="flex flex-col gap-1">
+                                              <div className="font-semibold">{company.name}</div>
+                                              <div className="text-sm">
+                                                IČO: {company.ico} | {company.address}, {company.postal_code} {company.city}
+                                              </div>
+                                            </div>
+                                          </CommandItem>
+                                        ))}
+                                      </CommandGroup>
+                                    )}
+                                  </CommandList>
+                                </Command>
+                              </div>
+                            )}
                           </div>
                         </FormControl>
                         <FormMessage />
@@ -167,7 +230,7 @@ const Onboarding = () => {
                       <FormItem>
                         <FormLabel>Názov firmy *</FormLabel>
                         <FormControl>
-                          <Input placeholder="ABC s.r.o." {...field} />
+                          <Input placeholder="ABC s.r.o." {...field} autoComplete="organization" />
                         </FormControl>
                         <FormMessage />
                       </FormItem>
@@ -181,7 +244,7 @@ const Onboarding = () => {
                       <FormItem>
                         <FormLabel>Miesto podnikania / Sídlo firmy *</FormLabel>
                         <FormControl>
-                          <Input placeholder="Hlavná 123" {...field} />
+                          <Input placeholder="Hlavná 123" {...field} autoComplete="street-address" />
                         </FormControl>
                         <FormMessage />
                       </FormItem>
@@ -196,7 +259,7 @@ const Onboarding = () => {
                         <FormItem>
                           <FormLabel>Mesto *</FormLabel>
                           <FormControl>
-                            <Input placeholder="Bratislava" {...field} />
+                            <Input placeholder="Bratislava" {...field} autoComplete="address-level2" />
                           </FormControl>
                           <FormMessage />
                         </FormItem>
@@ -210,7 +273,7 @@ const Onboarding = () => {
                         <FormItem>
                           <FormLabel>PSČ *</FormLabel>
                           <FormControl>
-                            <Input placeholder="811 01" {...field} />
+                            <Input placeholder="811 01" {...field} autoComplete="postal-code" />
                           </FormControl>
                           <FormMessage />
                         </FormItem>
@@ -226,7 +289,13 @@ const Onboarding = () => {
                         <FormItem>
                           <FormLabel>DIČ</FormLabel>
                           <FormControl>
-                            <Input placeholder="2023456789" {...field} />
+                            <Input
+                              placeholder="2023456789"
+                              {...field}
+                              autoComplete="off"
+                              inputMode="numeric"
+                              pattern="[0-9]*"
+                            />
                           </FormControl>
                           <FormMessage />
                         </FormItem>
@@ -240,7 +309,7 @@ const Onboarding = () => {
                         <FormItem>
                           <FormLabel>IČ DPH</FormLabel>
                           <FormControl>
-                            <Input placeholder="SK2023456789" {...field} />
+                            <Input placeholder="SK2023456789" {...field} autoComplete="off" />
                           </FormControl>
                           <FormMessage />
                         </FormItem>

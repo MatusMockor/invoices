@@ -116,6 +116,9 @@ export const ClientInformationSection = ({
                 inputMode="numeric"
                 pattern="[0-9]*"
                 autoComplete="off"
+                data-form-type="other"
+                data-lpignore="true"
+                data-1p-ignore="true"
               />
               {isSearching && (
                 <Loader2 className="absolute right-3 top-3 h-4 w-4 animate-spin text-primary" />
@@ -127,7 +130,12 @@ export const ClientInformationSection = ({
               <div className="absolute z-50 w-full mt-1 bg-popover border border-border rounded-md shadow-lg">
                 <Command>
                   <CommandList>
-                    {filteredCompanies.length === 0 ? (
+                    {isSearching ? (
+                      <div className="py-6 text-center text-sm flex items-center justify-center gap-2">
+                        <Loader2 className="h-4 w-4 animate-spin text-primary" />
+                        <span>Vyhľadávam...</span>
+                      </div>
+                    ) : filteredCompanies.length === 0 ? (
                       <CommandEmpty className="py-6 text-center text-sm">
                         Žiadne výsledky
                       </CommandEmpty>

@@ -11,6 +11,7 @@ use App\Models\User;
 use App\Models\UserCompany;
 use Carbon\Carbon;
 use Illuminate\Database\Seeder;
+use Illuminate\Support\Facades\Facade;
 
 class InvoiceSeeder extends Seeder
 {
@@ -119,7 +120,7 @@ class InvoiceSeeder extends Seeder
             'company_ic_dph' => $company->ic_dph,
             'company_name' => $company->name,
             'company_address' => $company->street,
-            'company_city' => $company->city,
+            'company_city' => $companyk->city,
             'company_zip' => $company->postal_code,
             'company_country' => $company->country,
             'invoice_number' => '20250002',
@@ -128,6 +129,8 @@ class InvoiceSeeder extends Seeder
             'status' => 'sent',
             'total_amount' => 0, // Will be calculated from items
         ]);
+
+        Facade::
 
         // Create invoice items
         $items = [
