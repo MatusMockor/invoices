@@ -14,6 +14,7 @@ import { onboardingService, type CompanyData } from "@/services/onboardingServic
 import { businessEntityService } from "@/services/businessEntityService";
 import { companyService } from "@/services/companyService";
 import { useAuthContext } from "@/contexts/AuthContext";
+import {ZodString} from "zod";
 
 const companySchema = z.object({
   ico: z.string().trim().min(1, "IČO je povinné").max(20),
@@ -104,7 +105,15 @@ const Onboarding = () => {
 
     try {
       // Convert empty strings to undefined for optional fields
-      const submissionData: CompanyData = {
+      const submissionData: {
+          ico?: ZodString["_output"];
+          name?: ZodString["_output"];
+          street?: ZodString["_output"];
+          city?: ZodString["_output"];
+          postal_code?: ZodString["_output"];
+          dic: string;
+          ic_dph: string
+      } = {
         ...data,
         dic: data.dic?.trim() || undefined,
         ic_dph: data.ic_dph?.trim() || undefined,

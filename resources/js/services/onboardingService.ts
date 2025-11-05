@@ -1,5 +1,6 @@
 import api from '@/lib/axios';
 import type { User } from '@/types';
+import {ZodString} from "zod";
 
 export interface CompanyData {
   ico: string;
@@ -12,7 +13,15 @@ export interface CompanyData {
 }
 
 export const onboardingService = {
-  async createCompany(data: CompanyData): Promise<{ message: string; user: User }> {
+  async createCompany(data: {
+      ico?: ZodString["_output"];
+      name?: ZodString["_output"];
+      street?: ZodString["_output"];
+      city?: ZodString["_output"];
+      postal_code?: ZodString["_output"];
+      dic: string;
+      ic_dph: string
+  }): Promise<{ message: string; user: User }> {
     const response = await api.post('/onboarding', data);
     return response.data;
   },

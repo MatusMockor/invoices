@@ -20,6 +20,8 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
  * @property string|null $city City
  * @property string|null $postal_code Postal code
  * @property string|null $country Country
+ * @property string|null $registration_office Registration office
+ * @property string|null $registration_number Registration number
  * @property \Illuminate\Support\Carbon|null $created_at
  * @property \Illuminate\Support\Carbon|null $updated_at
  * @property-read \Illuminate\Database\Eloquent\Collection|\App\Models\Invoice[] $invoices
@@ -37,6 +39,8 @@ class Company extends Model
         'country',
         'dic',
         'ic_dph',
+        'registration_office',
+        'registration_number',
     ];
 
     public function invoices(): HasMany
