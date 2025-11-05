@@ -467,6 +467,131 @@ final class SyncCompaniesFromOracleActionTest extends TestCase
     }
 
     /**
+     * Test that Sro/ prefix is removed from registration number.
+     */
+    public function test_filters_sro_prefix_from_registration_number(): void
+    {
+        // Arrange - Test with standard case "Sro/"
+        $testCases = [
+            'Sro/440-46274' => '440-46274',
+            'Sro/123-45678' => '123-45678',
+            'Sro/ABC-123' => 'ABC-123',
+            'Sro/999' => '999',
+        ];
+
+        // Act & Assert
+        foreach ($testCases as $input => $expected) {
+            $result = $this->invokePrivateMethod('filterRegistrationNumber', [$input]);
+            $this->assertSame($expected, $result, "Failed to filter '{$input}'");
+        }
+    }
+
+    /**
+     * Test that Sro/ prefix filtering is case-insensitive.
+     */
+    public function test_filters_sro_prefix_case_insensitively(): void
+    {
+        // Arrange - Test different case variants
+        $testCases = [
+            'SRO/123-45678' => '123-45678',
+            'sro/440-46274' => '440-46274',
+            'Sro/ABC-123' => 'ABC-123',
+            'SrO/999' => '999',
+            'srO/TEST-456' => 'TEST-456',
+        ];
+
+        // Act & Assert
+        foreach ($testCases as $input => $expected) {
+            $result = $this->invokePrivateMethod('filterRegistrationNumber', [$input]);
+            $this->assertSame($expected, $result, "Failed to filter case variant '{$input}'");
+        }
+    }
+
+    /**
+     * Test that registration numbers without Sro/ prefix remain unchanged.
+     */
+    public function test_does_not_modify_registration_number_without_sro_prefix(): void
+    {
+        // Arrange - Test values that should not be modified
+        $testCases = [
+            '440-46274',      // Normal registration number
+            'ABC-123',        // Alphanumeric
+            '12345',          // Numbers only
+            'SR-123456',      // Different prefix
+            'Sr/123',         // Only "Sro/" should be filtered, not "Sr/"
+            'Sro',            // Edge case: prefix alone without slash
+            'S/123',          // Single char prefix
+            'SROS/123',       // Similar but different prefix
+            '',               // Empty string
+            '123/456',        // Numbers with slash but no Sro prefix
+        ];
+
+        // Act & Assert
+        foreach ($testCases as $input) {
+            $result = $this->invokePrivateMethod('filterRegistrationNumber', [$input]);
+            $this->assertSame($input, $result, "Value '{$input}' should remain unchanged");
+        }
+    }
+
+    /**
+     * Test registration number filtering in the complete parsing flow.
+     */
+    public function test_registration_number_filtering_in_full_parsing_flow(): void
+    {
+        // Arrange - Complete API data with Sro/ prefix in registration number
+        $apiData = [
+            'identifiers' => [
+                ['value' => '12345678'],
+            ],
+            'fullNames' => [
+                ['value' => 'Test Company s.r.o.', 'validFrom' => '2022-01-01'],
+            ],
+            'addresses' => [
+                [
+                    'street' => 'Main Street',
+                    'regNumber' => 123,
+                    'municipality' => ['value' => 'Bratislava'],
+                    'postalCodes' => ['81101'],
+                    'country' => ['value' => 'SK'],
+                    'validFrom' => '2022-01-01',
+                ],
+            ],
+            'sourceRegister' => [
+                'registrationOffices' => [
+                    ['value' => 'Okresný úrad Bratislava', 'validFrom' => '2022-11-01'],
+                ],
+                'registrationNumbers' => [
+                    ['value' => 'Sro/440-46274', 'validFrom' => '2022-11-01'],
+                ],
+            ],
+        ];
+
+        // Act
+        $result = $this->invokePrivateMethod('parseCompanyData', [$apiData]);
+
+        // Assert
+        $this->assertNotNull($result);
+        $this->assertIsArray($result);
+        $this->assertArrayHasKey('registration_number', $result);
+        $this->assertEquals('440-46274', $result['registration_number'], 'Sro/ prefix should be removed in full parsing flow');
+
+        // Test with different case variants
+        $apiData['sourceRegister']['registrationNumbers'][0]['value'] = 'SRO/TEST-123';
+        $result = $this->invokePrivateMethod('parseCompanyData', [$apiData]);
+        $this->assertEquals('TEST-123', $result['registration_number'], 'Uppercase SRO/ prefix should be removed');
+
+        // Test with registration number that has no prefix
+        $apiData['sourceRegister']['registrationNumbers'][0]['value'] = '999-88777';
+        $result = $this->invokePrivateMethod('parseCompanyData', [$apiData]);
+        $this->assertEquals('999-88777', $result['registration_number'], 'Registration number without prefix should remain unchanged');
+
+        // Test with whitespace and prefix
+        $apiData['sourceRegister']['registrationNumbers'][0]['value'] = '  sro/555-444  ';
+        $result = $this->invokePrivateMethod('parseCompanyData', [$apiData]);
+        $this->assertEquals('555-444', $result['registration_number'], 'Whitespace should be trimmed and prefix removed');
+    }
+
+    /**
      * Helper method to invoke private methods for testing.
      *
      * @param  array<int, mixed>  $parameters
