@@ -45,6 +45,7 @@ const Settings = () => {
   const { theme, setTheme } = useTheme();
   const { logout } = useAuth();
   const { selectedCompanyId } = useCompanyContext();
+  const [activeTab, setActiveTab] = useState("profile");
   const [invoiceTemplate, setInvoiceTemplate] = useState<'classic' | 'modern' | 'minimal' | 'bold'>('classic');
   const [previewOpen, setPreviewOpen] = useState(false);
   const [previewInvoiceId, setPreviewInvoiceId] = useState<number | null>(null);
@@ -371,7 +372,7 @@ const Settings = () => {
           </p>
         </div>
 
-        <Tabs defaultValue="profile" className="space-y-6">
+        <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-6">
           <TabsList className="bg-card border border-border">
             <TabsTrigger value="profile" className="gap-2">
               <User className="h-4 w-4" />
