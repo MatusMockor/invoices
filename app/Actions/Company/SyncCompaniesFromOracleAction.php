@@ -255,6 +255,20 @@ final class SyncCompaniesFromOracleAction
         $postalCode = ! empty($address['postalCodes']) ? $address['postalCodes'][0] : null;
         $country = $address['country']['value'] ?? null;
 
+        // Extract registration office from sourceRegister (use currently valid entry)
+        $registrationOffices = $data['sourceRegister']['registrationOffices'] ?? [];
+        $currentRegistrationOffice = $this->findCurrentlyValidEntry($registrationOffices);
+        $registrationOffice = $currentRegistrationOffice !== null && isset($currentRegistrationOffice['value'])
+            ? trim($currentRegistrationOffice['value'])
+            : null;
+
+        // Extract registration number from sourceRegister (use currently valid entry)
+        $registrationNumbers = $data['sourceRegister']['registrationNumbers'] ?? [];
+        $currentRegistrationNumber = $this->findCurrentlyValidEntry($registrationNumbers);
+        $registrationNumber = $currentRegistrationNumber !== null && isset($currentRegistrationNumber['value'])
+            ? $this->filterRegistrationNumber(trim($currentRegistrationNumber['value']))
+            : null;
+
         return [
             'ico' => $ico,
             'name' => $name,
@@ -264,6 +278,8 @@ final class SyncCompaniesFromOracleAction
             'country' => $country ? trim($country) : null,
             'dic' => null, // DIC is not in Oracle data, will be filled from Phase 2
             'ic_dph' => null, // IC DPH is not in Oracle data, will be filled from Phase 2
+            'registration_office' => $registrationOffice,
+            'registration_number' => $registrationNumber,
         ];
     }
 
@@ -352,6 +368,19 @@ final class SyncCompaniesFromOracleAction
         }
 
         return $latestEntry;
+    }
+
+    /**
+     * Filter registration number by removing 'Sro/' prefix if present.
+     */
+    private function filterRegistrationNumber(string $registrationNumber): string
+    {
+        // Remove 'Sro/' prefix (case-insensitive)
+        if (str_starts_with(strtolower($registrationNumber), 'sro/')) {
+            return substr($registrationNumber, 4);
+        }
+
+        return $registrationNumber;
     }
 
     /**
