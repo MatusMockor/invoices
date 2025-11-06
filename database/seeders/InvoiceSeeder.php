@@ -11,7 +11,6 @@ use App\Models\User;
 use App\Models\UserCompany;
 use Carbon\Carbon;
 use Illuminate\Database\Seeder;
-use Illuminate\Support\Facades\Facade;
 
 class InvoiceSeeder extends Seeder
 {

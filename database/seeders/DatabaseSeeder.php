@@ -22,11 +22,11 @@ class DatabaseSeeder extends Seeder
         ]);
 
         // Call other seeders
-//        $this->call([
-//            UserCompanySeeder::class,
-//            InvoiceSeeder::class,
-//            RolesSeeder::class,
-//            ContactSeeder::class,
-//        ]);
+        //        $this->call([
+        //            UserCompanySeeder::class,
+        //            InvoiceSeeder::class,
+        //            RolesSeeder::class,
+        //            ContactSeeder::class,
+        //        ]);
     }
 }
