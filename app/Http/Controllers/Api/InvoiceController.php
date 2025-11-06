@@ -163,7 +163,7 @@ final class InvoiceController extends Controller
             iban: str_replace(' ', '', $userCompany->iban),
             swift: $userCompany->swift,
             amount: $invoice->total_amount,
-            variableSymbol: str_replace(['INV-', '-'], '', $invoice->invoice_number),
+            variableSymbol: $invoice->variable_symbol ?? '',
             constantSymbol: $invoice->constant_symbol ?? '',
             specificSymbol: $invoice->specific_symbol ?? '',
             note: 'Faktura '.$invoice->invoice_number,

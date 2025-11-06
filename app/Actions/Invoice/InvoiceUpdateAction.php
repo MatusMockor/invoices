@@ -33,7 +33,9 @@ final class InvoiceUpdateAction
                 'due_date' => $dto->dueDate,
                 'delivery_date' => $dto->deliveryDate,
                 'currency' => $dto->currency,
+                'variable_symbol' => $dto->variableSymbol,
                 'constant_symbol' => $dto->constantSymbol,
+                'specific_symbol' => $dto->specificSymbol,
                 'note' => $dto->notes,
                 'status' => $dto->status,
             ], static fn (mixed $value): bool => $value !== null);

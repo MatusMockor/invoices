@@ -34,7 +34,9 @@ use Illuminate\Support\Carbon;
  * @property string|null $company_country
  * @property float $total_amount
  * @property string $currency
+ * @property string|null $variable_symbol
  * @property string|null $constant_symbol
+ * @property string|null $specific_symbol
  * @property string|null $note
  * @property string $status
  * @property Carbon $created_at
@@ -67,7 +69,9 @@ class Invoice extends Model
         'company_country',
         'total_amount',
         'currency',
+        'variable_symbol',
         'constant_symbol',
+        'specific_symbol',
         'note',
         'status',
     ];

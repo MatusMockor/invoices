@@ -31,7 +31,9 @@ return new class extends Migration
             $table->string('company_country')->nullable()->default('Slovakia');
             $table->decimal('total_amount', 10);
             $table->string('currency')->default(Currency::EUR->value);
+            $table->string('variable_symbol')->nullable();
             $table->string('constant_symbol')->nullable();
+            $table->string('specific_symbol')->nullable();
             $table->text('note')->nullable();
             $table->string('status')->default(InvoiceStatus::DRAFT->value);
 
