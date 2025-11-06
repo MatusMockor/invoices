@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Http\Controllers\Api;
 
+use App\Actions\Invoice\GetLatestInvoiceNumberAction;
 use App\Actions\Invoice\InvoiceCreateAction;
 use App\Actions\Invoice\InvoiceDeleteAction;
 use App\Actions\Invoice\InvoiceUpdateAction;
@@ -14,6 +15,7 @@ use App\Http\Requests\StoreInvoiceRequest;
 use App\Http\Requests\UpdateInvoiceRequest;
 use App\Http\Resources\InvoiceCollection;
 use App\Http\Resources\InvoiceResource;
+use App\Http\Resources\LatestInvoiceNumberResource;
 use App\Models\Invoice;
 use App\Repositories\Interfaces\InvoiceRepository;
 use App\Services\Interfaces\InvoicePdfService;
@@ -29,6 +31,7 @@ final class InvoiceController extends Controller
         private readonly InvoiceCreateAction $createAction,
         private readonly InvoiceUpdateAction $updateAction,
         private readonly InvoiceDeleteAction $deleteAction,
+        private readonly GetLatestInvoiceNumberAction $getLatestNumberAction,
         private readonly InvoicePdfService $pdfService,
         private readonly InvoiceRepository $invoiceRepository,
         private readonly PayBySquare $payBySquareService
@@ -52,15 +55,13 @@ final class InvoiceController extends Controller
     /**
      * Get the latest invoice number for the current company.
      */
-    public function latestNumber(): JsonResponse
+    public function latestNumber(): LatestInvoiceNumberResource
     {
-        $latestNumber = $this->invoiceRepository->getLatestInvoiceNumber(
+        $latestNumber = $this->getLatestNumberAction->handle(
             auth()->user()->current_company_id
         );
 
-        return response()->json([
-            'latest_number' => $latestNumber,
-        ]);
+        return new LatestInvoiceNumberResource($latestNumber);
     }
 
     /**

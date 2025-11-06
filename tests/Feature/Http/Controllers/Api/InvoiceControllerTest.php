@@ -791,4 +791,115 @@ class InvoiceControllerTest extends TestCase
         $response->assertJsonPath('data.company_dic', $customCompanyDic);
         $response->assertJsonPath('data.company_ic_dph', $customCompanyIcDph);
     }
+
+    public function test_latest_number_returns_null_when_no_invoices_exist(): void
+    {
+        $response = $this->getJson(route('api.invoices.latest-number'));
+
+        $response->assertOk();
+        $response->assertJson([
+            'data' => [
+                'latest_number' => null,
+            ],
+        ]);
+    }
+
+    public function test_latest_number_returns_highest_numeric_invoice_number(): void
+    {
+        $company = Company::factory()->create();
+
+        // Create invoices in non-sequential order
+        Invoice::factory()->create([
+            'supplier_company_id' => $this->userCompany->id,
+            'company_id' => $company->id,
+            'user_id' => $this->user->id,
+            'invoice_number' => '20250005',
+        ]);
+
+        Invoice::factory()->create([
+            'supplier_company_id' => $this->userCompany->id,
+            'company_id' => $company->id,
+            'user_id' => $this->user->id,
+            'invoice_number' => '20250009',
+        ]);
+
+        Invoice::factory()->create([
+            'supplier_company_id' => $this->userCompany->id,
+            'company_id' => $company->id,
+            'user_id' => $this->user->id,
+            'invoice_number' => '20250003',
+        ]);
+
+        $response = $this->getJson(route('api.invoices.latest-number'));
+
+        $response->assertOk();
+        $response->assertJson([
+            'data' => [
+                'latest_number' => '20250009',
+            ],
+        ]);
+    }
+
+    public function test_latest_number_ignores_invoices_from_other_companies(): void
+    {
+        $otherUserCompany = UserCompany::factory()->create();
+        $company = Company::factory()->create();
+
+        // Create invoice for current company
+        Invoice::factory()->create([
+            'supplier_company_id' => $this->userCompany->id,
+            'company_id' => $company->id,
+            'user_id' => $this->user->id,
+            'invoice_number' => '20250005',
+        ]);
+
+        // Create invoice for other company with higher number
+        Invoice::factory()->create([
+            'supplier_company_id' => $otherUserCompany->id,
+            'company_id' => $company->id,
+            'user_id' => $this->user->id,
+            'invoice_number' => '20250099',
+        ]);
+
+        $response = $this->getJson(route('api.invoices.latest-number'));
+
+        $response->assertOk();
+        $response->assertJson([
+            'data' => [
+                'latest_number' => '20250005',
+            ],
+        ]);
+    }
+
+    public function test_latest_number_sorts_by_numeric_value_not_created_at(): void
+    {
+        $company = Company::factory()->create();
+
+        // Create oldest invoice with highest number
+        Invoice::factory()->create([
+            'supplier_company_id' => $this->userCompany->id,
+            'company_id' => $company->id,
+            'user_id' => $this->user->id,
+            'invoice_number' => '20250010',
+            'created_at' => now()->subDays(10),
+        ]);
+
+        // Create newest invoice with lower number
+        Invoice::factory()->create([
+            'supplier_company_id' => $this->userCompany->id,
+            'company_id' => $company->id,
+            'user_id' => $this->user->id,
+            'invoice_number' => '20250001',
+            'created_at' => now(),
+        ]);
+
+        $response = $this->getJson(route('api.invoices.latest-number'));
+
+        $response->assertOk();
+        $response->assertJson([
+            'data' => [
+                'latest_number' => '20250010',
+            ],
+        ]);
+    }
 }
