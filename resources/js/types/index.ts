@@ -63,6 +63,18 @@ export interface Invoice {
   status: 'draft' | 'sent' | 'paid' | 'overdue' | 'cancelled';
   created_at: string;
   updated_at: string;
+
+  // Snapshot fields for customer company (stored at invoice creation time)
+  company_ico?: string;
+  company_dic?: string | null;
+  company_ic_dph?: string | null;
+  company_name?: string;
+  company_address?: string;
+  company_city?: string;
+  company_zip?: string;
+  company_country?: string;
+
+  // Relationships
   business_entity?: BusinessEntity;
   supplier_company?: Company;
   items?: InvoiceItem[];
