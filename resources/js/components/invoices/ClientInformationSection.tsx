@@ -230,17 +230,17 @@ const ClientInformationSectionComponent = ({
                             <CommandItem
                               key={company.ico}
                               onSelect={() => onCompanySelect(company)}
-                              className="cursor-pointer"
+                              className="cursor-pointer group"
                             >
                               <div className="flex flex-col gap-1">
-                                <div className="font-semibold">{company.name}</div>
-                                <div className="text-sm text-foreground">
+                                <div className="font-semibold group-hover:text-white">{company.name}</div>
+                                <div className="text-sm text-foreground group-hover:text-white">
                                   IČO: {company.ico}
                                   {company.dic && ` | DIČ: ${company.dic}`}
                                   {company.ic_dph && ` | IČ DPH: ${company.ic_dph}`}
                                 </div>
                                 {company.address && (
-                                  <div className="text-xs text-muted-foreground">
+                                  <div className="text-xs text-muted-foreground group-hover:text-white/90">
                                     {company.address}
                                     {company.postal_code && company.city && `, ${company.postal_code} ${company.city}`}
                                   </div>
