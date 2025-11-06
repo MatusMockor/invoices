@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Models;
 
+use App\Enums\CompanyType;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\HasMany;
@@ -22,6 +23,7 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
  * @property string|null $country Country
  * @property string|null $registration_office Registration office
  * @property string|null $registration_number Registration number
+ * @property string|null $type Company type
  * @property \Illuminate\Support\Carbon|null $created_at
  * @property \Illuminate\Support\Carbon|null $updated_at
  * @property-read \Illuminate\Database\Eloquent\Collection|\App\Models\Invoice[] $invoices
@@ -41,10 +43,18 @@ class Company extends Model
         'ic_dph',
         'registration_office',
         'registration_number',
+        'type',
     ];
 
     public function invoices(): HasMany
     {
         return $this->hasMany(Invoice::class);
+    }
+
+    protected function casts(): array
+    {
+        return [
+            'type' => CompanyType::class,
+        ];
     }
 }

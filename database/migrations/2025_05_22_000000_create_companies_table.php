@@ -18,6 +18,9 @@ return new class extends Migration
             $table->string('ico')->unique();
             $table->string('dic')->nullable();
             $table->string('ic_dph')->nullable();
+            $table->string('registration_office', 255)->nullable();
+            $table->string('registration_number', 100)->nullable();
+            $table->string('type')->nullable()->index();
             $table->string('name');
             $table->string('city')->nullable();
             $table->string('street')->nullable();
