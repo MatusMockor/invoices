@@ -9,10 +9,12 @@ import { useToast } from "@/hooks/use-toast";
 import { useState, useEffect, useCallback } from "react";
 import { useInvoice, useInvoices } from "@/hooks/useInvoices";
 import { companyService } from "@/services/companyService";
+import { invoiceService } from "@/services/invoiceService";
 import { ClientInformationSection } from "@/components/invoices/ClientInformationSection";
 import { CustomCompanySection } from "@/components/invoices/CustomCompanySection";
 import { InvoiceDateSection } from "@/components/invoices/InvoiceDateSection";
 import { PaymentSymbolsSection } from "@/components/invoices/PaymentSymbolsSection";
+import { InvoiceNumberSection } from "@/components/invoices/InvoiceNumberSection";
 import { InvoiceItemsSection } from "@/components/invoices/InvoiceItemsSection";
 import type { InvoiceFormData } from "@/components/invoices/ClientInformationSection";
 import { Company } from "@/types/company";
@@ -23,11 +25,11 @@ const invoiceSchema = z.object({
   clientStreet: z.string().trim().max(255).optional(),
   clientCity: z.string().trim().max(100).optional(),
   clientPostalCode: z.string().trim().max(20).optional(),
-  clientIco: z.string().trim().regex(/^\d*$/, "IČO musí obsahovať len číslice").max(20).optional(),
+  clientIco: z.string().trim().max(20).optional(),
   clientDic: z.string().trim().regex(/^\d*$/, "DIČ musí obsahovať len číslice").max(20).optional(),
   clientIcDph: z.string().trim().max(20).optional(),
   useCustomCompany: z.boolean().optional().default(false),
-  customCompanyIco: z.string().trim().regex(/^\d*$/, "IČO musí obsahovať len číslice").max(12).optional(),
+  customCompanyIco: z.string().trim().max(12).optional(),
   customCompanyDic: z.string().trim().regex(/^\d*$/, "DIČ musí obsahovať len číslice").max(20).optional(),
   customCompanyIcDph: z.string().trim().max(20).optional(),
   customCompanyName: z.string().trim().max(255).optional(),
@@ -131,16 +133,8 @@ const NewInvoice = () => {
   const { invoice, isLoading: isLoadingInvoice } = useInvoice(id ? Number(id) : 0);
   const { createInvoice, updateInvoice, isCreating, isUpdating } = useInvoices();
 
-  // Generovanie čísla faktúry vo formáte RRRRCCCC
-  const generateInvoiceNumber = () => {
-    const currentYear = new Date().getFullYear();
-    // TODO: V reálnej aplikácii by sme zistili počet faktúr za daný rok z databázy
-    const invoiceCount = 1;
-    const invoiceNumberPadded = String(invoiceCount).padStart(4, '0');
-    return `${currentYear}${invoiceNumberPadded}`;
-  };
-
-  const generatedInvoiceNumber = generateInvoiceNumber();
+  // State for generated invoice number
+  const [generatedInvoiceNumber, setGeneratedInvoiceNumber] = useState<string>("");
 
   const form = useForm<InvoiceFormData>({
     resolver: zodResolver(invoiceSchema),
@@ -171,6 +165,47 @@ const NewInvoice = () => {
     name: "items",
   });
 
+  // Fetch latest invoice number and generate next one (only in create mode)
+  useEffect(() => {
+    if (!isEditMode) {
+      const fetchAndGenerateNumber = async () => {
+        try {
+          const response = await invoiceService.getLatestNumber();
+          const latestNumber = response.data.latest_number;
+
+          let nextNumber: string;
+
+          if (latestNumber) {
+            // Parse the latest number and increment
+            // Assuming format like "20250001" (YYYYNNNN)
+            const numberPart = parseInt(latestNumber.replace(/\D/g, ''), 10);
+            const incremented = numberPart + 1;
+            // Keep same length by padding
+            nextNumber = String(incremented).padStart(latestNumber.length, '0');
+          } else {
+            // No previous invoices, start with default
+            const currentYear = new Date().getFullYear();
+            nextNumber = `${currentYear}0001`;
+          }
+
+          setGeneratedInvoiceNumber(nextNumber);
+          setValue("invoiceNumber", nextNumber);
+          setValue("variableSymbol", nextNumber);
+        } catch (error) {
+          console.error('Error fetching latest invoice number:', error);
+          // Fallback to default generation
+          const currentYear = new Date().getFullYear();
+          const fallbackNumber = `${currentYear}0001`;
+          setGeneratedInvoiceNumber(fallbackNumber);
+          setValue("invoiceNumber", fallbackNumber);
+          setValue("variableSymbol", fallbackNumber);
+        }
+      };
+
+      fetchAndGenerateNumber();
+    }
+  }, [isEditMode, setValue]);
+
   useEffect(() => {
     if (issueDate) {
       const newDueDate = new Date(issueDate);
@@ -179,14 +214,6 @@ const NewInvoice = () => {
       setValue("dueDate", newDueDate);
     }
   }, [issueDate, dueDateDays, setValue]);
-
-  // Sync invoice number with variable symbol
-  const variableSymbol = watch("variableSymbol");
-  useEffect(() => {
-    if (variableSymbol) {
-      setValue("invoiceNumber", variableSymbol);
-    }
-  }, [variableSymbol, setValue]);
 
   const items = watch("items");
   const useCustomCompany = watch("useCustomCompany");
@@ -485,6 +512,9 @@ const NewInvoice = () => {
         </div>
 
         <form onSubmit={handleSubmit(onSubmit)} className="space-y-8">
+          {/* Invoice Number - at the TOP for better UX */}
+          <InvoiceNumberSection form={form} />
+
           {/* Client Information */}
           {!useCustomCompany ? (
             <ClientInformationSection
@@ -506,7 +536,7 @@ const NewInvoice = () => {
           ) : (
             <div className="bg-gradient-card rounded-xl p-6 border-2 border-primary/30 shadow-elegant-sm">
               <h3 className="text-lg font-bold text-primary mb-4 flex items-center gap-2">
-                <span className="w-8 h-8 bg-primary text-primary-foreground rounded-full flex items-center justify-center text-sm">1</span>
+                <span className="w-8 h-8 bg-primary text-primary-foreground rounded-full flex items-center justify-center text-sm">2</span>
                 Informácie o klientovi
               </h3>
 

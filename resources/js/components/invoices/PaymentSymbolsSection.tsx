@@ -13,7 +13,7 @@ export const PaymentSymbolsSection = ({ form }: PaymentSymbolsSectionProps) => {
   return (
     <div className="bg-gradient-card rounded-xl p-6 border-2 border-border shadow-elegant-sm">
       <h3 className="text-lg font-bold text-foreground mb-4 flex items-center gap-2">
-        <span className="w-8 h-8 bg-accent text-accent-foreground rounded-full flex items-center justify-center text-sm">3</span>
+        <span className="w-8 h-8 bg-accent text-accent-foreground rounded-full flex items-center justify-center text-sm">4</span>
         Platobné symboly
       </h3>
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
@@ -22,12 +22,15 @@ export const PaymentSymbolsSection = ({ form }: PaymentSymbolsSectionProps) => {
           <Input
             id="variableSymbol"
             {...register("variableSymbol")}
-            placeholder="Napr. číslo faktúry"
+            placeholder="Napríklad 20250001"
             className="border-primary/30"
           />
           {errors.variableSymbol && (
             <p className="text-sm text-destructive">{errors.variableSymbol.message}</p>
           )}
+          <p className="text-xs text-muted-foreground">
+            Predvolene sa nastaví podľa čísla faktúry
+          </p>
         </div>
         <div className="space-y-2">
           <Label htmlFor="constantSymbol">Konštantný symbol</Label>

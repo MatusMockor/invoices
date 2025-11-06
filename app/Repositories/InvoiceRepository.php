@@ -78,4 +78,16 @@ class InvoiceRepository implements InvoiceRepositoryContract
             ->orderBy('issue_date', 'desc')
             ->get();
     }
+
+    /**
+     * Get the latest invoice number for a company
+     */
+    public function getLatestInvoiceNumber(int $companyId): ?string
+    {
+        $latestInvoice = Invoice::where('supplier_company_id', $companyId)
+            ->orderBy('created_at', 'desc')
+            ->first();
+
+        return $latestInvoice?->invoice_number;
+    }
 }

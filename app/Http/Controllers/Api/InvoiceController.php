@@ -50,6 +50,20 @@ final class InvoiceController extends Controller
     }
 
     /**
+     * Get the latest invoice number for the current company.
+     */
+    public function latestNumber(): JsonResponse
+    {
+        $latestNumber = $this->invoiceRepository->getLatestInvoiceNumber(
+            auth()->user()->current_company_id
+        );
+
+        return response()->json([
+            'latest_number' => $latestNumber,
+        ]);
+    }
+
+    /**
      * Get a single invoice by ID.
      */
     public function show(Invoice $invoice): InvoiceResource

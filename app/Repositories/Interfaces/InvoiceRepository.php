@@ -45,4 +45,9 @@ interface InvoiceRepository
      * Get expense invoices for a company within date range
      */
     public function getExpenseInvoices(int $companyId, Carbon $startDate, Carbon $endDate): Collection;
+
+    /**
+     * Get the latest invoice number for a company
+     */
+    public function getLatestInvoiceNumber(int $companyId): ?string;
 }

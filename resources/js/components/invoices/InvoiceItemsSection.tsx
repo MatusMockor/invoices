@@ -34,7 +34,7 @@ export const InvoiceItemsSection = ({
     <>
       <div className="bg-gradient-card rounded-xl p-6 border-2 border-primary/30 shadow-elegant-sm">
         <h3 className="text-lg font-bold text-primary mb-4 flex items-center gap-2">
-          <span className="w-8 h-8 bg-primary text-primary-foreground rounded-full flex items-center justify-center text-sm">4</span>
+          <span className="w-8 h-8 bg-primary text-primary-foreground rounded-full flex items-center justify-center text-sm">5</span>
           Položky faktúry
         </h3>
         <div className="space-y-4">

@@ -37,7 +37,7 @@ export const InvoiceDateSection = ({
   return (
     <div className="bg-gradient-card rounded-xl p-6 border-2 border-border shadow-elegant-sm">
       <h3 className="text-lg font-bold text-foreground mb-4 flex items-center gap-2">
-        <span className="w-8 h-8 bg-accent text-accent-foreground rounded-full flex items-center justify-center text-sm">2</span>
+        <span className="w-8 h-8 bg-accent text-accent-foreground rounded-full flex items-center justify-center text-sm">3</span>
         Dátumy
       </h3>
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4">

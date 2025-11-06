@@ -99,7 +99,7 @@ const ClientInformationSectionComponent = ({
   return (
     <div className="bg-gradient-card rounded-xl p-6 border-2 border-primary/30 shadow-elegant-sm">
       <h3 className="text-lg font-bold text-primary mb-4 flex items-center gap-2">
-        <span className="w-8 h-8 bg-primary text-primary-foreground rounded-full flex items-center justify-center text-sm">1</span>
+        <span className="w-8 h-8 bg-primary text-primary-foreground rounded-full flex items-center justify-center text-sm">2</span>
         Informácie o klientovi
       </h3>
 
@@ -109,6 +109,20 @@ const ClientInformationSectionComponent = ({
           <p className="text-sm text-blue-700">
             Údaje o klientovi sú uložené z času vytvorenia. Pre úpravu zaškrtnite "Zadať vlastné údaje o spoločnosti".
           </p>
+        </div>
+      )}
+
+      {/* Validation errors for client information */}
+      {!useCustomCompany && (errors.clientIco || errors.clientName || errors.clientStreet || errors.clientCity || errors.clientPostalCode) && (
+        <div className="mb-4 p-4 bg-destructive/10 rounded-lg border border-destructive/30">
+          <p className="text-sm font-semibold text-destructive mb-2">Údaje o klientovi sú neúplné:</p>
+          <ul className="list-disc list-inside space-y-1 text-sm text-destructive">
+            {errors.clientIco && <li>{errors.clientIco.message}</li>}
+            {errors.clientName && <li>{errors.clientName.message}</li>}
+            {errors.clientStreet && <li>{errors.clientStreet.message}</li>}
+            {errors.clientCity && <li>{errors.clientCity.message}</li>}
+            {errors.clientPostalCode && <li>{errors.clientPostalCode.message}</li>}
+          </ul>
         </div>
       )}
 
@@ -220,9 +234,17 @@ const ClientInformationSectionComponent = ({
                             >
                               <div className="flex flex-col gap-1">
                                 <div className="font-semibold">{company.name}</div>
-                                <div className="text-sm text-muted-foreground">
-                                  IČO: {company.ico} | {company.address}
+                                <div className="text-sm text-foreground">
+                                  IČO: {company.ico}
+                                  {company.dic && ` | DIČ: ${company.dic}`}
+                                  {company.ic_dph && ` | IČ DPH: ${company.ic_dph}`}
                                 </div>
+                                {company.address && (
+                                  <div className="text-xs text-muted-foreground">
+                                    {company.address}
+                                    {company.postal_code && company.city && `, ${company.postal_code} ${company.city}`}
+                                  </div>
+                                )}
                               </div>
                             </CommandItem>
                           ))}

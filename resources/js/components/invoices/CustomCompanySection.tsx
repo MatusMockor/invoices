@@ -18,6 +18,17 @@ export const CustomCompanySection = ({
 
   return (
     <div className="space-y-4">
+      {/* Validation errors for custom company */}
+      {useCustomCompany && (errors.customCompanyIco || errors.customCompanyName) && (
+        <div className="mb-4 p-4 bg-destructive/10 rounded-lg border border-destructive/30">
+          <p className="text-sm font-semibold text-destructive mb-2">Údaje o spoločnosti sú neúplné:</p>
+          <ul className="list-disc list-inside space-y-1 text-sm text-destructive">
+            {errors.customCompanyIco && <li>{errors.customCompanyIco.message}</li>}
+            {errors.customCompanyName && <li>{errors.customCompanyName.message}</li>}
+          </ul>
+        </div>
+      )}
+
       <div className="space-y-2">
         <Label htmlFor="customCompanyIco">IČO spoločnosti *</Label>
         <Input

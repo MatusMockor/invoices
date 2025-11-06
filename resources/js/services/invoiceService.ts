@@ -83,5 +83,10 @@ export const invoiceService = {
     });
     return response.data;
   },
+
+  async getLatestNumber(): Promise<ApiResponse<{ latest_number: string | null }>> {
+    const response = await api.get('/invoices/latest-number');
+    return response.data;
+  },
 };
 

@@ -73,6 +73,7 @@ Route::middleware('auth:sanctum')->group(function () {
 
     // Invoices
     Route::get('/invoices', [InvoiceController::class, 'index'])->name('api.invoices.index');
+    Route::get('/invoices/latest-number', [InvoiceController::class, 'latestNumber'])->name('api.invoices.latest-number');
     Route::get('/invoices/{invoice}', [InvoiceController::class, 'show'])->name('api.invoices.show');
     Route::post('/invoices', [InvoiceController::class, 'store'])->name('api.invoices.store');
     Route::put('/invoices/{invoice}', [InvoiceController::class, 'update'])->name('api.invoices.update');
