@@ -6,7 +6,7 @@ import { Save, ArrowLeft, Loader2 } from "lucide-react";
 import { DashboardLayout } from "@/components/dashboard/DashboardLayout";
 import { Button } from "@/components/ui/button";
 import { useToast } from "@/hooks/use-toast";
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { useInvoice, useInvoices } from "@/hooks/useInvoices";
 import { companyService } from "@/services/companyService";
 import { ClientInformationSection } from "@/components/invoices/ClientInformationSection";
@@ -15,6 +15,7 @@ import { InvoiceDateSection } from "@/components/invoices/InvoiceDateSection";
 import { PaymentSymbolsSection } from "@/components/invoices/PaymentSymbolsSection";
 import { InvoiceItemsSection } from "@/components/invoices/InvoiceItemsSection";
 import type { InvoiceFormData } from "@/components/invoices/ClientInformationSection";
+import { Company } from "@/types/company";
 
 const invoiceSchema = z.object({
   invoiceNumber: z.string().trim().min(1, "Číslo faktúry je povinné"),
@@ -121,7 +122,10 @@ const NewInvoice = () => {
   const [icoSearch, setIcoSearch] = useState("");
   const [isSearching, setIsSearching] = useState(false);
   const [showSuggestions, setShowSuggestions] = useState(false);
-  const [filteredCompanies, setFilteredCompanies] = useState<any[]>([]);
+  const [filteredCompanies, setFilteredCompanies] = useState<Company[]>([]);
+  const [selectedCompany, setSelectedCompany] = useState<Company | null>(null);
+  const [searchError, setSearchError] = useState<string | null>(null);
+  const [isSelectingCompany, setIsSelectingCompany] = useState(false);
 
   const isEditMode = !!id;
   const { invoice, isLoading: isLoadingInvoice } = useInvoice(id ? Number(id) : 0);
@@ -138,15 +142,7 @@ const NewInvoice = () => {
 
   const generatedInvoiceNumber = generateInvoiceNumber();
 
-  const {
-    register,
-    control,
-    handleSubmit,
-    formState: { errors },
-    setValue,
-    watch,
-    reset,
-  } = useForm<InvoiceFormData>({
+  const form = useForm<InvoiceFormData>({
     resolver: zodResolver(invoiceSchema),
     defaultValues: {
       invoiceNumber: isEditMode ? "" : generatedInvoiceNumber,
@@ -160,6 +156,14 @@ const NewInvoice = () => {
       useCustomCompany: false,
     },
   });
+
+  const {
+    register,
+    control,
+    handleSubmit,
+    setValue,
+    watch,
+  } = form;
 
   const { fields, append, remove } = useFieldArray({
     control,
@@ -259,15 +263,23 @@ const NewInvoice = () => {
   useEffect(() => {
     if (icoSearch.length >= 2 && showSuggestions) {
       setIsSearching(true);
+      setSearchError(null); // Clear previous errors
 
       // Real API call with debounce
       const timer = setTimeout(async () => {
         try {
           const response = await companyService.searchCustomerCompanies(icoSearch);
           setFilteredCompanies(response.data);
+          setSearchError(null);
         } catch (error) {
           console.error('Error searching companies:', error);
           setFilteredCompanies([]);
+          setSearchError('Nepodarilo sa načítať spoločnosti. Skúste to znova.');
+          toast({
+            title: "Chyba pri vyhľadávaní",
+            description: "Nepodarilo sa načítať spoločnosti. Skúste to znova.",
+            variant: "destructive",
+          });
         } finally {
           setIsSearching(false);
         }
@@ -280,8 +292,9 @@ const NewInvoice = () => {
     } else if (icoSearch.length === 0) {
       setFilteredCompanies([]);
       setIsSearching(false);
+      setSearchError(null);
     }
-  }, [icoSearch, showSuggestions]);
+  }, [icoSearch, showSuggestions, toast]);
 
   const onSubmit = async (data: InvoiceFormData) => {
     try {
@@ -344,7 +357,12 @@ const NewInvoice = () => {
     }
   };
 
-  const handleCompanySelect = (company: any) => {
+  const handleCompanySelect = useCallback(async (company: Company) => {
+    setIsSelectingCompany(true);
+
+    // Smooth transition delay
+    await new Promise(resolve => setTimeout(resolve, 150));
+
     setValue("clientIco", company.ico);
     setValue("clientName", company.name);
     setValue("clientStreet", company.address || "");
@@ -354,11 +372,27 @@ const NewInvoice = () => {
     setValue("clientIcDph", company.ic_dph || "");
     setIcoSearch(company.ico);
     setShowSuggestions(false);
+    setSelectedCompany(company);
+
+    setIsSelectingCompany(false);
+
     toast({
       title: "Údaje predvyplnené",
       description: `Údaje spoločnosti ${company.name} boli načítané.`,
     });
-  };
+  }, [setValue, toast]);
+
+  const handleClearSelection = useCallback(() => {
+    setSelectedCompany(null);
+    setIcoSearch("");
+    setValue("clientIco", "");
+    setValue("clientName", "");
+    setValue("clientStreet", "");
+    setValue("clientCity", "");
+    setValue("clientPostalCode", "");
+    setValue("clientDic", "");
+    setValue("clientIcDph", "");
+  }, [setValue]);
 
   // Show loading state when fetching invoice data in edit mode
   if (isEditMode && isLoadingInvoice) {
@@ -393,7 +427,7 @@ const NewInvoice = () => {
           {/* Client Information */}
           {!useCustomCompany ? (
             <ClientInformationSection
-              form={{ register, control, handleSubmit, formState: { errors }, setValue, watch, reset }}
+              form={form}
               isEditMode={isEditMode}
               useCustomCompany={useCustomCompany}
               icoSearch={icoSearch}
@@ -403,6 +437,10 @@ const NewInvoice = () => {
               setShowSuggestions={setShowSuggestions}
               filteredCompanies={filteredCompanies}
               onCompanySelect={handleCompanySelect}
+              selectedCompany={selectedCompany}
+              onClearSelection={handleClearSelection}
+              searchError={searchError}
+              isSelectingCompany={isSelectingCompany}
             />
           ) : (
             <div className="bg-gradient-card rounded-xl p-6 border-2 border-primary/30 shadow-elegant-sm">
@@ -425,7 +463,7 @@ const NewInvoice = () => {
               </div>
 
               <CustomCompanySection
-                form={{ register, control, handleSubmit, formState: { errors }, setValue, watch, reset }}
+                form={form}
                 isEditMode={isEditMode}
                 useCustomCompany={useCustomCompany}
               />
@@ -434,7 +472,7 @@ const NewInvoice = () => {
 
           {/* Dates */}
           <InvoiceDateSection
-            form={{ register, control, handleSubmit, formState: { errors }, setValue, watch, reset }}
+            form={form}
             issueDate={issueDate}
             setIssueDate={setIssueDate}
             dueDate={dueDate}
@@ -447,12 +485,12 @@ const NewInvoice = () => {
 
           {/* Payment Symbols */}
           <PaymentSymbolsSection
-            form={{ register, control, handleSubmit, formState: { errors }, setValue, watch, reset }}
+            form={form}
           />
 
           {/* Items */}
           <InvoiceItemsSection
-            form={{ register, control, handleSubmit, formState: { errors }, setValue, watch, reset }}
+            form={form}
             fields={fields}
             append={append}
             remove={remove}
