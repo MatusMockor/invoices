@@ -261,16 +261,18 @@ const ClientInformationSectionComponent = ({
                   <p className="text-sm text-muted-foreground">IČO: {selectedCompany.ico}</p>
                 </div>
               </div>
-              <Button
-                type="button"
-                variant="ghost"
-                size="sm"
-                onClick={onClearSelection}
-                className="text-muted-foreground hover:text-foreground"
-                aria-label={`Zmeniť spoločnosť ${selectedCompany.name}`}
-              >
-                Zmeniť
-              </Button>
+              {(!isEditMode || useCustomCompany) && (
+                <Button
+                  type="button"
+                  variant="ghost"
+                  size="sm"
+                  onClick={onClearSelection}
+                  className="text-muted-foreground hover:text-foreground"
+                  aria-label={`Zmeniť spoločnosť ${selectedCompany.name}`}
+                >
+                  Zmeniť
+                </Button>
+              )}
             </div>
 
             <div className="space-y-3">

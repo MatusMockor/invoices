@@ -219,6 +219,17 @@ const NewInvoice = () => {
         setValue("clientIcDph", invoice.company_ic_dph || "");
         setIcoSearch(invoice.company_ico || "");
 
+        // Set selectedCompany to display company info card in edit mode
+        setSelectedCompany({
+          ico: invoice.company_ico || "",
+          name: invoice.company_name || "",
+          address: invoice.company_address,
+          city: invoice.company_city,
+          postal_code: invoice.company_zip,
+          dic: invoice.company_dic,
+          ic_dph: invoice.company_ic_dph,
+        });
+
         // Also pre-fill custom company fields from invoice snapshot data for when user toggles checkbox
         setValue("customCompanyIco", invoice.company_ico || "");
         setValue("customCompanyDic", invoice.company_dic || "");

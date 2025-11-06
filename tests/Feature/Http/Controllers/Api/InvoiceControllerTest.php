@@ -665,4 +665,130 @@ class InvoiceControllerTest extends TestCase
             'dic' => null,
         ]);
     }
+
+    public function test_store_saves_client_dic_and_ic_dph_to_invoice(): void
+    {
+        $clientName = fake()->company();
+        $clientIco = fake()->numerify('########');
+        $clientDic = fake()->numerify('20########');
+        $clientIcDph = 'SK'.fake()->numerify('20########');
+        $clientStreet = fake()->streetAddress();
+        $clientCity = fake()->city();
+        $clientPostalCode = fake()->postcode();
+        $clientCountry = fake()->countryCode();
+        $invoiceNumber = fake()->unique()->numerify('INV-####-####');
+        $itemDescription = fake()->words(2, true);
+        $itemQuantity = fake()->numberBetween(1, 20);
+        $itemPrice = fake()->randomFloat(2, 10, 200);
+
+        Http::fake([
+            '*/scraper/company' => Http::response([
+                'data' => [
+                    'success' => true,
+                    'ico' => $clientIco,
+                    'name' => $clientName,
+                    'street' => $clientStreet,
+                    'city' => $clientCity,
+                    'postal_code' => $clientPostalCode,
+                    'country' => $clientCountry,
+                    'dic' => $clientDic,
+                    'ic_dph' => $clientIcDph,
+                ],
+            ], 200),
+        ]);
+
+        $invoiceData = [
+            'clientName' => $clientName,
+            'clientIco' => $clientIco,
+            'clientDic' => $clientDic,
+            'clientIcDph' => $clientIcDph,
+            'clientStreet' => $clientStreet,
+            'clientCity' => $clientCity,
+            'clientPostalCode' => $clientPostalCode,
+            'clientCountry' => $clientCountry,
+            'invoiceNumber' => $invoiceNumber,
+            'issue_date' => now()->format('Y-m-d'),
+            'due_date' => now()->addDays(14)->format('Y-m-d'),
+            'delivery_date' => now()->format('Y-m-d'),
+            'items' => [
+                [
+                    'description' => $itemDescription,
+                    'quantity' => $itemQuantity,
+                    'price' => $itemPrice,
+                ],
+            ],
+        ];
+
+        $response = $this->postJson(route('api.invoices.store'), $invoiceData);
+
+        $response->assertStatus(201);
+
+        // Verify the invoice was created with DIČ and IČ DPH
+        $this->assertDatabaseHas(Invoice::class, [
+            'invoice_number' => $invoiceNumber,
+            'company_ico' => $clientIco,
+            'company_dic' => $clientDic,
+            'company_ic_dph' => $clientIcDph,
+        ]);
+
+        // Verify the response includes DIČ and IČ DPH
+        $response->assertJsonPath('data.company_dic', $clientDic);
+        $response->assertJsonPath('data.company_ic_dph', $clientIcDph);
+    }
+
+    public function test_store_saves_custom_company_dic_and_ic_dph_to_invoice(): void
+    {
+        $customCompanyIco = fake()->numerify('########');
+        $customCompanyDic = fake()->numerify('20########');
+        $customCompanyIcDph = 'SK'.fake()->numerify('20########');
+        $customCompanyName = fake()->company();
+        $customCompanyAddress = fake()->streetAddress();
+        $customCompanyCity = fake()->city();
+        $customCompanyZip = fake()->postcode();
+        $invoiceNumber = fake()->unique()->numerify('INV-####-####');
+        $itemDescription = fake()->words(2, true);
+        $itemQuantity = fake()->numberBetween(1, 20);
+        $itemPrice = fake()->randomFloat(2, 10, 200);
+
+        $invoiceData = [
+            'useCustomCompany' => true,
+            'customCompanyIco' => $customCompanyIco,
+            'customCompanyDic' => $customCompanyDic,
+            'customCompanyIcDph' => $customCompanyIcDph,
+            'customCompanyName' => $customCompanyName,
+            'customCompanyAddress' => $customCompanyAddress,
+            'customCompanyCity' => $customCompanyCity,
+            'customCompanyZip' => $customCompanyZip,
+            'customCompanyCountry' => 'SK',
+            'invoiceNumber' => $invoiceNumber,
+            'issue_date' => now()->format('Y-m-d'),
+            'due_date' => now()->addDays(14)->format('Y-m-d'),
+            'delivery_date' => now()->format('Y-m-d'),
+            'items' => [
+                [
+                    'description' => $itemDescription,
+                    'quantity' => $itemQuantity,
+                    'price' => $itemPrice,
+                ],
+            ],
+        ];
+
+        $response = $this->postJson(route('api.invoices.store'), $invoiceData);
+
+        $response->assertStatus(201);
+
+        // Verify the invoice was created with custom company DIČ and IČ DPH
+        $this->assertDatabaseHas(Invoice::class, [
+            'invoice_number' => $invoiceNumber,
+            'company_id' => null, // No company_id for custom companies
+            'company_ico' => $customCompanyIco,
+            'company_dic' => $customCompanyDic,
+            'company_ic_dph' => $customCompanyIcDph,
+            'company_name' => $customCompanyName,
+        ]);
+
+        // Verify the response includes DIČ and IČ DPH
+        $response->assertJsonPath('data.company_dic', $customCompanyDic);
+        $response->assertJsonPath('data.company_ic_dph', $customCompanyIcDph);
+    }
 }
