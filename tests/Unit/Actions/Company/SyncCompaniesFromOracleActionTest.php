@@ -43,6 +43,120 @@ final class SyncCompaniesFromOracleActionTest extends TestCase
         parent::tearDown();
     }
 
+    /**
+     * Data provider for all 14 company types.
+     * Format: [registrationNumber, sourceRegisterValue, expectedType, expectedCleanedRegNumber, description]
+     *
+     * @return array<string, array{string, array|null, string, string, string}>
+     */
+    public static function companyTypeProvider(): array
+    {
+        return [
+            'Joint Stock Company (a.s.)' => [
+                'Sa/6266/B',
+                null,
+                'joint_stock_company',
+                '6266/B',
+                'Joint Stock Company with Sa/ prefix',
+            ],
+            'Limited Liability Company (s.r.o.)' => [
+                'Sro/81134/B',
+                null,
+                'limited_liability_company',
+                '81134/B',
+                'Limited Liability Company with Sro/ prefix',
+            ],
+            'Cooperative (družstvo)' => [
+                'Dr/1852/B',
+                null,
+                'cooperative',
+                '1852/B',
+                'Cooperative with Dr/ prefix',
+            ],
+            'Agricultural Cooperative (poľnohospodárske družstvo)' => [
+                'Po/1158/B',
+                null,
+                'agricultural_cooperative',
+                '1158/B',
+                'Agricultural Cooperative with Po/ prefix',
+            ],
+            'Foundation (nadácia)' => [
+                'N/67/B',
+                null,
+                'foundation',
+                '67/B',
+                'Foundation with N/ prefix',
+            ],
+            'Municipality (obec)' => [
+                'Ob/13/B',
+                null,
+                'municipality',
+                '13/B',
+                'Municipality with Ob/ prefix',
+            ],
+            'General Partnership (verejná obchodná spoločnosť)' => [
+                'Vo/2453/B',
+                null,
+                'general_partnership',
+                '2453/B',
+                'General Partnership with Vo/ prefix',
+            ],
+            'Limited Partnership (komanditná spoločnosť)' => [
+                'Ks/1023/B',
+                null,
+                'limited_partnership',
+                '1023/B',
+                'Limited Partnership with Ks/ prefix',
+            ],
+            'European Economic Interest Grouping' => [
+                'Ez/34/B',
+                null,
+                'european_economic_interest_grouping',
+                '34/B',
+                'European Economic Interest Grouping with Ez/ prefix',
+            ],
+            'Condominium Association (spoločenstvo vlastníkov)' => [
+                'Sz/2053/B',
+                null,
+                'condominium_association',
+                '2053/B',
+                'Condominium Association with Sz/ prefix',
+            ],
+            'Sports Organization (telovýchovná jednota)' => [
+                'Sp/95/B',
+                null,
+                'sports_organization',
+                '95/B',
+                'Sports Organization with Sp/ prefix',
+            ],
+            'Political Party (politická strana)' => [
+                'Pc/55/B',
+                null,
+                'political_party',
+                '55/B',
+                'Political Party with Pc/ prefix',
+            ],
+            'Civic Association (občianske združenie)' => [
+                'Oc/211/B',
+                null,
+                'civic_association',
+                '211/B',
+                'Civic Association with Oc/ prefix',
+            ],
+            'Sole Proprietor (živnostník)' => [
+                '440-46274',
+                [
+                    'value' => 'Živnostenský register',
+                    'code' => '2',
+                    'codelistCode' => 'CL010112',
+                ],
+                'sole_proprietor',
+                '440-46274',
+                'Sole Proprietor detected from Živnostenský register',
+            ],
+        ];
+    }
+
     public function test_extracts_current_registration_office_correctly(): void
     {
         // Arrange
@@ -636,68 +750,65 @@ final class SyncCompaniesFromOracleActionTest extends TestCase
     }
 
     /**
-     * Test that Sro/ prefix is removed from registration number.
+     * Test that ALL type prefixes are removed from registration number.
      */
     public function test_filters_sro_prefix_from_registration_number(): void
     {
-        // Arrange - Test with standard case "Sro/"
+        // Arrange - Test with various type prefixes
         $testCases = [
             'Sro/440-46274' => '440-46274',
             'Sro/123-45678' => '123-45678',
-            'Sro/ABC-123' => 'ABC-123',
-            'Sro/999' => '999',
+            'Sa/6266/B' => '6266/B',
+            'Dr/12345/X' => '12345/X',
+            'Po/999/A' => '999/A',
         ];
 
         // Act & Assert
         foreach ($testCases as $input => $expected) {
-            $result = $this->invokePrivateMethod('removeSroPrefix', [$input]);
+            $result = $this->invokePrivateMethod('removeTypePrefix', [$input]);
             $this->assertSame($expected, $result, "Failed to filter '{$input}'");
         }
     }
 
     /**
-     * Test that Sro/ prefix filtering is case-insensitive.
+     * Test that prefix filtering works for all type prefixes.
      */
     public function test_filters_sro_prefix_case_insensitively(): void
     {
-        // Arrange - Test different case variants
+        // Arrange - Test different prefixes (all should be removed)
         $testCases = [
             'SRO/123-45678' => '123-45678',
             'sro/440-46274' => '440-46274',
-            'Sro/ABC-123' => 'ABC-123',
-            'SrO/999' => '999',
-            'srO/TEST-456' => 'TEST-456',
+            'Sa/6266/B' => '6266/B',
+            'Dr/999' => '999',
+            'Po/TEST-456' => 'TEST-456',
         ];
 
         // Act & Assert
         foreach ($testCases as $input => $expected) {
-            $result = $this->invokePrivateMethod('removeSroPrefix', [$input]);
+            $result = $this->invokePrivateMethod('removeTypePrefix', [$input]);
             $this->assertSame($expected, $result, "Failed to filter case variant '{$input}'");
         }
     }
 
     /**
-     * Test that registration numbers without Sro/ prefix remain unchanged.
+     * Test that registration numbers without prefix (no slash) remain unchanged.
      */
     public function test_does_not_modify_registration_number_without_sro_prefix(): void
     {
-        // Arrange - Test values that should not be modified
+        // Arrange - Test values without slash (no prefix to remove)
         $testCases = [
             '440-46274',      // Normal registration number
             'ABC-123',        // Alphanumeric
             '12345',          // Numbers only
-            'SR-123456',      // Different prefix
-            'Sr/123',         // Only "Sro/" should be filtered, not "Sr/"
+            'SR-123456',      // No slash, so no prefix
             'Sro',            // Edge case: prefix alone without slash
-            'S/123',          // Single char prefix
-            'SROS/123',       // Similar but different prefix
             '',               // Empty string
-            '123/456',        // Numbers with slash but no Sro prefix
         ];
 
         // Act & Assert
         foreach ($testCases as $input) {
-            $result = $this->invokePrivateMethod('removeSroPrefix', [$input]);
+            $result = $this->invokePrivateMethod('removeTypePrefix', [$input]);
             $this->assertSame($input, $result, "Value '{$input}' should remain unchanged");
         }
     }
@@ -812,8 +923,8 @@ final class SyncCompaniesFromOracleActionTest extends TestCase
         $this->assertArrayHasKey('registration_number', $result);
 
         // The expired "Sro/81134/B" should be filtered out
-        // Only "Sa/6266/B" (without Sro/ prefix = "6266/B") should be saved
-        $this->assertEquals('Sa/6266/B', $result['registration_number']);
+        // Only "Sa/6266/B" should be used, and prefix removed to get "6266/B"
+        $this->assertEquals('6266/B', $result['registration_number']);
         $this->assertNotEquals('81134/B', $result['registration_number']);
         $this->assertNotEquals('Sro/81134/B', $result['registration_number']);
     }
@@ -874,8 +985,8 @@ final class SyncCompaniesFromOracleActionTest extends TestCase
         $this->assertArrayHasKey('registration_number', $result);
 
         // The expired "Sro/81134/B" should be filtered out
-        // The "Sa/6266/B" entry with future validTo should be saved (it's still valid)
-        $this->assertEquals('Sa/6266/B', $result['registration_number']);
+        // The "Sa/6266/B" entry with future validTo should be saved, prefix removed to get "6266/B"
+        $this->assertEquals('6266/B', $result['registration_number']);
         $this->assertNotEquals('81134/B', $result['registration_number']);
         $this->assertNotEquals('Sro/81134/B', $result['registration_number']);
     }
@@ -927,17 +1038,26 @@ final class SyncCompaniesFromOracleActionTest extends TestCase
     }
 
     /**
-     * Test that company type is extracted from Sa/ prefix.
+     * Test that all 14 company types are extracted correctly.
+     * This comprehensive test covers:
+     * - 13 types with registration number prefixes (Sa/, Sro/, Dr/, etc.)
+     * - 1 type detected from sourceRegister value (Živnostenský register)
      */
-    public function test_extracts_company_type_from_registration_number_prefix_sa(): void
-    {
-        // Arrange
+    #[\PHPUnit\Framework\Attributes\DataProvider('companyTypeProvider')]
+    public function test_extracts_all_fourteen_company_types_correctly(
+        string $registrationNumber,
+        ?array $sourceRegisterValue,
+        string $expectedType,
+        string $expectedCleanedRegNumber,
+        string $description
+    ): void {
+        // Arrange - Build API data
         $apiData = [
             'identifiers' => [
                 ['value' => '12345678'],
             ],
             'fullNames' => [
-                ['value' => 'Test Company a.s.', 'validFrom' => '2022-01-01'],
+                ['value' => 'Test Company', 'validFrom' => '2022-01-01'],
             ],
             'addresses' => [
                 [
@@ -950,125 +1070,39 @@ final class SyncCompaniesFromOracleActionTest extends TestCase
                 ],
             ],
             'sourceRegister' => [
-                'registrationOffices' => [],
+                'registrationOffices' => [
+                    ['value' => 'Okresný úrad Bratislava', 'validFrom' => '2022-11-01'],
+                ],
                 'registrationNumbers' => [
-                    ['value' => 'Sa/6266/B', 'validFrom' => '2022-11-01'],
+                    ['value' => $registrationNumber, 'validFrom' => '2022-11-01'],
                 ],
             ],
         ];
 
-        // Act
-        $result = $this->invokePrivateMethod('parseCompanyData', [$apiData]);
-
-        // Assert
-        $this->assertNotNull($result);
-        $this->assertArrayHasKey('type', $result);
-        $this->assertEquals('joint_stock_company', $result['type']);
-    }
-
-    /**
-     * Test that company type is extracted from Sro/ prefix.
-     */
-    public function test_extracts_company_type_from_registration_number_prefix_sro(): void
-    {
-        // Arrange
-        $apiData = [
-            'identifiers' => [
-                ['value' => '12345678'],
-            ],
-            'fullNames' => [
-                ['value' => 'Test Company s.r.o.', 'validFrom' => '2022-01-01'],
-            ],
-            'addresses' => [
-                [
-                    'street' => 'Main Street',
-                    'regNumber' => 123,
-                    'municipality' => ['value' => 'Bratislava'],
-                    'postalCodes' => ['81101'],
-                    'country' => ['value' => 'SK'],
-                    'validFrom' => '2022-01-01',
-                ],
-            ],
-            'sourceRegister' => [
-                'registrationOffices' => [],
-                'registrationNumbers' => [
-                    ['value' => 'Sro/81134/B', 'validFrom' => '2022-11-01'],
-                ],
-            ],
-        ];
-
-        // Act
-        $result = $this->invokePrivateMethod('parseCompanyData', [$apiData]);
-
-        // Assert
-        $this->assertNotNull($result);
-        $this->assertArrayHasKey('type', $result);
-        $this->assertEquals('limited_liability_company', $result['type']);
-        // Also verify that Sro/ prefix was removed from registration_number
-        $this->assertEquals('81134/B', $result['registration_number']);
-    }
-
-    /**
-     * Test that all 13 company types are extracted correctly from their prefixes.
-     */
-    public function test_extracts_all_company_types_from_prefixes(): void
-    {
-        // Arrange - Test all 13 prefixes
-        $testCases = [
-            ['prefix' => 'Sa/6266/B', 'expectedType' => 'joint_stock_company'],
-            ['prefix' => 'Sro/81134/B', 'expectedType' => 'limited_liability_company'],
-            ['prefix' => 'Dr/1852/B', 'expectedType' => 'cooperative'],
-            ['prefix' => 'Po/1158/B', 'expectedType' => 'agricultural_cooperative'],
-            ['prefix' => 'N/67/B', 'expectedType' => 'foundation'],
-            ['prefix' => 'Ob/13/B', 'expectedType' => 'municipality'],
-            ['prefix' => 'Vo/2453/B', 'expectedType' => 'general_partnership'],
-            ['prefix' => 'Ks/1023/B', 'expectedType' => 'limited_partnership'],
-            ['prefix' => 'Ez/34/B', 'expectedType' => 'european_economic_interest_grouping'],
-            ['prefix' => 'Sz/2053/B', 'expectedType' => 'condominium_association'],
-            ['prefix' => 'Sp/95/B', 'expectedType' => 'sports_organization'],
-            ['prefix' => 'Pc/55/B', 'expectedType' => 'political_party'],
-            ['prefix' => 'Oc/211/B', 'expectedType' => 'civic_association'],
-        ];
-
-        foreach ($testCases as $testCase) {
-            // Arrange
-            $apiData = [
-                'identifiers' => [
-                    ['value' => '12345678'],
-                ],
-                'fullNames' => [
-                    ['value' => 'Test Company', 'validFrom' => '2022-01-01'],
-                ],
-                'addresses' => [
-                    [
-                        'street' => 'Main Street',
-                        'regNumber' => 123,
-                        'municipality' => ['value' => 'Bratislava'],
-                        'postalCodes' => ['81101'],
-                        'country' => ['value' => 'SK'],
-                        'validFrom' => '2022-01-01',
-                    ],
-                ],
-                'sourceRegister' => [
-                    'registrationOffices' => [],
-                    'registrationNumbers' => [
-                        ['value' => $testCase['prefix'], 'validFrom' => '2022-11-01'],
-                    ],
-                ],
-            ];
-
-            // Act
-            $result = $this->invokePrivateMethod('parseCompanyData', [$apiData]);
-
-            // Assert
-            $this->assertNotNull($result);
-            $this->assertArrayHasKey('type', $result);
-            $this->assertEquals(
-                $testCase['expectedType'],
-                $result['type'],
-                "Failed to extract type for prefix: {$testCase['prefix']}"
-            );
+        // Add sourceRegister.value if provided (for sole proprietors)
+        if ($sourceRegisterValue !== null) {
+            $apiData['sourceRegister']['value'] = $sourceRegisterValue;
         }
+
+        // Act
+        $result = $this->invokePrivateMethod('parseCompanyData', [$apiData]);
+
+        // Assert
+        $this->assertNotNull($result, "Result should not be null for: {$description}");
+        $this->assertArrayHasKey('type', $result, "Type should exist for: {$description}");
+        $this->assertArrayHasKey('registration_number', $result, "Registration number should exist for: {$description}");
+
+        $this->assertEquals(
+            $expectedType,
+            $result['type'],
+            "Failed to extract correct type for: {$description}"
+        );
+
+        $this->assertEquals(
+            $expectedCleanedRegNumber,
+            $result['registration_number'],
+            "Failed to clean registration number correctly for: {$description}"
+        );
     }
 
     /**
@@ -1284,7 +1318,155 @@ final class SyncCompaniesFromOracleActionTest extends TestCase
         $this->assertNotNull($result);
         $this->assertArrayHasKey('type', $result);
         $this->assertEquals('joint_stock_company', $result['type']);
-        $this->assertEquals('Sa/6266/B', $result['registration_number']);
+        $this->assertEquals('6266/B', $result['registration_number']);
+    }
+
+    /**
+     * Test that sole proprietor type is detected from Živnostenský register.
+     */
+    public function test_extracts_sole_proprietor_type_from_register_type(): void
+    {
+        // Arrange - Data with "Živnostenský register" and no prefix in registration number
+        $apiData = [
+            'identifiers' => [
+                ['value' => '12345678'],
+            ],
+            'fullNames' => [
+                ['value' => 'John Doe - SZČO', 'validFrom' => '2022-01-01'],
+            ],
+            'addresses' => [
+                [
+                    'street' => 'Main Street',
+                    'regNumber' => 123,
+                    'municipality' => ['value' => 'Nové Zámky'],
+                    'postalCodes' => ['94001'],
+                    'country' => ['value' => 'SK'],
+                    'validFrom' => '2022-01-01',
+                ],
+            ],
+            'sourceRegister' => [
+                'value' => [
+                    'value' => 'Živnostenský register',
+                    'code' => '2',
+                    'codelistCode' => 'CL010112',
+                ],
+                'registrationOffices' => [
+                    ['value' => 'Okresný úrad Nové Zámky', 'validFrom' => '2022-11-01'],
+                ],
+                'registrationNumbers' => [
+                    ['value' => '440-46274', 'validFrom' => '2022-11-01'],
+                ],
+            ],
+        ];
+
+        // Act
+        $result = $this->invokePrivateMethod('parseCompanyData', [$apiData]);
+
+        // Assert
+        $this->assertNotNull($result);
+        $this->assertArrayHasKey('type', $result);
+        $this->assertEquals('sole_proprietor', $result['type']);
+        // Registration number should remain as-is (no prefix to remove)
+        $this->assertEquals('440-46274', $result['registration_number']);
+    }
+
+    /**
+     * Test that other company types still work when sourceRegister.value is not "Živnostenský register".
+     */
+    public function test_extracts_company_type_from_prefix_when_not_sole_proprietor(): void
+    {
+        // Arrange - Data with different register type and Sro/ prefix
+        $apiData = [
+            'identifiers' => [
+                ['value' => '12345678'],
+            ],
+            'fullNames' => [
+                ['value' => 'Test Company s.r.o.', 'validFrom' => '2022-01-01'],
+            ],
+            'addresses' => [
+                [
+                    'street' => 'Main Street',
+                    'regNumber' => 123,
+                    'municipality' => ['value' => 'Bratislava'],
+                    'postalCodes' => ['81101'],
+                    'country' => ['value' => 'SK'],
+                    'validFrom' => '2022-01-01',
+                ],
+            ],
+            'sourceRegister' => [
+                'value' => [
+                    'value' => 'Obchodný register',
+                    'code' => '1',
+                    'codelistCode' => 'CL010111',
+                ],
+                'registrationOffices' => [
+                    ['value' => 'Okresný úrad Bratislava', 'validFrom' => '2022-11-01'],
+                ],
+                'registrationNumbers' => [
+                    ['value' => 'Sro/81134/B', 'validFrom' => '2022-11-01'],
+                ],
+            ],
+        ];
+
+        // Act
+        $result = $this->invokePrivateMethod('parseCompanyData', [$apiData]);
+
+        // Assert
+        $this->assertNotNull($result);
+        $this->assertArrayHasKey('type', $result);
+        $this->assertEquals('limited_liability_company', $result['type']);
+        // Prefix should be removed
+        $this->assertEquals('81134/B', $result['registration_number']);
+    }
+
+    /**
+     * Test that sole proprietor type takes priority even if registration number has a prefix.
+     */
+    public function test_sole_proprietor_type_takes_priority_over_prefix(): void
+    {
+        // Arrange - Edge case: Živnostenský register with unexpected prefix in registration number
+        $apiData = [
+            'identifiers' => [
+                ['value' => '12345678'],
+            ],
+            'fullNames' => [
+                ['value' => 'John Doe - SZČO', 'validFrom' => '2022-01-01'],
+            ],
+            'addresses' => [
+                [
+                    'street' => 'Main Street',
+                    'regNumber' => 123,
+                    'municipality' => ['value' => 'Nové Zámky'],
+                    'postalCodes' => ['94001'],
+                    'country' => ['value' => 'SK'],
+                    'validFrom' => '2022-01-01',
+                ],
+            ],
+            'sourceRegister' => [
+                'value' => [
+                    'value' => 'Živnostenský register',
+                    'code' => '2',
+                    'codelistCode' => 'CL010112',
+                ],
+                'registrationOffices' => [
+                    ['value' => 'Okresný úrad Nové Zámky', 'validFrom' => '2022-11-01'],
+                ],
+                'registrationNumbers' => [
+                    ['value' => 'Sro/440-46274', 'validFrom' => '2022-11-01'],
+                ],
+            ],
+        ];
+
+        // Act
+        $result = $this->invokePrivateMethod('parseCompanyData', [$apiData]);
+
+        // Assert
+        $this->assertNotNull($result);
+        $this->assertArrayHasKey('type', $result);
+        // Should be sole_proprietor, not limited_liability_company
+        $this->assertEquals('sole_proprietor', $result['type']);
+        // Prefix should still be removed from registration number
+        $this->assertEquals('440-46274', $result['registration_number']);
     }
 
     /**

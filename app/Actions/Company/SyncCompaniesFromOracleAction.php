@@ -272,15 +272,25 @@ final class SyncCompaniesFromOracleAction
             ? trim($currentRegistrationNumber['value'])
             : null;
 
-        // Extract company type from registration number prefix BEFORE filtering.
-        // Important: This must happen before removeSroPrefix() which removes 'Sro/' prefix.
-        // We need the original prefix to determine the company type correctly.
-        $type = $this->extractCompanyType($rawRegistrationNumber);
+        // Extract register type to determine if this is a sole proprietor
+        $registerType = $data['sourceRegister']['value']['value'] ?? null;
 
-        // Filter registration number: Remove 'Sro/' prefix for legacy compatibility.
-        // Only 'Sro/' is removed; other prefixes (Sa/, Dr/, etc.) are preserved.
+        // Determine company type:
+        // 1. If sourceRegister.value.value is "Živnostenský register", it's a sole proprietor
+        // 2. Otherwise, extract type from registration number prefix (Sa/, Sro/, etc.)
+        if ($registerType === 'Živnostenský register') {
+            $type = CompanyType::SOLE_PROPRIETOR;
+        } else {
+            // Extract company type from registration number prefix BEFORE filtering.
+            // Important: This must happen before removeTypePrefix() which removes all prefixes.
+            // We need the original prefix to determine the company type correctly.
+            $type = $this->extractCompanyType($rawRegistrationNumber);
+        }
+
+        // Filter registration number: Remove type prefix (Sa/, Sro/, Dr/, Po/, etc.).
+        // All prefixes are removed - only the actual registration number is stored.
         $registrationNumber = $rawRegistrationNumber !== null
-            ? $this->removeSroPrefix($rawRegistrationNumber)
+            ? $this->removeTypePrefix($rawRegistrationNumber)
             : null;
 
         return [
@@ -405,21 +415,23 @@ final class SyncCompaniesFromOracleAction
     }
 
     /**
-     * Remove 'Sro/' prefix from registration number if present.
-     * This is done for legacy compatibility reasons.
-     * Other prefixes (Sa/, Dr/, Po/, etc.) are preserved.
+     * Remove type prefix from registration number if present.
+     * Removes all prefixes (Sa/, Sro/, Dr/, Po/, etc.) - only actual number is stored.
      *
-     * @param  string  $registrationNumber  The registration number (e.g., 'Sro/81134/B')
-     * @return string The registration number with Sro/ prefix removed (e.g., '81134/B')
+     * @param  string  $registrationNumber  The registration number (e.g., 'Sa/6266/B', 'Sro/81134/B')
+     * @return string The registration number without prefix (e.g., '6266/B', '81134/B')
      */
-    private function removeSroPrefix(string $registrationNumber): string
+    private function removeTypePrefix(string $registrationNumber): string
     {
-        // Remove 'Sro/' prefix (case-insensitive)
-        if (str_starts_with(strtolower($registrationNumber), 'sro/')) {
-            return substr($registrationNumber, 4);
+        // Find the position of the first slash
+        $slashPosition = strpos($registrationNumber, '/');
+
+        if ($slashPosition === false) {
+            return $registrationNumber;
         }
 
-        return $registrationNumber;
+        // Return everything after the first slash
+        return substr($registrationNumber, $slashPosition + 1);
     }
 
     /**

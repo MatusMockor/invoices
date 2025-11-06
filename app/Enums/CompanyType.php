@@ -23,6 +23,7 @@ enum CompanyType: string
     case SPORTS_ORGANIZATION = 'sports_organization';
     case POLITICAL_PARTY = 'political_party';
     case CIVIC_ASSOCIATION = 'civic_association';
+    case SOLE_PROPRIETOR = 'sole_proprietor';
 
     /**
      * Get company type from registration number prefix.

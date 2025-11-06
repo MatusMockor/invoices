@@ -116,17 +116,18 @@ final class CompanyTypeTest extends TestCase
         $this->assertSame('sports_organization', CompanyType::SPORTS_ORGANIZATION->value);
         $this->assertSame('political_party', CompanyType::POLITICAL_PARTY->value);
         $this->assertSame('civic_association', CompanyType::CIVIC_ASSOCIATION->value);
+        $this->assertSame('sole_proprietor', CompanyType::SOLE_PROPRIETOR->value);
     }
 
     /**
-     * Test all 13 company types exist.
+     * Test all 14 company types exist.
      */
-    public function test_has_all_thirteen_company_types(): void
+    public function test_has_all_fourteen_company_types(): void
     {
         // Arrange & Act
         $allCases = CompanyType::cases();
 
         // Assert
-        $this->assertCount(13, $allCases);
+        $this->assertCount(14, $allCases);
     }
 }

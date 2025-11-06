@@ -87,7 +87,7 @@ final class SyncCompaniesFromOracleActionTest extends TestCase
         $this->assertEquals('Bratislava', $company->city);
         $this->assertEquals('81101', $company->postal_code);
         $this->assertEquals('Mestský súd Bratislava III', $company->registration_office);
-        $this->assertEquals('Sa/999/B', $company->registration_number);
+        $this->assertEquals('999/B', $company->registration_number);
         $this->assertEquals(CompanyType::JOINT_STOCK_COMPANY, $company->type);
     }
 
