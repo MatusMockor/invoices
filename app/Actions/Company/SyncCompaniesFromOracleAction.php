@@ -6,6 +6,7 @@ namespace App\Actions\Company;
 
 use App\Enums\CompanySyncStatus;
 use App\Enums\CompanySyncType;
+use App\Enums\CompanyType;
 use App\Repositories\Interfaces\CompanyRepository as CompanyRepositoryContract;
 use App\Repositories\Interfaces\CompanySyncLogRepository as CompanySyncLogRepositoryContract;
 use App\Services\Interfaces\OracleCloudStorageService as OracleCloudStorageServiceContract;
@@ -267,8 +268,19 @@ final class SyncCompaniesFromOracleAction
         // Extract registration number from sourceRegister (use currently valid entry)
         $registrationNumbers = $data['sourceRegister']['registrationNumbers'] ?? [];
         $currentRegistrationNumber = $this->findCurrentlyValidEntry($registrationNumbers);
-        $registrationNumber = $currentRegistrationNumber !== null && isset($currentRegistrationNumber['value'])
-            ? $this->filterRegistrationNumber(trim($currentRegistrationNumber['value']))
+        $rawRegistrationNumber = $currentRegistrationNumber !== null && isset($currentRegistrationNumber['value'])
+            ? trim($currentRegistrationNumber['value'])
+            : null;
+
+        // Extract company type from registration number prefix BEFORE filtering.
+        // Important: This must happen before removeSroPrefix() which removes 'Sro/' prefix.
+        // We need the original prefix to determine the company type correctly.
+        $type = $this->extractCompanyType($rawRegistrationNumber);
+
+        // Filter registration number: Remove 'Sro/' prefix for legacy compatibility.
+        // Only 'Sro/' is removed; other prefixes (Sa/, Dr/, etc.) are preserved.
+        $registrationNumber = $rawRegistrationNumber !== null
+            ? $this->removeSroPrefix($rawRegistrationNumber)
             : null;
 
         return [
@@ -282,6 +294,7 @@ final class SyncCompaniesFromOracleAction
             'ic_dph' => null, // IC DPH is not in Oracle data, will be filled from Phase 2
             'registration_office' => $registrationOffice,
             'registration_number' => $registrationNumber,
+            'type' => $type?->value,
         ];
     }
 
@@ -333,8 +346,11 @@ final class SyncCompaniesFromOracleAction
 
     /**
      * Find the currently valid entry from an array of temporal entries.
-     * Returns entry without 'validTo' field (currently valid).
-     * If all have 'validTo', returns the one with latest 'validFrom'.
+     * Returns entry that is currently valid based on validTo date:
+     * - If validTo is null → valid (no expiration)
+     * - If validTo >= today → still valid
+     * - If validTo < today → expired (skip)
+     * If multiple valid entries exist, returns the one with latest validFrom.
      *
      * @param  array<int, array<string, mixed>>  $entries
      * @return array<string, mixed>|null
@@ -345,18 +361,34 @@ final class SyncCompaniesFromOracleAction
             return null;
         }
 
-        // First pass: find entry without validTo (currently valid)
+        $today = today()->toDateString();
+        $validEntries = [];
+
+        // Filter entries to find currently valid ones
         foreach ($entries as $entry) {
-            if (! isset($entry['validTo']) || $entry['validTo'] === null) {
-                return $entry;
+            $validTo = $entry['validTo'] ?? null;
+
+            // Entry is valid if validTo is null OR validTo >= today
+            if ($validTo === null || $validTo >= $today) {
+                $validEntries[] = $entry;
             }
         }
 
-        // All entries have validTo, find the one with latest validFrom
+        // If no valid entries found, return null
+        if (empty($validEntries)) {
+            return null;
+        }
+
+        // If only one valid entry, return it
+        if (count($validEntries) === 1) {
+            return $validEntries[0];
+        }
+
+        // Multiple valid entries: return the one with latest validFrom
         $latestEntry = null;
         $latestDate = null;
 
-        foreach ($entries as $entry) {
+        foreach ($validEntries as $entry) {
             $validFrom = $entry['validFrom'] ?? null;
 
             if (! $validFrom) {
@@ -373,9 +405,14 @@ final class SyncCompaniesFromOracleAction
     }
 
     /**
-     * Filter registration number by removing 'Sro/' prefix if present.
+     * Remove 'Sro/' prefix from registration number if present.
+     * This is done for legacy compatibility reasons.
+     * Other prefixes (Sa/, Dr/, Po/, etc.) are preserved.
+     *
+     * @param  string  $registrationNumber  The registration number (e.g., 'Sro/81134/B')
+     * @return string The registration number with Sro/ prefix removed (e.g., '81134/B')
      */
-    private function filterRegistrationNumber(string $registrationNumber): string
+    private function removeSroPrefix(string $registrationNumber): string
     {
         // Remove 'Sro/' prefix (case-insensitive)
         if (str_starts_with(strtolower($registrationNumber), 'sro/')) {
@@ -383,6 +420,32 @@ final class SyncCompaniesFromOracleAction
         }
 
         return $registrationNumber;
+    }
+
+    /**
+     * Extract company type from registration number prefix.
+     * Returns the CompanyType enum based on the prefix before the first slash.
+     *
+     * @param  string|null  $registrationNumber  The registration number (e.g., "Sa/6266/B", "Sro/81134/B")
+     * @return CompanyType|null The matching CompanyType or null if not found
+     */
+    private function extractCompanyType(?string $registrationNumber): ?CompanyType
+    {
+        if (! $registrationNumber) {
+            return null;
+        }
+
+        // Find the position of the first slash
+        $slashPosition = strpos($registrationNumber, '/');
+
+        if ($slashPosition === false) {
+            return null;
+        }
+
+        // Extract prefix (including the slash)
+        $prefix = substr($registrationNumber, 0, $slashPosition + 1);
+
+        return CompanyType::fromPrefix($prefix);
     }
 
     /**
