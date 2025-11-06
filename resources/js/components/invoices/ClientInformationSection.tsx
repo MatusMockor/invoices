@@ -140,10 +140,14 @@ const ClientInformationSectionComponent = ({
                     const newValue = e.target.value;
                     setIcoSearch(newValue);
                     setValue("clientIco", newValue);
-                    setShowSuggestions(true);
+                    if (newValue.length >= 2) {
+                      setShowSuggestions(true);
+                    } else {
+                      setShowSuggestions(false);
+                    }
                   }}
                   onFocus={() => {
-                    if (icoSearch.length > 0) {
+                    if (icoSearch.length >= 2) {
                       setShowSuggestions(true);
                     }
                   }}
@@ -168,8 +172,15 @@ const ClientInformationSectionComponent = ({
                 )}
               </div>
 
+              {/* Validation message */}
+              {icoSearch.length > 0 && icoSearch.length < 2 && (
+                <p className="text-sm text-muted-foreground mt-1">
+                  Zadajte aspoň 2 znaky pre vyhľadávanie
+                </p>
+              )}
+
               {/* Dropdown with suggestions */}
-              {showSuggestions && icoSearch.length > 0 && (
+              {showSuggestions && icoSearch.length >= 2 && (
                 <div
                   ref={dropdownRef}
                   className="absolute z-50 w-full mt-1 bg-popover border border-border rounded-md shadow-lg"

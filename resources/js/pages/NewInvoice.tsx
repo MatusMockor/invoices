@@ -163,6 +163,7 @@ const NewInvoice = () => {
     handleSubmit,
     setValue,
     watch,
+    reset,
   } = form;
 
   const { fields, append, remove } = useFieldArray({
@@ -189,6 +190,55 @@ const NewInvoice = () => {
 
   const items = watch("items");
   const useCustomCompany = watch("useCustomCompany");
+
+  // Reset form and state when switching from edit to create mode
+  useEffect(() => {
+    if (!isEditMode) {
+      // Reset form to default values
+      reset({
+        invoiceNumber: generatedInvoiceNumber,
+        items: [{ description: "", quantity: 1, price: 0 }],
+        variableSymbol: generatedInvoiceNumber,
+        constantSymbol: "",
+        specificSymbol: "",
+        issueDate: new Date(),
+        deliveryDate: new Date(),
+        dueDate: new Date(new Date().setDate(new Date().getDate() + 15)),
+        useCustomCompany: false,
+        clientName: "",
+        clientStreet: "",
+        clientCity: "",
+        clientPostalCode: "",
+        clientIco: "",
+        clientDic: "",
+        clientIcDph: "",
+        customCompanyIco: "",
+        customCompanyDic: "",
+        customCompanyIcDph: "",
+        customCompanyName: "",
+        customCompanyAddress: "",
+        customCompanyCity: "",
+        customCompanyZip: "",
+        customCompanyCountry: "",
+      });
+
+      // Reset all state variables
+      setSelectedCompany(null);
+      setIcoSearch("");
+      setFilteredCompanies([]);
+      setShowSuggestions(false);
+      setSearchError(null);
+      setIsSelectingCompany(false);
+
+      // Reset dates
+      const today = new Date();
+      setIssueDate(today);
+      setDeliveryDate(today);
+      const defaultDueDate = new Date();
+      defaultDueDate.setDate(defaultDueDate.getDate() + 15);
+      setDueDate(defaultDueDate);
+    }
+  }, [isEditMode, reset, generatedInvoiceNumber]);
 
   // Load invoice data in edit mode
   useEffect(() => {
