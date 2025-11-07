@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace App\Repositories;
 
 use App\Models\Contact;
-use App\Repositories\Interfaces\ContactRepository as ContactRepositoryContract;
+use App\Repositories\Contracts\ContactRepository as ContactRepositoryContract;
 use Illuminate\Contracts\Pagination\LengthAwarePaginator;
 
 class ContactRepository implements ContactRepositoryContract

@@ -6,8 +6,8 @@ namespace App\Actions\Company;
 
 use App\Enums\CompanySyncStatus;
 use App\Enums\CompanySyncType;
-use App\Repositories\Interfaces\CompanyRepository as CompanyRepositoryContract;
-use App\Repositories\Interfaces\CompanySyncLogRepository as CompanySyncLogRepositoryContract;
+use App\Repositories\Contracts\CompanyRepository as CompanyRepositoryContract;
+use App\Repositories\Contracts\CompanySyncLogRepository as CompanySyncLogRepositoryContract;
 use App\Services\Interfaces\FinancialDataService as FinancialDataServiceContract;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;

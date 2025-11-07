@@ -6,7 +6,7 @@ namespace Tests\Unit\Actions;
 
 use App\Actions\Company\CompanyFetchOrCreateAction;
 use App\Models\Company;
-use App\Repositories\Interfaces\CompanyRepository;
+use App\Repositories\Contracts\CompanyRepository;
 use App\Services\Interfaces\ScraperService;
 use Mockery;
 use Tests\TestCase;

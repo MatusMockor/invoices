@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace App\Repositories;
 
 use App\Models\CompanySyncLog;
-use App\Repositories\Interfaces\CompanySyncLogRepository as CompanySyncLogRepositoryContract;
+use App\Repositories\Contracts\CompanySyncLogRepository as CompanySyncLogRepositoryContract;
 
 final class CompanySyncLogRepository implements CompanySyncLogRepositoryContract
 {

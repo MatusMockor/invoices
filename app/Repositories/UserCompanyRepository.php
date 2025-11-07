@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace App\Repositories;
 
 use App\Models\UserCompany;
-use App\Repositories\Interfaces\UserCompanyRepository as UserCompanyRepositoryContract;
+use App\Repositories\Contracts\UserCompanyRepository as UserCompanyRepositoryContract;
 use Illuminate\Database\Eloquent\Collection;
 
 final class UserCompanyRepository implements UserCompanyRepositoryContract

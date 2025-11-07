@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace App\Actions\Company;
 
 use App\Models\Company;
-use App\Repositories\Interfaces\CompanyRepository;
+use App\Repositories\Contracts\CompanyRepository;
 use App\Services\Interfaces\ScraperService;
 use Illuminate\Support\Facades\Log;
 

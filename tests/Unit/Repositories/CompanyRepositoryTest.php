@@ -7,7 +7,7 @@ namespace Tests\Unit\Repositories;
 use App\Models\Company;
 use App\Models\Invoice;
 use App\Models\UserCompany;
-use App\Repositories\Interfaces\CompanyRepository;
+use App\Repositories\Contracts\CompanyRepository;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
 

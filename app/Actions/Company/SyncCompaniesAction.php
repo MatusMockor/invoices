@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Actions\Company;
 
-use App\Repositories\Interfaces\CompanyRepository as CompanyRepositoryContract;
+use App\Repositories\Contracts\CompanyRepository as CompanyRepositoryContract;
 use App\Services\Interfaces\FinancialDataService as FinancialDataServiceContract;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;

@@ -12,15 +12,17 @@ use App\Repositories\BusinessEntityRepository;
 use App\Repositories\CompanyRepository;
 use App\Repositories\CompanySyncLogRepository;
 use App\Repositories\ContactRepository as AppContactRepository;
-use App\Repositories\Interfaces\BusinessEntityRepository as BusinessEntityRepositoryContract;
-use App\Repositories\Interfaces\CompanyRepository as CompanyRepositoryContract;
-use App\Repositories\Interfaces\CompanySyncLogRepository as CompanySyncLogRepositoryContract;
-use App\Repositories\Interfaces\ContactRepository as AppContactRepositoryContract;
-use App\Repositories\Interfaces\InvoiceItemRepository as InvoiceItemRepositoryContract;
-use App\Repositories\Interfaces\InvoiceRepository as InvoiceRepositoryContract;
-use App\Repositories\Interfaces\NoteRepository as NoteRepositoryContract;
-use App\Repositories\Interfaces\UserCompanyRepository as UserCompanyRepositoryContract;
-use App\Repositories\Interfaces\UserRepository as UserRepositoryContract;
+use App\Repositories\Contracts\BusinessEntityRepository as BusinessEntityRepositoryContract;
+use App\Repositories\Contracts\CompanyRepository as CompanyRepositoryContract;
+use App\Repositories\Contracts\CompanySyncLogRepository as CompanySyncLogRepositoryContract;
+use App\Repositories\Contracts\ContactRepository as AppContactRepositoryContract;
+use App\Repositories\Contracts\EmailWhitelistRepository as EmailWhitelistRepositoryContract;
+use App\Repositories\Contracts\InvoiceItemRepository as InvoiceItemRepositoryContract;
+use App\Repositories\Contracts\InvoiceRepository as InvoiceRepositoryContract;
+use App\Repositories\Contracts\NoteRepository as NoteRepositoryContract;
+use App\Repositories\Contracts\UserCompanyRepository as UserCompanyRepositoryContract;
+use App\Repositories\Contracts\UserRepository as UserRepositoryContract;
+use App\Repositories\EmailWhitelistRepository;
 use App\Repositories\InvoiceItemRepository as InvoiceItemRepositoryImpl;
 use App\Repositories\InvoiceRepository as InvoiceRepositoryImpl;
 use App\Repositories\NoteRepository;
@@ -62,6 +64,7 @@ class AppServiceProvider extends ServiceProvider
         $this->app->bind(NoteRepositoryContract::class, NoteRepository::class);
         $this->app->bind(UserRepositoryContract::class, UserRepository::class);
         $this->app->bind(UserCompanyRepositoryContract::class, UserCompanyRepository::class);
+        $this->app->bind(EmailWhitelistRepositoryContract::class, EmailWhitelistRepository::class);
 
         // Register service interfaces with Contract suffix for aliases
         $this->app->bind(BusinessEntityDataServiceContract::class, BusinessEntityDataServiceImpl::class);

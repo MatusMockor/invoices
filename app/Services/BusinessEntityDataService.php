@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace App\Services;
 
 use App\Models\UserCompany;
-use App\Repositories\Interfaces\BusinessEntityRepository as BusinessEntityRepositoryContract;
+use App\Repositories\Contracts\BusinessEntityRepository as BusinessEntityRepositoryContract;
 use App\Services\Interfaces\BusinessEntityDataService as BusinessEntityDataServiceContract;
 use App\Services\Interfaces\ScraperService as ScraperServiceContract;
 

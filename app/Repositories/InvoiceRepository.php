@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace App\Repositories;
 
 use App\Models\Invoice;
-use App\Repositories\Interfaces\InvoiceRepository as InvoiceRepositoryContract;
+use App\Repositories\Contracts\InvoiceRepository as InvoiceRepositoryContract;
 use Carbon\Carbon;
 use Illuminate\Contracts\Pagination\LengthAwarePaginator;
 use Illuminate\Database\Eloquent\Collection;

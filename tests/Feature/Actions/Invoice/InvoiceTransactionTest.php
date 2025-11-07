@@ -13,7 +13,7 @@ use App\Models\Invoice;
 use App\Models\InvoiceItem;
 use App\Models\User;
 use App\Models\UserCompany;
-use App\Repositories\Interfaces\InvoiceItemRepository;
+use App\Repositories\Contracts\InvoiceItemRepository;
 use Exception;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Http;

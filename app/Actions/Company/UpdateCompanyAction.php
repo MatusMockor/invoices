@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace App\Actions\Company;
 
 use App\Models\UserCompany;
-use App\Repositories\Interfaces\UserCompanyRepository as UserCompanyRepositoryContract;
+use App\Repositories\Contracts\UserCompanyRepository as UserCompanyRepositoryContract;
 use Illuminate\Support\Facades\DB;
 
 final class UpdateCompanyAction

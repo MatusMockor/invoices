@@ -10,7 +10,7 @@ use App\Http\Requests\NoteStoreRequest;
 use App\Http\Resources\NoteCollection;
 use App\Http\Resources\NoteResource;
 use App\Models\Note;
-use App\Repositories\Interfaces\NoteRepository;
+use App\Repositories\Contracts\NoteRepository;
 use Illuminate\Http\JsonResponse;
 
 class NoteController extends Controller

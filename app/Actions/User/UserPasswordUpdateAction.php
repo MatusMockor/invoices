@@ -6,7 +6,7 @@ namespace App\Actions\User;
 
 use App\DTOs\User\UserPasswordUpdateDTO;
 use App\Models\User;
-use App\Repositories\Interfaces\UserRepository as UserRepositoryContract;
+use App\Repositories\Contracts\UserRepository as UserRepositoryContract;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
 

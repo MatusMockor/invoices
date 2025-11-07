@@ -6,7 +6,7 @@ namespace App\Repositories;
 
 use App\Models\Company;
 use App\Models\Invoice;
-use App\Repositories\Interfaces\CompanyRepository as CompanyRepositoryContract;
+use App\Repositories\Contracts\CompanyRepository as CompanyRepositoryContract;
 use Illuminate\Contracts\Pagination\LengthAwarePaginator;
 use Illuminate\Database\Eloquent\Collection;
 

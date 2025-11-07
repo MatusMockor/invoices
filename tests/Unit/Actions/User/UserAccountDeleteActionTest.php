@@ -6,7 +6,7 @@ namespace Tests\Unit\Actions\User;
 
 use App\Actions\User\UserAccountDeleteAction;
 use App\Models\User;
-use App\Repositories\Interfaces\UserRepository as UserRepositoryContract;
+use App\Repositories\Contracts\UserRepository as UserRepositoryContract;
 use Exception;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\DB;

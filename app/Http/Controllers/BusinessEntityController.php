@@ -9,7 +9,7 @@ use App\Http\Requests\BusinessEntities\UpdateBusinessEntityRequest;
 use App\Http\Requests\Companies\FetchCompanyByIcoRequest;
 use App\Http\Resources\BusinessEntityResource;
 use App\Models\UserCompany;
-use App\Repositories\Interfaces\BusinessEntityRepository;
+use App\Repositories\Contracts\BusinessEntityRepository;
 use App\Services\Interfaces\BusinessEntityDataService;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\View\View;

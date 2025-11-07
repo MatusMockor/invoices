@@ -7,7 +7,7 @@ namespace App\Actions\Company;
 use App\DTOs\Company\CompanyCreationDTO;
 use App\Models\User;
 use App\Models\UserCompany;
-use App\Repositories\Interfaces\UserCompanyRepository as UserCompanyRepositoryContract;
+use App\Repositories\Contracts\UserCompanyRepository as UserCompanyRepositoryContract;
 use Illuminate\Support\Facades\DB;
 
 final class CompanyCreationAction

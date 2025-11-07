@@ -10,7 +10,7 @@ use App\Http\Requests\ContactUpdateRequest;
 use App\Http\Resources\ContactCollection;
 use App\Http\Resources\ContactResource;
 use App\Models\Contact;
-use App\Repositories\Interfaces\ContactRepository;
+use App\Repositories\Contracts\ContactRepository;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 

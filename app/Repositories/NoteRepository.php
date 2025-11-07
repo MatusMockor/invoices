@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace App\Repositories;
 
 use App\Models\Note;
-use App\Repositories\Interfaces\NoteRepository as NoteRepositoryContract;
+use App\Repositories\Contracts\NoteRepository as NoteRepositoryContract;
 use Illuminate\Database\Eloquent\Collection;
 
 class NoteRepository implements NoteRepositoryContract

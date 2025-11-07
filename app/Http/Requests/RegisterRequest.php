@@ -4,10 +4,10 @@ declare(strict_types=1);
 
 namespace App\Http\Requests;
 
+use App\Rules\EmailWhitelisted;
 use Illuminate\Foundation\Http\FormRequest;
-use Illuminate\Support\Facades\Hash;
 
-class RegisterRequest extends FormRequest
+final class RegisterRequest extends FormRequest
 {
     public function authorize(): bool
     {
@@ -18,7 +18,7 @@ class RegisterRequest extends FormRequest
     {
         return [
             'name' => 'required|string|max:255',
-            'email' => 'required|string|email|max:255|unique:users',
+            'email' => ['required', 'string', 'email', 'max:255', 'unique:users', app(EmailWhitelisted::class)],
             'password' => 'required|string|min:8|confirmed',
         ];
     }
@@ -28,7 +28,7 @@ class RegisterRequest extends FormRequest
         return [
             'name' => $this->input('name'),
             'email' => $this->input('email'),
-            'password' => Hash::make($this->input('password')),
+            'password' => $this->input('password'),
         ];
     }
 }

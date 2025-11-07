@@ -6,7 +6,7 @@ namespace Tests\Unit\Repositories;
 
 use App\Models\Invoice;
 use App\Models\InvoiceItem;
-use App\Repositories\Interfaces\InvoiceItemRepository;
+use App\Repositories\Contracts\InvoiceItemRepository;
 use Illuminate\Contracts\Container\BindingResolutionException;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;

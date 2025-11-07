@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace App\Repositories;
 
 use App\Models\User;
-use App\Repositories\Interfaces\UserRepository as UserRepositoryContract;
+use App\Repositories\Contracts\UserRepository as UserRepositoryContract;
 
 class UserRepository implements UserRepositoryContract
 {

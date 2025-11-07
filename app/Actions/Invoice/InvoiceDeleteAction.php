@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace App\Actions\Invoice;
 
 use App\Models\Invoice;
-use App\Repositories\Interfaces\InvoiceRepository;
+use App\Repositories\Contracts\InvoiceRepository;
 
 final class InvoiceDeleteAction
 {

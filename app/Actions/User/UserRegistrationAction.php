@@ -6,8 +6,8 @@ namespace App\Actions\User;
 
 use App\DTOs\User\UserRegistrationDTO;
 use App\Models\User;
-use App\Repositories\Interfaces\UserCompanyRepository as UserCompanyRepositoryContract;
-use App\Repositories\Interfaces\UserRepository as UserRepositoryContract;
+use App\Repositories\Contracts\UserCompanyRepository as UserCompanyRepositoryContract;
+use App\Repositories\Contracts\UserRepository as UserRepositoryContract;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
 

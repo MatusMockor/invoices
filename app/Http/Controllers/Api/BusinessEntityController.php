@@ -11,7 +11,7 @@ use App\Http\Requests\UpdateBusinessEntityRequest;
 use App\Http\Resources\BusinessEntityCollection;
 use App\Http\Resources\BusinessEntityResource;
 use App\Models\UserCompany;
-use App\Repositories\Interfaces\BusinessEntityRepository;
+use App\Repositories\Contracts\BusinessEntityRepository;
 use App\Services\Interfaces\BusinessEntityDataService;
 use Illuminate\Http\JsonResponse;
 

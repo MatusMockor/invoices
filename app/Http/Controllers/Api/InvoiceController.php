@@ -17,7 +17,7 @@ use App\Http\Resources\InvoiceCollection;
 use App\Http\Resources\InvoiceResource;
 use App\Http\Resources\LatestInvoiceNumberResource;
 use App\Models\Invoice;
-use App\Repositories\Interfaces\InvoiceRepository;
+use App\Repositories\Contracts\InvoiceRepository;
 use App\Services\Interfaces\InvoicePdfService;
 use App\Services\Interfaces\PayBySquare;
 use Illuminate\Http\JsonResponse;

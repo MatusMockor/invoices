@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Services;
 
-use App\Repositories\Interfaces\InvoiceRepository as InvoiceRepositoryContract;
+use App\Repositories\Contracts\InvoiceRepository as InvoiceRepositoryContract;
 use App\Services\Interfaces\ReportService as ReportServiceContract;
 use Carbon\Carbon;
 

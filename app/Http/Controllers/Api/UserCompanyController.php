@@ -12,8 +12,8 @@ use App\Http\Resources\CompanyMinimalCollection;
 use App\Http\Resources\UserCompanyCollection;
 use App\Http\Resources\UserCompanyResource;
 use App\Models\UserCompany;
-use App\Repositories\Interfaces\CompanyRepository;
-use App\Repositories\Interfaces\UserCompanyRepository;
+use App\Repositories\Contracts\CompanyRepository;
+use App\Repositories\Contracts\UserCompanyRepository;
 use Illuminate\Http\JsonResponse;
 
 class UserCompanyController extends Controller

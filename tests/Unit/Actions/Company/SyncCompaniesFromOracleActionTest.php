@@ -5,8 +5,8 @@ declare(strict_types=1);
 namespace Tests\Unit\Actions\Company;
 
 use App\Actions\Company\SyncCompaniesFromOracleAction;
-use App\Repositories\Interfaces\CompanyRepository as CompanyRepositoryContract;
-use App\Repositories\Interfaces\CompanySyncLogRepository as CompanySyncLogRepositoryContract;
+use App\Repositories\Contracts\CompanyRepository as CompanyRepositoryContract;
+use App\Repositories\Contracts\CompanySyncLogRepository as CompanySyncLogRepositoryContract;
 use App\Services\Interfaces\OracleCloudStorageService as OracleCloudStorageServiceContract;
 use Mockery;
 use ReflectionClass;

@@ -7,7 +7,7 @@ namespace App\Http\Controllers\Api;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Api\Company\SearchRequest;
 use App\Http\Resources\CompanyCollection;
-use App\Repositories\Interfaces\CompanyRepository;
+use App\Repositories\Contracts\CompanyRepository;
 
 class CompanyController extends Controller
 {

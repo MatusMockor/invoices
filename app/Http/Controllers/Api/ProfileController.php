@@ -12,7 +12,7 @@ use App\Http\Requests\ProfileDestroyRequest;
 use App\Http\Requests\ProfileUpdateRequest;
 use App\Http\Requests\UpdatePasswordRequest;
 use App\Http\Resources\UserResource;
-use App\Repositories\Interfaces\UserRepository;
+use App\Repositories\Contracts\UserRepository;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 

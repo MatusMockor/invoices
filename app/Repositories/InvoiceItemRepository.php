@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace App\Repositories;
 
 use App\Models\InvoiceItem;
-use App\Repositories\Interfaces\InvoiceItemRepository as InvoiceItemRepositoryContract;
+use App\Repositories\Contracts\InvoiceItemRepository as InvoiceItemRepositoryContract;
 
 class InvoiceItemRepository implements InvoiceItemRepositoryContract
 {

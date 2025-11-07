@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Tests\Unit\Services;
 
-use App\Repositories\Interfaces\CompanyRepository as CompanyRepositoryContract;
+use App\Repositories\Contracts\CompanyRepository as CompanyRepositoryContract;
 use App\Services\CompanyAnalyticsService;
 use Mockery;
 use Tests\TestCase;
