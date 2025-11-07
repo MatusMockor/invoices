@@ -8,6 +8,8 @@ use App\Actions\Company\CompanyFetchOrCreateAction;
 use App\Actions\Invoice\InvoiceCreateAction;
 use App\DTOs\Invoice\InvoiceCreateDTO;
 use App\Models\Company;
+use App\Models\User;
+use App\Models\UserCompany;
 use App\Repositories\Interfaces\InvoiceItemRepository;
 use App\Repositories\Interfaces\InvoiceRepository;
 use App\Services\Invoice\InvoiceTotalCalculatorService;
@@ -31,9 +33,16 @@ class InvoiceCreateActionDicTest extends TestCase
 
     private InvoiceTotalCalculatorService $totalCalculator;
 
+    private User $user;
+
+    private UserCompany $userCompany;
+
     protected function setUp(): void
     {
         parent::setUp();
+
+        $this->user = User::factory()->create();
+        $this->userCompany = UserCompany::factory()->forUser($this->user)->create();
 
         $this->invoiceRepository = app(InvoiceRepository::class);
         $this->invoiceItemRepository = app(InvoiceItemRepository::class);
@@ -91,7 +100,7 @@ class InvoiceCreateActionDicTest extends TestCase
             useCustomCompany: false
         );
 
-        $invoice = $this->action->handle($dto, 1, 1);
+        $invoice = $this->action->handle($dto, $this->user->id, $this->userCompany->id);
 
         // Assert that DIČ and IČ DPH are saved in the invoice
         $this->assertEquals($company->dic, $invoice->company_dic);
@@ -149,7 +158,7 @@ class InvoiceCreateActionDicTest extends TestCase
             customCompanyCountry: 'SK'
         );
 
-        $invoice = $this->action->handle($dto, 1, 1);
+        $invoice = $this->action->handle($dto, $this->user->id, $this->userCompany->id);
 
         // Assert that custom DIČ and IČ DPH are saved in the invoice
         $this->assertEquals('2087654321', $invoice->company_dic);
@@ -212,7 +221,7 @@ class InvoiceCreateActionDicTest extends TestCase
             useCustomCompany: false
         );
 
-        $invoice = $this->action->handle($dto, 1, 1);
+        $invoice = $this->action->handle($dto, $this->user->id, $this->userCompany->id);
 
         // Assert that DIČ and IČ DPH are null in the invoice
         $this->assertNull($invoice->company_dic);

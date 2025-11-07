@@ -85,7 +85,7 @@ class InvoiceRepository implements InvoiceRepositoryContract
     public function getLatestInvoiceNumber(int $companyId): ?string
     {
         $latestInvoice = Invoice::where('supplier_company_id', $companyId)
-            ->orderBy('created_at', 'desc')
+            ->orderByRaw('CAST(invoice_number AS BIGINT) DESC')
             ->first();
 
         return $latestInvoice?->invoice_number;
