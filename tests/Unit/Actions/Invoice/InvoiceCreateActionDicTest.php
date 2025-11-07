@@ -8,6 +8,7 @@ use App\Actions\Company\CompanyFetchOrCreateAction;
 use App\Actions\Invoice\InvoiceCreateAction;
 use App\DTOs\Invoice\InvoiceCreateDTO;
 use App\Models\Company;
+use App\Models\Invoice;
 use App\Models\User;
 use App\Models\UserCompany;
 use App\Repositories\Interfaces\InvoiceItemRepository;
@@ -59,16 +60,9 @@ class InvoiceCreateActionDicTest extends TestCase
 
     public function test_creates_invoice_with_dic_and_ic_dph_from_company(): void
     {
-        // Create a company with DIČ and IČ DPH
         $company = Company::factory()->create([
-            'ico' => '12345678',
-            'name' => 'Test Company s.r.o.',
-            'dic' => '2012345678',
-            'ic_dph' => 'SK2012345678',
-            'street' => 'Test Street 123',
-            'city' => 'Bratislava',
-            'postal_code' => '81101',
-            'country' => 'SK',
+            'dic' => fake()->numerify('##########'),
+            'ic_dph' => 'SK'.fake()->numerify('##########'),
         ]);
 
         $dto = new InvoiceCreateDTO(
@@ -80,21 +74,21 @@ class InvoiceCreateActionDicTest extends TestCase
             clientCity: $company->city,
             clientPostalCode: $company->postal_code,
             clientCountry: $company->country,
-            invoiceNumber: 'INV-2025-001',
-            issueDate: '2025-11-06',
-            dueDate: '2025-11-20',
-            deliveryDate: '2025-11-06',
-            variableSymbol: '2025001',
-            constantSymbol: '0308',
+            invoiceNumber: fake()->numerify('INV-####-###'),
+            issueDate: now()->toDateString(),
+            dueDate: now()->addDays(14)->toDateString(),
+            deliveryDate: now()->toDateString(),
+            variableSymbol: fake()->numerify('######'),
+            constantSymbol: fake()->numerify('####'),
             specificSymbol: null,
             currency: 'EUR',
-            notes: 'Test invoice',
+            notes: fake()->sentence(),
             status: 'draft',
             items: [
                 [
-                    'description' => 'Test Service',
-                    'quantity' => 2,
-                    'price' => 100.00,
+                    'description' => fake()->words(3, true),
+                    'quantity' => fake()->numberBetween(1, 10),
+                    'price' => fake()->randomFloat(2, 10, 1000),
                 ],
             ],
             useCustomCompany: false
@@ -102,25 +96,32 @@ class InvoiceCreateActionDicTest extends TestCase
 
         $invoice = $this->action->handle($dto, $this->user->id, $this->userCompany->id);
 
-        // Assert that DIČ and IČ DPH are saved in the invoice
         $this->assertEquals($company->dic, $invoice->company_dic);
         $this->assertEquals($company->ic_dph, $invoice->company_ic_dph);
         $this->assertEquals($company->ico, $invoice->company_ico);
         $this->assertEquals($company->name, $invoice->company_name);
 
-        // Assert database has the correct data
-        $this->assertDatabaseHas('invoices', [
+        $this->assertDatabaseHas(Invoice::class, [
             'id' => $invoice->id,
             'company_id' => $company->id,
-            'company_ico' => '12345678',
-            'company_dic' => '2012345678',
-            'company_ic_dph' => 'SK2012345678',
-            'company_name' => 'Test Company s.r.o.',
+            'company_ico' => $company->ico,
+            'company_dic' => $company->dic,
+            'company_ic_dph' => $company->ic_dph,
+            'company_name' => $company->name,
         ]);
     }
 
     public function test_creates_invoice_with_custom_company_dic_and_ic_dph(): void
     {
+        $customIco = fake()->numerify('########');
+        $customDic = fake()->numerify('##########');
+        $customIcDph = 'SK'.fake()->numerify('##########');
+        $customCompanyName = fake()->company();
+        $customAddress = fake()->streetAddress();
+        $customCity = fake()->city();
+        $customZip = fake()->postcode();
+        $customCountry = fake()->countryCode();
+
         $dto = new InvoiceCreateDTO(
             clientName: null,
             clientIco: null,
@@ -130,66 +131,57 @@ class InvoiceCreateActionDicTest extends TestCase
             clientCity: null,
             clientPostalCode: null,
             clientCountry: null,
-            invoiceNumber: 'INV-2025-002',
-            issueDate: '2025-11-06',
-            dueDate: '2025-11-20',
-            deliveryDate: '2025-11-06',
-            variableSymbol: '2025002',
-            constantSymbol: '0308',
+            invoiceNumber: fake()->numerify('INV-####-###'),
+            issueDate: now()->toDateString(),
+            dueDate: now()->addDays(14)->toDateString(),
+            deliveryDate: now()->toDateString(),
+            variableSymbol: fake()->numerify('######'),
+            constantSymbol: fake()->numerify('####'),
             specificSymbol: null,
             currency: 'EUR',
-            notes: 'Test invoice with custom company',
+            notes: fake()->sentence(),
             status: 'draft',
             items: [
                 [
-                    'description' => 'Test Service',
-                    'quantity' => 1,
-                    'price' => 150.00,
+                    'description' => fake()->words(3, true),
+                    'quantity' => fake()->numberBetween(1, 10),
+                    'price' => fake()->randomFloat(2, 10, 1000),
                 ],
             ],
             useCustomCompany: true,
-            customCompanyIco: '87654321',
-            customCompanyDic: '2087654321',
-            customCompanyIcDph: 'SK2087654321',
-            customCompanyName: 'Custom Company Ltd.',
-            customCompanyAddress: 'Custom Street 456',
-            customCompanyCity: 'Košice',
-            customCompanyZip: '04001',
-            customCompanyCountry: 'SK'
+            customCompanyIco: $customIco,
+            customCompanyDic: $customDic,
+            customCompanyIcDph: $customIcDph,
+            customCompanyName: $customCompanyName,
+            customCompanyAddress: $customAddress,
+            customCompanyCity: $customCity,
+            customCompanyZip: $customZip,
+            customCompanyCountry: $customCountry
         );
 
         $invoice = $this->action->handle($dto, $this->user->id, $this->userCompany->id);
 
-        // Assert that custom DIČ and IČ DPH are saved in the invoice
-        $this->assertEquals('2087654321', $invoice->company_dic);
-        $this->assertEquals('SK2087654321', $invoice->company_ic_dph);
-        $this->assertEquals('87654321', $invoice->company_ico);
-        $this->assertEquals('Custom Company Ltd.', $invoice->company_name);
-        $this->assertNull($invoice->company_id); // No company_id for custom companies
+        $this->assertEquals($customDic, $invoice->company_dic);
+        $this->assertEquals($customIcDph, $invoice->company_ic_dph);
+        $this->assertEquals($customIco, $invoice->company_ico);
+        $this->assertEquals($customCompanyName, $invoice->company_name);
+        $this->assertNull($invoice->company_id);
 
-        // Assert database has the correct data
-        $this->assertDatabaseHas('invoices', [
+        $this->assertDatabaseHas(Invoice::class, [
             'id' => $invoice->id,
             'company_id' => null,
-            'company_ico' => '87654321',
-            'company_dic' => '2087654321',
-            'company_ic_dph' => 'SK2087654321',
-            'company_name' => 'Custom Company Ltd.',
+            'company_ico' => $customIco,
+            'company_dic' => $customDic,
+            'company_ic_dph' => $customIcDph,
+            'company_name' => $customCompanyName,
         ]);
     }
 
     public function test_creates_invoice_with_null_dic_and_ic_dph(): void
     {
-        // Create a company without DIČ and IČ DPH
         $company = Company::factory()->create([
-            'ico' => '99999999',
-            'name' => 'Company Without DIC',
             'dic' => null,
             'ic_dph' => null,
-            'street' => 'Some Street',
-            'city' => 'Some City',
-            'postal_code' => '12345',
-            'country' => 'SK',
         ]);
 
         $dto = new InvoiceCreateDTO(
@@ -201,11 +193,11 @@ class InvoiceCreateActionDicTest extends TestCase
             clientCity: $company->city,
             clientPostalCode: $company->postal_code,
             clientCountry: $company->country,
-            invoiceNumber: 'INV-2025-003',
-            issueDate: '2025-11-06',
-            dueDate: '2025-11-20',
-            deliveryDate: '2025-11-06',
-            variableSymbol: '2025003',
+            invoiceNumber: fake()->numerify('INV-####-###'),
+            issueDate: now()->toDateString(),
+            dueDate: now()->addDays(14)->toDateString(),
+            deliveryDate: now()->toDateString(),
+            variableSymbol: fake()->numerify('######'),
             constantSymbol: null,
             specificSymbol: null,
             currency: 'EUR',
@@ -213,9 +205,9 @@ class InvoiceCreateActionDicTest extends TestCase
             status: 'draft',
             items: [
                 [
-                    'description' => 'Test Service',
-                    'quantity' => 1,
-                    'price' => 50.00,
+                    'description' => fake()->words(3, true),
+                    'quantity' => fake()->numberBetween(1, 10),
+                    'price' => fake()->randomFloat(2, 10, 1000),
                 ],
             ],
             useCustomCompany: false
@@ -223,16 +215,14 @@ class InvoiceCreateActionDicTest extends TestCase
 
         $invoice = $this->action->handle($dto, $this->user->id, $this->userCompany->id);
 
-        // Assert that DIČ and IČ DPH are null in the invoice
         $this->assertNull($invoice->company_dic);
         $this->assertNull($invoice->company_ic_dph);
         $this->assertEquals($company->ico, $invoice->company_ico);
 
-        // Assert database has the correct data
-        $this->assertDatabaseHas('invoices', [
+        $this->assertDatabaseHas(Invoice::class, [
             'id' => $invoice->id,
             'company_id' => $company->id,
-            'company_ico' => '99999999',
+            'company_ico' => $company->ico,
             'company_dic' => null,
             'company_ic_dph' => null,
         ]);
