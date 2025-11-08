@@ -25,7 +25,8 @@ const Register = () => {
   const handleUserSubmit = async (data: UserFormData) => {
     try {
       await registerUser({
-        name: data.name,
+        first_name: data.firstName,
+        last_name: data.lastName,
         email: data.email,
         password: data.password,
         password_confirmation: data.confirmPassword,

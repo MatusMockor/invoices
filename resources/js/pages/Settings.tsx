@@ -43,7 +43,7 @@ const Settings = () => {
   const { toast } = useToast();
   const { settings, updateSettings, isUpdating, isFetching } = useSettings();
   const { theme, setTheme } = useTheme();
-  const { logout } = useAuth();
+  const { logout, user } = useAuth();
   const { selectedCompanyId } = useCompanyContext();
   const [activeTab, setActiveTab] = useState("profile");
   const [invoiceTemplate, setInvoiceTemplate] = useState<'classic' | 'modern' | 'minimal' | 'bold'>('classic');
@@ -67,6 +67,14 @@ const Settings = () => {
   const [deletePassword, setDeletePassword] = useState("");
   const [isDeletingAccount, setIsDeletingAccount] = useState(false);
 
+  // Profile form state
+  const [profileData, setProfileData] = useState({
+    firstName: '',
+    lastName: '',
+    email: '',
+  });
+  const [isSavingProfile, setIsSavingProfile] = useState(false);
+
   // Company form state
   const [companyData, setCompanyData] = useState({
     name: '',
@@ -83,6 +91,17 @@ const Settings = () => {
     swift: '',
   });
   const [isSavingCompany, setIsSavingCompany] = useState(false);
+
+  // Load user profile data
+  useEffect(() => {
+    if (user) {
+      setProfileData({
+        firstName: user.first_name || '',
+        lastName: user.last_name || '',
+        email: user.email || '',
+      });
+    }
+  }, [user]);
 
   // Load settings from API and reset form when company changes
   useEffect(() => {
@@ -117,12 +136,68 @@ const Settings = () => {
     localStorage.setItem('previewTemplate', template);
   };
 
-  const handleSaveProfile = (e: React.FormEvent) => {
+  const handleSaveProfile = async (e: React.FormEvent) => {
     e.preventDefault();
-    toast({
-      title: "Profil uložený",
-      description: "Vaše zmeny boli úspešne uložené.",
-    });
+
+    // Validation
+    if (!profileData.firstName.trim()) {
+      toast({
+        title: "Chyba",
+        description: "Meno je povinné.",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    if (!profileData.lastName.trim()) {
+      toast({
+        title: "Chyba",
+        description: "Priezvisko je povinné.",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    if (!profileData.email.trim()) {
+      toast({
+        title: "Chyba",
+        description: "Email je povinný.",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    setIsSavingProfile(true);
+
+    try {
+      await api.put("/api/profile", {
+        first_name: profileData.firstName,
+        last_name: profileData.lastName,
+        email: profileData.email,
+      });
+
+      toast({
+        title: "Profil uložený",
+        description: "Vaše zmeny boli úspešne uložené.",
+      });
+    } catch (error: any) {
+      const message = error?.response?.data?.message || "Nepodarilo sa uložiť profil.";
+      const errors = error?.response?.data?.errors;
+
+      let description = message;
+      if (errors) {
+        const errorMessages = Object.values(errors).flat() as string[];
+        description = errorMessages[0] || message;
+      }
+
+      toast({
+        title: "Chyba",
+        description,
+        variant: "destructive",
+      });
+    } finally {
+      setIsSavingProfile(false);
+    }
   };
 
   const handleSaveCompany = async (e: React.FormEvent) => {
@@ -430,16 +505,22 @@ const Settings = () => {
                     <Label htmlFor="firstName">Meno *</Label>
                     <Input
                       id="firstName"
-                      defaultValue="Ján"
+                      value={profileData.firstName}
+                      onChange={(e) => setProfileData({ ...profileData, firstName: e.target.value })}
                       placeholder="Vaše meno"
+                      disabled={isSavingProfile}
+                      autoComplete="given-name"
                     />
                   </div>
                   <div className="space-y-2">
                     <Label htmlFor="lastName">Priezvisko *</Label>
                     <Input
                       id="lastName"
-                      defaultValue="Novák"
+                      value={profileData.lastName}
+                      onChange={(e) => setProfileData({ ...profileData, lastName: e.target.value })}
                       placeholder="Vaše priezvisko"
+                      disabled={isSavingProfile}
+                      autoComplete="family-name"
                     />
                   </div>
                   <div className="space-y-2">
@@ -447,24 +528,32 @@ const Settings = () => {
                     <Input
                       id="email"
                       type="email"
-                      defaultValue="jan.novak@example.sk"
+                      value={profileData.email}
+                      onChange={(e) => setProfileData({ ...profileData, email: e.target.value })}
                       placeholder="váš@email.sk"
-                    />
-                  </div>
-                  <div className="space-y-2">
-                    <Label htmlFor="phone">Telefón</Label>
-                    <Input
-                      id="phone"
-                      defaultValue="+421 902 123 456"
-                      placeholder="+421"
+                      disabled={isSavingProfile}
+                      autoComplete="email"
                     />
                   </div>
                 </div>
 
                 <div className="flex justify-end pt-4">
-                  <Button type="submit" className="bg-primary hover:bg-primary/90">
-                    <Save className="h-4 w-4 mr-2" />
-                    Uložiť zmeny
+                  <Button
+                    type="submit"
+                    className="bg-primary hover:bg-primary/90"
+                    disabled={isSavingProfile}
+                  >
+                    {isSavingProfile ? (
+                      <>
+                        <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                        Ukladám...
+                      </>
+                    ) : (
+                      <>
+                        <Save className="h-4 w-4 mr-2" />
+                        Uložiť zmeny
+                      </>
+                    )}
                   </Button>
                 </div>
               </form>

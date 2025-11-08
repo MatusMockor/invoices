@@ -24,7 +24,8 @@ use Spatie\Permission\Traits\HasRoles;
  * User model representing a user in the system.
  *
  * @property int $id
- * @property string $name
+ * @property string $first_name
+ * @property string $last_name
  * @property string $email
  * @property Carbon|null $email_verified_at
  * @property string $password
@@ -49,7 +50,8 @@ class User extends Authenticatable
      * @var list<string>
      */
     protected $fillable = [
-        'name',
+        'first_name',
+        'last_name',
         'email',
         'password',
         'current_company_id',

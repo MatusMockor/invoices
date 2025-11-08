@@ -17,7 +17,8 @@ final class RegisterRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'name' => 'required|string|max:255',
+            'first_name' => 'required|string|max:255',
+            'last_name' => 'required|string|max:255',
             'email' => ['required', 'string', 'email', 'max:255', 'unique:users', app(EmailWhitelisted::class)],
             'password' => 'required|string|min:8|confirmed',
         ];
@@ -26,7 +27,8 @@ final class RegisterRequest extends FormRequest
     public function getData(): array
     {
         return [
-            'name' => $this->input('name'),
+            'first_name' => $this->input('first_name'),
+            'last_name' => $this->input('last_name'),
             'email' => $this->input('email'),
             'password' => $this->input('password'),
         ];
