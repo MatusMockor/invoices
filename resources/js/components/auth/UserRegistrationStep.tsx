@@ -8,7 +8,8 @@ import { CardContent, CardDescription, CardHeader, CardTitle } from "@/component
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
 
 const userSchema = z.object({
-  name: z.string().trim().min(1, "Meno je povinné").max(100),
+  firstName: z.string().trim().min(1, "Meno je povinné").max(255),
+  lastName: z.string().trim().min(1, "Priezvisko je povinné").max(255),
   email: z.string().trim().email("Neplatná emailová adresa").max(255),
   password: z.string().min(8, "Heslo musí mať aspoň 8 znakov").max(100),
   confirmPassword: z.string(),
@@ -27,7 +28,8 @@ export const UserRegistrationStep = ({ onSubmit }: UserRegistrationStepProps) =>
   const userForm = useForm<UserFormData>({
     resolver: zodResolver(userSchema),
     defaultValues: {
-      name: "",
+      firstName: "",
+      lastName: "",
       email: "",
       password: "",
       confirmPassword: "",
@@ -46,19 +48,35 @@ export const UserRegistrationStep = ({ onSubmit }: UserRegistrationStepProps) =>
         <Form {...userForm}>
           <form onSubmit={userForm.handleSubmit(onSubmit)} className="space-y-6">
             <div className="space-y-4">
-              <FormField
-                control={userForm.control}
-                name="name"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Meno *</FormLabel>
-                    <FormControl>
-                      <Input placeholder="Vaše meno" {...field} />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <FormField
+                  control={userForm.control}
+                  name="firstName"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Meno *</FormLabel>
+                      <FormControl>
+                        <Input placeholder="Ján" {...field} />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+
+                <FormField
+                  control={userForm.control}
+                  name="lastName"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Priezvisko *</FormLabel>
+                      <FormControl>
+                        <Input placeholder="Novák" {...field} />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+              </div>
 
               <FormField
                 control={userForm.control}

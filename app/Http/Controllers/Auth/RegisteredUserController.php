@@ -4,17 +4,18 @@ declare(strict_types=1);
 
 namespace App\Http\Controllers\Auth;
 
+use App\Actions\User\UserRegisterAction;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\RegisterRequest;
-use App\Models\User;
-use Illuminate\Auth\Events\Registered;
 use Illuminate\Http\RedirectResponse;
-use Illuminate\Support\Facades\Auth;
-use Illuminate\Support\Facades\Hash;
 use Illuminate\View\View;
 
 final class RegisteredUserController extends Controller
 {
+    public function __construct(
+        private readonly UserRegisterAction $userRegisterAction,
+    ) {}
+
     /**
      * Display the registration view.
      */
@@ -28,15 +29,12 @@ final class RegisteredUserController extends Controller
      */
     public function store(RegisterRequest $request): RedirectResponse
     {
-        $user = User::create([
-            'name' => $request->input('name'),
-            'email' => $request->input('email'),
-            'password' => Hash::make($request->input('password')),
-        ]);
-
-        event(new Registered($user));
-
-        Auth::login($user);
+        $this->userRegisterAction->handle(
+            firstName: $request->input('first_name'),
+            lastName: $request->input('last_name'),
+            email: $request->input('email'),
+            password: $request->input('password'),
+        );
 
         return redirect('/');
     }
