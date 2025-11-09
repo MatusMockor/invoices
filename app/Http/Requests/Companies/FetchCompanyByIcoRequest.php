@@ -6,7 +6,7 @@ namespace App\Http\Requests\Companies;
 
 use Illuminate\Foundation\Http\FormRequest;
 
-class FetchCompanyByIcoRequest extends FormRequest
+final class FetchCompanyByIcoRequest extends FormRequest
 {
     /**
      * Determine if the user is authorized to make this request.
@@ -26,5 +26,10 @@ class FetchCompanyByIcoRequest extends FormRequest
         return [
             'ico' => 'required|string|max:8',
         ];
+    }
+
+    public function getIco(): string
+    {
+        return $this->validated('ico');
     }
 }

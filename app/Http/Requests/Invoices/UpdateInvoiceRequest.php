@@ -7,7 +7,7 @@ namespace App\Http\Requests\Invoices;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Validation\Rule;
 
-class UpdateInvoiceRequest extends FormRequest
+final class UpdateInvoiceRequest extends FormRequest
 {
     /**
      * Determine if the user is authorized to make this request.
@@ -120,5 +120,145 @@ class UpdateInvoiceRequest extends FormRequest
             'items.min' => 'Faktúra musí obsahovať aspoň jednu položku.',
             'due_date.after_or_equal' => 'Dátum splatnosti musí byť rovnaký alebo neskorší ako dátum vystavenia.',
         ];
+    }
+
+    public function getInvoiceNumber(): string
+    {
+        return $this->validated('invoiceNumber');
+    }
+
+    public function getIssueDate(): string
+    {
+        return $this->validated('issue_date');
+    }
+
+    public function getDueDate(): string
+    {
+        return $this->validated('due_date');
+    }
+
+    public function getDeliveryDate(): string
+    {
+        return $this->validated('delivery_date');
+    }
+
+    public function getCurrency(): ?string
+    {
+        return $this->validated('currency');
+    }
+
+    public function getVariableSymbol(): ?string
+    {
+        return $this->validated('variableSymbol');
+    }
+
+    public function getConstantSymbol(): ?string
+    {
+        return $this->validated('constantSymbol');
+    }
+
+    public function getSpecificSymbol(): ?string
+    {
+        return $this->validated('specificSymbol');
+    }
+
+    public function getNotes(): ?string
+    {
+        return $this->validated('notes');
+    }
+
+    public function getStatus(): ?string
+    {
+        return $this->validated('status');
+    }
+
+    public function getItems(): array
+    {
+        return $this->validated('items');
+    }
+
+    public function getUseCustomCompany(): bool
+    {
+        return $this->boolean('useCustomCompany', false);
+    }
+
+    public function getCustomCompanyIco(): ?string
+    {
+        return $this->validated('customCompanyIco');
+    }
+
+    public function getCustomCompanyDic(): ?string
+    {
+        return $this->validated('customCompanyDic');
+    }
+
+    public function getCustomCompanyIcDph(): ?string
+    {
+        return $this->validated('customCompanyIcDph');
+    }
+
+    public function getCustomCompanyName(): ?string
+    {
+        return $this->validated('customCompanyName');
+    }
+
+    public function getCustomCompanyAddress(): ?string
+    {
+        return $this->validated('customCompanyAddress');
+    }
+
+    public function getCustomCompanyCity(): ?string
+    {
+        return $this->validated('customCompanyCity');
+    }
+
+    public function getCustomCompanyZip(): ?string
+    {
+        return $this->validated('customCompanyZip');
+    }
+
+    public function getCustomCompanyCountry(): ?string
+    {
+        return $this->validated('customCompanyCountry');
+    }
+
+    public function getClientIco(): ?string
+    {
+        return $this->validated('clientIco');
+    }
+
+    public function getClientName(): ?string
+    {
+        return $this->validated('clientName');
+    }
+
+    public function getClientDic(): ?string
+    {
+        return $this->validated('clientDic');
+    }
+
+    public function getClientIcDph(): ?string
+    {
+        return $this->validated('clientIcDph');
+    }
+
+    public function getClientStreet(): ?string
+    {
+        return $this->validated('clientStreet');
+    }
+
+    public function getClientCity(): ?string
+    {
+        return $this->validated('clientCity');
+    }
+
+    public function getClientPostalCode(): ?string
+    {
+        return $this->validated('clientPostalCode');
+    }
+
+    public function getClientCountry(): ?string
+    {
+        return $this->validated('clientCountry');
     }
 }

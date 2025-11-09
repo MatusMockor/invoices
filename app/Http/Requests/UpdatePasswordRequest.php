@@ -6,7 +6,7 @@ namespace App\Http\Requests;
 
 use Illuminate\Foundation\Http\FormRequest;
 
-class UpdatePasswordRequest extends FormRequest
+final class UpdatePasswordRequest extends FormRequest
 {
     /**
      * Get the validation rules that apply to the request.
@@ -20,5 +20,20 @@ class UpdatePasswordRequest extends FormRequest
             'password' => ['required', 'string', 'min:8', 'confirmed'],
             'password_confirmation' => ['required', 'string'],
         ];
+    }
+
+    public function getCurrentPassword(): string
+    {
+        return $this->validated('current_password');
+    }
+
+    public function getPassword(): string
+    {
+        return $this->validated('password');
+    }
+
+    public function getPasswordConfirmation(): string
+    {
+        return $this->validated('password_confirmation');
     }
 }

@@ -6,7 +6,7 @@ namespace App\Http\Requests;
 
 use Illuminate\Foundation\Http\FormRequest;
 
-class StoreBusinessEntityRequest extends FormRequest
+final class StoreBusinessEntityRequest extends FormRequest
 {
     public function authorize(): bool
     {
@@ -27,5 +27,55 @@ class StoreBusinessEntityRequest extends FormRequest
             'phone' => 'nullable|string|max:50',
             'email' => 'nullable|email|max:255',
         ];
+    }
+
+    public function getName(): string
+    {
+        return $this->validated('name');
+    }
+
+    public function getIco(): string
+    {
+        return $this->validated('ico');
+    }
+
+    public function getDic(): ?string
+    {
+        return $this->validated('dic');
+    }
+
+    public function getIcDph(): ?string
+    {
+        return $this->validated('ic_dph');
+    }
+
+    public function getAddress(): string
+    {
+        return $this->validated('address');
+    }
+
+    public function getCity(): string
+    {
+        return $this->validated('city');
+    }
+
+    public function getPostalCode(): string
+    {
+        return $this->validated('postal_code');
+    }
+
+    public function getCountry(): string
+    {
+        return $this->validated('country');
+    }
+
+    public function getPhone(): ?string
+    {
+        return $this->validated('phone');
+    }
+
+    public function getEmail(): ?string
+    {
+        return $this->validated('email');
     }
 }

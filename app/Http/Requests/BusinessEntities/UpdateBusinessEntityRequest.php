@@ -6,7 +6,7 @@ namespace App\Http\Requests\BusinessEntities;
 
 use Illuminate\Foundation\Http\FormRequest;
 
-class UpdateBusinessEntityRequest extends FormRequest
+final class UpdateBusinessEntityRequest extends FormRequest
 {
     /**
      * Determine if the user is authorized to make this request.
@@ -54,5 +54,55 @@ class UpdateBusinessEntityRequest extends FormRequest
             'registration_number.required' => 'Registračné číslo je povinné',
             'company_type.required' => 'Právna forma je povinná',
         ];
+    }
+
+    public function getName(): string
+    {
+        return $this->validated('name');
+    }
+
+    public function getIco(): string
+    {
+        return $this->validated('ico');
+    }
+
+    public function getDic(): ?string
+    {
+        return $this->validated('dic');
+    }
+
+    public function getStreet(): string
+    {
+        return $this->validated('street');
+    }
+
+    public function getCity(): string
+    {
+        return $this->validated('city');
+    }
+
+    public function getPostalCode(): string
+    {
+        return $this->validated('postal_code');
+    }
+
+    public function getCountry(): string
+    {
+        return $this->validated('country');
+    }
+
+    public function getIcDph(): ?string
+    {
+        return $this->validated('ic_dph');
+    }
+
+    public function getRegistrationNumber(): string
+    {
+        return $this->validated('registration_number');
+    }
+
+    public function getCompanyType(): string
+    {
+        return $this->validated('company_type');
     }
 }

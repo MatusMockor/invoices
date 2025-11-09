@@ -6,7 +6,7 @@ namespace App\Http\Requests;
 
 use Illuminate\Foundation\Http\FormRequest;
 
-class UpdateCompanyRequest extends FormRequest
+final class UpdateCompanyRequest extends FormRequest
 {
     public function authorize(): bool
     {
@@ -31,21 +31,81 @@ class UpdateCompanyRequest extends FormRequest
         ];
     }
 
+    public function getName(): string
+    {
+        return $this->validated('name');
+    }
+
+    public function getIco(): string
+    {
+        return $this->validated('ico');
+    }
+
+    public function getDic(): ?string
+    {
+        return $this->validated('dic');
+    }
+
+    public function getIcDph(): ?string
+    {
+        return $this->validated('ic_dph');
+    }
+
+    public function getStreet(): string
+    {
+        return $this->validated('street');
+    }
+
+    public function getCity(): string
+    {
+        return $this->validated('city');
+    }
+
+    public function getPostalCode(): string
+    {
+        return $this->validated('postal_code');
+    }
+
+    public function getCountry(): string
+    {
+        return $this->validated('country');
+    }
+
+    public function getPhone(): ?string
+    {
+        return $this->validated('phone');
+    }
+
+    public function getEmail(): ?string
+    {
+        return $this->validated('email');
+    }
+
+    public function getIban(): ?string
+    {
+        return $this->validated('iban');
+    }
+
+    public function getSwift(): ?string
+    {
+        return $this->validated('swift');
+    }
+
     public function getData(): array
     {
         return [
-            'name' => $this->input('name'),
-            'ico' => $this->input('ico'),
-            'dic' => $this->input('dic'),
-            'ic_dph' => $this->input('ic_dph'),
-            'street' => $this->input('street'),
-            'city' => $this->input('city'),
-            'postal_code' => $this->input('postal_code'),
-            'country' => $this->input('country'),
-            'phone' => $this->input('phone'),
-            'email' => $this->input('email'),
-            'iban' => $this->input('iban'),
-            'swift' => $this->input('swift'),
+            'name' => $this->getName(),
+            'ico' => $this->getIco(),
+            'dic' => $this->getDic(),
+            'ic_dph' => $this->getIcDph(),
+            'street' => $this->getStreet(),
+            'city' => $this->getCity(),
+            'postal_code' => $this->getPostalCode(),
+            'country' => $this->getCountry(),
+            'phone' => $this->getPhone(),
+            'email' => $this->getEmail(),
+            'iban' => $this->getIban(),
+            'swift' => $this->getSwift(),
         ];
     }
 }

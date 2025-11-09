@@ -6,7 +6,7 @@ namespace App\Http\Requests;
 
 use Illuminate\Foundation\Http\FormRequest;
 
-class ContactImportRequest extends FormRequest
+final class ContactImportRequest extends FormRequest
 {
     public function authorize(): bool
     {
@@ -28,5 +28,10 @@ class ContactImportRequest extends FormRequest
             'file.mimes' => 'File must be a CSV or TXT file.',
             'file.max' => 'File size cannot exceed 10MB.',
         ];
+    }
+
+    public function getFile()
+    {
+        return $this->validated('file');
     }
 }
