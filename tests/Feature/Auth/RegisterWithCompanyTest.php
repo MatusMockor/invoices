@@ -16,7 +16,8 @@ final class RegisterWithCompanyTest extends TestCase
     public function test_user_can_register_with_company(): void
     {
         $response = $this->postJson(route('api.register-with-company'), [
-            'name' => fake()->name(),
+            'first_name' => fake()->firstName(),
+            'last_name' => fake()->lastName(),
             'email' => fake()->unique()->safeEmail(),
             'password' => 'password123',
             'password_confirmation' => 'password123',
@@ -25,6 +26,8 @@ final class RegisterWithCompanyTest extends TestCase
             'company_street' => 'Hlavná 123',
             'company_city' => 'Bratislava',
             'company_postal_code' => '811 01',
+            'company_country' => 'SK',
+            'company_type' => 's.r.o.',
             'company_dic' => '2023456789',
             'company_ic_dph' => 'SK2023456789',
         ]);
@@ -34,7 +37,8 @@ final class RegisterWithCompanyTest extends TestCase
             'message',
             'user' => [
                 'id',
-                'name',
+                'first_name',
+                'last_name',
                 'email',
             ],
             'token',
@@ -53,6 +57,8 @@ final class RegisterWithCompanyTest extends TestCase
             'street' => 'Hlavná 123',
             'city' => 'Bratislava',
             'postal_code' => '811 01',
+            'country' => 'SK',
+            'company_type' => 's.r.o.',
             'dic' => '2023456789',
             'ic_dph' => 'SK2023456789',
         ]);
@@ -66,7 +72,8 @@ final class RegisterWithCompanyTest extends TestCase
 
         $response->assertStatus(422);
         $response->assertJsonValidationErrors([
-            'name',
+            'first_name',
+            'last_name',
             'email',
             'password',
             'company_ico',
@@ -74,13 +81,16 @@ final class RegisterWithCompanyTest extends TestCase
             'company_street',
             'company_city',
             'company_postal_code',
+            'company_country',
+            'company_type',
         ]);
     }
 
     public function test_registration_fails_with_invalid_email(): void
     {
         $response = $this->postJson(route('api.register-with-company'), [
-            'name' => fake()->name(),
+            'first_name' => fake()->firstName(),
+            'last_name' => fake()->lastName(),
             'email' => 'invalid-email',
             'password' => 'password123',
             'password_confirmation' => 'password123',
@@ -89,6 +99,8 @@ final class RegisterWithCompanyTest extends TestCase
             'company_street' => 'Hlavná 123',
             'company_city' => 'Bratislava',
             'company_postal_code' => '811 01',
+            'company_country' => 'SK',
+            'company_type' => 's.r.o.',
             'company_dic' => '2023456789',
             'company_ic_dph' => 'SK2023456789',
         ]);
@@ -104,7 +116,8 @@ final class RegisterWithCompanyTest extends TestCase
         ]);
 
         $response = $this->postJson(route('api.register-with-company'), [
-            'name' => fake()->name(),
+            'first_name' => fake()->firstName(),
+            'last_name' => fake()->lastName(),
             'email' => 'test@example.com',
             'password' => 'password123',
             'password_confirmation' => 'password123',
@@ -113,6 +126,8 @@ final class RegisterWithCompanyTest extends TestCase
             'company_street' => 'Hlavná 123',
             'company_city' => 'Bratislava',
             'company_postal_code' => '811 01',
+            'company_country' => 'SK',
+            'company_type' => 's.r.o.',
             'company_dic' => '2023456789',
             'company_ic_dph' => 'SK2023456789',
         ]);
@@ -124,7 +139,8 @@ final class RegisterWithCompanyTest extends TestCase
     public function test_registration_fails_with_short_password(): void
     {
         $response = $this->postJson(route('api.register-with-company'), [
-            'name' => fake()->name(),
+            'first_name' => fake()->firstName(),
+            'last_name' => fake()->lastName(),
             'email' => fake()->unique()->safeEmail(),
             'password' => 'short',
             'password_confirmation' => 'short',
@@ -133,6 +149,8 @@ final class RegisterWithCompanyTest extends TestCase
             'company_street' => 'Hlavná 123',
             'company_city' => 'Bratislava',
             'company_postal_code' => '811 01',
+            'company_country' => 'SK',
+            'company_type' => 's.r.o.',
             'company_dic' => '2023456789',
             'company_ic_dph' => 'SK2023456789',
         ]);
@@ -144,7 +162,8 @@ final class RegisterWithCompanyTest extends TestCase
     public function test_registration_fails_with_mismatched_password_confirmation(): void
     {
         $response = $this->postJson(route('api.register-with-company'), [
-            'name' => fake()->name(),
+            'first_name' => fake()->firstName(),
+            'last_name' => fake()->lastName(),
             'email' => fake()->unique()->safeEmail(),
             'password' => 'password123',
             'password_confirmation' => 'different-password',
@@ -153,6 +172,8 @@ final class RegisterWithCompanyTest extends TestCase
             'company_street' => 'Hlavná 123',
             'company_city' => 'Bratislava',
             'company_postal_code' => '811 01',
+            'company_country' => 'SK',
+            'company_type' => 's.r.o.',
             'company_dic' => '2023456789',
             'company_ic_dph' => 'SK2023456789',
         ]);
@@ -164,7 +185,8 @@ final class RegisterWithCompanyTest extends TestCase
     public function test_registration_respects_throttling(): void
     {
         $data = [
-            'name' => fake()->name(),
+            'first_name' => fake()->firstName(),
+            'last_name' => fake()->lastName(),
             'email' => fake()->unique()->safeEmail(),
             'password' => 'password123',
             'password_confirmation' => 'password123',
@@ -173,6 +195,8 @@ final class RegisterWithCompanyTest extends TestCase
             'company_street' => 'Hlavná 123',
             'company_city' => 'Bratislava',
             'company_postal_code' => '811 01',
+            'company_country' => 'SK',
+            'company_type' => 's.r.o.',
             'company_dic' => '2023456789',
             'company_ic_dph' => 'SK2023456789',
         ];
@@ -189,10 +213,11 @@ final class RegisterWithCompanyTest extends TestCase
         $response->assertStatus(429);
     }
 
-    public function test_registration_works_without_dic_and_ic_dph(): void
+    public function test_registration_works_without_optional_fields(): void
     {
         $response = $this->postJson(route('api.register-with-company'), [
-            'name' => fake()->name(),
+            'first_name' => fake()->firstName(),
+            'last_name' => fake()->lastName(),
             'email' => fake()->unique()->safeEmail(),
             'password' => 'password123',
             'password_confirmation' => 'password123',
@@ -201,6 +226,8 @@ final class RegisterWithCompanyTest extends TestCase
             'company_street' => 'Hlavná 123',
             'company_city' => 'Bratislava',
             'company_postal_code' => '811 01',
+            'company_country' => 'SK',
+            'company_type' => 's.r.o.',
         ]);
 
         $response->assertStatus(201);
@@ -208,7 +235,8 @@ final class RegisterWithCompanyTest extends TestCase
             'message',
             'user' => [
                 'id',
-                'name',
+                'first_name',
+                'last_name',
                 'email',
             ],
             'token',
@@ -223,8 +251,13 @@ final class RegisterWithCompanyTest extends TestCase
             'street' => 'Hlavná 123',
             'city' => 'Bratislava',
             'postal_code' => '811 01',
+            'country' => 'SK',
+            'company_type' => 's.r.o.',
             'dic' => null,
             'ic_dph' => null,
+            'phone' => null,
+            'email' => null,
+            'website' => null,
         ]);
 
         $this->assertNotNull($user->current_company_id);

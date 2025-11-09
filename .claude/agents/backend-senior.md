@@ -251,6 +251,23 @@ final class StoreInvoiceRequest extends FormRequest
             'items.*.price' => ['required', 'numeric', 'min:0'],
         ];
     }
+
+    // IMPORTANT: Always use validated() instead of input()
+    // Create getter methods for all fields with explicit return types
+    public function getCompanyId(): int
+    {
+        return $this->validated('company_id');
+    }
+
+    public function getInvoiceNumber(): string
+    {
+        return $this->validated('invoice_number');
+    }
+
+    public function getItems(): array
+    {
+        return $this->validated('items');
+    }
 }
 
 // 7. DTO: app/DTOs/InvoiceCreateDTO.php
@@ -503,6 +520,31 @@ final class OrderCreateAction
 - ✅ No `DB::` facade usage (use repositories or Eloquent)
 - ✅ Data modifications wrapped in `DB::transaction()`
 - ✅ Repository interfaces registered in AppServiceProvider
+
+### Form Requests
+- ✅ Create getter methods for all validated fields
+- ✅ Use `$this->validated('field')` instead of `$this->input('field')`
+- ✅ Getter methods have explicit return types (`string`, `?string`, `int`, `array`, etc.)
+- ✅ Never use `$request->all()` or `$request->validated()` array access
+  ```php
+  // ✅ Good - explicit getter with type
+  public function getFirstName(): string
+  {
+      return $this->validated('first_name');
+  }
+
+  // ✅ Good - nullable field
+  public function getCompanyPhone(): ?string
+  {
+      return $this->validated('company_phone');
+  }
+
+  // ❌ Bad - using input()
+  $name = $request->input('first_name');
+
+  // ❌ Bad - array access
+  $name = $request->validated()['first_name'];
+  ```
 
 ### Architecture
 - ✅ Controllers are thin (validate, create DTO, call Action, return Resource)

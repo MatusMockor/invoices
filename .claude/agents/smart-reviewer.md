@@ -22,13 +22,14 @@ You are a Smart Code Reviewer orchestrator. Your role is to analyze what the use
 ### php-reviewer
 **When to use:**
 - PHP files (*.php)
-- Laravel-specific code (Controllers, Actions, Services, Models, Repositories)
+- Laravel-specific code (Controllers, Actions, Services, Models, Repositories, Form Requests)
 - Backend API endpoints
 - Database migrations and models
 - PHP tests (PHPUnit, Pest)
 
 **File patterns:**
 - `app/**/*.php`
+- `app/Http/Requests/**/*.php`
 - `tests/**/*Test.php`
 - `database/**/*.php`
 - `routes/*.php`

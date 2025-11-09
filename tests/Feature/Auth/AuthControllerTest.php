@@ -18,7 +18,8 @@ class AuthControllerTest extends TestCase
         $password = fake()->password(8);
 
         $userData = [
-            'name' => fake()->name(),
+            'first_name' => fake()->firstName(),
+            'last_name' => fake()->lastName(),
             'email' => fake()->unique()->safeEmail(),
             'password' => $password,
             'password_confirmation' => $password,
@@ -29,7 +30,8 @@ class AuthControllerTest extends TestCase
         $response->assertStatus(201);
 
         $this->assertDatabaseHas(User::class, [
-            'name' => $userData['name'],
+            'first_name' => $userData['first_name'],
+            'last_name' => $userData['last_name'],
             'email' => $userData['email'],
         ]);
     }
@@ -39,7 +41,8 @@ class AuthControllerTest extends TestCase
         $password = fake()->password(8);
 
         $userData = [
-            'name' => fake()->name(),
+            'first_name' => fake()->firstName(),
+            'last_name' => fake()->lastName(),
             'email' => fake()->unique()->safeEmail(),
             'password' => $password,
             'password_confirmation' => $password,
@@ -52,7 +55,8 @@ class AuthControllerTest extends TestCase
             'message',
             'user' => [
                 'id',
-                'name',
+                'first_name',
+                'last_name',
                 'email',
             ],
             'token',
@@ -61,7 +65,8 @@ class AuthControllerTest extends TestCase
         $response->assertJson([
             'message' => 'User registered successfully',
             'user' => [
-                'name' => $userData['name'],
+                'first_name' => $userData['first_name'],
+                'last_name' => $userData['last_name'],
                 'email' => $userData['email'],
             ],
         ]);
@@ -72,7 +77,8 @@ class AuthControllerTest extends TestCase
         $password = fake()->password(8);
 
         $userData = [
-            'name' => fake()->name(),
+            'first_name' => fake()->firstName(),
+            'last_name' => fake()->lastName(),
             'email' => 'invalid-email',
             'password' => $password,
             'password_confirmation' => $password,
@@ -90,7 +96,8 @@ class AuthControllerTest extends TestCase
         $password = fake()->password(8);
 
         $userData = [
-            'name' => fake()->name(),
+            'first_name' => fake()->firstName(),
+            'last_name' => fake()->lastName(),
             'email' => $existingUser->email,
             'password' => $password,
             'password_confirmation' => $password,
@@ -105,7 +112,8 @@ class AuthControllerTest extends TestCase
     public function test_register_fails_with_short_password(): void
     {
         $userData = [
-            'name' => fake()->name(),
+            'first_name' => fake()->firstName(),
+            'last_name' => fake()->lastName(),
             'email' => fake()->unique()->safeEmail(),
             'password' => 'short',
             'password_confirmation' => 'short',
@@ -120,7 +128,8 @@ class AuthControllerTest extends TestCase
     public function test_register_fails_without_password_confirmation(): void
     {
         $userData = [
-            'name' => fake()->name(),
+            'first_name' => fake()->firstName(),
+            'last_name' => fake()->lastName(),
             'email' => fake()->unique()->safeEmail(),
             'password' => fake()->password(8),
         ];
@@ -134,7 +143,8 @@ class AuthControllerTest extends TestCase
     public function test_register_fails_with_mismatched_password_confirmation(): void
     {
         $userData = [
-            'name' => fake()->name(),
+            'first_name' => fake()->firstName(),
+            'last_name' => fake()->lastName(),
             'email' => fake()->unique()->safeEmail(),
             'password' => fake()->password(8),
             'password_confirmation' => fake()->password(8),
@@ -151,7 +161,7 @@ class AuthControllerTest extends TestCase
         $response = $this->postJson(route('api.register'), []);
 
         $response->assertStatus(422);
-        $response->assertJsonValidationErrors(['name', 'email', 'password']);
+        $response->assertJsonValidationErrors(['first_name', 'last_name', 'email', 'password']);
     }
 
     public function test_login_succeeds_with_valid_credentials(): void
@@ -199,7 +209,8 @@ class AuthControllerTest extends TestCase
             'message',
             'user' => [
                 'id',
-                'name',
+                'first_name',
+                'last_name',
                 'email',
             ],
             'token',
@@ -299,7 +310,8 @@ class AuthControllerTest extends TestCase
         $response->assertJsonStructure([
             'data' => [
                 'id',
-                'name',
+                'first_name',
+                'last_name',
                 'email',
             ],
         ]);
@@ -307,7 +319,8 @@ class AuthControllerTest extends TestCase
         $response->assertJson([
             'data' => [
                 'id' => $user->id,
-                'name' => $user->name,
+                'first_name' => $user->first_name,
+                'last_name' => $user->last_name,
                 'email' => $user->email,
             ],
         ]);

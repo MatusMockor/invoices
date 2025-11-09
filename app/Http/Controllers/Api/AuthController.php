@@ -67,7 +67,7 @@ class AuthController extends Controller
         RegisterWithCompanyRequest $request,
         UserRegistrationAction $action
     ): JsonResponse {
-        $dto = UserRegistrationDTO::fromRequest($request->all());
+        $dto = UserRegistrationDTO::fromFormRequest($request);
 
         $user = $action->handle($dto);
 
