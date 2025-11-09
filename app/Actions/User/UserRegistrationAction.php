@@ -25,7 +25,8 @@ final class UserRegistrationAction
     {
         return DB::transaction(function () use ($dto) {
             $user = $this->userRepository->create([
-                'name' => $dto->name,
+                'first_name' => $dto->firstName,
+                'last_name' => $dto->lastName,
                 'email' => $dto->email,
                 'password' => Hash::make($dto->password),
             ]);
@@ -37,10 +38,13 @@ final class UserRegistrationAction
                 'street' => $dto->companyStreet,
                 'city' => $dto->companyCity,
                 'postal_code' => $dto->companyPostalCode,
-                'country' => config('invoices.default_country', 'SK'),
+                'country' => $dto->companyCountry,
                 'dic' => $dto->companyDic,
                 'ic_dph' => $dto->companyIcDph,
-                'company_type' => config('invoices.default_company_type', 's.r.o.'),
+                'phone' => $dto->companyPhone,
+                'email' => $dto->companyEmail,
+                'website' => $dto->companyWebsite,
+                'company_type' => $dto->companyType,
                 'registration_number' => '',
             ]);
 

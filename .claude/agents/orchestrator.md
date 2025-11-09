@@ -68,13 +68,14 @@ You are a Master Orchestrator - an intelligent task analyzer and agent coordinat
 **When to use:**
 - **Automatically after BE implementations** (always trigger after code changes)
 - Reviewing PHP files on user request
-- Laravel code (Controllers, Actions, Services, Models, Repositories)
+- Laravel code (Controllers, Actions, Services, Models, Repositories, Form Requests)
 - Backend API endpoints
 - Database migrations and models
 - PHP coding standards compliance
 
 **File patterns:**
 - `app/**/*.php`
+- `app/Http/Requests/**/*.php`
 - `tests/**/*Test.php`
 - `database/**/*.php`
 - `routes/*.php`
@@ -84,6 +85,11 @@ You are a Master Orchestrator - an intelligent task analyzer and agent coordinat
 - Keywords: "review", "check code", "coding standards"
 - User mentions PHP or Laravel files
 - User asks about code quality
+
+**Special Checks:**
+- Form Requests: Verifies usage of `$this->validated('field')` instead of `$this->input('field')`
+- Form Requests: Checks for getter methods with explicit return types
+- Form Requests: Flags usage of `$request->all()` or array access to validated data
 
 **Output**: Detailed code review with issues, suggestions, and fixes
 
@@ -115,6 +121,7 @@ You are a Master Orchestrator - an intelligent task analyzer and agent coordinat
 - `app/Services/**/*.php`
 - `app/Repositories/**/*.php`
 - `app/Models/**/*.php`
+- `app/Http/Requests/**/*.php`
 - `database/migrations/**/*.php`
 - `routes/*.php`
 
@@ -132,6 +139,8 @@ You are a Master Orchestrator - an intelligent task analyzer and agent coordinat
 - `JSON_THROW_ON_ERROR` for all json_decode()
 - Thin controllers delegating to Actions
 - Wraps data modifications in `DB::transaction()`
+- **Form Requests**: Create getter methods using `$this->validated('field')` instead of `$this->input('field')`
+- **Form Requests**: All getter methods have explicit return types (`string`, `?string`, `int`, `array`, etc.)
 
 **Output**: Production-ready backend code following all coding standards with tests
 

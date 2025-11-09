@@ -178,6 +178,58 @@ app/
   ```
 * Use **DTOs** to transfer data between layers
 
+### 3.3 Form Request Best Practices
+
+* **Always use `$this->validated('field')` instead of `$this->input('field')`** to access request data
+* Create **getter methods** for all validated fields with explicit return types
+* Getter methods provide type safety and IDE autocomplete
+* Use `?string` for nullable fields, `string` for required fields
+
+**Example:**
+
+```php
+final class RegisterWithCompanyRequest extends FormRequest
+{
+    public function rules(): array
+    {
+        return [
+            'first_name' => 'required|string|max:100',
+            'last_name' => 'required|string|max:100',
+            'email' => 'required|email|unique:users',
+            'company_phone' => 'nullable|string|max:20',
+        ];
+    }
+
+    public function getFirstName(): string
+    {
+        return $this->validated('first_name');
+    }
+
+    public function getLastName(): string
+    {
+        return $this->validated('last_name');
+    }
+
+    public function getEmail(): string
+    {
+        return $this->validated('email');
+    }
+
+    public function getCompanyPhone(): ?string
+    {
+        return $this->validated('company_phone');
+    }
+}
+
+// ✅ Good - using getter methods
+$firstName = $request->getFirstName();
+$phone = $request->getCompanyPhone();
+
+// ❌ Bad - using input() or array access
+$firstName = $request->input('first_name');
+$firstName = $request->validated()['first_name'];
+```
+
 ## 4. Actions & Services (Business Logic Layer)
 
 ### 4.1 Actions

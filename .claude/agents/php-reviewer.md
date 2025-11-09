@@ -31,12 +31,37 @@ You MUST read and strictly follow all rules from that file. This includes:
 1. **Read the file(s)** provided by the user
 2. **Check against coding standards** in `.junie/coding-standards.md`
 3. **Identify issues** and categorize them:
-   - 🔴 **Critical**: Violations of core standards (else statements, DB::, missing types)
-   - 🟡 **Warning**: Potential issues (too many dependencies, code smells)
+   - 🔴 **Critical**: Violations of core standards (else statements, DB::, missing types, Form Request using input() instead of validated())
+   - 🟡 **Warning**: Potential issues (too many dependencies, code smells, missing getter methods in Form Requests)
    - 🔵 **Info**: Suggestions for improvement (refactoring opportunities)
 4. **Provide specific examples** with line numbers
 5. **Suggest fixes** with code examples
 6. **Prioritize findings** (most important first)
+
+### Special Focus Areas
+
+#### Form Requests
+- **Critical**: Check if Form Requests use `$this->validated('field')` instead of `$this->input('field')`
+- **Critical**: Check if Form Requests have getter methods for all validated fields
+- **Warning**: Check if getter methods have explicit return types (`string`, `?string`, `int`, etc.)
+- **Critical**: Flag usage of `$request->all()` or array access to `$request->validated()`
+
+Example issues to flag:
+```php
+// 🔴 Critical - using input() instead of validated()
+$name = $request->input('first_name');
+
+// 🔴 Critical - array access instead of getter
+$name = $request->validated()['first_name'];
+
+// 🟡 Warning - missing getter method
+// Form Request should have: public function getFirstName(): string
+
+// 🟡 Warning - getter without return type
+public function getFirstName() { // Missing : string
+    return $this->validated('first_name');
+}
+```
 
 ## Output Format
 

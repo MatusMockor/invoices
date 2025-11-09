@@ -23,7 +23,8 @@ final class RegistrationWithWhitelistTest extends TestCase
         $password = fake()->password(minLength: 8);
 
         $response = $this->post(route('register'), [
-            'name' => fake()->name(),
+            'first_name' => fake()->firstName(),
+            'last_name' => fake()->lastName(),
             'email' => $email,
             'password' => $password,
             'password_confirmation' => $password,
@@ -42,7 +43,8 @@ final class RegistrationWithWhitelistTest extends TestCase
         $password = fake()->password(minLength: 8);
 
         $response = $this->post(route('register'), [
-            'name' => fake()->name(),
+            'first_name' => fake()->firstName(),
+            'last_name' => fake()->lastName(),
             'email' => $email,
             'password' => $password,
             'password_confirmation' => $password,
@@ -61,7 +63,8 @@ final class RegistrationWithWhitelistTest extends TestCase
         $password = fake()->password(minLength: 8);
 
         $response = $this->post(route('register'), [
-            'name' => fake()->name(),
+            'first_name' => fake()->firstName(),
+            'last_name' => fake()->lastName(),
             'email' => $email,
             'password' => $password,
             'password_confirmation' => $password,
@@ -80,7 +83,8 @@ final class RegistrationWithWhitelistTest extends TestCase
         $password = fake()->password(minLength: 8);
 
         $response = $this->post(route('register'), [
-            'name' => fake()->name(),
+            'first_name' => fake()->firstName(),
+            'last_name' => fake()->lastName(),
             'email' => $email,
             'password' => $password,
             'password_confirmation' => $password,
@@ -104,7 +108,8 @@ final class RegistrationWithWhitelistTest extends TestCase
         $password = fake()->password(minLength: 8);
 
         $response = $this->post(route('register'), [
-            'name' => fake()->name(),
+            'first_name' => fake()->firstName(),
+            'last_name' => fake()->lastName(),
             'email' => $email,
             'password' => $password,
             'password_confirmation' => $password,
@@ -128,7 +133,8 @@ final class RegistrationWithWhitelistTest extends TestCase
 
         // Test first email
         $response1 = $this->post(route('register'), [
-            'name' => fake()->name(),
+            'first_name' => fake()->firstName(),
+            'last_name' => fake()->lastName(),
             'email' => $email1,
             'password' => $password1,
             'password_confirmation' => $password1,
@@ -144,7 +150,8 @@ final class RegistrationWithWhitelistTest extends TestCase
 
         // Test second email
         $response2 = $this->post(route('register'), [
-            'name' => fake()->name(),
+            'first_name' => fake()->firstName(),
+            'last_name' => fake()->lastName(),
             'email' => $email2,
             'password' => $password2,
             'password_confirmation' => $password2,
