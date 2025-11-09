@@ -27,23 +27,23 @@ class TripFactory extends Factory
      */
     public function definition(): array
     {
-        $startOdometer = $this->faker->numberBetween(10000, 100000);
-        $endOdometer = $startOdometer + $this->faker->numberBetween(10, 500);
+        $startOdometer = fake()->numberBetween(10000, 100000);
+        $endOdometer = $startOdometer + fake()->numberBetween(10, 500);
         $distance = $endOdometer - $startOdometer;
 
         return [
             'vehicle_id' => Vehicle::factory(),
-            'date' => $this->faker->dateTimeBetween('-1 year', 'now'),
-            'start_location' => $this->faker->city,
-            'end_location' => $this->faker->city,
-            'purpose' => $this->faker->sentence(4),
+            'date' => fake()->dateTimeBetween('-1 year', 'now'),
+            'start_location' => fake()->city(),
+            'end_location' => fake()->city(),
+            'purpose' => fake()->sentence(4),
             'start_odometer' => $startOdometer,
             'end_odometer' => $endOdometer,
             'distance' => $distance,
-            'driver_name' => $this->faker->name,
-            'fuel_amount' => $this->faker->optional(0.7)->randomFloat(2, 10, 100),
-            'fuel_cost' => $this->faker->optional(0.7)->randomFloat(2, 20, 200),
-            'fuel_receipt_number' => $this->faker->optional(0.5)->bothify('REC-####-????'),
+            'driver_name' => fake()->name(),
+            'fuel_amount' => fake()->optional(0.7)->randomFloat(2, 10, 100),
+            'fuel_cost' => fake()->optional(0.7)->randomFloat(2, 20, 200),
+            'fuel_receipt_number' => fake()->optional(0.5)->bothify('REC-####-????'),
         ];
     }
 
@@ -52,7 +52,7 @@ class TripFactory extends Factory
      */
     public function forVehicle(Vehicle $vehicle): self
     {
-        return $this->state(function (array $attributes) use ($vehicle) {
+        return $this->state(function (array $attributes) use ($vehicle): array {
             return [
                 'vehicle_id' => $vehicle->id,
             ];
@@ -64,13 +64,11 @@ class TripFactory extends Factory
      */
     public function withFuel(): self
     {
-        return $this->state(function (array $attributes) {
-            return [
-                'fuel_amount' => $this->faker->randomFloat(2, 10, 100),
-                'fuel_cost' => $this->faker->randomFloat(2, 20, 200),
-                'fuel_receipt_number' => $this->faker->bothify('REC-####-????'),
-            ];
-        });
+        return $this->state(fn (array $attributes): array => [
+            'fuel_amount' => fake()->randomFloat(2, 10, 100),
+            'fuel_cost' => fake()->randomFloat(2, 20, 200),
+            'fuel_receipt_number' => fake()->bothify('REC-####-????'),
+        ]);
     }
 
     /**
@@ -78,12 +76,10 @@ class TripFactory extends Factory
      */
     public function withoutFuel(): self
     {
-        return $this->state(function (array $attributes) {
-            return [
-                'fuel_amount' => null,
-                'fuel_cost' => null,
-                'fuel_receipt_number' => null,
-            ];
-        });
+        return $this->state(fn (array $attributes): array => [
+            'fuel_amount' => null,
+            'fuel_cost' => null,
+            'fuel_receipt_number' => null,
+        ]);
     }
 }

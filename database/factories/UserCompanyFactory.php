@@ -30,21 +30,21 @@ class UserCompanyFactory extends Factory
 
         return [
             'user_id' => \App\Models\User::factory(),
-            'name' => $this->faker->company(),
-            'ico' => $this->faker->unique()->numerify('########'),
-            'street' => $this->faker->streetAddress(),
-            'city' => $this->faker->city(),
-            'postal_code' => $this->faker->postcode(),
-            'country' => $this->faker->country(),
-            'dic' => $this->faker->numerify('##########'),
-            'ic_dph' => 'SK'.$this->faker->numerify('##########'),
-            'iban' => $this->faker->iban('SK'),
-            'swift' => $this->faker->swiftBicNumber(),
-            'phone' => $this->faker->phoneNumber(),
-            'email' => $this->faker->companyEmail(),
-            'website' => $this->faker->url(),
-            'company_type' => $this->faker->randomElement($companyTypes),
-            'registration_number' => 'OR '.$this->faker->randomElement(['Bratislava I', 'Košice', 'Žilina', 'Prešov', 'Banská Bystrica']).', Oddiel: '.$this->faker->randomElement(['Sro', 'Sa']).', Vložka č. '.$this->faker->numerify('######'),
+            'name' => fake()->company(),
+            'ico' => fake()->unique()->numerify('########'),
+            'street' => fake()->streetAddress(),
+            'city' => fake()->city(),
+            'postal_code' => fake()->numerify('#####'),
+            'country' => 'Slovakia',
+            'dic' => fake()->numerify('##########'),
+            'ic_dph' => 'SK'.fake()->numerify('##########'),
+            'iban' => fake()->iban('SK'),
+            'swift' => fake()->swiftBicNumber(),
+            'phone' => fake()->phoneNumber(),
+            'email' => fake()->companyEmail(),
+            'website' => fake()->url(),
+            'company_type' => fake()->randomElement($companyTypes),
+            'registration_number' => 'OR '.fake()->randomElement(['Bratislava I', 'Košice', 'Žilina', 'Prešov', 'Banská Bystrica']).', Oddiel: '.fake()->randomElement(['Sro', 'Sa']).', Vložka č. '.fake()->numerify('######'),
         ];
     }
 
@@ -53,20 +53,18 @@ class UserCompanyFactory extends Factory
      */
     public function slovak(): Factory
     {
-        return $this->state(function (array $attributes) {
-            return [
-                'country' => 'Slovakia',
-                'postal_code' => $this->faker->numerify('#####'), // Slovak postal code format
-            ];
-        });
+        return $this->state(fn (array $attributes): array => [
+            'country' => 'Slovakia',
+            'postal_code' => fake()->numerify('#####'),
+        ]);
     }
 
     /**
      * Indicate the user that owns the company.
      */
-    public function forUser($user): Factory
+    public function forUser(\App\Models\User $user): Factory
     {
-        return $this->state(function (array $attributes) use ($user) {
+        return $this->state(function (array $attributes) use ($user): array {
             return [
                 'user_id' => $user->id,
             ];

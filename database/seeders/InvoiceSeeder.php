@@ -19,37 +19,33 @@ class InvoiceSeeder extends Seeder
      */
     public function run(): void
     {
-        // Get the test user
         $testUser = User::where('email', 'test@example.com')->first();
 
         if (! $testUser) {
             return;
         }
 
-        // Get the user's company (supplier)
         $userCompany = $testUser->currentCompany;
 
         if (! $userCompany) {
             return;
         }
 
-        // Create some external companies (customers)
         $externalCompanies = Company::factory(3)->create();
 
-        // Create invoices with different statuses
         $this->createDraftInvoice($testUser, $userCompany, $externalCompanies->first());
         $this->createSentInvoice($testUser, $userCompany, $externalCompanies->skip(1)->first() ?? $externalCompanies->first());
         $this->createPaidInvoice($testUser, $userCompany, $externalCompanies->skip(2)->first() ?? $externalCompanies->first());
         $this->createCustomCompanyInvoice($testUser, $userCompany);
 
-        // Create some random invoices with items
         Invoice::factory(5)
             ->has(InvoiceItem::factory()->count(3), 'items')
             ->create();
     }
 
     /**
-     * Create a draft invoice with items
+     * Create a draft invoice with items.
+     * Scenario: Draft invoice with standard services for a client.
      */
     private function createDraftInvoice(User $user, UserCompany $userCompany, Company $company): void
     {
@@ -72,7 +68,6 @@ class InvoiceSeeder extends Seeder
             'total_amount' => 0, // Will be calculated from items
         ]);
 
-        // Create invoice items
         $items = [
             [
                 'description' => 'Web Development Services',
@@ -86,27 +81,12 @@ class InvoiceSeeder extends Seeder
             ],
         ];
 
-        $totalAmount = 0;
-
-        foreach ($items as $item) {
-            $totalPrice = $item['quantity'] * $item['unit_price'];
-            $totalAmount += $totalPrice;
-
-            InvoiceItem::factory()->create([
-                'invoice_id' => $invoice->id,
-                'description' => $item['description'],
-                'quantity' => $item['quantity'],
-                'unit_price' => $item['unit_price'],
-                'total_price' => $totalPrice,
-            ]);
-        }
-
-        // Update the invoice total
-        $invoice->update(['total_amount' => $totalAmount]);
+        $this->createInvoiceItems($invoice, $items);
     }
 
     /**
-     * Create a sent invoice with items
+     * Create a sent invoice with items.
+     * Scenario: Sent invoice with recurring hosting and domain services.
      */
     private function createSentInvoice(User $user, UserCompany $userCompany, Company $company): void
     {
@@ -129,7 +109,6 @@ class InvoiceSeeder extends Seeder
             'total_amount' => 0, // Will be calculated from items
         ]);
 
-        // Create invoice items
         $items = [
             [
                 'description' => 'Monthly Hosting Services',
@@ -148,27 +127,12 @@ class InvoiceSeeder extends Seeder
             ],
         ];
 
-        $totalAmount = 0;
-
-        foreach ($items as $item) {
-            $totalPrice = $item['quantity'] * $item['unit_price'];
-            $totalAmount += $totalPrice;
-
-            InvoiceItem::factory()->create([
-                'invoice_id' => $invoice->id,
-                'description' => $item['description'],
-                'quantity' => $item['quantity'],
-                'unit_price' => $item['unit_price'],
-                'total_price' => $totalPrice,
-            ]);
-        }
-
-        // Update the invoice total
-        $invoice->update(['total_amount' => $totalAmount]);
+        $this->createInvoiceItems($invoice, $items);
     }
 
     /**
-     * Create a paid invoice with items
+     * Create a paid invoice with items.
+     * Scenario: Paid invoice with consultation and project management services.
      */
     private function createPaidInvoice(User $user, UserCompany $userCompany, Company $company): void
     {
@@ -191,7 +155,6 @@ class InvoiceSeeder extends Seeder
             'total_amount' => 0, // Will be calculated from items
         ]);
 
-        // Create invoice items
         $items = [
             [
                 'description' => 'Software Development Consultation',
@@ -205,27 +168,12 @@ class InvoiceSeeder extends Seeder
             ],
         ];
 
-        $totalAmount = 0;
-
-        foreach ($items as $item) {
-            $totalPrice = $item['quantity'] * $item['unit_price'];
-            $totalAmount += $totalPrice;
-
-            InvoiceItem::factory()->create([
-                'invoice_id' => $invoice->id,
-                'description' => $item['description'],
-                'quantity' => $item['quantity'],
-                'unit_price' => $item['unit_price'],
-                'total_price' => $totalPrice,
-            ]);
-        }
-
-        // Update the invoice total
-        $invoice->update(['total_amount' => $totalAmount]);
+        $this->createInvoiceItems($invoice, $items);
     }
 
     /**
-     * Create an invoice with custom company data (not linked to companies table)
+     * Create an invoice with custom company data (not linked to companies table).
+     * Scenario: Invoice with manually entered client company details.
      */
     private function createCustomCompanyInvoice(User $user, UserCompany $userCompany): void
     {
@@ -247,7 +195,6 @@ class InvoiceSeeder extends Seeder
             'company_country' => 'Slovakia',
         ]);
 
-        // Create invoice items
         $items = [
             [
                 'description' => 'Custom Company Service',
@@ -261,6 +208,16 @@ class InvoiceSeeder extends Seeder
             ],
         ];
 
+        $this->createInvoiceItems($invoice, $items);
+    }
+
+    /**
+     * Create invoice items and update invoice total.
+     *
+     * @param  array<int, array{description: string, quantity: int|float, unit_price: float}>  $items
+     */
+    private function createInvoiceItems(Invoice $invoice, array $items): void
+    {
         $totalAmount = 0;
 
         foreach ($items as $item) {
@@ -276,7 +233,6 @@ class InvoiceSeeder extends Seeder
             ]);
         }
 
-        // Update the invoice total
         $invoice->update(['total_amount' => $totalAmount]);
     }
 }
