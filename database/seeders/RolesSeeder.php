@@ -13,7 +13,6 @@ class RolesSeeder extends Seeder
 {
     public function run(): void
     {
-        // Ensure roles exist
         foreach (Roles::values() as $roleName) {
             Role::firstOrCreate([
                 'name' => $roleName,
@@ -21,10 +20,12 @@ class RolesSeeder extends Seeder
             ]);
         }
 
-        // Optionally assign the 'admin' role to the first (test) user if exists
         $user = User::first();
-        if ($user) {
-            $user->assignRole(Roles::ADMIN->value);
+
+        if (! $user) {
+            return;
         }
+
+        $user->assignRole(Roles::ADMIN->value);
     }
 }

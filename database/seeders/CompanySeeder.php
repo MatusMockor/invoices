@@ -15,10 +15,8 @@ class CompanySeeder extends Seeder
      */
     public function run(): void
     {
-        // Create some business entities with Slovak data
         UserCompany::factory(3)->slovak()->create();
 
-        // Create a specific business entity with known data
         UserCompany::factory()->create([
             'name' => 'ABC Corporation',
             'ico' => '87654321',
@@ -30,27 +28,25 @@ class CompanySeeder extends Seeder
             'country' => 'Slovakia',
         ]);
 
-        // Create some random business entities
         UserCompany::factory(5)->create();
 
-        // Add user companies to business entities
         $companies = Company::all();
+
         foreach ($companies as $company) {
-            // Check if a business entity with the same ICO already exists
-            $existingEntity = UserCompany::where('ico', $company->ico)->first();
-            if (! $existingEntity) {
-                // Create a new business entity from the company data
-                UserCompany::create([
-                    'name' => $company->name,
-                    'ico' => $company->ico,
-                    'dic' => $company->dic,
-                    'ic_dph' => $company->ic_dph,
-                    'street' => $company->street,
-                    'city' => $company->city,
-                    'postal_code' => $company->postal_code,
-                    'country' => $company->country,
-                ]);
+            if (UserCompany::where('ico', $company->ico)->exists()) {
+                continue;
             }
+
+            UserCompany::create([
+                'name' => $company->name,
+                'ico' => $company->ico,
+                'dic' => $company->dic,
+                'ic_dph' => $company->ic_dph,
+                'street' => $company->street,
+                'city' => $company->city,
+                'postal_code' => $company->postal_code,
+                'country' => $company->country,
+            ]);
         }
     }
 }

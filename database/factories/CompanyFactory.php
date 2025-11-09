@@ -27,14 +27,14 @@ class CompanyFactory extends Factory
     public function definition(): array
     {
         return [
-            'name' => $this->faker->company(),
-            'ico' => $this->faker->unique()->numerify('########'),
-            'street' => $this->faker->streetAddress(),
-            'city' => $this->faker->city(),
-            'postal_code' => $this->faker->postcode(),
-            'country' => $this->faker->country(),
-            'dic' => $this->faker->numerify('##########'),
-            'ic_dph' => 'SK'.$this->faker->numerify('##########'),
+            'name' => fake()->company(),
+            'ico' => fake()->unique()->numerify('########'),
+            'street' => fake()->streetAddress(),
+            'city' => fake()->city(),
+            'postal_code' => fake()->numerify('#####'),
+            'country' => 'Slovakia',
+            'dic' => fake()->numerify('##########'),
+            'ic_dph' => 'SK'.fake()->numerify('##########'),
         ];
     }
 
@@ -43,11 +43,9 @@ class CompanyFactory extends Factory
      */
     public function slovak(): Factory
     {
-        return $this->state(function (array $attributes) {
-            return [
-                'country' => 'Slovakia',
-                'postal_code' => $this->faker->numerify('#####'), // Slovak postal code format
-            ];
-        });
+        return $this->state(fn (array $attributes): array => [
+            'country' => 'Slovakia',
+            'postal_code' => fake()->numerify('#####'),
+        ]);
     }
 }

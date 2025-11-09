@@ -29,8 +29,8 @@ class VehicleFactory extends Factory
     {
         return [
             'company_id' => Company::factory(),
-            'type' => $this->faker->randomElement(['Car', 'Van', 'Truck', 'Motorcycle']),
-            'license_plate' => strtoupper($this->faker->bothify('??###??')),
+            'type' => fake()->randomElement(['Car', 'Van', 'Truck', 'Motorcycle']),
+            'license_plate' => strtoupper(fake()->bothify('??###??')),
         ];
     }
 
@@ -39,7 +39,7 @@ class VehicleFactory extends Factory
      */
     public function forCompany(Company $company): self
     {
-        return $this->state(function (array $attributes) use ($company) {
+        return $this->state(function (array $attributes) use ($company): array {
             return [
                 'company_id' => $company->id,
             ];

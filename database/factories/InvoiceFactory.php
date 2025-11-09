@@ -39,31 +39,53 @@ class InvoiceFactory extends Factory
         $year = 2025;
         $invoiceNumber = $year.str_pad((string) self::$invoiceCounter++, 4, '0', STR_PAD_LEFT);
 
-        // Create company first so we can copy its data
-        $company = Company::factory()->create();
-
         return [
             'user_id' => User::factory(),
             'invoice_number' => $invoiceNumber,
-            'issue_date' => $this->faker->dateTimeBetween('-30 days', 'now'),
-            'due_date' => $this->faker->dateTimeBetween('now', '+30 days'),
-            'delivery_date' => $this->faker->dateTimeBetween('-15 days', '+15 days'),
-            'company_id' => $company->id,
+            'issue_date' => fake()->dateTimeBetween('-30 days', 'now'),
+            'due_date' => fake()->dateTimeBetween('now', '+30 days'),
+            'delivery_date' => fake()->dateTimeBetween('-15 days', '+15 days'),
+            'company_id' => Company::factory(),
             'supplier_company_id' => UserCompany::factory(),
-            'company_ico' => $company->ico,
-            'company_dic' => $company->dic,
-            'company_ic_dph' => $company->ic_dph,
-            'company_name' => $company->name,
-            'company_address' => $company->street,
-            'company_city' => $company->city,
-            'company_zip' => $company->postal_code,
-            'company_country' => $company->country,
-            'total_amount' => $this->faker->randomFloat(2, 100, 10000),
+            'company_ico' => null,
+            'company_dic' => null,
+            'company_ic_dph' => null,
+            'company_name' => null,
+            'company_address' => null,
+            'company_city' => null,
+            'company_zip' => null,
+            'company_country' => null,
+            'total_amount' => fake()->randomFloat(2, 100, 10000),
             'currency' => 'EUR',
-            'constant_symbol' => $this->faker->optional(0.7)->numerify('####'),
-            'note' => $this->faker->optional(0.7)->sentence(),
-            'status' => $this->faker->randomElement(['draft', 'sent', 'paid', 'cancelled']),
+            'constant_symbol' => fake()->optional(0.7)->numerify('####'),
+            'note' => fake()->optional(0.7)->sentence(),
+            'status' => fake()->randomElement(['draft', 'sent', 'paid', 'cancelled']),
         ];
+    }
+
+    /**
+     * Configure the factory to copy company data after creation.
+     */
+    public function configure(): Factory
+    {
+        return $this->afterCreating(static function (Invoice $invoice): void {
+            if ($invoice->company_id && ! $invoice->company_name) {
+                $company = Company::find($invoice->company_id);
+
+                if ($company) {
+                    $invoice->update([
+                        'company_ico' => $company->ico,
+                        'company_dic' => $company->dic,
+                        'company_ic_dph' => $company->ic_dph,
+                        'company_name' => $company->name,
+                        'company_address' => $company->street,
+                        'company_city' => $company->city,
+                        'company_zip' => $company->postal_code,
+                        'company_country' => $company->country,
+                    ]);
+                }
+            }
+        });
     }
 
     /**
@@ -71,11 +93,9 @@ class InvoiceFactory extends Factory
      */
     public function draft(): Factory
     {
-        return $this->state(function (array $attributes) {
-            return [
-                'status' => 'draft',
-            ];
-        });
+        return $this->state(fn (array $attributes): array => [
+            'status' => 'draft',
+        ]);
     }
 
     /**
@@ -83,11 +103,9 @@ class InvoiceFactory extends Factory
      */
     public function sent(): Factory
     {
-        return $this->state(function (array $attributes) {
-            return [
-                'status' => 'sent',
-            ];
-        });
+        return $this->state(fn (array $attributes): array => [
+            'status' => 'sent',
+        ]);
     }
 
     /**
@@ -95,11 +113,9 @@ class InvoiceFactory extends Factory
      */
     public function paid(): Factory
     {
-        return $this->state(function (array $attributes) {
-            return [
-                'status' => 'paid',
-            ];
-        });
+        return $this->state(fn (array $attributes): array => [
+            'status' => 'paid',
+        ]);
     }
 
     /**
@@ -107,11 +123,9 @@ class InvoiceFactory extends Factory
      */
     public function cancelled(): Factory
     {
-        return $this->state(function (array $attributes) {
-            return [
-                'status' => 'cancelled',
-            ];
-        });
+        return $this->state(fn (array $attributes): array => [
+            'status' => 'cancelled',
+        ]);
     }
 
     /**
@@ -119,18 +133,16 @@ class InvoiceFactory extends Factory
      */
     public function withCustomCompany(): Factory
     {
-        return $this->state(function (array $attributes) {
-            return [
-                'company_id' => null,
-                'company_ico' => $this->faker->numerify('########'),
-                'company_dic' => $this->faker->numerify('##########'),
-                'company_ic_dph' => $this->faker->optional(0.8)->regexify('SK[0-9]{10}'),
-                'company_name' => $this->faker->company(),
-                'company_address' => $this->faker->streetAddress(),
-                'company_city' => $this->faker->city(),
-                'company_zip' => $this->faker->postcode(),
-                'company_country' => $this->faker->country(),
-            ];
-        });
+        return $this->state(fn (array $attributes): array => [
+            'company_id' => null,
+            'company_ico' => fake()->numerify('########'),
+            'company_dic' => fake()->numerify('##########'),
+            'company_ic_dph' => fake()->optional(0.8)->regexify('SK[0-9]{10}'),
+            'company_name' => fake()->company(),
+            'company_address' => fake()->streetAddress(),
+            'company_city' => fake()->city(),
+            'company_zip' => fake()->postcode(),
+            'company_country' => fake()->country(),
+        ]);
     }
 }
