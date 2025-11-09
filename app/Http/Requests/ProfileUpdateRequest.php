@@ -8,7 +8,7 @@ use App\Models\User;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Validation\Rule;
 
-class ProfileUpdateRequest extends FormRequest
+final class ProfileUpdateRequest extends FormRequest
 {
     /**
      * Get the validation rules that apply to the request.
@@ -29,5 +29,20 @@ class ProfileUpdateRequest extends FormRequest
                 Rule::unique(User::class)->ignore($this->user()->id),
             ],
         ];
+    }
+
+    public function getFirstName(): string
+    {
+        return $this->validated('first_name');
+    }
+
+    public function getLastName(): string
+    {
+        return $this->validated('last_name');
+    }
+
+    public function getEmail(): string
+    {
+        return $this->validated('email');
     }
 }

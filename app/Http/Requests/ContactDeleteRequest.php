@@ -6,7 +6,7 @@ namespace App\Http\Requests;
 
 use Illuminate\Foundation\Http\FormRequest;
 
-class ContactDeleteRequest extends FormRequest
+final class ContactDeleteRequest extends FormRequest
 {
     public function authorize(): bool
     {
@@ -30,5 +30,10 @@ class ContactDeleteRequest extends FormRequest
             'contact_ids.*.integer' => 'Each contact ID must be an integer.',
             'contact_ids.*.exists' => 'One or more contact IDs do not exist.',
         ];
+    }
+
+    public function getContactIds(): array
+    {
+        return $this->validated('contact_ids');
     }
 }

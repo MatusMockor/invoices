@@ -6,7 +6,7 @@ namespace App\Http\Requests\Companies;
 
 use Illuminate\Foundation\Http\FormRequest;
 
-class UpdateCompanyRequest extends FormRequest
+final class UpdateCompanyRequest extends FormRequest
 {
     /**
      * Determine if the user is authorized to make this request.
@@ -33,5 +33,45 @@ class UpdateCompanyRequest extends FormRequest
             'dic' => 'nullable|string|max:255',
             'ic_dph' => 'nullable|string|max:255',
         ];
+    }
+
+    public function getName(): string
+    {
+        return $this->validated('name');
+    }
+
+    public function getStreet(): ?string
+    {
+        return $this->validated('street');
+    }
+
+    public function getCity(): ?string
+    {
+        return $this->validated('city');
+    }
+
+    public function getPostalCode(): ?string
+    {
+        return $this->validated('postal_code');
+    }
+
+    public function getCountry(): ?string
+    {
+        return $this->validated('country');
+    }
+
+    public function getIco(): string
+    {
+        return $this->validated('ico');
+    }
+
+    public function getDic(): ?string
+    {
+        return $this->validated('dic');
+    }
+
+    public function getIcDph(): ?string
+    {
+        return $this->validated('ic_dph');
     }
 }

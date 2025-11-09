@@ -29,4 +29,9 @@ final class UpdateUserSettingRequest extends FormRequest
             'invoice_template' => ['required', new Enum(InvoiceTemplate::class)],
         ];
     }
+
+    public function getInvoiceTemplate(): string
+    {
+        return $this->validated('invoice_template');
+    }
 }

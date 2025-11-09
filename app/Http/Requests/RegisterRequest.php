@@ -24,13 +24,33 @@ final class RegisterRequest extends FormRequest
         ];
     }
 
+    public function getFirstName(): string
+    {
+        return $this->validated('first_name');
+    }
+
+    public function getLastName(): string
+    {
+        return $this->validated('last_name');
+    }
+
+    public function getEmail(): string
+    {
+        return $this->validated('email');
+    }
+
+    public function getPassword(): string
+    {
+        return $this->validated('password');
+    }
+
     public function getData(): array
     {
         return [
-            'first_name' => $this->input('first_name'),
-            'last_name' => $this->input('last_name'),
-            'email' => $this->input('email'),
-            'password' => $this->input('password'),
+            'first_name' => $this->getFirstName(),
+            'last_name' => $this->getLastName(),
+            'email' => $this->getEmail(),
+            'password' => $this->getPassword(),
         ];
     }
 }

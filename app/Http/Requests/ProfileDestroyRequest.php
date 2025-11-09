@@ -6,7 +6,7 @@ namespace App\Http\Requests;
 
 use Illuminate\Foundation\Http\FormRequest;
 
-class ProfileDestroyRequest extends FormRequest
+final class ProfileDestroyRequest extends FormRequest
 {
     public function authorize(): bool
     {
@@ -18,5 +18,10 @@ class ProfileDestroyRequest extends FormRequest
         return [
             'password' => ['required', 'current_password'],
         ];
+    }
+
+    public function getPassword(): string
+    {
+        return $this->validated('password');
     }
 }

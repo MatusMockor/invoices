@@ -11,7 +11,7 @@ use Illuminate\Support\Facades\RateLimiter;
 use Illuminate\Support\Str;
 use Illuminate\Validation\ValidationException;
 
-class LoginRequest extends FormRequest
+final class LoginRequest extends FormRequest
 {
     /**
      * Determine if the user is authorized to make this request.
@@ -83,5 +83,20 @@ class LoginRequest extends FormRequest
     public function throttleKey(): string
     {
         return Str::transliterate(Str::lower($this->string('email')).'|'.$this->ip());
+    }
+
+    public function getEmail(): string
+    {
+        return $this->validated('email');
+    }
+
+    public function getPassword(): string
+    {
+        return $this->validated('password');
+    }
+
+    public function getRemember(): bool
+    {
+        return $this->boolean('remember');
     }
 }

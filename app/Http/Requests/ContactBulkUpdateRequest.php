@@ -6,7 +6,7 @@ namespace App\Http\Requests;
 
 use Illuminate\Foundation\Http\FormRequest;
 
-class ContactBulkUpdateRequest extends FormRequest
+final class ContactBulkUpdateRequest extends FormRequest
 {
     public function authorize(): bool
     {
@@ -38,5 +38,25 @@ class ContactBulkUpdateRequest extends FormRequest
             'data.job_title.max' => 'Job title cannot exceed 255 characters.',
             'data.is_active.boolean' => 'Active status must be a boolean.',
         ];
+    }
+
+    public function getContactIds(): array
+    {
+        return $this->validated('contact_ids');
+    }
+
+    public function getData(): array
+    {
+        return $this->validated('data');
+    }
+
+    public function getJobTitle(): ?string
+    {
+        return $this->validated('data.job_title');
+    }
+
+    public function getIsActive(): ?bool
+    {
+        return $this->validated('data.is_active');
     }
 }

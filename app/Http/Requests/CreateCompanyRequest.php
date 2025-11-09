@@ -28,36 +28,36 @@ final class CreateCompanyRequest extends FormRequest
 
     public function getIco(): string
     {
-        return $this->input('ico');
+        return $this->validated('ico');
     }
 
     public function getName(): string
     {
-        return $this->input('name');
+        return $this->validated('name');
     }
 
     public function getStreet(): string
     {
-        return $this->input('street');
+        return $this->validated('street');
     }
 
     public function getCity(): string
     {
-        return $this->input('city');
+        return $this->validated('city');
     }
 
     public function getPostalCode(): string
     {
-        return $this->input('postal_code');
+        return $this->validated('postal_code');
     }
 
     public function getDic(): ?string
     {
-        return $this->input('dic');
+        return $this->validated('dic');
     }
 
     public function getIcDph(): ?string
     {
-        return $this->input('ic_dph');
+        return $this->validated('ic_dph');
     }
 }
