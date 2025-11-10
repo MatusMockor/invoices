@@ -88,5 +88,10 @@ export const invoiceService = {
     const response = await api.get('/invoices/latest-number');
     return response.data;
   },
+
+  async updateStatus(id: number, status: string): Promise<ApiResponse<Invoice>> {
+    const response = await api.patch(`/invoices/${id}/status`, { status });
+    return response.data;
+  },
 };
 

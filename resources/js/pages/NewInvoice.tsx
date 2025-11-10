@@ -16,8 +16,10 @@ import { InvoiceDateSection } from "@/components/invoices/InvoiceDateSection";
 import { PaymentSymbolsSection } from "@/components/invoices/PaymentSymbolsSection";
 import { InvoiceNumberSection } from "@/components/invoices/InvoiceNumberSection";
 import { InvoiceItemsSection } from "@/components/invoices/InvoiceItemsSection";
+import { InvoiceStatusDropdown } from "@/components/invoices/InvoiceStatusDropdown";
 import type { InvoiceFormData } from "@/components/invoices/ClientInformationSection";
 import { Company } from "@/types/company";
+import { useQueryClient } from "@tanstack/react-query";
 
 const invoiceSchema = z.object({
   invoiceNumber: z.string().trim().min(1, "Číslo faktúry je povinné"),
@@ -113,6 +115,7 @@ const NewInvoice = () => {
   const navigate = useNavigate();
   const { id } = useParams();
   const { toast } = useToast();
+  const queryClient = useQueryClient();
   const [issueDate, setIssueDate] = useState<Date>(new Date());
   const [deliveryDate, setDeliveryDate] = useState<Date>(new Date());
   const [dueDateDays, setDueDateDays] = useState(15);
@@ -482,6 +485,14 @@ const NewInvoice = () => {
     setValue("clientIcDph", "");
   }, [setValue]);
 
+  const handleStatusChange = useCallback(() => {
+    // Invalidate invoice query to refresh data
+    if (id) {
+      queryClient.invalidateQueries({ queryKey: ['invoice', Number(id)] });
+      queryClient.invalidateQueries({ queryKey: ['invoices'] });
+    }
+  }, [id, queryClient]);
+
   // Show loading state when fetching invoice data in edit mode
   if (isEditMode && isLoadingInvoice) {
     return (
@@ -507,8 +518,22 @@ const NewInvoice = () => {
             <ArrowLeft className="h-4 w-4 mr-2" />
             Späť na dashboard
           </Button>
-          <h1 className="text-3xl font-bold text-foreground">{isEditMode ? "Upraviť faktúru" : "Nová faktúra"}</h1>
-          <p className="text-muted-foreground mt-1">{isEditMode ? "Upravte existujúcu faktúru" : "Vytvorte novú faktúru pre vášho klienta"}</p>
+          <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+            <div>
+              <h1 className="text-3xl font-bold text-foreground">{isEditMode ? "Upraviť faktúru" : "Nová faktúra"}</h1>
+              <p className="text-muted-foreground mt-1">{isEditMode ? "Upravte existujúcu faktúru" : "Vytvorte novú faktúru pre vášho klienta"}</p>
+            </div>
+            {isEditMode && invoice && (
+              <div className="flex items-center gap-2">
+                <span className="text-sm text-muted-foreground">Stav:</span>
+                <InvoiceStatusDropdown
+                  invoiceId={Number(id)}
+                  currentStatus={invoice.status}
+                  onStatusChange={handleStatusChange}
+                />
+              </div>
+            )}
+          </div>
         </div>
 
         <form onSubmit={handleSubmit(onSubmit)} className="space-y-8">
