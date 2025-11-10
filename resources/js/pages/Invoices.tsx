@@ -13,43 +13,149 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { Badge } from "@/components/ui/badge";
-import { Plus, Search, Eye, Download, MoreVertical, Pencil, Loader2 } from "lucide-react";
+import { Plus, Search, Eye, Download, MoreVertical, Pencil, Loader2, CheckCircle2, Clock, AlertCircle, FileText, XCircle, Send } from "lucide-react";
 import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuTrigger,
+  DropdownMenuSeparator,
+  DropdownMenuLabel,
 } from "@/components/ui/dropdown-menu";
 import { useInvoices } from "@/hooks/useInvoices";
 import type { Invoice } from "@/types";
+import { useToast } from "@/hooks/use-toast";
+import { invoiceService } from "@/services/invoiceService";
+import { useQueryClient } from "@tanstack/react-query";
+import type { LucideIcon } from "lucide-react";
+
+// Type definition for invoice statuses
+type InvoiceStatus = 'draft' | 'sent' | 'paid' | 'overdue' | 'cancelled';
+
+// Centralized status configuration
+interface StatusConfig {
+  label: string;
+  icon: LucideIcon;
+  iconColor: string;
+  badgeClasses: string;
+}
+
+const STATUS_CONFIG: Record<InvoiceStatus, StatusConfig> = {
+  draft: {
+    label: 'Koncept',
+    icon: FileText,
+    iconColor: 'text-gray-600',
+    badgeClasses: 'bg-gray-100 text-gray-700 border-gray-200',
+  },
+  sent: {
+    label: 'Odoslaná',
+    icon: Send,
+    iconColor: 'text-blue-600',
+    badgeClasses: 'bg-blue-100 text-blue-700 border-blue-200',
+  },
+  paid: {
+    label: 'Zaplatená',
+    icon: CheckCircle2,
+    iconColor: 'text-green-600',
+    badgeClasses: 'bg-green-100 text-green-700 border-green-200',
+  },
+  overdue: {
+    label: 'Po splatnosti',
+    icon: AlertCircle,
+    iconColor: 'text-red-600',
+    badgeClasses: 'bg-red-100 text-red-700 border-red-200',
+  },
+  cancelled: {
+    label: 'Zrušená',
+    icon: XCircle,
+    iconColor: 'text-red-600',
+    badgeClasses: 'bg-red-100 text-red-700 border-red-200',
+  },
+};
 
 const Invoices = () => {
   const [searchQuery, setSearchQuery] = useState("");
   const [previewOpen, setPreviewOpen] = useState(false);
   const [selectedInvoice, setSelectedInvoice] = useState<number | null>(null);
+  const [updatingStatus, setUpdatingStatus] = useState<number | null>(null);
 
   const { invoices, isLoading, downloadPdf } = useInvoices();
+  const { toast } = useToast();
+  const queryClient = useQueryClient();
+
+  const handleStatusChange = async (invoiceId: number, newStatus: InvoiceStatus) => {
+    // Confirmation for cancelled status
+    if (newStatus === 'cancelled') {
+      const confirmed = window.confirm(
+        'Naozaj chcete zrušiť túto faktúru? Táto akcia je reverzibilná, status môžete opäť zmeniť.'
+      );
+      if (!confirmed) return;
+    }
+
+    // Store previous data for rollback
+    const previousData = queryClient.getQueryData(['invoices']);
+
+    try {
+      setUpdatingStatus(invoiceId);
+
+      // Optimistically update the UI
+      queryClient.setQueryData(['invoices'], (old: any) => {
+        if (!old?.data) return old;
+        return {
+          ...old,
+          data: old.data.map((inv: Invoice) =>
+            inv.id === invoiceId ? { ...inv, status: newStatus } : inv
+          ),
+        };
+      });
+
+      // Make the API call
+      await invoiceService.updateStatus(invoiceId, newStatus);
+
+      const statusLabel = STATUS_CONFIG[newStatus].label;
+      toast({
+        title: "Status aktualizovaný",
+        description: `Faktúra bola označená ako: ${statusLabel}`,
+      });
+
+      // Revalidate to ensure consistency
+      queryClient.invalidateQueries({ queryKey: ['invoices'] });
+    } catch (error) {
+      // Rollback on error
+      if (previousData) {
+        queryClient.setQueryData(['invoices'], previousData);
+      }
+
+      console.error('Failed to update invoice status:', error);
+
+      // Extract error message if available
+      const errorMessage = error instanceof Error ? error.message : 'Nepodarilo sa zmeniť status faktúry.';
+
+      // Check for specific error types
+      const isNetworkError = error instanceof Error && (error.message.includes('Network') || error.message.includes('network'));
+      const isAuthError = error instanceof Error && error.message.includes('401');
+
+      toast({
+        title: "Chyba pri zmene statusu",
+        description: isNetworkError
+          ? "Problém s pripojením. Skontrolujte internetové pripojenie."
+          : isAuthError
+          ? "Relácia vypršala. Prosím, prihláste sa znova."
+          : errorMessage,
+        variant: "destructive",
+      });
+    } finally {
+      setUpdatingStatus(null);
+    }
+  };
 
   const getStatusBadge = (status: string) => {
-    const variants = {
-      paid: "bg-green-100 text-green-700 border-green-200",
-      sent: "bg-blue-100 text-blue-700 border-blue-200",
-      draft: "bg-gray-100 text-gray-700 border-gray-200",
-      overdue: "bg-red-100 text-red-700 border-red-200",
-      cancelled: "bg-red-100 text-red-700 border-red-200",
-    };
-
-    const labels = {
-      paid: "Zaplatené",
-      sent: "Odoslaná",
-      draft: "Koncept",
-      overdue: "Po splatnosti",
-      cancelled: "Zrušená",
-    };
+    const config = STATUS_CONFIG[status as InvoiceStatus];
+    if (!config) return null;
 
     return (
-      <Badge className={variants[status as keyof typeof variants]}>
-        {labels[status as keyof typeof labels]}
+      <Badge className={config.badgeClasses}>
+        {config.label}
       </Badge>
     );
   };
@@ -62,6 +168,14 @@ const Invoices = () => {
 
   return (
     <DashboardLayout>
+      {/* Screen reader announcements for status updates */}
+      {updatingStatus && (
+        <div role="status" aria-live="polite" aria-atomic="true" className="sr-only">
+          Aktualizuje sa status faktúry číslo{" "}
+          {invoices.find((i) => i.id === updatingStatus)?.invoice_number}
+        </div>
+      )}
+
       <div className="space-y-6 animate-fade-in">
         <div className="flex justify-between items-center">
           <div>
@@ -72,7 +186,7 @@ const Invoices = () => {
           </div>
           <Link to="/app/invoices/new">
             <Button className="bg-purple-600 hover:bg-purple-700">
-              <Plus className="h-4 w-4 mr-2" />
+              <Plus className="h-4 w-4 mr-2" aria-hidden="true" />
               Nová faktúra
             </Button>
           </Link>
@@ -110,12 +224,13 @@ const Invoices = () => {
         <div className="bg-gradient-card rounded-xl p-6 border border-border shadow-elegant-sm">
           <div className="flex gap-4 items-center">
             <div className="relative flex-1">
-              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" aria-hidden="true" />
               <Input
                 placeholder="Hľadať faktúry..."
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
                 className="pl-10"
+                aria-label="Vyhľadať faktúry podľa čísla alebo klienta"
               />
             </div>
           </div>
@@ -162,30 +277,84 @@ const Invoices = () => {
                     <TableCell className="text-right">
                       <DropdownMenu>
                         <DropdownMenuTrigger asChild>
-                          <Button variant="ghost" size="icon">
-                            <MoreVertical className="h-4 w-4" />
+                          <Button
+                            variant="ghost"
+                            size="icon"
+                            disabled={updatingStatus === invoice.id}
+                            className="relative"
+                            aria-label="Akcie faktúry"
+                          >
+                            {updatingStatus === invoice.id ? (
+                              <Loader2 className="h-4 w-4 animate-spin" aria-hidden="true" />
+                            ) : (
+                              <MoreVertical className="h-4 w-4" aria-hidden="true" />
+                            )}
                           </Button>
                         </DropdownMenuTrigger>
-                        <DropdownMenuContent align="end">
+                        <DropdownMenuContent
+                          align="end"
+                          onInteractOutside={(e) => {
+                            // Prevent closing if update is in progress
+                            if (updatingStatus === invoice.id) {
+                              e.preventDefault();
+                            }
+                          }}
+                        >
                           <DropdownMenuItem
                             onClick={() => {
                               setSelectedInvoice(invoice.id);
                               setPreviewOpen(true);
                             }}
                           >
-                            <Eye className="h-4 w-4 mr-2" />
+                            <Eye className="h-4 w-4 mr-2" aria-hidden="true" />
                             Náhľad
                           </DropdownMenuItem>
                           <DropdownMenuItem asChild>
                             <Link to={`/app/invoices/edit/${invoice.id}`}>
-                              <Pencil className="h-4 w-4 mr-2" />
+                              <Pencil className="h-4 w-4 mr-2" aria-hidden="true" />
                               Upraviť
                             </Link>
                           </DropdownMenuItem>
                           <DropdownMenuItem onClick={() => downloadPdf(invoice.id)}>
-                            <Download className="h-4 w-4 mr-2" />
+                            <Download className="h-4 w-4 mr-2" aria-hidden="true" />
                             Stiahnuť PDF
                           </DropdownMenuItem>
+
+                          <DropdownMenuSeparator />
+                          <DropdownMenuLabel>Zmeniť status</DropdownMenuLabel>
+
+                          {(Object.keys(STATUS_CONFIG) as InvoiceStatus[]).map((status) => {
+                            const config = STATUS_CONFIG[status];
+                            const Icon = config.icon;
+                            const isCurrentStatus = invoice.status === status;
+                            const isDisabled = isCurrentStatus || updatingStatus === invoice.id;
+
+                            return (
+                              <DropdownMenuItem
+                                key={status}
+                                onClick={() => handleStatusChange(invoice.id, status)}
+                                disabled={isDisabled}
+                                aria-label={
+                                  isCurrentStatus
+                                    ? `Status je už nastavený na ${config.label}`
+                                    : `Zmeniť status na ${config.label}`
+                                }
+                                title={
+                                  isCurrentStatus
+                                    ? `Aktuálny status: ${config.label}`
+                                    : updatingStatus === invoice.id
+                                    ? "Čaká sa na aktualizáciu..."
+                                    : undefined
+                                }
+                              >
+                                <Icon className={`h-4 w-4 mr-2 ${config.iconColor}`} aria-hidden="true" />
+                                {config.label}
+                                {isCurrentStatus && (
+                                  <span className="ml-auto text-xs text-muted-foreground">(aktuálny)</span>
+                                )}
+                              </DropdownMenuItem>
+                            );
+                          })}
                         </DropdownMenuContent>
                       </DropdownMenu>
                     </TableCell>
