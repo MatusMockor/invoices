@@ -8,11 +8,13 @@ use App\Actions\Invoice\GetLatestInvoiceNumberAction;
 use App\Actions\Invoice\InvoiceCreateAction;
 use App\Actions\Invoice\InvoiceDeleteAction;
 use App\Actions\Invoice\InvoiceUpdateAction;
+use App\Actions\Invoice\InvoiceUpdateStatusAction;
 use App\DTOs\Invoice\InvoiceCreateDTO;
 use App\DTOs\Invoice\InvoiceUpdateDTO;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\StoreInvoiceRequest;
 use App\Http\Requests\UpdateInvoiceRequest;
+use App\Http\Requests\UpdateInvoiceStatusRequest;
 use App\Http\Resources\InvoiceCollection;
 use App\Http\Resources\InvoiceResource;
 use App\Http\Resources\LatestInvoiceNumberResource;
@@ -32,6 +34,7 @@ final class InvoiceController extends Controller
         private readonly InvoiceUpdateAction $updateAction,
         private readonly InvoiceDeleteAction $deleteAction,
         private readonly GetLatestInvoiceNumberAction $getLatestNumberAction,
+        private readonly InvoiceUpdateStatusAction $updateStatusAction,
         private readonly InvoicePdfService $pdfService,
         private readonly InvoiceRepository $invoiceRepository,
         private readonly PayBySquare $payBySquareService
@@ -113,6 +116,21 @@ final class InvoiceController extends Controller
 
         $updatedInvoice->load(['supplierCompany']);
         $updatedInvoice->qr_code = $this->generateQrCode($updatedInvoice);
+
+        return new InvoiceResource($updatedInvoice);
+    }
+
+    /**
+     * Update invoice status.
+     */
+    public function updateStatus(UpdateInvoiceStatusRequest $request, Invoice $invoice): InvoiceResource
+    {
+        $this->authorize('update', $invoice);
+
+        $updatedInvoice = $this->updateStatusAction->handle(
+            $invoice,
+            $request->getStatus()
+        );
 
         return new InvoiceResource($updatedInvoice);
     }

@@ -4,6 +4,10 @@ declare(strict_types=1);
 
 namespace App\Http\Requests\Concerns;
 
+use App\Enums\InvoiceStatus;
+use Illuminate\Validation\Rule;
+use Illuminate\Validation\Rules\Enum;
+
 trait HasInvoiceValidationRules
 {
     /**
@@ -74,7 +78,7 @@ trait HasInvoiceValidationRules
             'specificSymbol' => 'nullable|string|max:50',
             'currency' => 'nullable|string|max:3',
             'notes' => 'nullable|string',
-            'status' => 'nullable|string|in:draft,sent,paid,overdue,cancelled',
+            'status' => ['nullable', new Enum(InvoiceStatus::class)],
         ];
     }
 

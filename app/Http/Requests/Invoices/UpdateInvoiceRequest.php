@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Http\Requests\Invoices;
 
+use App\Enums\InvoiceStatus;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Validation\Rule;
 
@@ -41,7 +42,7 @@ final class UpdateInvoiceRequest extends FormRequest
             'constantSymbol' => 'nullable|string|max:20',
             'specificSymbol' => 'nullable|string|max:20',
             'notes' => 'nullable|string|max:1000',
-            'status' => 'nullable|string|in:draft,sent,paid,overdue',
+            'status' => ['nullable', Rule::enum(InvoiceStatus::class)],
             'items' => 'required|array|min:1',
             'items.*.id' => 'nullable|integer|exists:invoice_items,id',
             'items.*.description' => 'required|string|max:255',
@@ -167,9 +168,11 @@ final class UpdateInvoiceRequest extends FormRequest
         return $this->validated('notes');
     }
 
-    public function getStatus(): ?string
+    public function getStatus(): ?InvoiceStatus
     {
-        return $this->validated('status');
+        $status = $this->validated('status');
+
+        return $status ? InvoiceStatus::from($status) : null;
     }
 
     public function getItems(): array

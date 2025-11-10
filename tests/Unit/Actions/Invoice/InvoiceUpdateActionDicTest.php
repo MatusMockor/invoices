@@ -7,6 +7,7 @@ namespace Tests\Unit\Actions\Invoice;
 use App\Actions\Company\CompanyFetchOrCreateAction;
 use App\Actions\Invoice\InvoiceUpdateAction;
 use App\DTOs\Invoice\InvoiceUpdateDTO;
+use App\Enums\InvoiceStatus;
 use App\Models\Company;
 use App\Models\Invoice;
 use App\Models\User;
@@ -108,7 +109,7 @@ class InvoiceUpdateActionDicTest extends TestCase
             specificSymbol: null,
             currency: 'EUR',
             notes: 'Updated invoice',
-            status: 'draft',
+            status: InvoiceStatus::DRAFT,
             items: null,
             useCustomCompany: false
         );

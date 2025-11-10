@@ -7,6 +7,7 @@ namespace Tests\Unit\Actions\Invoice;
 use App\Actions\Company\CompanyFetchOrCreateAction;
 use App\Actions\Invoice\InvoiceCreateAction;
 use App\DTOs\Invoice\InvoiceCreateDTO;
+use App\Enums\InvoiceStatus;
 use App\Models\Company;
 use App\Models\Invoice;
 use App\Models\User;
@@ -83,7 +84,7 @@ class InvoiceCreateActionDicTest extends TestCase
             specificSymbol: null,
             currency: 'EUR',
             notes: fake()->sentence(),
-            status: 'draft',
+            status: InvoiceStatus::DRAFT,
             items: [
                 [
                     'description' => fake()->words(3, true),
@@ -140,7 +141,7 @@ class InvoiceCreateActionDicTest extends TestCase
             specificSymbol: null,
             currency: 'EUR',
             notes: fake()->sentence(),
-            status: 'draft',
+            status: InvoiceStatus::DRAFT,
             items: [
                 [
                     'description' => fake()->words(3, true),
@@ -202,7 +203,7 @@ class InvoiceCreateActionDicTest extends TestCase
             specificSymbol: null,
             currency: 'EUR',
             notes: null,
-            status: 'draft',
+            status: InvoiceStatus::DRAFT,
             items: [
                 [
                     'description' => fake()->words(3, true),

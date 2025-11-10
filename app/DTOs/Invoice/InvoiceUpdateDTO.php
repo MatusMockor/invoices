@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace App\DTOs\Invoice;
 
+use App\Enums\InvoiceStatus;
+
 final readonly class InvoiceUpdateDTO
 {
     public function __construct(
@@ -24,7 +26,7 @@ final readonly class InvoiceUpdateDTO
         public ?string $specificSymbol,
         public ?string $currency,
         public ?string $notes,
-        public ?string $status,
+        public ?InvoiceStatus $status,
         public ?array $items,
         public ?bool $useCustomCompany = null,
         public ?string $customCompanyIco = null,
@@ -57,7 +59,7 @@ final readonly class InvoiceUpdateDTO
             specificSymbol: $data['specificSymbol'] ?? null,
             currency: $data['currency'] ?? null,
             notes: $data['notes'] ?? null,
-            status: $data['status'] ?? null,
+            status: isset($data['status']) ? InvoiceStatus::from($data['status']) : null,
             items: $data['items'] ?? null,
             useCustomCompany: $data['useCustomCompany'] ?? null,
             customCompanyIco: $data['customCompanyIco'] ?? null,

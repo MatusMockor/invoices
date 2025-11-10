@@ -77,6 +77,7 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::get('/invoices/{invoice}', [InvoiceController::class, 'show'])->name('api.invoices.show');
     Route::post('/invoices', [InvoiceController::class, 'store'])->name('api.invoices.store');
     Route::put('/invoices/{invoice}', [InvoiceController::class, 'update'])->name('api.invoices.update');
+    Route::patch('/invoices/{invoice}/status', [InvoiceController::class, 'updateStatus'])->name('api.invoices.update-status');
     Route::delete('/invoices/{invoice}', [InvoiceController::class, 'destroy'])->name('api.invoices.destroy');
     Route::get('/invoices/{invoice}/pdf/download', [InvoiceController::class, 'downloadPdf'])->name('api.invoices.pdf.download');
     Route::get('/invoices/{invoice}/pdf/view', [InvoiceController::class, 'viewPdf'])->name('api.invoices.pdf.view');

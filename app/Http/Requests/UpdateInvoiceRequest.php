@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Http\Requests;
 
+use App\Enums\InvoiceStatus;
 use App\Http\Requests\Concerns\HasInvoiceValidationRules;
 use Illuminate\Foundation\Http\FormRequest;
 
@@ -177,9 +178,11 @@ final class UpdateInvoiceRequest extends FormRequest
         return $this->validated('notes');
     }
 
-    public function getStatus(): ?string
+    public function getStatus(): ?InvoiceStatus
     {
-        return $this->validated('status');
+        $status = $this->validated('status');
+
+        return $status ? InvoiceStatus::from($status) : null;
     }
 
     public function getItems(): ?array
