@@ -14,6 +14,16 @@ use Illuminate\Database\Seeder;
 
 class InvoiceSeeder extends Seeder
 {
+    private const TOTAL_INVOICES = 3_000;
+
+    private const BATCH_SIZE = 500;
+
+    private const PROGRESS_INTERVAL = 500;
+
+    private const ITEMS_PER_INVOICE_MIN = 1;
+
+    private const ITEMS_PER_INVOICE_MAX = 8;
+
     /**
      * Run the database seeds.
      */
@@ -22,25 +32,35 @@ class InvoiceSeeder extends Seeder
         $testUser = User::where('email', 'test@example.com')->first();
 
         if (! $testUser) {
+            $this->command->warn('Test user (test@example.com) not found. Skipping invoice seeding.');
+
             return;
         }
 
         $userCompany = $testUser->currentCompany;
 
         if (! $userCompany) {
+            $this->command->warn('Test user has no current company. Skipping invoice seeding.');
+
             return;
         }
 
         $externalCompanies = Company::factory(3)->create();
+
+        $this->command->info('Creating 4 specific test invoices for test@example.com...');
 
         $this->createDraftInvoice($testUser, $userCompany, $externalCompanies->first());
         $this->createSentInvoice($testUser, $userCompany, $externalCompanies->skip(1)->first() ?? $externalCompanies->first());
         $this->createPaidInvoice($testUser, $userCompany, $externalCompanies->skip(2)->first() ?? $externalCompanies->first());
         $this->createCustomCompanyInvoice($testUser, $userCompany);
 
-        Invoice::factory(5)
-            ->has(InvoiceItem::factory()->count(3), 'items')
-            ->create();
+        $this->command->info('Starting to generate '.number_format(self::TOTAL_INVOICES).' invoices with items...');
+
+        $startTime = microtime(true);
+        $this->generateBulkInvoices();
+        $duration = round(microtime(true) - $startTime, 2);
+
+        $this->command->info('Successfully generated '.number_format(self::TOTAL_INVOICES)." invoices in {$duration} seconds");
     }
 
     /**
@@ -234,5 +254,116 @@ class InvoiceSeeder extends Seeder
         }
 
         $invoice->update(['total_amount' => $totalAmount]);
+    }
+
+    /**
+     * Generate bulk invoices with items for performance testing.
+     */
+    private function generateBulkInvoices(): void
+    {
+        $users = User::with('currentCompany')->get();
+        $companies = Company::inRandomOrder()->limit(500)->pluck('id')->toArray();
+        $userCompanies = UserCompany::pluck('id')->toArray();
+
+        if ($users->isEmpty() || empty($companies) || empty($userCompanies)) {
+            $this->command->warn('Insufficient data: need users, companies, and user companies');
+
+            return;
+        }
+
+        $statuses = ['draft', 'sent', 'paid', 'cancelled'];
+        $invoiceCounter = 20250005;
+        $batches = (int) ceil(self::TOTAL_INVOICES / self::BATCH_SIZE);
+
+        for ($batchIndex = 0; $batchIndex < $batches; $batchIndex++) {
+            $invoicesBatch = [];
+            $batchSize = min(self::BATCH_SIZE, self::TOTAL_INVOICES - ($batchIndex * self::BATCH_SIZE));
+
+            for ($i = 0; $i < $batchSize; $i++) {
+                $user = $users->random();
+                $companyId = $companies[array_rand($companies)];
+                $supplierCompanyId = $userCompanies[array_rand($userCompanies)];
+
+                $issueDate = Carbon::now()->subDays(fake()->numberBetween(0, 180));
+                $dueDate = (clone $issueDate)->addDays(fake()->numberBetween(7, 30));
+                $deliveryDate = (clone $issueDate)->addDays(fake()->numberBetween(0, 7));
+
+                $invoicesBatch[] = [
+                    'user_id' => $user->id,
+                    'supplier_company_id' => $supplierCompanyId,
+                    'company_id' => $companyId,
+                    'invoice_number' => (string) $invoiceCounter++,
+                    'issue_date' => $issueDate,
+                    'due_date' => $dueDate,
+                    'delivery_date' => $deliveryDate,
+                    'total_amount' => 0,
+                    'currency' => 'EUR',
+                    'status' => $statuses[array_rand($statuses)],
+                    'constant_symbol' => fake()->optional(0.7)->numerify('####'),
+                    'note' => fake()->optional(0.5)->sentence(),
+                    'created_at' => Carbon::now(),
+                    'updated_at' => Carbon::now(),
+                ];
+            }
+
+            Invoice::insert($invoicesBatch);
+
+            $invoiceIds = Invoice::query()
+                ->latest('id')
+                ->limit($batchSize)
+                ->pluck('id')
+                ->toArray();
+
+            $this->generateInvoiceItemsForBatch($invoiceIds);
+
+            $processedCount = ($batchIndex + 1) * self::BATCH_SIZE;
+
+            if ($processedCount % self::PROGRESS_INTERVAL === 0 || $processedCount >= self::TOTAL_INVOICES) {
+                $actualCount = min($processedCount, self::TOTAL_INVOICES);
+                $this->command->info("Generated {$actualCount} / ".self::TOTAL_INVOICES.' invoices');
+            }
+        }
+    }
+
+    /**
+     * Generate invoice items for a batch of invoices.
+     *
+     * @param  array<int>  $invoiceIds
+     */
+    private function generateInvoiceItemsForBatch(array $invoiceIds): void
+    {
+        $itemsBatch = [];
+        $invoiceTotals = [];
+
+        foreach ($invoiceIds as $invoiceId) {
+            $itemCount = fake()->numberBetween(self::ITEMS_PER_INVOICE_MIN, self::ITEMS_PER_INVOICE_MAX);
+            $invoiceTotal = 0;
+
+            for ($i = 0; $i < $itemCount; $i++) {
+                $quantity = fake()->numberBetween(1, 20);
+                $unitPrice = fake()->randomFloat(2, 10, 500);
+                $totalPrice = round($quantity * $unitPrice, 2);
+                $invoiceTotal += $totalPrice;
+
+                $itemsBatch[] = [
+                    'invoice_id' => $invoiceId,
+                    'description' => fake()->sentence(fake()->numberBetween(3, 8)),
+                    'quantity' => $quantity,
+                    'unit_price' => $unitPrice,
+                    'total_price' => $totalPrice,
+                    'created_at' => Carbon::now(),
+                    'updated_at' => Carbon::now(),
+                ];
+            }
+
+            $invoiceTotals[$invoiceId] = round($invoiceTotal, 2);
+        }
+
+        InvoiceItem::insert($itemsBatch);
+
+        // Update invoice totals using Eloquent
+        foreach ($invoiceTotals as $invoiceId => $total) {
+            Invoice::where('id', $invoiceId)->update(['total_amount' => $total]);
+        }
     }
 }
