@@ -44,7 +44,7 @@ final class InvoiceCreateAction
                 'constant_symbol' => $dto->constantSymbol,
                 'specific_symbol' => $dto->specificSymbol,
                 'note' => $dto->notes,
-                'status' => $dto->status ?? config('invoices.default_status'),
+                'status' => $dto->status,
             ];
 
             // Handle custom company case with early return

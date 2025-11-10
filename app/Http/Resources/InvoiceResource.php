@@ -46,7 +46,7 @@ class InvoiceResource extends JsonResource
             'company_zip' => $this->company_zip,
             'company_country' => $this->company_country,
 
-            'business_entity' => new BusinessEntityResource($this->whenLoaded('company')),
+            'business_entity' => new CompanyResource($this->whenLoaded('company')),
             'supplier_company' => new UserCompanyResource($this->whenLoaded('supplierCompany')),
             'items' => InvoiceItemResource::collection($this->whenLoaded('items')),
             'qr_code' => $this->qr_code ?? null,

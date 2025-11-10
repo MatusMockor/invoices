@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Database\Seeders;
 
+use App\Enums\InvoiceStatus;
 use App\Models\Company;
 use App\Models\Invoice;
 use App\Models\InvoiceItem;
@@ -84,7 +85,7 @@ class InvoiceSeeder extends Seeder
             'invoice_number' => '20250001',
             'issue_date' => Carbon::now(),
             'due_date' => Carbon::now()->addDays(14),
-            'status' => 'draft',
+            'status' => InvoiceStatus::DRAFT,
             'total_amount' => 0, // Will be calculated from items
         ]);
 
@@ -125,7 +126,7 @@ class InvoiceSeeder extends Seeder
             'invoice_number' => '20250002',
             'issue_date' => Carbon::now()->subDays(7),
             'due_date' => Carbon::now()->addDays(7),
-            'status' => 'sent',
+            'status' => InvoiceStatus::SENT,
             'total_amount' => 0, // Will be calculated from items
         ]);
 
@@ -171,7 +172,7 @@ class InvoiceSeeder extends Seeder
             'invoice_number' => '20250003',
             'issue_date' => Carbon::now()->subDays(30),
             'due_date' => Carbon::now()->subDays(15),
-            'status' => 'paid',
+            'status' => InvoiceStatus::PAID,
             'total_amount' => 0, // Will be calculated from items
         ]);
 
@@ -203,7 +204,7 @@ class InvoiceSeeder extends Seeder
             'invoice_number' => '20250004',
             'issue_date' => Carbon::now()->subDays(5),
             'due_date' => Carbon::now()->addDays(10),
-            'status' => 'draft',
+            'status' => InvoiceStatus::DRAFT,
             'total_amount' => 0, // Will be calculated from items
             'company_ico' => '12345678',
             'company_dic' => '2023456789',
@@ -262,16 +263,21 @@ class InvoiceSeeder extends Seeder
     private function generateBulkInvoices(): void
     {
         $users = User::with('currentCompany')->get();
-        $companies = Company::inRandomOrder()->limit(500)->pluck('id')->toArray();
+        $companies = Company::inRandomOrder()->limit(500)->get();
         $userCompanies = UserCompany::pluck('id')->toArray();
 
-        if ($users->isEmpty() || empty($companies) || empty($userCompanies)) {
+        if ($users->isEmpty() || $companies->isEmpty() || empty($userCompanies)) {
             $this->command->warn('Insufficient data: need users, companies, and user companies');
 
             return;
         }
 
-        $statuses = ['draft', 'sent', 'paid', 'cancelled'];
+        $statuses = [
+            InvoiceStatus::DRAFT,
+            InvoiceStatus::SENT,
+            InvoiceStatus::PAID,
+            InvoiceStatus::CANCELLED,
+        ];
         $invoiceCounter = 20250005;
         $batches = (int) ceil(self::TOTAL_INVOICES / self::BATCH_SIZE);
 
@@ -281,7 +287,7 @@ class InvoiceSeeder extends Seeder
 
             for ($i = 0; $i < $batchSize; $i++) {
                 $user = $users->random();
-                $companyId = $companies[array_rand($companies)];
+                $company = $companies->random();
                 $supplierCompanyId = $userCompanies[array_rand($userCompanies)];
 
                 $issueDate = Carbon::now()->subDays(fake()->numberBetween(0, 180));
@@ -291,7 +297,15 @@ class InvoiceSeeder extends Seeder
                 $invoicesBatch[] = [
                     'user_id' => $user->id,
                     'supplier_company_id' => $supplierCompanyId,
-                    'company_id' => $companyId,
+                    'company_id' => $company->id,
+                    'company_ico' => $company->ico,
+                    'company_dic' => $company->dic,
+                    'company_ic_dph' => $company->ic_dph,
+                    'company_name' => $company->name,
+                    'company_address' => $company->street,
+                    'company_city' => $company->city,
+                    'company_zip' => $company->postal_code,
+                    'company_country' => $company->country,
                     'invoice_number' => (string) $invoiceCounter++,
                     'issue_date' => $issueDate,
                     'due_date' => $dueDate,

@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Models;
 
+use App\Enums\InvoiceStatus;
 use App\Observers\InvoiceObserver;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
@@ -38,7 +39,7 @@ use Illuminate\Support\Carbon;
  * @property string|null $constant_symbol
  * @property string|null $specific_symbol
  * @property string|null $note
- * @property string $status
+ * @property InvoiceStatus $status
  * @property Carbon $created_at
  * @property Carbon $updated_at
  * @property-read User $user
@@ -81,6 +82,7 @@ class Invoice extends Model
         'due_date' => 'date',
         'delivery_date' => 'date',
         'total_amount' => 'float',
+        'status' => InvoiceStatus::class,
     ];
 
     /**

@@ -8,6 +8,7 @@ use App\Actions\Invoice\InvoiceCreateAction;
 use App\Actions\Invoice\InvoiceUpdateAction;
 use App\DTOs\Invoice\InvoiceCreateDTO;
 use App\DTOs\Invoice\InvoiceUpdateDTO;
+use App\Enums\InvoiceStatus;
 use App\Models\Company;
 use App\Models\Invoice;
 use App\Models\InvoiceItem;
@@ -86,7 +87,7 @@ final class InvoiceTransactionTest extends TestCase
             specificSymbol: null,
             currency: 'EUR',
             notes: null,
-            status: 'draft',
+            status: InvoiceStatus::DRAFT,
             items: [
                 [
                     'description' => fake()->words(2, true),
@@ -213,7 +214,7 @@ final class InvoiceTransactionTest extends TestCase
             specificSymbol: null,
             currency: 'EUR',
             notes: null,
-            status: 'draft',
+            status: InvoiceStatus::DRAFT,
             items: [
                 [
                     'description' => fake()->words(2, true),
@@ -287,7 +288,7 @@ final class InvoiceTransactionTest extends TestCase
             specificSymbol: null,
             currency: null,
             notes: null,
-            status: 'paid',
+            status: InvoiceStatus::PAID,
             items: [
                 [
                     'id' => $item->id,
@@ -301,7 +302,7 @@ final class InvoiceTransactionTest extends TestCase
         $updatedInvoice = $action->handle($invoice, $dto, $this->userCompany->id);
 
         $this->assertEquals($newInvoiceNumber, $updatedInvoice->invoice_number);
-        $this->assertEquals('paid', $updatedInvoice->status);
+        $this->assertEquals(InvoiceStatus::PAID, $updatedInvoice->status);
         $this->assertEquals(500.00, $updatedInvoice->total_amount);
 
         $item->refresh();

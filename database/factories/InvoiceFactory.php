@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Database\Factories;
 
+use App\Enums\InvoiceStatus;
 use App\Models\Company;
 use App\Models\Invoice;
 use App\Models\User;
@@ -59,7 +60,12 @@ class InvoiceFactory extends Factory
             'currency' => 'EUR',
             'constant_symbol' => fake()->optional(0.7)->numerify('####'),
             'note' => fake()->optional(0.7)->sentence(),
-            'status' => fake()->randomElement(['draft', 'sent', 'paid', 'cancelled']),
+            'status' => fake()->randomElement([
+                InvoiceStatus::DRAFT,
+                InvoiceStatus::SENT,
+                InvoiceStatus::PAID,
+                InvoiceStatus::CANCELLED,
+            ]),
         ];
     }
 
@@ -94,7 +100,7 @@ class InvoiceFactory extends Factory
     public function draft(): Factory
     {
         return $this->state(fn (array $attributes): array => [
-            'status' => 'draft',
+            'status' => InvoiceStatus::DRAFT,
         ]);
     }
 
@@ -104,7 +110,7 @@ class InvoiceFactory extends Factory
     public function sent(): Factory
     {
         return $this->state(fn (array $attributes): array => [
-            'status' => 'sent',
+            'status' => InvoiceStatus::SENT,
         ]);
     }
 
@@ -114,7 +120,7 @@ class InvoiceFactory extends Factory
     public function paid(): Factory
     {
         return $this->state(fn (array $attributes): array => [
-            'status' => 'paid',
+            'status' => InvoiceStatus::PAID,
         ]);
     }
 
@@ -124,7 +130,7 @@ class InvoiceFactory extends Factory
     public function cancelled(): Factory
     {
         return $this->state(fn (array $attributes): array => [
-            'status' => 'cancelled',
+            'status' => InvoiceStatus::CANCELLED,
         ]);
     }
 
