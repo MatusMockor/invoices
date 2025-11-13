@@ -49,7 +49,7 @@ final class UserCompanyControllerTest extends TestCase
         ];
 
         $response = $this->putJson(
-            route('api.companies.update', $this->userCompany),
+            route('api.user.companies.update', $this->userCompany),
             $updateData
         );
 
@@ -97,7 +97,7 @@ final class UserCompanyControllerTest extends TestCase
         ];
 
         $response = $this->putJson(
-            route('api.companies.update', $this->userCompany),
+            route('api.user.companies.update', $this->userCompany),
             $updateData
         );
 
@@ -117,7 +117,7 @@ final class UserCompanyControllerTest extends TestCase
         ];
 
         $response = $this->putJson(
-            route('api.companies.update', $this->userCompany),
+            route('api.user.companies.update', $this->userCompany),
             $updateData
         );
 
@@ -138,7 +138,7 @@ final class UserCompanyControllerTest extends TestCase
         ];
 
         $response = $this->putJson(
-            route('api.companies.update', $this->userCompany),
+            route('api.user.companies.update', $this->userCompany),
             $updateData
         );
 
@@ -159,7 +159,7 @@ final class UserCompanyControllerTest extends TestCase
         ];
 
         $response = $this->putJson(
-            route('api.companies.update', $this->userCompany),
+            route('api.user.companies.update', $this->userCompany),
             $updateData
         );
 
@@ -186,7 +186,7 @@ final class UserCompanyControllerTest extends TestCase
         ];
 
         $response = $this->putJson(
-            route('api.companies.update', $this->userCompany),
+            route('api.user.companies.update', $this->userCompany),
             $updateData
         );
 
@@ -212,7 +212,7 @@ final class UserCompanyControllerTest extends TestCase
         ];
 
         $response = $this->putJson(
-            route('api.companies.update', $anotherCompany),
+            route('api.user.companies.update', $anotherCompany),
             $updateData
         );
 
@@ -237,7 +237,7 @@ final class UserCompanyControllerTest extends TestCase
         ];
 
         // Make request without being authenticated (don't use Sanctum::actingAs)
-        $response = $this->json('PUT', route('api.companies.update', $testCompany), $updateData);
+        $response = $this->json('PUT', route('api.user.companies.update', $testCompany), $updateData);
 
         // Laravel returns 403 when accessing protected resources without authentication
         $this->assertContains($response->status(), [401, 403]);
@@ -257,7 +257,7 @@ final class UserCompanyControllerTest extends TestCase
         ];
 
         $response = $this->putJson(
-            route('api.companies.update', $this->userCompany),
+            route('api.user.companies.update', $this->userCompany),
             $updateData
         );
 
@@ -283,7 +283,7 @@ final class UserCompanyControllerTest extends TestCase
         ];
 
         $response = $this->putJson(
-            route('api.companies.update', $this->userCompany),
+            route('api.user.companies.update', $this->userCompany),
             $updateData
         );
 

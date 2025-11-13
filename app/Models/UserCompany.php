@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace App\Models;
 
-use App\Enums\CompanyStatus;
 use Illuminate\Database\Eloquent\Casts\Attribute;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
@@ -31,7 +30,6 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
  * @property string|null $website Company website
  * @property string $company_type Legal form of the company
  * @property string $registration_number Registration number in business register
- * @property CompanyStatus $status Company status
  * @property \Illuminate\Support\Carbon|null $created_at
  * @property \Illuminate\Support\Carbon|null $updated_at
  * @property-read int $clients_count Number of unique clients
@@ -65,7 +63,6 @@ class UserCompany extends Model
         'user_id',
         'company_type',
         'registration_number',
-        'status',
     ];
 
     /**
@@ -111,8 +108,6 @@ class UserCompany extends Model
      */
     protected function casts(): array
     {
-        return [
-            'status' => CompanyStatus::class,
-        ];
+        return [];
     }
 }
