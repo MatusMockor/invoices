@@ -1,34 +1,19 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { companyService, type CompanyCreateData, type CompanyUpdateData } from '@/services';
+import { companyService } from '@/services';
+import { userCompanyService } from '@/services/userCompanyService';
+import type { UserCompany } from '@/types';
 
+/**
+ * Hook for managing user's own companies
+ *
+ * @deprecated Use useUserCompanies hook instead for better type safety and consistency
+ */
 export const useCompanies = () => {
   const queryClient = useQueryClient();
 
-  const { data, isLoading, error } = useQuery({
+  const { data, isLoading, error } = useQuery<UserCompany[]>({
     queryKey: ['companies'],
-    queryFn: () => companyService.getAll(),
-  });
-
-  const createMutation = useMutation({
-    mutationFn: (data: CompanyCreateData) => companyService.create(data),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['companies'] });
-    },
-  });
-
-  const updateMutation = useMutation({
-    mutationFn: ({ id, data }: { id: number; data: CompanyUpdateData }) => 
-      companyService.update(id, data),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['companies'] });
-    },
-  });
-
-  const deleteMutation = useMutation({
-    mutationFn: (id: number) => companyService.delete(id),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['companies'] });
-    },
+    queryFn: () => userCompanyService.list(),
   });
 
   /**
@@ -45,29 +30,28 @@ export const useCompanies = () => {
   });
 
   return {
-    companies: data?.data || [],
+    companies: data || [],
     isLoading,
     error,
-    createCompany: createMutation.mutateAsync,
-    updateCompany: updateMutation.mutateAsync,
-    deleteCompany: deleteMutation.mutateAsync,
     switchCompany: switchMutation.mutateAsync,
-    isCreating: createMutation.isPending,
-    isUpdating: updateMutation.isPending,
-    isDeleting: deleteMutation.isPending,
     isSwitching: switchMutation.isPending,
   };
 };
 
+/**
+ * Hook for getting a single user company by ID
+ *
+ * @deprecated Use useUserCompany hook instead
+ */
 export const useCompany = (id: number) => {
-  const { data, isLoading, error } = useQuery({
+  const { data, isLoading, error } = useQuery<UserCompany>({
     queryKey: ['company', id],
-    queryFn: () => companyService.getById(id),
+    queryFn: () => userCompanyService.getById(id),
     enabled: !!id,
   });
 
   return {
-    company: data?.data,
+    company: data,
     isLoading,
     error,
   };
@@ -79,15 +63,15 @@ export const useCompany = (id: number) => {
  * Data is cached for 5 minutes to reduce unnecessary API calls.
  */
 export const useCompaniesMinimal = () => {
-  const { data, isLoading, error } = useQuery({
+  const { data, isLoading, error } = useQuery<Array<{ id: number; name: string }>>({
     queryKey: ['companies-minimal'],
-    queryFn: () => companyService.getMinimal(),
+    queryFn: () => userCompanyService.getMinimal(),
     staleTime: 5 * 60 * 1000, // 5 minutes
     gcTime: 10 * 60 * 1000, // 10 minutes
   });
 
   return {
-    companies: data?.data || [],
+    companies: data || [],
     isLoading,
     error,
   };

@@ -1,72 +1,20 @@
 import api from '@/lib/axios';
-import type { Company, ApiResponse, PaginatedResponse } from '@/types';
+import type { Company, ApiResponse } from '@/types';
 
-export interface CompanyCreateData {
-  name: string;
-  ico: string;
-  dic?: string | null;
-  ic_dph?: string | null;
-  street: string;
-  city: string;
-  postal_code: string;
-  country: string;
-  phone?: string | null;
-  email?: string | null;
-  iban?: string | null;
-  swift?: string | null;
-}
-
-export interface CompanyUpdateData {
-  name: string;
-  ico: string;
-  dic?: string | null;
-  ic_dph?: string | null;
-  street: string;
-  city: string;
-  postal_code: string;
-  country: string;
-  phone?: string | null;
-  email?: string | null;
-  iban?: string | null;
-  swift?: string | null;
-}
-
+/**
+ * Service layer for customer companies (used in invoices and business entities)
+ *
+ * This service handles operations for customer/client companies that appear in invoices.
+ * For user's own companies, use userCompanyService instead.
+ */
 export const companyService = {
-  async getAll(): Promise<ApiResponse<Company[]>> {
-    const response = await api.get('/companies');
-    return response.data;
-  },
-
-  async getMinimal(): Promise<ApiResponse<Array<{ id: number; name: string }>>> {
-    const response = await api.get('/user/companies/minimal');
-    return response.data;
-  },
-
-  async getById(id: number): Promise<ApiResponse<Company>> {
-    const response = await api.get(`/companies/${id}`);
-    return response.data;
-  },
-
-  async create(data: CompanyCreateData): Promise<ApiResponse<Company>> {
-    const response = await api.post('/companies', data);
-    return response.data;
-  },
-
-  async update(id: number, data: CompanyUpdateData): Promise<ApiResponse<Company>> {
-    const response = await api.put(`/companies/${id}`, data);
-    return response.data;
-  },
-
-  async delete(id: number): Promise<void> {
-    await api.delete(`/companies/${id}`);
-  },
-
-  async switchCompany(id: number): Promise<ApiResponse<Company>> {
-    const response = await api.post(`/companies/${id}/switch`);
-    return response.data;
-  },
-
-  // Customer companies (for invoice autocomplete)
+  /**
+   * Search customer companies by query string
+   * Used for autocomplete in invoice forms
+   *
+   * @param {string} query - Search query
+   * @returns {Promise<ApiResponse<Company[]>>} Matching companies
+   */
   async searchCustomerCompanies(query: string): Promise<ApiResponse<Company[]>> {
     const response = await api.get('/customer-companies/search', {
       params: { query },
@@ -74,8 +22,27 @@ export const companyService = {
     return response.data;
   },
 
+  /**
+   * Fetch all customer companies
+   *
+   * @returns {Promise<ApiResponse<Company[]>>} All customer companies
+   */
   async getAllCustomerCompanies(): Promise<ApiResponse<Company[]>> {
     const response = await api.get('/customer-companies');
+    return response.data;
+  },
+
+  /**
+   * Switch the active user company
+   *
+   * Note: This method will be deprecated in favor of userCompanyService.switchActive()
+   *
+   * @deprecated Use userCompanyService.switchActive() instead
+   * @param {number} id - The company ID to switch to
+   * @returns {Promise<ApiResponse<Company>>} The switched company
+   */
+  async switchCompany(id: number): Promise<ApiResponse<Company>> {
+    const response = await api.post(`/user/companies/${id}/switch`);
     return response.data;
   },
 };

@@ -50,14 +50,14 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::get('/onboarding/check', [OnboardingController::class, 'check'])->name('api.onboarding.check');
     Route::post('/onboarding', [OnboardingController::class, 'store'])->name('api.onboarding.store');
 
-    // Companies
-    Route::get('/user/companies/minimal', [UserCompanyController::class, 'minimal'])->name('api.companies.minimal');
-    Route::get('/companies', [UserCompanyController::class, 'index'])->name('api.companies.index');
-    Route::get('/companies/{userCompany}', [UserCompanyController::class, 'show'])->name('api.companies.show');
-    Route::post('/companies', [UserCompanyController::class, 'store'])->name('api.companies.store');
-    Route::put('/companies/{userCompany}', [UserCompanyController::class, 'update'])->name('api.companies.update');
-    Route::delete('/companies/{userCompany}', [UserCompanyController::class, 'destroy'])->name('api.companies.destroy');
-    Route::post('/companies/{userCompany}/switch', [UserCompanyController::class, 'switch'])->name('api.companies.switch');
+    // User Companies
+    Route::get('/user/companies/minimal', [UserCompanyController::class, 'minimal'])->name('api.user.companies.minimal');
+    Route::get('/user/companies', [UserCompanyController::class, 'index'])->name('api.user.companies.index');
+    Route::get('/user/companies/{userCompany}', [UserCompanyController::class, 'show'])->name('api.user.companies.show');
+    Route::post('/user/companies', [UserCompanyController::class, 'store'])->name('api.user.companies.store');
+    Route::put('/user/companies/{userCompany}', [UserCompanyController::class, 'update'])->name('api.user.companies.update');
+    Route::delete('/user/companies/{userCompany}', [UserCompanyController::class, 'destroy'])->name('api.user.companies.destroy');
+    Route::post('/user/companies/{userCompany}/switch', [UserCompanyController::class, 'switch'])->name('api.user.companies.switch');
 
     // Business Entities
     Route::get('/business-entities', [BusinessEntityController::class, 'index'])->name('api.business-entities.index');

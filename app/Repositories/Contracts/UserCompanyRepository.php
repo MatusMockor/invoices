@@ -13,9 +13,11 @@ interface UserCompanyRepository
 
     public function update(UserCompany $company, array $data): bool;
 
+    public function delete(UserCompany $company): bool;
+
     public function findByUserId(int $userId): ?UserCompany;
 
-    public function findAllByUserId(int $userId): Collection;
+    public function findAllByUserId(int $userId, ?string $search = null): Collection;
 
     public function findMinimalByUserId(int $userId): Collection;
 }
