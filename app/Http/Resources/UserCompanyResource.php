@@ -4,12 +4,11 @@ declare(strict_types=1);
 
 namespace App\Http\Resources;
 
-use App\Models\Company;
 use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\JsonResource;
 
 /**
- * @mixin Company
+ * @mixin \App\Models\UserCompany
  */
 class UserCompanyResource extends JsonResource
 {
@@ -21,7 +20,8 @@ class UserCompanyResource extends JsonResource
             'ico' => $this->ico,
             'dic' => $this->dic,
             'ic_dph' => $this->ic_dph,
-            'address' => $this->street,
+            'street' => $this->street,
+            'address' => $this->street.', '.$this->postal_code.' '.$this->city,
             'city' => $this->city,
             'postal_code' => $this->postal_code,
             'country' => $this->country,
@@ -30,6 +30,9 @@ class UserCompanyResource extends JsonResource
             'bank_account' => null,
             'iban' => $this->iban,
             'swift' => $this->swift,
+            'status' => $this->status,
+            'vehicles' => $this->vehicles_count,
+            'clients' => $this->clients_count,
             'created_at' => $this->created_at?->toISOString(),
             'updated_at' => $this->updated_at?->toISOString(),
         ];

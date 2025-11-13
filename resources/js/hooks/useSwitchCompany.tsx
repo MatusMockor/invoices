@@ -1,6 +1,7 @@
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { companyService } from '@/services/companyService';
 import { useToast } from '@/hooks/use-toast';
+import type { User } from '@/types';
 
 interface UseSwitchCompanyOptions {
   onSuccess?: (companyId: number) => void;
@@ -15,12 +16,36 @@ export const useSwitchCompany = (options: UseSwitchCompanyOptions = {}) => {
 
   const mutation = useMutation({
     mutationFn: (companyId: number) => companyService.switchCompany(companyId),
+    onMutate: async (companyId) => {
+      // Cancel outgoing refetches to prevent race conditions
+      await queryClient.cancelQueries({ queryKey: ['user'] });
+
+      // Snapshot previous value for rollback
+      const previousUser = queryClient.getQueryData<User>(['user']);
+
+      // Optimistically update user's current company
+      queryClient.setQueryData<User>(['user'], (old) => {
+        if (!old) return old;
+        return {
+          ...old,
+          current_company_id: companyId,
+        };
+      });
+
+      return { previousUser };
+    },
     onSuccess: async (_, companyId) => {
-      // Invalidate all company-dependent queries
-      await queryClient.invalidateQueries({ queryKey: ['analytics'] });
-      await queryClient.invalidateQueries({ queryKey: ['invoices'] });
-      await queryClient.invalidateQueries({ queryKey: ['simple-contacts'] });
-      await queryClient.invalidateQueries({ queryKey: ['companies'] });
+      // Invalidate all company-dependent queries in parallel
+      await Promise.all([
+        queryClient.invalidateQueries({ queryKey: ['user'] }),
+        queryClient.invalidateQueries({ queryKey: ['user-companies'] }),
+        queryClient.invalidateQueries({ queryKey: ['companies'] }),
+        queryClient.invalidateQueries({ queryKey: ['analytics'] }),
+        queryClient.invalidateQueries({ queryKey: ['invoices'] }),
+        queryClient.invalidateQueries({ queryKey: ['simple-contacts'] }),
+        queryClient.invalidateQueries({ queryKey: ['business-entities'] }),
+        queryClient.invalidateQueries({ queryKey: ['customer-companies'] }),
+      ]);
 
       if (showToast) {
         toast({
@@ -31,7 +56,12 @@ export const useSwitchCompany = (options: UseSwitchCompanyOptions = {}) => {
 
       onSuccess?.(companyId);
     },
-    onError: (error: unknown) => {
+    onError: (error: unknown, _, context) => {
+      // Rollback optimistic update on error
+      if (context?.previousUser) {
+        queryClient.setQueryData(['user'], context.previousUser);
+      }
+
       console.error('Failed to switch company:', error);
 
       if (showToast) {

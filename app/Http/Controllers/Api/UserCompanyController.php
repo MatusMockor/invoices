@@ -15,6 +15,7 @@ use App\Models\UserCompany;
 use App\Repositories\Contracts\CompanyRepository;
 use App\Repositories\Contracts\UserCompanyRepository;
 use Illuminate\Http\JsonResponse;
+use Illuminate\Http\Request;
 
 class UserCompanyController extends Controller
 {
@@ -27,9 +28,10 @@ class UserCompanyController extends Controller
     /**
      * Get all companies for the authenticated user.
      */
-    public function index(): UserCompanyCollection
+    public function index(Request $request): UserCompanyCollection
     {
-        $companies = $this->userCompanyRepository->findAllByUserId(auth()->id());
+        $search = $request->input('search');
+        $companies = $this->userCompanyRepository->findAllByUserId(auth()->id(), $search);
 
         return new UserCompanyCollection($companies);
     }
@@ -76,7 +78,7 @@ class UserCompanyController extends Controller
     {
         $this->authorize('delete', $userCompany);
 
-        $this->companyRepository->delete($userCompany);
+        $this->userCompanyRepository->delete($userCompany);
 
         return response()->json([
             'message' => 'Company deleted successfully',

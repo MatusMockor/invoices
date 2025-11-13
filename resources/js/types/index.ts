@@ -28,6 +28,28 @@ export interface Company {
   updated_at: string;
 }
 
+export interface UserCompany {
+  id: number;
+  name: string;
+  ico: string;
+  dic: string | null;
+  ic_dph: string | null;
+  street: string;
+  address: string; // Formatted: "street, postal_code city"
+  city: string;
+  postal_code: string;
+  country: string;
+  phone: string | null;
+  email: string | null;
+  iban: string | null;
+  swift: string | null;
+  status: 'active' | 'inactive';
+  vehicles: number;
+  clients: number;
+  created_at: string;
+  updated_at: string;
+}
+
 export interface BusinessEntity {
   id: number;
   company_id: number;
@@ -291,6 +313,39 @@ export interface PaginatedResponse<T> {
 
 export interface ApiResponse<T> {
   data: T;
+  message?: string;
+}
+
+export interface UserCompanyFormData {
+  name: string;
+  ico: string;
+  dic: string;
+  ic_dph?: string;
+  email: string;
+  phone?: string;
+  street: string;
+  city: string;
+  postal_code: string;
+  country: string;
+  iban?: string;
+  swift?: string;
+  status?: 'active' | 'inactive';
+}
+
+export interface CompanyStats {
+  total: number;
+}
+
+export interface ApiError {
+  message: string;
+  errors?: Record<string, string[]>;
+}
+
+export interface AxiosErrorResponse {
+  response?: {
+    status?: number;
+    data?: ApiError;
+  };
   message?: string;
 }
 

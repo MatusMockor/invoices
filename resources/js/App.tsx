@@ -7,6 +7,7 @@ import { ThemeProvider } from "@/components/ThemeProvider";
 import { AuthProvider } from "@/contexts/AuthContext";
 import { CompanyProvider } from "@/contexts/CompanyContext";
 import { ProtectedRoute } from "@/components/ProtectedRoute";
+import { ErrorBoundary } from "@/components/ErrorBoundary";
 import Index from "./pages/Index";
 import Login from "./pages/Login";
 import Register from "./pages/Register";
@@ -19,6 +20,7 @@ import Reports from "./pages/Reports";
 import Attendance from "./pages/Attendance";
 import VehicleLog from "./pages/VehicleLog";
 import Vehicles from "./pages/Vehicles";
+import Companies from "./pages/Companies";
 import Settings from "./pages/Settings";
 import NotFound from "./pages/NotFound";
 
@@ -64,6 +66,7 @@ const App = () => (
             <Route path="/app/attendance" element={<ProtectedRoute><Attendance /></ProtectedRoute>} />
             <Route path="/app/vehicle-log" element={<ProtectedRoute><VehicleLog /></ProtectedRoute>} />
             <Route path="/app/vehicles" element={<ProtectedRoute><Vehicles /></ProtectedRoute>} />
+            <Route path="/app/companies" element={<ProtectedRoute><ErrorBoundary><Companies /></ErrorBoundary></ProtectedRoute>} />
             <Route path="/app/settings" element={<ProtectedRoute><Settings /></ProtectedRoute>} />
 
             {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}

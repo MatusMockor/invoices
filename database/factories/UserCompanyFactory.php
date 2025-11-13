@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Database\Factories;
 
+use App\Enums\CompanyStatus;
 use App\Models\UserCompany;
 use Illuminate\Database\Eloquent\Factories\Factory;
 
@@ -45,6 +46,7 @@ class UserCompanyFactory extends Factory
             'website' => fake()->url(),
             'company_type' => fake()->randomElement($companyTypes),
             'registration_number' => 'OR '.fake()->randomElement(['Bratislava I', 'Košice', 'Žilina', 'Prešov', 'Banská Bystrica']).', Oddiel: '.fake()->randomElement(['Sro', 'Sa']).', Vložka č. '.fake()->numerify('######'),
+            'status' => fake()->randomElement([CompanyStatus::ACTIVE, CompanyStatus::INACTIVE]),
         ];
     }
 

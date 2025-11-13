@@ -20,14 +20,26 @@ final class UserCompanyRepository implements UserCompanyRepositoryContract
         return $company->update($data);
     }
 
+    public function delete(UserCompany $company): bool
+    {
+        return (bool) $company->delete();
+    }
+
     public function findByUserId(int $userId): ?UserCompany
     {
         return UserCompany::where('user_id', $userId)->first();
     }
 
-    public function findAllByUserId(int $userId): Collection
+    public function findAllByUserId(int $userId, ?string $search = null): Collection
     {
         return UserCompany::where('user_id', $userId)
+            ->when($search, function ($query, $search) {
+                $query->where(function ($q) use ($search) {
+                    $q->where('name', 'like', "%{$search}%")
+                        ->orWhere('email', 'like', "%{$search}%")
+                        ->orWhere('ico', 'like', "%{$search}%");
+                });
+            })
             ->orderBy('name')
             ->get();
     }
