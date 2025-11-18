@@ -233,28 +233,43 @@ class InvoiceSeeder extends Seeder
     }
 
     /**
-     * Create invoice items and update invoice total.
+     * Create invoice items and update invoice total with VAT.
      *
-     * @param  array<int, array{description: string, quantity: int|float, unit_price: float}>  $items
+     * @param  array<int, array{description: string, quantity: int|float, unit_price: float, tax_rate?: float}>  $items
      */
     private function createInvoiceItems(Invoice $invoice, array $items): void
     {
-        $totalAmount = 0;
+        $invoiceSubtotal = 0;
+        $invoiceTaxAmount = 0;
 
         foreach ($items as $item) {
-            $totalPrice = $item['quantity'] * $item['unit_price'];
-            $totalAmount += $totalPrice;
+            $taxRate = $item['tax_rate'] ?? 20.0; // Default Slovak VAT rate
+            $subtotal = round($item['quantity'] * $item['unit_price'], 2);
+            $taxAmount = round($subtotal * ($taxRate / 100), 2);
+            $totalPrice = round($subtotal + $taxAmount, 2);
 
-            InvoiceItem::factory()->create([
+            $invoiceSubtotal += $subtotal;
+            $invoiceTaxAmount += $taxAmount;
+
+            InvoiceItem::create([
                 'invoice_id' => $invoice->id,
                 'description' => $item['description'],
                 'quantity' => $item['quantity'],
-                'unit_price' => $item['unit_price'],
+                'unit_price_without_tax' => $item['unit_price'],
+                'tax_rate' => $taxRate,
+                'tax_amount' => $taxAmount,
+                'subtotal' => $subtotal,
+                'discount_amount' => null,
                 'total_price' => $totalPrice,
             ]);
         }
 
-        $invoice->update(['total_amount' => $totalAmount]);
+        $invoice->update([
+            'subtotal' => round($invoiceSubtotal, 2),
+            'tax_amount' => round($invoiceTaxAmount, 2),
+            'tax_rate' => 20.0, // Default rate
+            'total_amount' => round($invoiceSubtotal + $invoiceTaxAmount, 2),
+        ]);
     }
 
     /**
@@ -310,10 +325,20 @@ class InvoiceSeeder extends Seeder
                     'issue_date' => $issueDate,
                     'due_date' => $dueDate,
                     'delivery_date' => $deliveryDate,
-                    'total_amount' => 0,
+                    'subtotal' => 0, // Will be calculated from items
+                    'tax_amount' => 0, // Will be calculated from items
+                    'tax_rate' => 20.0, // Default Slovak VAT rate
+                    'total_amount' => 0, // Will be calculated from items
+                    'discount_amount' => null,
+                    'discount_percentage' => null,
+                    'reverse_charge' => false,
+                    'tax_exemption_reason' => null,
+                    'special_text' => null,
+                    'notes' => null,
                     'currency' => 'EUR',
                     'status' => $statuses[array_rand($statuses)],
                     'constant_symbol' => fake()->optional(0.7)->numerify('####'),
+                    'variable_symbol' => fake()->optional(0.8)->numerify('########'),
                     'note' => fake()->optional(0.5)->sentence(),
                     'created_at' => Carbon::now(),
                     'updated_at' => Carbon::now(),
@@ -340,7 +365,7 @@ class InvoiceSeeder extends Seeder
     }
 
     /**
-     * Generate invoice items for a batch of invoices.
+     * Generate invoice items for a batch of invoices with VAT calculations.
      *
      * @param  array<int>  $invoiceIds
      */
@@ -349,35 +374,53 @@ class InvoiceSeeder extends Seeder
         $itemsBatch = [];
         $invoiceTotals = [];
 
+        $slovakVatRates = [20.0, 10.0, 0.0]; // Slovak VAT rates
+
         foreach ($invoiceIds as $invoiceId) {
             $itemCount = fake()->numberBetween(self::ITEMS_PER_INVOICE_MIN, self::ITEMS_PER_INVOICE_MAX);
-            $invoiceTotal = 0;
+            $invoiceSubtotal = 0;
+            $invoiceTaxAmount = 0;
 
             for ($i = 0; $i < $itemCount; $i++) {
                 $quantity = fake()->numberBetween(1, 20);
-                $unitPrice = fake()->randomFloat(2, 10, 500);
-                $totalPrice = round($quantity * $unitPrice, 2);
-                $invoiceTotal += $totalPrice;
+                $unitPriceWithoutTax = fake()->randomFloat(2, 10, 500);
+                $taxRate = $slovakVatRates[array_rand($slovakVatRates)];
+
+                // Calculate VAT-compliant amounts
+                $subtotal = round($quantity * $unitPriceWithoutTax, 2);
+                $taxAmount = round($subtotal * ($taxRate / 100), 2);
+                $totalPrice = round($subtotal + $taxAmount, 2);
+
+                $invoiceSubtotal += $subtotal;
+                $invoiceTaxAmount += $taxAmount;
 
                 $itemsBatch[] = [
                     'invoice_id' => $invoiceId,
                     'description' => fake()->sentence(fake()->numberBetween(3, 8)),
                     'quantity' => $quantity,
-                    'unit_price' => $unitPrice,
+                    'unit_price_without_tax' => $unitPriceWithoutTax,
+                    'tax_rate' => $taxRate,
+                    'tax_amount' => $taxAmount,
+                    'subtotal' => $subtotal,
+                    'discount_amount' => null,
                     'total_price' => $totalPrice,
                     'created_at' => Carbon::now(),
                     'updated_at' => Carbon::now(),
                 ];
             }
 
-            $invoiceTotals[$invoiceId] = round($invoiceTotal, 2);
+            $invoiceTotals[$invoiceId] = [
+                'subtotal' => round($invoiceSubtotal, 2),
+                'tax_amount' => round($invoiceTaxAmount, 2),
+                'total_amount' => round($invoiceSubtotal + $invoiceTaxAmount, 2),
+            ];
         }
 
         InvoiceItem::insert($itemsBatch);
 
-        // Update invoice totals using Eloquent
-        foreach ($invoiceTotals as $invoiceId => $total) {
-            Invoice::where('id', $invoiceId)->update(['total_amount' => $total]);
+        // Update invoice totals with VAT breakdown using Eloquent
+        foreach ($invoiceTotals as $invoiceId => $totals) {
+            Invoice::where('id', $invoiceId)->update($totals);
         }
     }
 }

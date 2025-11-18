@@ -28,14 +28,28 @@ class InvoiceItemFactory extends Factory
     public function definition(): array
     {
         $quantity = $this->faker->numberBetween(1, 10);
-        $unitPrice = $this->faker->randomFloat(2, 10, 1000);
-        $totalPrice = $quantity * $unitPrice;
+        $unitPriceWithoutTax = $this->faker->randomFloat(2, 10, 1000);
+        $taxRate = $this->faker->randomElement([20.0, 10.0, 0.0]); // Slovak VAT rates
+        $discountAmount = null;
+
+        // Calculate subtotal (quantity * unit price - discount)
+        $subtotal = round($quantity * $unitPriceWithoutTax, 2);
+
+        // Calculate VAT amount
+        $taxAmount = round($subtotal * ($taxRate / 100), 2);
+
+        // Calculate total price (subtotal + VAT)
+        $totalPrice = round($subtotal + $taxAmount, 2);
 
         return [
             'invoice_id' => Invoice::factory(),
             'description' => $this->faker->sentence(),
             'quantity' => $quantity,
-            'unit_price' => $unitPrice,
+            'unit_price_without_tax' => $unitPriceWithoutTax,
+            'tax_rate' => $taxRate,
+            'tax_amount' => $taxAmount,
+            'subtotal' => $subtotal,
+            'discount_amount' => $discountAmount,
             'total_price' => $totalPrice,
         ];
     }

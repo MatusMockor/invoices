@@ -55,6 +55,14 @@
                         <p class="text-xs text-gray-500 mb-0.5 uppercase tracking-wide">Dátum splatnosti</p>
                         <p class="font-semibold text-sm text-purple-600">{{ \Carbon\Carbon::parse($invoice->due_date)->format('d.m.Y') }}</p>
                     </div>
+                    <div class="bg-white/60 p-2.5 rounded-lg border border-purple-100">
+                        <p class="text-xs text-gray-500 mb-0.5 uppercase tracking-wide">Dátum dodania</p>
+                        <p class="font-semibold text-sm text-gray-900">{{ \Carbon\Carbon::parse($invoice->delivery_date)->format('d.m.Y') }}</p>
+                    </div>
+                    <div class="bg-white/60 p-2.5 rounded-lg border border-purple-100">
+                        <p class="text-xs text-gray-500 mb-0.5 uppercase tracking-wide">Spôsob úhrady</p>
+                        <p class="font-semibold text-sm text-gray-900">Bankový prevod</p>
+                    </div>
                 </div>
 
                 <!-- Bank Details -->
@@ -96,9 +104,11 @@
             <thead>
                 <tr class="border-b-2 border-gray-300">
                     <th class="text-left py-3 px-2">Popis</th>
-                    <th class="text-right py-3 px-2 w-20">Počet</th>
-                    <th class="text-right py-3 px-2 w-28">Cena/ks</th>
-                    <th class="text-right py-3 px-2 w-28">Celkom</th>
+                    <th class="text-right py-3 px-2 w-16">Počet</th>
+                    <th class="text-right py-3 px-2 w-24">Cena/ks<br><span class="text-xs font-normal">(bez DPH)</span></th>
+                    <th class="text-right py-3 px-2 w-20">Sadzba<br><span class="text-xs font-normal">DPH</span></th>
+                    <th class="text-right py-3 px-2 w-24">Výška<br><span class="text-xs font-normal">DPH</span></th>
+                    <th class="text-right py-3 px-2 w-28">Celkom<br><span class="text-xs font-normal">(s DPH)</span></th>
                 </tr>
             </thead>
             <tbody>
@@ -106,9 +116,11 @@
                     <tr class="border-b border-gray-200">
                         <td class="py-3 px-2">{{ $item->description }}</td>
                         <td class="text-right py-3 px-2">{{ number_format($item->quantity, 0, ',', ' ') }}</td>
-                        <td class="text-right py-3 px-2">{{ number_format($item->unit_price, 2, ',', ' ') }} {{ $invoice->currency }}</td>
+                        <td class="text-right py-3 px-2">{{ number_format($item->unit_price_without_tax, 2, ',', ' ') }} €</td>
+                        <td class="text-right py-3 px-2">{{ number_format($item->tax_rate, 0) }}%</td>
+                        <td class="text-right py-3 px-2">{{ number_format($item->tax_amount, 2, ',', ' ') }} €</td>
                         <td class="text-right py-3 px-2 font-semibold">
-                            {{ number_format($item->total_price, 2, ',', ' ') }} {{ $invoice->currency }}
+                            {{ number_format($item->total_price, 2, ',', ' ') }} €
                         </td>
                     </tr>
                 @endforeach
@@ -119,12 +131,40 @@
     <!-- Totals -->
     <div class="flex justify-end mb-8">
         <div class="w-80">
-            <div class="flex justify-between py-3 bg-purple-50 px-4 rounded-lg">
-                <span class="font-bold text-lg">Celkom k úhrade:</span>
-                <span class="font-bold text-lg text-purple-600">{{ number_format($invoice->total_amount, 2, ',', ' ') }} {{ $invoice->currency }}</span>
+            <div class="space-y-2">
+                <!-- Subtotal without VAT -->
+                <div class="flex justify-between py-2 px-4 border-b border-gray-200">
+                    <span class="text-gray-700">Základ dane (bez DPH):</span>
+                    <span class="font-semibold">{{ number_format($invoice->subtotal, 2, ',', ' ') }} €</span>
+                </div>
+
+                <!-- VAT Amount -->
+                <div class="flex justify-between py-2 px-4 border-b border-gray-200">
+                    <span class="text-gray-700">DPH {{ number_format($invoice->tax_rate, 0) }}%:</span>
+                    <span class="font-semibold">{{ number_format($invoice->tax_amount, 2, ',', ' ') }} €</span>
+                </div>
+
+                <!-- Total with VAT -->
+                <div class="flex justify-between py-3 bg-purple-50 px-4 rounded-lg mt-2">
+                    <span class="font-bold text-lg">Celkom k úhrade:</span>
+                    <span class="font-bold text-lg text-purple-600">{{ number_format($invoice->total_amount, 2, ',', ' ') }} €</span>
+                </div>
             </div>
         </div>
     </div>
+
+    <!-- Reverse Charge or Tax Exemption Text -->
+    @if($invoice->reverse_charge_text)
+        <div class="mb-4 p-3 bg-yellow-50 border border-yellow-200 rounded">
+            <p class="text-sm font-semibold text-yellow-800">{{ $invoice->reverse_charge_text }}</p>
+        </div>
+    @endif
+
+    @if($invoice->tax_exemption_text)
+        <div class="mb-4 p-3 bg-blue-50 border border-blue-200 rounded">
+            <p class="text-sm font-semibold text-blue-800">{{ $invoice->tax_exemption_text }}</p>
+        </div>
+    @endif
 
     <!-- Footer Note -->
     <div class="border-t border-gray-200 pt-4">

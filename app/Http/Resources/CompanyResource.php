@@ -21,6 +21,8 @@ class CompanyResource extends JsonResource
             'ico' => $this->ico,
             'dic' => $this->dic,
             'ic_dph' => $this->ic_dph,
+            'vat_payer_status' => $this->vat_payer_status?->value,
+            'vat_payer_status_label' => $this->vat_payer_status?->label(),
             'address' => $this->street,
             'city' => $this->city,
             'postal_code' => $this->postal_code,

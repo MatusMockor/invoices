@@ -40,6 +40,12 @@ class InvoiceFactory extends Factory
         $year = 2025;
         $invoiceNumber = $year.str_pad((string) self::$invoiceCounter++, 4, '0', STR_PAD_LEFT);
 
+        // Generate VAT-compliant amounts
+        $subtotal = fake()->randomFloat(2, 100, 10000);
+        $taxRate = fake()->randomElement([20.0, 10.0, 0.0]); // Slovak VAT rates
+        $taxAmount = round($subtotal * ($taxRate / 100), 2);
+        $totalAmount = round($subtotal + $taxAmount, 2);
+
         return [
             'user_id' => User::factory(),
             'invoice_number' => $invoiceNumber,
@@ -56,7 +62,16 @@ class InvoiceFactory extends Factory
             'company_city' => null,
             'company_zip' => null,
             'company_country' => null,
-            'total_amount' => fake()->randomFloat(2, 100, 10000),
+            'subtotal' => $subtotal,
+            'tax_amount' => $taxAmount,
+            'tax_rate' => $taxRate,
+            'total_amount' => $totalAmount,
+            'discount_amount' => null,
+            'discount_percentage' => null,
+            'reverse_charge' => false,
+            'tax_exemption_reason' => null,
+            'special_text' => null,
+            'notes' => null,
             'currency' => 'EUR',
             'constant_symbol' => fake()->optional(0.7)->numerify('####'),
             'note' => fake()->optional(0.7)->sentence(),

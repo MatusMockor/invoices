@@ -88,6 +88,14 @@ interface CompanyRepository
     public function updateVatData(string $ico, array $vatData): bool;
 
     /**
+     * Update VAT data for multiple companies in a batch transaction.
+     *
+     * @param  array<string, array<string, mixed>>  $batchData  Array where keys are ICOs and values are VAT data arrays
+     * @return array{updated: int, not_found: int}
+     */
+    public function updateVatDataBatch(array $batchData): array;
+
+    /**
      * Update DIC data for a company by ICO.
      *
      * @param  array<string, mixed>  $dicData

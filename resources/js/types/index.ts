@@ -15,15 +15,30 @@ export interface Company {
   ico: string;
   dic: string | null;
   ic_dph: string | null;
+  street: string | null;
   address: string;
   city: string;
   postal_code: string;
   country: string;
-  phone: string | null;
-  email: string | null;
-  bank_account: string | null;
+
+  // Banking information (§ 74 ods. 1)
   iban: string | null;
   swift: string | null;
+  bank_name: string | null;
+
+  // Contact information
+  phone: string | null;
+  email: string | null;
+  website: string | null;
+
+  // Company details
+  company_type: string | null; // s.r.o., a.s., živnosť, etc.
+  registration_office: string | null;
+  registration_number: string | null;
+
+  // Legacy
+  bank_account: string | null;
+
   created_at: string;
   updated_at: string;
 }
@@ -39,10 +54,20 @@ export interface UserCompany {
   city: string;
   postal_code: string;
   country: string;
-  phone: string | null;
-  email: string | null;
+
+  // Banking information (§ 74 ods. 1)
   iban: string | null;
   swift: string | null;
+
+  // Contact information
+  phone: string | null;
+  email: string | null;
+  website: string | null;
+
+  // Company details
+  company_type: string; // živnosť or s.r.o.
+  registration_number: string; // Registration number in business or trade register
+
   status: 'active' | 'inactive';
   vehicles: number;
   clients: number;
@@ -78,9 +103,21 @@ export interface Invoice {
   variable_symbol: string | null;
   constant_symbol: string | null;
   specific_symbol: string | null;
-  total_amount: number;
-  total_amount_without_vat: number;
-  vat_amount: number;
+
+  // VAT and totals (§ 74 ods. 1 Slovak invoice compliance)
+  subtotal: number; // Total without VAT
+  tax_amount: number; // Total VAT amount
+  tax_rate: number; // Default VAT rate (20%, 10%, 0%)
+  total_amount: number; // Total with VAT
+  discount_amount?: number | null;
+  discount_percentage?: number | null;
+  reverse_charge_text?: string | null; // For reverse charge invoices
+  tax_exemption_text?: string | null; // For tax-exempt invoices
+
+  // Legacy fields (for backwards compatibility)
+  total_amount_without_vat?: number;
+  vat_amount?: number;
+
   currency: string;
   notes: string | null;
   status: 'draft' | 'sent' | 'paid' | 'overdue' | 'cancelled';
@@ -109,8 +146,18 @@ export interface InvoiceItem {
   invoice_id: number;
   description: string;
   quantity: number;
-  unit_price: number;
-  total_price: number;
+
+  // VAT fields (§ 74 ods. 1 Slovak invoice compliance)
+  unit_price_without_tax: number; // Price per unit without VAT
+  tax_rate: number; // VAT rate for this item (20%, 10%, 0%)
+  tax_amount: number; // Calculated VAT amount for this item
+  subtotal: number; // quantity * unit_price_without_tax
+  discount_amount?: number | null; // Optional discount
+  total_price: number; // subtotal + tax_amount
+
+  // Legacy field (for backwards compatibility)
+  unit_price?: number;
+
   created_at: string;
   updated_at: string;
 }

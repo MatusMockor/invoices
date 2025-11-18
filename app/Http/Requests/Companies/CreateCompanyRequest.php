@@ -4,7 +4,9 @@ declare(strict_types=1);
 
 namespace App\Http\Requests\Companies;
 
+use App\Enums\VatPayerStatus;
 use Illuminate\Foundation\Http\FormRequest;
+use Illuminate\Validation\Rule;
 
 final class CreateCompanyRequest extends FormRequest
 {
@@ -32,6 +34,7 @@ final class CreateCompanyRequest extends FormRequest
             'ico' => 'required|string|max:255',
             'dic' => 'nullable|string|max:255',
             'ic_dph' => 'nullable|string|max:255',
+            'vat_payer_status' => ['nullable', Rule::in(VatPayerStatus::values())],
         ];
     }
 
@@ -73,5 +76,12 @@ final class CreateCompanyRequest extends FormRequest
     public function getIcDph(): ?string
     {
         return $this->validated('ic_dph');
+    }
+
+    public function getVatPayerStatus(): ?VatPayerStatus
+    {
+        $value = $this->validated('vat_payer_status');
+
+        return $value ? VatPayerStatus::from($value) : null;
     }
 }

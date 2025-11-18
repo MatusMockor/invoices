@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Models;
 
+use App\Enums\VatPayerStatus;
 use Illuminate\Database\Eloquent\Casts\Attribute;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
@@ -23,6 +24,7 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
  * @property string $ico Company identification number
  * @property string|null $dic Tax identification number
  * @property string|null $ic_dph VAT identification number
+ * @property string|null $vat_payer_status VAT payer status
  * @property string|null $iban Bank account number in IBAN format
  * @property string|null $swift Bank identifier code
  * @property string|null $phone Contact phone number
@@ -55,6 +57,7 @@ class UserCompany extends Model
         'ico',
         'dic',
         'ic_dph',
+        'vat_payer_status',
         'iban',
         'swift',
         'phone',
@@ -108,6 +111,8 @@ class UserCompany extends Model
      */
     protected function casts(): array
     {
-        return [];
+        return [
+            'vat_payer_status' => VatPayerStatus::class,
+        ];
     }
 }
