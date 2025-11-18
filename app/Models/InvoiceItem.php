@@ -16,7 +16,11 @@ use Illuminate\Support\Carbon;
  * @property int $invoice_id
  * @property string $description
  * @property float $quantity
- * @property float $unit_price
+ * @property float $unit_price_without_tax
+ * @property float $tax_rate
+ * @property float $tax_amount
+ * @property float $subtotal
+ * @property float|null $discount_amount
  * @property float $total_price
  * @property Carbon $created_at
  * @property Carbon $updated_at
@@ -30,13 +34,21 @@ class InvoiceItem extends Model
         'invoice_id',
         'description',
         'quantity',
-        'unit_price',
+        'unit_price_without_tax',
+        'tax_rate',
+        'tax_amount',
+        'subtotal',
+        'discount_amount',
         'total_price',
     ];
 
     protected $casts = [
         'quantity' => 'float',
-        'unit_price' => 'float',
+        'unit_price_without_tax' => 'float',
+        'tax_rate' => 'float',
+        'tax_amount' => 'float',
+        'subtotal' => 'float',
+        'discount_amount' => 'float',
         'total_price' => 'float',
     ];
 

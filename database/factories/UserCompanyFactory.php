@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Database\Factories;
 
+use App\Enums\VatPayerStatus;
 use App\Models\UserCompany;
 use Illuminate\Database\Eloquent\Factories\Factory;
 
@@ -27,6 +28,7 @@ class UserCompanyFactory extends Factory
     public function definition(): array
     {
         $companyTypes = ['živnosť', 's.r.o.'];
+        $icDph = fake()->optional(0.7)->passthrough('SK'.fake()->numerify('##########'));
 
         return [
             'user_id' => \App\Models\User::factory(),
@@ -37,7 +39,11 @@ class UserCompanyFactory extends Factory
             'postal_code' => fake()->numerify('#####'),
             'country' => 'Slovakia',
             'dic' => fake()->numerify('##########'),
-            'ic_dph' => 'SK'.fake()->numerify('##########'),
+            'ic_dph' => $icDph,
+            'vat_payer_status' => $icDph ? fake()->randomElement([
+                VatPayerStatus::VAT_PAYER->value,
+                VatPayerStatus::VAT_PAYER_PARAGRAPH_7->value,
+            ]) : VatPayerStatus::NOT_VAT_PAYER->value,
             'iban' => fake()->iban('SK'),
             'swift' => fake()->swiftBicNumber(),
             'phone' => fake()->phoneNumber(),

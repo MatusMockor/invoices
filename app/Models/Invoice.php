@@ -34,6 +34,15 @@ use Illuminate\Support\Carbon;
  * @property string|null $company_zip
  * @property string|null $company_country
  * @property float $total_amount
+ * @property float $subtotal
+ * @property float $tax_amount
+ * @property float $tax_rate
+ * @property float|null $discount_amount
+ * @property float|null $discount_percentage
+ * @property bool $reverse_charge
+ * @property string|null $tax_exemption_reason
+ * @property string|null $special_text
+ * @property string|null $notes
  * @property string $currency
  * @property string|null $variable_symbol
  * @property string|null $constant_symbol
@@ -69,6 +78,15 @@ class Invoice extends Model
         'company_zip',
         'company_country',
         'total_amount',
+        'subtotal',
+        'tax_amount',
+        'tax_rate',
+        'discount_amount',
+        'discount_percentage',
+        'reverse_charge',
+        'tax_exemption_reason',
+        'special_text',
+        'notes',
         'currency',
         'variable_symbol',
         'constant_symbol',
@@ -82,6 +100,12 @@ class Invoice extends Model
         'due_date' => 'date',
         'delivery_date' => 'date',
         'total_amount' => 'float',
+        'subtotal' => 'float',
+        'tax_amount' => 'float',
+        'tax_rate' => 'float',
+        'discount_amount' => 'float',
+        'discount_percentage' => 'float',
+        'reverse_charge' => 'boolean',
         'status' => InvoiceStatus::class,
     ];
 

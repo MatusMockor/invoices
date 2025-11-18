@@ -9,6 +9,8 @@ use App\Models\Invoice;
 use App\Repositories\Contracts\CompanyRepository as CompanyRepositoryContract;
 use Illuminate\Contracts\Pagination\LengthAwarePaginator;
 use Illuminate\Database\Eloquent\Collection;
+use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Log;
 
 class CompanyRepository implements CompanyRepositoryContract
 {
@@ -142,9 +144,9 @@ class CompanyRepository implements CompanyRepositoryContract
     }
 
     /**
-     * Update VAT data (ic_dph) for a company by ICO.
+     * Update VAT data (ic_dph and vat_payer_status) for a company by ICO.
      *
-     * @param  array<string, mixed>  $vatData  Should contain 'ic_dph' key
+     * @param  array<string, mixed>  $vatData  Should contain 'ic_dph' and 'vat_payer_status' keys
      */
     public function updateVatData(string $ico, array $vatData): bool
     {
@@ -154,10 +156,41 @@ class CompanyRepository implements CompanyRepositoryContract
             return false;
         }
 
-        // Only update ic_dph field
+        // Update ic_dph and vat_payer_status fields
         return $company->update([
             'ic_dph' => $vatData['ic_dph'] ?? null,
+            'vat_payer_status' => $vatData['vat_payer_status'] ?? null,
         ]);
+    }
+
+    /**
+     * Update VAT data for multiple companies in a batch transaction.
+     *
+     * @param  array<string, array<string, mixed>>  $batchData  Array where keys are ICOs and values are VAT data arrays
+     * @return array{updated: int, not_found: int}
+     */
+    public function updateVatDataBatch(array $batchData): array
+    {
+        $stats = [
+            'updated' => 0,
+            'not_found' => 0,
+        ];
+
+        DB::transaction(function () use ($batchData, &$stats): void {
+            foreach ($batchData as $ico => $vatData) {
+                $updated = $this->updateVatData($ico, $vatData);
+
+                if ($updated) {
+                    $stats['updated']++;
+                    continue;
+                }
+
+                $stats['not_found']++;
+                Log::debug('Company not found for VAT update', ['ico' => $ico]);
+            }
+        });
+
+        return $stats;
     }
 
     /**

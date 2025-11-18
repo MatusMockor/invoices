@@ -2,9 +2,11 @@ import { useNavigate, useParams } from "react-router-dom";
 import { useForm, useFieldArray } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";
-import { Save, ArrowLeft, Loader2 } from "lucide-react";
+import { Save, ArrowLeft, Loader2, FileText, CreditCard, Receipt, Calculator } from "lucide-react";
 import { DashboardLayout } from "@/components/dashboard/DashboardLayout";
 import { Button } from "@/components/ui/button";
+import { Label } from "@/components/ui/label";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useToast } from "@/hooks/use-toast";
 import { useState, useEffect, useCallback } from "react";
 import { useInvoice, useInvoices } from "@/hooks/useInvoices";
@@ -14,8 +16,10 @@ import { ClientInformationSection } from "@/components/invoices/ClientInformatio
 import { CustomCompanySection } from "@/components/invoices/CustomCompanySection";
 import { InvoiceDateSection } from "@/components/invoices/InvoiceDateSection";
 import { PaymentSymbolsSection } from "@/components/invoices/PaymentSymbolsSection";
+import { PaymentDPHSection } from "@/components/invoices/PaymentDPHSection";
 import { InvoiceNumberSection } from "@/components/invoices/InvoiceNumberSection";
 import { InvoiceItemsSection } from "@/components/invoices/InvoiceItemsSection";
+import { InvoiceSummarySection } from "@/components/invoices/InvoiceSummarySection";
 import { InvoiceStatusDropdown } from "@/components/invoices/InvoiceStatusDropdown";
 import type { InvoiceFormData } from "@/components/invoices/ClientInformationSection";
 import { Company } from "@/types/company";
@@ -45,14 +49,28 @@ const invoiceSchema = z.object({
   variableSymbol: z.string().trim().min(1, "Variabilný symbol je povinný").max(20),
   constantSymbol: z.string().trim().max(20).optional(),
   specificSymbol: z.string().trim().max(20).optional(),
+  reverseCharge: z.boolean().optional().default(false),
+  taxExemptionReason: z.string().trim().max(200).optional(),
+  specialText: z.string().trim().max(200).optional(),
+  notes: z.string().trim().max(500).optional(),
   items: z.array(
     z.object({
       description: z.string().trim().min(1, "Popis je povinný").max(200),
       quantity: z.number().min(1, "Množstvo musí byť aspoň 1"),
       price: z.number().min(0, "Cena musí byť nezáporná"),
+      tax_rate: z.number().min(0).max(100).default(20), // Slovak VAT rates
     })
   ).min(1, "Aspoň jedna položka je povinná"),
 }).superRefine((data, ctx) => {
+  // Conditional validation for reverse charge - require tax exemption reason
+  if (data.reverseCharge && (!data.taxExemptionReason || data.taxExemptionReason.trim() === '')) {
+    ctx.addIssue({
+      code: z.ZodIssueCode.custom,
+      message: "Pri prenose daňovej povinnosti je potrebné uviesť dôvod oslobodenia od dane",
+      path: ["taxExemptionReason"],
+    });
+  }
+
   // Conditional validation based on useCustomCompany
   if (data.useCustomCompany) {
     // Custom company mode - require custom fields
@@ -143,7 +161,7 @@ const NewInvoice = () => {
     resolver: zodResolver(invoiceSchema),
     defaultValues: {
       invoiceNumber: isEditMode ? "" : generatedInvoiceNumber,
-      items: [{ description: "", quantity: 1, price: 0 }],
+      items: [{ description: "", quantity: 1, price: 0, tax_rate: 20 }],
       variableSymbol: isEditMode ? "" : generatedInvoiceNumber,
       constantSymbol: "",
       specificSymbol: "",
@@ -151,6 +169,10 @@ const NewInvoice = () => {
       deliveryDate: new Date(),
       dueDate: new Date(new Date().setDate(new Date().getDate() + 15)),
       useCustomCompany: false,
+      reverseCharge: false,
+      taxExemptionReason: "",
+      specialText: "",
+      notes: "",
     },
   });
 
@@ -227,7 +249,7 @@ const NewInvoice = () => {
       // Reset form to default values
       reset({
         invoiceNumber: generatedInvoiceNumber,
-        items: [{ description: "", quantity: 1, price: 0 }],
+        items: [{ description: "", quantity: 1, price: 0, tax_rate: 20 }],
         variableSymbol: generatedInvoiceNumber,
         constantSymbol: "",
         specificSymbol: "",
@@ -235,6 +257,10 @@ const NewInvoice = () => {
         deliveryDate: new Date(),
         dueDate: new Date(new Date().setDate(new Date().getDate() + 15)),
         useCustomCompany: false,
+        reverseCharge: false,
+        taxExemptionReason: "",
+        specialText: "",
+        notes: "",
         clientName: "",
         clientStreet: "",
         clientCity: "",
@@ -327,6 +353,12 @@ const NewInvoice = () => {
       setValue("constantSymbol", invoice.constant_symbol || "");
       setValue("specificSymbol", invoice.specific_symbol || "");
 
+      // Set VAT and notes fields
+      setValue("reverseCharge", invoice.reverse_charge || false);
+      setValue("taxExemptionReason", invoice.tax_exemption_reason || "");
+      setValue("specialText", invoice.special_text || "");
+      setValue("notes", invoice.notes || "");
+
       // Set dates
       const issueDateObj = new Date(invoice.issue_date);
       const dueDateObj = new Date(invoice.due_date);
@@ -343,7 +375,8 @@ const NewInvoice = () => {
         const formattedItems = invoice.items.map(item => ({
           description: item.description,
           quantity: Number(item.quantity),
-          price: Number(item.unit_price),
+          price: Number(item.unit_price_without_tax || item.unit_price || 0),
+          tax_rate: Number(item.tax_rate || 20),
         }));
         setValue("items", formattedItems);
       }
@@ -415,11 +448,16 @@ const NewInvoice = () => {
         variableSymbol: data.variableSymbol,
         constantSymbol: data.constantSymbol,
         specificSymbol: data.specificSymbol,
+        reverseCharge: data.reverseCharge || false,
+        taxExemptionReason: data.taxExemptionReason,
+        specialText: data.specialText,
+        notes: data.notes,
         currency: 'EUR',
         items: data.items.map(item => ({
           description: item.description,
           quantity: item.quantity,
-          price: item.price,
+          price: item.price, // Backend expects this as unit_price_without_tax
+          tax_rate: item.tax_rate || 20,
         })),
       };
 
@@ -536,85 +574,127 @@ const NewInvoice = () => {
           </div>
         </div>
 
-        <form onSubmit={handleSubmit(onSubmit)} className="space-y-8">
-          {/* Invoice Number - at the TOP for better UX */}
-          <InvoiceNumberSection form={form} />
+        <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
+          <Tabs defaultValue="basic" className="w-full">
+            <TabsList className="grid w-full grid-cols-4 h-auto">
+              <TabsTrigger value="basic" className="flex items-center gap-2 py-3">
+                <FileText className="h-4 w-4" />
+                <span className="hidden sm:inline">Základné</span>
+              </TabsTrigger>
+              <TabsTrigger value="payment" className="flex items-center gap-2 py-3">
+                <CreditCard className="h-4 w-4" />
+                <span className="hidden sm:inline">Platba</span>
+              </TabsTrigger>
+              <TabsTrigger value="items" className="flex items-center gap-2 py-3">
+                <Receipt className="h-4 w-4" />
+                <span className="hidden sm:inline">Položky</span>
+              </TabsTrigger>
+              <TabsTrigger value="summary" className="flex items-center gap-2 py-3">
+                <Calculator className="h-4 w-4" />
+                <span className="hidden sm:inline">Súhrn</span>
+              </TabsTrigger>
+            </TabsList>
 
-          {/* Client Information */}
-          {!useCustomCompany ? (
-            <ClientInformationSection
-              form={form}
-              isEditMode={isEditMode}
-              useCustomCompany={useCustomCompany}
-              icoSearch={icoSearch}
-              setIcoSearch={setIcoSearch}
-              isSearching={isSearching}
-              showSuggestions={showSuggestions}
-              setShowSuggestions={setShowSuggestions}
-              filteredCompanies={filteredCompanies}
-              onCompanySelect={handleCompanySelect}
-              selectedCompany={selectedCompany}
-              onClearSelection={handleClearSelection}
-              searchError={searchError}
-              isSelectingCompany={isSelectingCompany}
-            />
-          ) : (
-            <div className="bg-gradient-card rounded-xl p-6 border-2 border-primary/30 shadow-elegant-sm">
-              <h3 className="text-lg font-bold text-primary mb-4 flex items-center gap-2">
-                <span className="w-8 h-8 bg-primary text-primary-foreground rounded-full flex items-center justify-center text-sm">2</span>
-                Informácie o klientovi
-              </h3>
+            {/* Tab 1: Základné údaje */}
+            <TabsContent value="basic" className="space-y-6 mt-6">
+              {/* Single card with 2-column grid layout */}
+              <div className="rounded-lg border bg-card text-card-foreground shadow-sm p-6">
+                <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                  {/* Left column: Client Information */}
+                  <div className="space-y-4">
+                    <h3 className="text-lg font-semibold mb-4">Klient</h3>
 
-              {/* Toggle between standard and custom company */}
-              <div className="flex items-center space-x-2 mb-6 p-4 bg-card/50 rounded-lg border border-primary/20">
-                <input
-                  type="checkbox"
-                  id="useCustomCompany"
-                  {...register("useCustomCompany")}
-                  className="h-4 w-4 rounded border-primary/30 text-primary focus:ring-primary"
-                />
-                <label htmlFor="useCustomCompany" className="cursor-pointer text-sm">
-                  Zadať vlastné údaje o spoločnosti (neregistrovaná v databáze)
-                </label>
+                    {/* Toggle between standard and custom company */}
+                    <div className="flex items-center space-x-2 mb-4 p-3 bg-muted/30 rounded-lg border">
+                      <input
+                        type="checkbox"
+                        id="useCustomCompany"
+                        {...register("useCustomCompany")}
+                        className="h-4 w-4 rounded border-input text-primary focus:ring-primary"
+                      />
+                      <Label htmlFor="useCustomCompany" className="cursor-pointer text-sm">
+                        Zadať vlastné údaje o spoločnosti
+                      </Label>
+                    </div>
+
+                    {!useCustomCompany ? (
+                      <ClientInformationSection
+                        form={form}
+                        isEditMode={isEditMode}
+                        useCustomCompany={useCustomCompany}
+                        icoSearch={icoSearch}
+                        setIcoSearch={setIcoSearch}
+                        isSearching={isSearching}
+                        showSuggestions={showSuggestions}
+                        setShowSuggestions={setShowSuggestions}
+                        filteredCompanies={filteredCompanies}
+                        onCompanySelect={handleCompanySelect}
+                        selectedCompany={selectedCompany}
+                        onClearSelection={handleClearSelection}
+                        searchError={searchError}
+                        isSelectingCompany={isSelectingCompany}
+                      />
+                    ) : (
+                      <CustomCompanySection
+                        form={form}
+                        isEditMode={isEditMode}
+                        useCustomCompany={useCustomCompany}
+                      />
+                    )}
+                  </div>
+
+                  {/* Right column: Invoice Details + Dates */}
+                  <div className="space-y-6">
+                    {/* Invoice Details */}
+                    <div>
+                      <h3 className="text-lg font-semibold mb-4">Detaily faktúry</h3>
+                      <InvoiceNumberSection form={form} />
+                    </div>
+
+                    {/* Dates */}
+                    <div>
+                      <h3 className="text-lg font-semibold mb-4">Dátumy</h3>
+                      <InvoiceDateSection
+                        form={form}
+                        issueDate={issueDate}
+                        setIssueDate={setIssueDate}
+                        dueDate={dueDate}
+                        setDueDate={setDueDate}
+                        deliveryDate={deliveryDate}
+                        setDeliveryDate={setDeliveryDate}
+                        dueDateDays={dueDateDays}
+                        setDueDateDays={setDueDateDays}
+                      />
+                    </div>
+                  </div>
+                </div>
               </div>
+            </TabsContent>
 
-              <CustomCompanySection
+            {/* Tab 2: Platba & DPH */}
+            <TabsContent value="payment" className="space-y-6 mt-6">
+              <PaymentDPHSection form={form} />
+            </TabsContent>
+
+            {/* Tab 3: Položky */}
+            <TabsContent value="items" className="space-y-6 mt-6">
+              <InvoiceItemsSection
                 form={form}
-                isEditMode={isEditMode}
-                useCustomCompany={useCustomCompany}
+                fields={fields}
+                append={append}
+                remove={remove}
+                items={items}
               />
-            </div>
-          )}
+            </TabsContent>
 
-          {/* Dates */}
-          <InvoiceDateSection
-            form={form}
-            issueDate={issueDate}
-            setIssueDate={setIssueDate}
-            dueDate={dueDate}
-            setDueDate={setDueDate}
-            deliveryDate={deliveryDate}
-            setDeliveryDate={setDeliveryDate}
-            dueDateDays={dueDateDays}
-            setDueDateDays={setDueDateDays}
-          />
-
-          {/* Payment Symbols */}
-          <PaymentSymbolsSection
-            form={form}
-          />
-
-          {/* Items */}
-          <InvoiceItemsSection
-            form={form}
-            fields={fields}
-            append={append}
-            remove={remove}
-            items={items}
-          />
+            {/* Tab 4: Súhrn */}
+            <TabsContent value="summary" className="space-y-6 mt-6">
+              <InvoiceSummarySection form={form} items={items} />
+            </TabsContent>
+          </Tabs>
 
           {/* Actions */}
-          <div className="flex gap-3 justify-end">
+          <div className="flex gap-3 justify-end border-t pt-6 mt-6">
             <Button
               type="button"
               variant="outline"

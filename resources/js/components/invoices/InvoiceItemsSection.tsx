@@ -1,8 +1,10 @@
 import { UseFormReturn, UseFieldArrayReturn } from "react-hook-form";
-import { Plus, Trash2 } from "lucide-react";
+import { Plus, Trash2, Receipt } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { Card } from "@/components/ui/card";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { InvoiceFormData } from "./ClientInformationSection";
 
 interface InvoiceItemsSectionProps {
@@ -20,116 +22,118 @@ export const InvoiceItemsSection = ({
   remove,
   items,
 }: InvoiceItemsSectionProps) => {
-  const { register, formState: { errors } } = form;
-
-  const calculateTotal = () => {
-    return items.reduce((total, item) => {
-      const quantity = item.quantity || 0;
-      const price = item.price || 0;
-      return total + (quantity * price);
-    }, 0);
-  };
+  const { register, formState: { errors }, watch, setValue } = form;
+  const reverseCharge = watch("reverseCharge");
 
   return (
-    <>
-      <div className="bg-gradient-card rounded-xl p-6 border-2 border-primary/30 shadow-elegant-sm">
-        <h3 className="text-lg font-bold text-primary mb-4 flex items-center gap-2">
-          <span className="w-8 h-8 bg-primary text-primary-foreground rounded-full flex items-center justify-center text-sm">5</span>
-          Položky faktúry
-        </h3>
-        <div className="space-y-4">
-          {fields.map((field, index) => (
-            <div
-              key={field.id}
-              className="grid grid-cols-12 gap-3 p-4 bg-card rounded-lg border border-primary/20"
-            >
-              <div className="col-span-5 space-y-2">
-                <Label htmlFor={`description-${index}`}>Popis</Label>
+    <div className="bg-gradient-to-br from-background to-primary/5 rounded-xl p-6 border-2 border-primary/20 shadow-elegant-sm">
+      <div className="flex justify-between items-center mb-6">
+        <div className="flex items-center gap-3">
+          <div className="p-2 rounded-lg bg-primary/10">
+            <Receipt className="h-5 w-5 text-primary" />
+          </div>
+          <h3 className="text-lg font-semibold">Položky faktúry</h3>
+        </div>
+        <Button
+          type="button"
+          variant="default"
+          size="sm"
+          onClick={() => append({ description: "", quantity: 1, price: 0, tax_rate: 20 })}
+        >
+          <Plus className="h-4 w-4 mr-2" />
+          Pridať položku
+        </Button>
+      </div>
+
+      <div className="space-y-4">
+        {fields.map((field, index) => (
+          <Card key={field.id} className="p-5 bg-background border-primary/20 shadow-sm">
+            <div className="grid grid-cols-12 gap-4">
+              <div className="col-span-12 lg:col-span-5">
+                <Label className="text-sm font-medium">Popis *</Label>
                 <Input
-                  id={`description-${index}`}
                   {...register(`items.${index}.description`)}
-                  placeholder="Webový dizajn"
-                  className="border-primary/30"
+                  placeholder="Služba alebo tovar"
+                  className="mt-1.5"
                 />
                 {errors.items?.[index]?.description && (
-                  <p className="text-sm text-destructive">
+                  <p className="text-sm text-destructive mt-1">
                     {errors.items[index]?.description?.message}
                   </p>
                 )}
               </div>
-              <div className="col-span-2 space-y-2">
-                <Label htmlFor={`quantity-${index}`}>Počet</Label>
+              <div className="col-span-6 sm:col-span-3 lg:col-span-1">
+                <Label className="text-sm font-medium">Počet</Label>
                 <Input
-                  id={`quantity-${index}`}
                   type="number"
-                  {...register(`items.${index}.quantity`, {
-                    valueAsNumber: true,
-                  })}
-                  placeholder="1"
+                  {...register(`items.${index}.quantity`, { valueAsNumber: true })}
                   min="1"
-                  className="border-primary/30"
+                  className="mt-1.5"
                 />
-                {errors.items?.[index]?.quantity && (
-                  <p className="text-sm text-destructive">
-                    {errors.items[index]?.quantity?.message}
-                  </p>
-                )}
               </div>
-              <div className="col-span-3 space-y-2">
-                <Label htmlFor={`price-${index}`}>Cena/ks (€)</Label>
+              <div className="col-span-6 sm:col-span-3 lg:col-span-2">
+                <Label className="text-sm font-medium">Cena/ks €</Label>
                 <Input
-                  id={`price-${index}`}
                   type="number"
-                  {...register(`items.${index}.price`, {
-                    valueAsNumber: true,
-                  })}
-                  placeholder="0.00"
-                  min="0"
                   step="0.01"
-                  className="border-primary/30"
+                  {...register(`items.${index}.price`, { valueAsNumber: true })}
+                  min="0"
+                  placeholder="0.00"
+                  className="mt-1.5"
                 />
-                {errors.items?.[index]?.price && (
-                  <p className="text-sm text-destructive">
-                    {errors.items[index]?.price?.message}
-                  </p>
-                )}
               </div>
-              <div className="col-span-2 flex items-end">
-                {fields.length > 1 && (
+              <div className="col-span-6 sm:col-span-3 lg:col-span-1">
+                <Label className="text-sm font-medium">DPH %</Label>
+                <Select
+                  value={watch(`items.${index}.tax_rate`)?.toString() || "20"}
+                  onValueChange={(value) => setValue(`items.${index}.tax_rate`, Number(value))}
+                >
+                  <SelectTrigger className="mt-1.5">
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent className="bg-popover">
+                    <SelectItem value="0">0%</SelectItem>
+                    <SelectItem value="10">10%</SelectItem>
+                    <SelectItem value="20">20%</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+              <div className="col-span-12 sm:col-span-9 lg:col-span-2 flex flex-col justify-end">
+                <Label className="text-sm font-medium mb-1.5">
+                  {reverseCharge ? "Celkom bez DPH" : "Celkom s DPH"}
+                </Label>
+                <div className="h-10 flex items-center px-3 font-bold text-lg text-primary bg-primary/10 rounded-md">
+                  {(() => {
+                    const qty = watch(`items.${index}.quantity`) || 0;
+                    const price = watch(`items.${index}.price`) || 0;
+                    const taxRate = watch(`items.${index}.tax_rate`) || 20;
+                    const subtotal = qty * price;
+                    const total = reverseCharge ? subtotal : subtotal + (subtotal * (taxRate / 100));
+                    return total.toFixed(2);
+                  })()} €
+                </div>
+              </div>
+              {fields.length > 1 && (
+                <div className="col-span-12 sm:col-span-3 lg:col-span-1 flex lg:absolute lg:right-5 lg:top-5">
                   <Button
                     type="button"
-                    variant="outline"
-                    size="icon"
+                    variant="ghost"
+                    size="sm"
                     onClick={() => remove(index)}
-                    className="border-destructive/30 text-destructive hover:bg-destructive/10"
+                    className="text-destructive hover:text-destructive hover:bg-destructive/10 w-full lg:w-auto"
                   >
-                    <Trash2 className="h-4 w-4" />
+                    <Trash2 className="h-4 w-4 mr-2" />
+                    Odstrániť
                   </Button>
-                )}
-              </div>
+                </div>
+              )}
             </div>
-          ))}
-          <Button
-            type="button"
-            variant="outline"
-            onClick={() => append({ description: "", quantity: 1, price: 0 })}
-            className="w-full border-primary/30 text-primary hover:bg-primary/10"
-          >
-            <Plus className="h-4 w-4 mr-2" />
-            Pridať položku
-          </Button>
-          {errors.items && (
-            <p className="text-sm text-destructive">{errors.items.message}</p>
-          )}
-        </div>
+          </Card>
+        ))}
       </div>
-
-      {/* Total calculation display */}
-      <div className="flex justify-between items-center pt-6 pb-8 border-t border-border bg-card rounded-xl p-6 shadow-elegant-sm">
-        <div className="text-lg font-semibold text-foreground">
-          Celkom: <span className="text-2xl text-primary ml-2">€{calculateTotal().toFixed(2)}</span>
-        </div>
-      </div>
-    </>
+      {errors.items && (
+        <p className="text-sm text-destructive mt-2">{errors.items.message}</p>
+      )}
+    </div>
   );
 };

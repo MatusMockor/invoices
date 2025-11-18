@@ -17,7 +17,7 @@ class InvoiceResource extends JsonResource
     {
         return [
             'id' => $this->id,
-            'company_id' => $this->supplier_company_id,
+            'supplier_company_id' => $this->supplier_company_id,
             'business_entity_id' => $this->business_entity_id,
             'invoice_number' => $this->invoice_number,
             'issue_date' => $this->issue_date->format('Y-m-d'),
@@ -26,11 +26,17 @@ class InvoiceResource extends JsonResource
             'variable_symbol' => $this->variable_symbol ?? null,
             'constant_symbol' => $this->constant_symbol,
             'specific_symbol' => $this->specific_symbol ?? null,
+            'subtotal' => $this->subtotal,
+            'tax_amount' => $this->tax_amount,
+            'tax_rate' => $this->tax_rate,
             'total_amount' => $this->total_amount,
-            'total_amount_without_vat' => $this->calculateTotalWithoutVat(),
-            'vat_amount' => $this->calculateVatAmount(),
+            'discount_amount' => $this->discount_amount,
+            'discount_percentage' => $this->discount_percentage,
+            'reverse_charge' => $this->reverse_charge ?? false,
+            'tax_exemption_reason' => $this->tax_exemption_reason,
+            'special_text' => $this->special_text,
             'currency' => $this->currency,
-            'notes' => $this->note,
+            'notes' => $this->notes ?? $this->note,
             'status' => $this->status,
             'created_at' => $this->created_at?->toISOString(),
             'updated_at' => $this->updated_at?->toISOString(),
@@ -51,19 +57,5 @@ class InvoiceResource extends JsonResource
             'items' => InvoiceItemResource::collection($this->whenLoaded('items')),
             'qr_code' => $this->qr_code ?? null,
         ];
-    }
-
-    private function calculateTotalWithoutVat(): float
-    {
-        if (! $this->relationLoaded('items')) {
-            return 0;
-        }
-
-        return $this->items->sum('total_price');
-    }
-
-    private function calculateVatAmount(): float
-    {
-        return 0;
     }
 }

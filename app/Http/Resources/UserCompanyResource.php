@@ -20,6 +20,8 @@ class UserCompanyResource extends JsonResource
             'ico' => $this->ico,
             'dic' => $this->dic,
             'ic_dph' => $this->ic_dph,
+            'vat_payer_status' => $this->vat_payer_status?->value,
+            'vat_payer_status_label' => $this->vat_payer_status?->label(),
             'street' => $this->street,
             'address' => $this->street.', '.$this->postal_code.' '.$this->city,
             'city' => $this->city,

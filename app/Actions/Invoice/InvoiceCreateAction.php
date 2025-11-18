@@ -11,6 +11,7 @@ use App\Models\Invoice;
 use App\Repositories\Contracts\InvoiceItemRepository;
 use App\Repositories\Contracts\InvoiceRepository;
 use App\Services\Invoice\InvoiceTotalCalculatorService;
+use App\Services\Invoice\VatCalculatorService;
 use Illuminate\Support\Facades\DB;
 use Throwable;
 
@@ -20,7 +21,8 @@ final class InvoiceCreateAction
         private readonly InvoiceRepository $invoiceRepository,
         private readonly InvoiceItemRepository $invoiceItemRepository,
         private readonly CompanyFetchOrCreateAction $companyFetchOrCreate,
-        private readonly InvoiceTotalCalculatorService $totalCalculator
+        private readonly InvoiceTotalCalculatorService $totalCalculator,
+        private readonly VatCalculatorService $vatCalculator
     ) {}
 
     /**
@@ -29,7 +31,8 @@ final class InvoiceCreateAction
     public function handle(InvoiceCreateDTO $dto, int $userId, int $supplierCompanyId): Invoice
     {
         return DB::transaction(function () use ($dto, $userId, $supplierCompanyId) {
-            $totalAmount = $this->totalCalculator->calculate($dto->items);
+            // Calculate invoice totals with VAT (respecting reverse charge)
+            $totals = $this->totalCalculator->calculateTotals($dto->items, $dto->discountAmount ?? null, $dto->reverseCharge);
 
             $invoiceData = [
                 'invoice_number' => $dto->invoiceNumber,
@@ -38,12 +41,20 @@ final class InvoiceCreateAction
                 'due_date' => $dto->dueDate,
                 'delivery_date' => $dto->deliveryDate,
                 'supplier_company_id' => $supplierCompanyId,
-                'total_amount' => $totalAmount,
+                'subtotal' => $totals['subtotal'],
+                'tax_amount' => $totals['tax_amount'],
+                'tax_rate' => $dto->taxRate ?? 20.0,
+                'total_amount' => $totals['total_amount'],
+                'discount_amount' => $dto->discountAmount,
+                'discount_percentage' => $dto->discountPercentage,
+                'reverse_charge' => $dto->reverseCharge,
+                'tax_exemption_reason' => $dto->taxExemptionReason,
+                'special_text' => $dto->specialText,
+                'notes' => $dto->notes,
                 'currency' => $dto->currency ?? config('invoices.default_currency'),
                 'variable_symbol' => $dto->variableSymbol,
                 'constant_symbol' => $dto->constantSymbol,
                 'specific_symbol' => $dto->specificSymbol,
-                'note' => $dto->notes,
                 'status' => $dto->status,
             ];
 
@@ -99,15 +110,31 @@ final class InvoiceCreateAction
 
     private function createInvoiceItems(Invoice $invoice, array $items): void
     {
-        $preparedItems = array_map(static function (array $item) use ($invoice): array {
-            $unitPrice = $item['price'];
+        $preparedItems = array_map(function (array $item) use ($invoice): array {
+            $quantity = $item['quantity'];
+            $unitPriceWithoutTax = $item['price'] ?? $item['unit_price_without_tax'] ?? 0;
+            $taxRate = $item['tax_rate'] ?? 20.0;
+            $discountAmount = $item['discount_amount'] ?? null;
+
+            // Calculate item subtotal (without VAT)
+            $subtotal = $this->vatCalculator->calculateItemSubtotal($quantity, $unitPriceWithoutTax, $discountAmount);
+
+            // Calculate VAT amount (respect reverse charge)
+            $taxAmount = $this->vatCalculator->calculateVatAmount($subtotal, $taxRate, $dto->reverseCharge);
+
+            // Calculate total price (with or without VAT based on reverse charge)
+            $totalPrice = $subtotal + $taxAmount;
 
             return [
                 'invoice_id' => $invoice->id,
                 'description' => $item['description'],
-                'quantity' => $item['quantity'],
-                'unit_price' => $unitPrice,
-                'total_price' => $item['quantity'] * $unitPrice,
+                'quantity' => $quantity,
+                'unit_price_without_tax' => $unitPriceWithoutTax,
+                'tax_rate' => $taxRate,
+                'tax_amount' => $taxAmount,
+                'subtotal' => $subtotal,
+                'discount_amount' => $discountAmount,
+                'total_price' => $totalPrice,
             ];
         }, $items);
 

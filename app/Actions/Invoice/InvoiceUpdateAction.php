@@ -11,6 +11,7 @@ use App\Models\Invoice;
 use App\Repositories\Contracts\InvoiceItemRepository;
 use App\Repositories\Contracts\InvoiceRepository;
 use App\Services\Invoice\InvoiceTotalCalculatorService;
+use App\Services\Invoice\VatCalculatorService;
 use Illuminate\Support\Arr;
 use Illuminate\Support\Facades\DB;
 
@@ -20,7 +21,8 @@ final class InvoiceUpdateAction
         private readonly InvoiceRepository $invoiceRepository,
         private readonly InvoiceItemRepository $invoiceItemRepository,
         private readonly CompanyFetchOrCreateAction $companyFetchOrCreate,
-        private readonly InvoiceTotalCalculatorService $totalCalculator
+        private readonly InvoiceTotalCalculatorService $totalCalculator,
+        private readonly VatCalculatorService $vatCalculator
     ) {}
 
     public function handle(Invoice $invoice, InvoiceUpdateDTO $dto, int $supplierCompanyId): Invoice
@@ -32,11 +34,17 @@ final class InvoiceUpdateAction
                 'issue_date' => $dto->issueDate,
                 'due_date' => $dto->dueDate,
                 'delivery_date' => $dto->deliveryDate,
+                'tax_rate' => $dto->taxRate,
+                'discount_amount' => $dto->discountAmount,
+                'discount_percentage' => $dto->discountPercentage,
+                'reverse_charge' => $dto->reverseCharge,
+                'tax_exemption_reason' => $dto->taxExemptionReason,
+                'special_text' => $dto->specialText,
+                'notes' => $dto->notes,
                 'currency' => $dto->currency,
                 'variable_symbol' => $dto->variableSymbol,
                 'constant_symbol' => $dto->constantSymbol,
                 'specific_symbol' => $dto->specificSymbol,
-                'note' => $dto->notes,
                 'status' => $dto->status,
             ], static fn (mixed $value): bool => $value !== null);
 
@@ -55,7 +63,11 @@ final class InvoiceUpdateAction
                 ]);
 
                 if ($dto->items !== null) {
-                    $updateData['total_amount'] = $this->totalCalculator->calculate($dto->items);
+                    $reverseCharge = $dto->reverseCharge ?? $invoice->reverse_charge ?? false;
+                    $totals = $this->totalCalculator->calculateTotals($dto->items, $dto->discountAmount, $reverseCharge);
+                    $updateData['subtotal'] = $totals['subtotal'];
+                    $updateData['tax_amount'] = $totals['tax_amount'];
+                    $updateData['total_amount'] = $totals['total_amount'];
                     $this->updateInvoiceItems($invoice, $dto->items);
                 }
 
@@ -85,7 +97,11 @@ final class InvoiceUpdateAction
             // If useCustomCompany is null, company fields remain unchanged
             // Handle items update regardless of company field changes
             if ($dto->items !== null) {
-                $updateData['total_amount'] = $this->totalCalculator->calculate($dto->items);
+                $reverseCharge = $dto->reverseCharge ?? $invoice->reverse_charge ?? false;
+                $totals = $this->totalCalculator->calculateTotals($dto->items, $dto->discountAmount, $reverseCharge);
+                $updateData['subtotal'] = $totals['subtotal'];
+                $updateData['tax_amount'] = $totals['tax_amount'];
+                $updateData['total_amount'] = $totals['total_amount'];
                 $this->updateInvoiceItems($invoice, $dto->items);
             }
 
@@ -126,15 +142,34 @@ final class InvoiceUpdateAction
         $existingItems = [];
         $newItems = [];
 
+        // Use invoice's reverse_charge setting
+        $reverseCharge = $invoice->reverse_charge ?? false;
+
         foreach ($items as $item) {
-            $unitPrice = $item['price'];
+            $quantity = $item['quantity'];
+            $unitPriceWithoutTax = $item['price'] ?? $item['unit_price_without_tax'] ?? 0;
+            $taxRate = $item['tax_rate'] ?? 20.0;
+            $discountAmount = $item['discount_amount'] ?? null;
+
+            // Calculate item subtotal (without VAT)
+            $subtotal = $this->vatCalculator->calculateItemSubtotal($quantity, $unitPriceWithoutTax, $discountAmount);
+
+            // Calculate VAT amount (respect reverse charge)
+            $taxAmount = $this->vatCalculator->calculateVatAmount($subtotal, $taxRate, $reverseCharge);
+
+            // Calculate total price (with or without VAT based on reverse charge)
+            $totalPrice = $subtotal + $taxAmount;
 
             $itemData = [
                 'invoice_id' => $invoice->id,
                 'description' => $item['description'],
-                'quantity' => $item['quantity'],
-                'unit_price' => $unitPrice,
-                'total_price' => $item['quantity'] * $unitPrice,
+                'quantity' => $quantity,
+                'unit_price_without_tax' => $unitPriceWithoutTax,
+                'tax_rate' => $taxRate,
+                'tax_amount' => $taxAmount,
+                'subtotal' => $subtotal,
+                'discount_amount' => $discountAmount,
+                'total_price' => $totalPrice,
             ];
 
             if (isset($item['id'])) {
@@ -163,7 +198,7 @@ final class InvoiceUpdateAction
         $this->invoiceItemRepository->upsert(
             $existingItems,
             ['id'],
-            ['description', 'quantity', 'unit_price', 'total_price']
+            ['description', 'quantity', 'unit_price_without_tax', 'tax_rate', 'tax_amount', 'subtotal', 'discount_amount', 'total_price']
         );
     }
 

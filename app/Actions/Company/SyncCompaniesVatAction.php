@@ -6,10 +6,10 @@ namespace App\Actions\Company;
 
 use App\Enums\CompanySyncStatus;
 use App\Enums\CompanySyncType;
+use App\Enums\VatPayerStatus;
 use App\Repositories\Contracts\CompanyRepository as CompanyRepositoryContract;
 use App\Repositories\Contracts\CompanySyncLogRepository as CompanySyncLogRepositoryContract;
 use App\Services\Interfaces\FinancialDataService as FinancialDataServiceContract;
-use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 use Throwable;
 
@@ -131,24 +131,26 @@ final class SyncCompaniesVatAction
      */
     private function processBatch(array $batch, array &$stats): void
     {
-        $companyRepository = $this->companyRepository;
-
         try {
-            DB::transaction(static function () use ($batch, &$stats, $companyRepository): void {
-                foreach ($batch as $vatData) {
-                    $ico = $vatData['ico'];
-                    unset($vatData['ico']);
+            // Prepare batch data with VAT status determination
+            $batchData = [];
+            foreach ($batch as $vatData) {
+                $ico = $vatData['ico'];
+                unset($vatData['ico']);
 
-                    $updated = $companyRepository->updateVatData($ico, $vatData);
+                // Determine VAT payer status based on ic_dph presence
+                $vatData['vat_payer_status'] = ! empty($vatData['ic_dph'])
+                    ? VatPayerStatus::VAT_PAYER_PARAGRAPH_7->value
+                    : VatPayerStatus::NOT_VAT_PAYER->value;
 
-                    if ($updated) {
-                        $stats['updated']++;
-                    } else {
-                        $stats['not_found']++;
-                        Log::debug('Company not found for VAT update', ['ico' => $ico]);
-                    }
-                }
-            });
+                $batchData[$ico] = $vatData;
+            }
+
+            // Process batch using repository method with transaction
+            $batchStats = $this->companyRepository->updateVatDataBatch($batchData);
+
+            $stats['updated'] += $batchStats['updated'];
+            $stats['not_found'] += $batchStats['not_found'];
         } catch (Throwable $e) {
             $stats['errors'] += count($batch);
 

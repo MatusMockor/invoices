@@ -32,10 +32,15 @@ export interface InvoiceFormData {
   variableSymbol: string;
   constantSymbol?: string;
   specificSymbol?: string;
+  reverseCharge?: boolean;
+  taxExemptionReason?: string;
+  specialText?: string;
+  notes?: string;
   items: Array<{
     description: string;
     quantity: number;
-    price: number;
+    price: number; // This is unit_price_without_tax
+    tax_rate: number; // Default 20
   }>;
 }
 
@@ -97,12 +102,7 @@ const ClientInformationSectionComponent = ({
   }, [showSuggestions, setShowSuggestions]);
 
   return (
-    <div className="bg-gradient-card rounded-xl p-6 border-2 border-primary/30 shadow-elegant-sm">
-      <h3 className="text-lg font-bold text-primary mb-4 flex items-center gap-2">
-        <span className="w-8 h-8 bg-primary text-primary-foreground rounded-full flex items-center justify-center text-sm">2</span>
-        Informácie o klientovi
-      </h3>
-
+    <div className="space-y-4">
       {/* Info in edit mode */}
       {isEditMode && !useCustomCompany && (
         <div className="mb-4 p-3 bg-blue-50 rounded-lg border border-blue-200">
@@ -126,22 +126,8 @@ const ClientInformationSectionComponent = ({
         </div>
       )}
 
-      {/* Toggle between standard and custom company */}
-      <div className="flex items-center space-x-2 mb-6 p-4 bg-card/50 rounded-lg border border-primary/20">
-        <input
-          type="checkbox"
-          id="useCustomCompany"
-          {...register("useCustomCompany")}
-          className="h-4 w-4 rounded border-primary/30 text-primary focus:ring-primary"
-        />
-        <Label htmlFor="useCustomCompany" className="cursor-pointer text-sm">
-          Zadať vlastné údaje o spoločnosti (neregistrovaná v databáze)
-        </Label>
-      </div>
-
-      <div className="space-y-4">
-        {/* IČO search with autocomplete */}
-        {!selectedCompany && !isSelectingCompany && (
+      {/* IČO search with autocomplete */}
+      {!selectedCompany && !isSelectingCompany && (
           <div className="space-y-2">
             <Label htmlFor="clientIco">Vyhľadať firmu podľa IČO alebo názvu</Label>
             <div className="relative">
@@ -261,104 +247,103 @@ const ClientInformationSectionComponent = ({
           </div>
         )}
 
-        {/* Loading skeleton when selecting company */}
-        {isSelectingCompany && (
-          <Card className="p-5 bg-primary/5 border-primary/30 animate-pulse">
-            <div className="flex items-start gap-3 mb-4">
-              <div className="w-12 h-12 rounded-full bg-muted"></div>
-              <div className="flex-1 space-y-2">
-                <div className="h-6 bg-muted rounded w-3/4"></div>
-                <div className="h-4 bg-muted rounded w-1/2"></div>
-              </div>
+      {/* Loading skeleton when selecting company */}
+      {isSelectingCompany && (
+        <Card className="p-5 bg-primary/5 border-primary/30 animate-pulse">
+          <div className="flex items-start gap-3 mb-4">
+            <div className="w-12 h-12 rounded-full bg-muted"></div>
+            <div className="flex-1 space-y-2">
+              <div className="h-6 bg-muted rounded w-3/4"></div>
+              <div className="h-4 bg-muted rounded w-1/2"></div>
             </div>
-            <div className="space-y-3">
+          </div>
+          <div className="space-y-3">
+            <div className="h-4 bg-muted rounded"></div>
+            <div className="grid grid-cols-2 gap-4">
               <div className="h-4 bg-muted rounded"></div>
-              <div className="grid grid-cols-2 gap-4">
-                <div className="h-4 bg-muted rounded"></div>
-                <div className="h-4 bg-muted rounded"></div>
+              <div className="h-4 bg-muted rounded"></div>
+            </div>
+          </div>
+        </Card>
+      )}
+
+      {/* Selected company - display card */}
+      {selectedCompany && !isSelectingCompany && (
+        <Card className="p-5 bg-primary/5 border-primary/30">
+          <div className="flex items-start justify-between mb-4">
+            <div className="flex items-center gap-3">
+              <div className="w-12 h-12 rounded-full bg-primary/10 flex items-center justify-center">
+                <Building2 className="h-6 w-6 text-primary" />
+              </div>
+              <div>
+                <h4 className="font-bold text-lg text-foreground truncate max-w-xs">{selectedCompany.name}</h4>
+                <p className="text-sm text-muted-foreground">IČO: {selectedCompany.ico}</p>
               </div>
             </div>
-          </Card>
-        )}
+            {(!isEditMode || useCustomCompany) && (
+              <Button
+                type="button"
+                variant="ghost"
+                size="sm"
+                onClick={onClearSelection}
+                className="text-muted-foreground hover:text-foreground"
+                aria-label={`Zmeniť spoločnosť ${selectedCompany.name}`}
+              >
+                Zmeniť
+              </Button>
+            )}
+          </div>
 
-        {/* Selected company - display card */}
-        {selectedCompany && !isSelectingCompany && (
-          <Card className="p-5 bg-primary/5 border-primary/30">
-            <div className="flex items-start justify-between mb-4">
-              <div className="flex items-center gap-3">
-                <div className="w-12 h-12 rounded-full bg-primary/10 flex items-center justify-center">
-                  <Building2 className="h-6 w-6 text-primary" />
-                </div>
+          <div className="space-y-3">
+            {selectedCompany.address && (
+              <div className="flex items-start gap-2">
+                <MapPin className="h-4 w-4 text-primary mt-0.5 shrink-0" />
                 <div>
-                  <h4 className="font-bold text-lg text-foreground truncate max-w-xs">{selectedCompany.name}</h4>
-                  <p className="text-sm text-muted-foreground">IČO: {selectedCompany.ico}</p>
+                  <p className="text-xs text-muted-foreground">Adresa</p>
+                  <p className="text-sm font-medium">
+                    {selectedCompany.address}
+                    {selectedCompany.postal_code && selectedCompany.city &&
+                      `, ${selectedCompany.postal_code} ${selectedCompany.city}`}
+                  </p>
                 </div>
               </div>
-              {(!isEditMode || useCustomCompany) && (
-                <Button
-                  type="button"
-                  variant="ghost"
-                  size="sm"
-                  onClick={onClearSelection}
-                  className="text-muted-foreground hover:text-foreground"
-                  aria-label={`Zmeniť spoločnosť ${selectedCompany.name}`}
-                >
-                  Zmeniť
-                </Button>
-              )}
-            </div>
+            )}
 
-            <div className="space-y-3">
-              {selectedCompany.address && (
-                <div className="flex items-start gap-2">
-                  <MapPin className="h-4 w-4 text-primary mt-0.5 shrink-0" />
-                  <div>
-                    <p className="text-xs text-muted-foreground">Adresa</p>
-                    <p className="text-sm font-medium">
-                      {selectedCompany.address}
-                      {selectedCompany.postal_code && selectedCompany.city &&
-                        `, ${selectedCompany.postal_code} ${selectedCompany.city}`}
-                    </p>
+            {(selectedCompany.dic || selectedCompany.ic_dph) && (
+              <div className="grid grid-cols-2 gap-4">
+                {selectedCompany.dic && (
+                  <div className="flex items-start gap-2">
+                    <FileText className="h-4 w-4 text-primary mt-0.5 shrink-0" />
+                    <div>
+                      <p className="text-xs text-muted-foreground">DIČ</p>
+                      <p className="text-sm font-medium">{selectedCompany.dic}</p>
+                    </div>
                   </div>
-                </div>
-              )}
+                )}
 
-              {(selectedCompany.dic || selectedCompany.ic_dph) && (
-                <div className="grid grid-cols-2 gap-4">
-                  {selectedCompany.dic && (
-                    <div className="flex items-start gap-2">
-                      <FileText className="h-4 w-4 text-primary mt-0.5 shrink-0" />
-                      <div>
-                        <p className="text-xs text-muted-foreground">DIČ</p>
-                        <p className="text-sm font-medium">{selectedCompany.dic}</p>
-                      </div>
+                {selectedCompany.ic_dph && (
+                  <div className="flex items-start gap-2">
+                    <FileText className="h-4 w-4 text-primary mt-0.5 shrink-0" />
+                    <div>
+                      <p className="text-xs text-muted-foreground">IČ DPH</p>
+                      <p className="text-sm font-medium">{selectedCompany.ic_dph}</p>
                     </div>
-                  )}
+                  </div>
+                )}
+              </div>
+            )}
+          </div>
+        </Card>
+      )}
 
-                  {selectedCompany.ic_dph && (
-                    <div className="flex items-start gap-2">
-                      <FileText className="h-4 w-4 text-primary mt-0.5 shrink-0" />
-                      <div>
-                        <p className="text-xs text-muted-foreground">IČ DPH</p>
-                        <p className="text-sm font-medium">{selectedCompany.ic_dph}</p>
-                      </div>
-                    </div>
-                  )}
-                </div>
-              )}
-            </div>
-          </Card>
-        )}
-
-        {/* Hidden inputs for form validation */}
-        <input type="hidden" {...register("clientIco")} aria-hidden="true" />
-        <input type="hidden" {...register("clientName")} aria-hidden="true" />
-        <input type="hidden" {...register("clientStreet")} aria-hidden="true" />
-        <input type="hidden" {...register("clientCity")} aria-hidden="true" />
-        <input type="hidden" {...register("clientPostalCode")} aria-hidden="true" />
-        <input type="hidden" {...register("clientDic")} aria-hidden="true" />
-        <input type="hidden" {...register("clientIcDph")} aria-hidden="true" />
-      </div>
+      {/* Hidden inputs for form validation */}
+      <input type="hidden" {...register("clientIco")} aria-hidden="true" />
+      <input type="hidden" {...register("clientName")} aria-hidden="true" />
+      <input type="hidden" {...register("clientStreet")} aria-hidden="true" />
+      <input type="hidden" {...register("clientCity")} aria-hidden="true" />
+      <input type="hidden" {...register("clientPostalCode")} aria-hidden="true" />
+      <input type="hidden" {...register("clientDic")} aria-hidden="true" />
+      <input type="hidden" {...register("clientIcDph")} aria-hidden="true" />
     </div>
   );
 };

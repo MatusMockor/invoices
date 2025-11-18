@@ -6,19 +6,32 @@ namespace App\Services\Invoice;
 
 final class InvoiceTotalCalculatorService
 {
+    public function __construct(
+        private readonly VatCalculatorService $vatCalculator
+    ) {}
+
     /**
-     * Calculate the total amount for invoice items.
+     * Calculate the total amount for invoice items including VAT.
+     *
+     * @deprecated Use calculateTotals() instead for VAT-compliant calculations
      */
     public function calculate(array $items): float
     {
-        $totalAmount = 0.0;
+        $totals = $this->calculateTotals($items);
 
-        foreach ($items as $item) {
-            $unitPrice = $item['price'] ?? $item['unit_price'] ?? 0;
-            $itemTotal = $item['quantity'] * $unitPrice;
-            $totalAmount += $itemTotal;
-        }
+        return $totals['total_amount'];
+    }
 
-        return $totalAmount;
+    /**
+     * Calculate invoice totals with VAT breakdown.
+     *
+     * @param  array  $items  Array of items with quantity, price/unit_price_without_tax, tax_rate
+     * @param  float|null  $discountAmount  Invoice-level discount
+     * @param  bool  $reverseCharge  If true, VAT is not calculated (reverse charge mechanism)
+     * @return array{subtotal: float, tax_amount: float, total_amount: float}
+     */
+    public function calculateTotals(array $items, ?float $discountAmount = null, bool $reverseCharge = false): array
+    {
+        return $this->vatCalculator->calculateInvoiceTotals($items, $discountAmount, $reverseCharge);
     }
 }
