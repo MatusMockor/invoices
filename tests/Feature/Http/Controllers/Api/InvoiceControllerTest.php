@@ -177,7 +177,9 @@ class InvoiceControllerTest extends TestCase
             ],
         ]);
 
-        $expectedTotal = ($item1Quantity * $item1Price) + ($item2Quantity * $item2Price);
+        // Calculate expected total with 20% VAT (default Slovak VAT rate)
+        $subtotal = ($item1Quantity * $item1Price) + ($item2Quantity * $item2Price);
+        $expectedTotal = round($subtotal * 1.20, 2); // Add 20% VAT
 
         $this->assertDatabaseHas(Invoice::class, [
             'invoice_number' => $invoiceNumber,
@@ -189,13 +191,13 @@ class InvoiceControllerTest extends TestCase
         $this->assertDatabaseHas(InvoiceItem::class, [
             'description' => $item1Description,
             'quantity' => $item1Quantity,
-            'unit_price' => $item1Price,
+            'unit_price_without_tax' => $item1Price,
         ]);
 
         $this->assertDatabaseHas(InvoiceItem::class, [
             'description' => $item2Description,
             'quantity' => $item2Quantity,
-            'unit_price' => $item2Price,
+            'unit_price_without_tax' => $item2Price,
         ]);
     }
 
@@ -271,7 +273,7 @@ class InvoiceControllerTest extends TestCase
             'id' => $invoice->id,
             'invoice_number' => $updatedInvoiceNumber,
             'status' => 'paid',
-            'note' => $updatedNotes,
+            'notes' => $updatedNotes,
         ]);
 
         $this->assertDatabaseHas(InvoiceItem::class, [

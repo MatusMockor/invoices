@@ -125,7 +125,7 @@ final class InvoiceTransactionTest extends TestCase
             'invoice_id' => $invoice->id,
             'description' => fake()->words(2, true),
             'quantity' => 2,
-            'unit_price' => 50.00,
+            'unit_price_without_tax' => 50.00,
             'total_price' => 100.00,
         ]);
 
@@ -239,9 +239,10 @@ final class InvoiceTransactionTest extends TestCase
             'ico' => $clientIco,
         ]);
 
+        // Expected total with 20% VAT: (2*50 + 1*100) * 1.20 = 200 * 1.20 = 240.00
         $this->assertDatabaseHas(Invoice::class, [
             'id' => $invoice->id,
-            'total_amount' => 200.00,
+            'total_amount' => 240.00,
         ]);
 
         $this->assertCount(2, $invoice->items);
@@ -262,7 +263,7 @@ final class InvoiceTransactionTest extends TestCase
         $item = InvoiceItem::factory()->create([
             'invoice_id' => $invoice->id,
             'quantity' => 2,
-            'unit_price' => 50.00,
+            'unit_price_without_tax' => 50.00,
         ]);
 
         $action = app(InvoiceUpdateAction::class);
@@ -303,7 +304,8 @@ final class InvoiceTransactionTest extends TestCase
 
         $this->assertEquals($newInvoiceNumber, $updatedInvoice->invoice_number);
         $this->assertEquals(InvoiceStatus::PAID, $updatedInvoice->status);
-        $this->assertEquals(500.00, $updatedInvoice->total_amount);
+        // Expected total with 20% VAT: 5 * 100 * 1.20 = 600.00
+        $this->assertEquals(600.00, $updatedInvoice->total_amount);
 
         $item->refresh();
         $this->assertEquals($newDescription, $item->description);
