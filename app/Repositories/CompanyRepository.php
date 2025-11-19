@@ -178,7 +178,8 @@ class CompanyRepository implements CompanyRepositoryContract
 
         DB::transaction(function () use ($batchData, &$stats): void {
             foreach ($batchData as $ico => $vatData) {
-                $updated = $this->updateVatData($ico, $vatData);
+                // Cast $ico to string as PHP converts numeric string keys to integers
+                $updated = $this->updateVatData((string) $ico, $vatData);
 
                 if ($updated) {
                     $stats['updated']++;
@@ -186,7 +187,7 @@ class CompanyRepository implements CompanyRepositoryContract
                 }
 
                 $stats['not_found']++;
-                Log::debug('Company not found for VAT update', ['ico' => $ico]);
+                Log::debug('Company not found for VAT update', ['ico' => (string) $ico]);
             }
         });
 
