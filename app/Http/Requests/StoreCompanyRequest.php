@@ -4,7 +4,9 @@ declare(strict_types=1);
 
 namespace App\Http\Requests;
 
+use App\Enums\VatPayerStatus;
 use Illuminate\Foundation\Http\FormRequest;
+use Illuminate\Validation\Rule;
 
 final class StoreCompanyRequest extends FormRequest
 {
@@ -20,6 +22,7 @@ final class StoreCompanyRequest extends FormRequest
             'ico' => 'required|string|max:20',
             'dic' => 'nullable|string|max:20',
             'ic_dph' => 'nullable|string|max:20',
+            'vat_payer_status' => ['nullable', Rule::in(VatPayerStatus::values())],
             'address' => 'required|string|max:255',
             'city' => 'required|string|max:100',
             'postal_code' => 'required|string|max:20',
@@ -50,6 +53,13 @@ final class StoreCompanyRequest extends FormRequest
     public function getIcDph(): ?string
     {
         return $this->validated('ic_dph');
+    }
+
+    public function getVatPayerStatus(): ?VatPayerStatus
+    {
+        $value = $this->validated('vat_payer_status');
+
+        return $value ? VatPayerStatus::from($value) : null;
     }
 
     public function getAddress(): string
@@ -100,11 +110,11 @@ final class StoreCompanyRequest extends FormRequest
     public function getData(): array
     {
         return [
-            'user_id' => auth()->id(),
             'name' => $this->getName(),
             'ico' => $this->getIco(),
             'dic' => $this->getDic(),
             'ic_dph' => $this->getIcDph(),
+            'vat_payer_status' => $this->getVatPayerStatus(),
             'street' => $this->getAddress(),
             'city' => $this->getCity(),
             'postal_code' => $this->getPostalCode(),
@@ -113,8 +123,6 @@ final class StoreCompanyRequest extends FormRequest
             'email' => $this->getEmail(),
             'iban' => $this->getIban(),
             'swift' => $this->getSwift(),
-            'company_type' => 'SRO',
-            'registration_number' => $this->getIco(),
         ];
     }
 }

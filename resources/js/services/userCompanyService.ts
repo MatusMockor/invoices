@@ -9,6 +9,7 @@ export interface UserCompanyFormData {
   ico: string;
   dic: string;
   ic_dph?: string;
+  vat_payer_status?: 'not_vat_payer' | 'vat_payer' | 'vat_payer_paragraph_7' | null;
   email: string;
   phone?: string;
   street: string;

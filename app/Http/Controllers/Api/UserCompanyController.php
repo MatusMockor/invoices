@@ -55,7 +55,12 @@ class UserCompanyController extends Controller
 
     public function store(StoreCompanyRequest $request): JsonResponse
     {
-        $company = $this->companyRepository->create($request->getData());
+        $data = $request->getData();
+        $data['user_id'] = auth()->id();
+        $data['company_type'] = 'SRO';
+        $data['registration_number'] = $data['ico'];
+
+        $company = $this->companyRepository->create($data);
 
         return new UserCompanyResource($company)
             ->response()

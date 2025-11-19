@@ -5,6 +5,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Switch } from "@/components/ui/switch";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Card } from "@/components/ui/card";
 import { Separator } from "@/components/ui/separator";
 import { useToast } from "@/hooks/use-toast";
@@ -13,8 +14,9 @@ import { InvoicePreview } from "@/components/invoice/InvoicePreview";
 import { useTheme } from "next-themes";
 import { useAuth } from "@/hooks/useAuth";
 import api from "@/lib/axios";
-import { companyService } from "@/services/companyService";
+import { userCompanyService } from "@/services/userCompanyService";
 import { useCompanyContext } from "@/contexts/CompanyContext";
+import { VAT_PAYER_STATUS_OPTIONS } from "@/constants/vatPayerStatus";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -81,6 +83,7 @@ const Settings = () => {
     ico: '',
     dic: '',
     ic_dph: '',
+    vat_payer_status: '',
     street: '',
     city: '',
     postal_code: '',
@@ -115,6 +118,7 @@ const Settings = () => {
           ico: settings.company.ico || '',
           dic: settings.company.dic || '',
           ic_dph: settings.company.ic_dph || '',
+          vat_payer_status: settings.company.vat_payer_status || '',
           street: settings.company.address || '',
           city: settings.company.city || '',
           postal_code: settings.company.postal_code || '',
@@ -271,11 +275,12 @@ const Settings = () => {
 
     try {
       // Save company data
-      await companyService.update(settings.company.id, {
+      await userCompanyService.update(settings.company.id, {
         name: companyData.name,
         ico: companyData.ico,
         dic: companyData.dic.trim() || null,
         ic_dph: companyData.ic_dph.trim() || null,
+        vat_payer_status: companyData.vat_payer_status?.trim() ? companyData.vat_payer_status : null,
         street: companyData.street,
         city: companyData.city,
         postal_code: companyData.postal_code,
@@ -619,6 +624,27 @@ const Settings = () => {
                       autoComplete="off"
                     />
                   </div>
+                </div>
+
+                <div className="space-y-2">
+                  <Label htmlFor="vatPayerStatus">Status platcu DPH</Label>
+                  <Select
+                    value={companyData.vat_payer_status}
+                    onValueChange={(value) => setCompanyData({ ...companyData, vat_payer_status: value })}
+                    disabled={isSavingCompany}
+                  >
+                    <SelectTrigger id="vatPayerStatus">
+                      <SelectValue placeholder="Vyberte status platcu DPH" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="">Nezadané</SelectItem>
+                      {VAT_PAYER_STATUS_OPTIONS.map((option) => (
+                        <SelectItem key={option.value} value={option.value}>
+                          {option.label}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
                 </div>
 
                 <div className="space-y-2">
