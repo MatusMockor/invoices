@@ -71,7 +71,7 @@ final class InvoiceCreateAction
                 $invoiceData['company_country'] = $dto->customCompanyCountry;
 
                 $invoice = $this->invoiceRepository->create($invoiceData);
-                $this->createInvoiceItems($invoice, $dto->items);
+                $this->createInvoiceItems($invoice, $dto->items, $dto->reverseCharge);
 
                 return $invoice->load(['company', 'items']);
             }
@@ -89,7 +89,7 @@ final class InvoiceCreateAction
             $invoiceData['company_country'] = $customerCompany->country;
 
             $invoice = $this->invoiceRepository->create($invoiceData);
-            $this->createInvoiceItems($invoice, $dto->items);
+            $this->createInvoiceItems($invoice, $dto->items, $dto->reverseCharge);
 
             return $invoice->load(['company', 'items']);
         });
@@ -108,9 +108,9 @@ final class InvoiceCreateAction
         ]);
     }
 
-    private function createInvoiceItems(Invoice $invoice, array $items): void
+    private function createInvoiceItems(Invoice $invoice, array $items, bool $reverseCharge): void
     {
-        $preparedItems = array_map(function (array $item) use ($invoice): array {
+        $preparedItems = array_map(function (array $item) use ($invoice, $reverseCharge): array {
             $quantity = $item['quantity'];
             $unitPriceWithoutTax = $item['price'] ?? $item['unit_price_without_tax'] ?? 0;
             $taxRate = $item['tax_rate'] ?? 20.0;
@@ -120,7 +120,7 @@ final class InvoiceCreateAction
             $subtotal = $this->vatCalculator->calculateItemSubtotal($quantity, $unitPriceWithoutTax, $discountAmount);
 
             // Calculate VAT amount (respect reverse charge)
-            $taxAmount = $this->vatCalculator->calculateVatAmount($subtotal, $taxRate, $dto->reverseCharge);
+            $taxAmount = $this->vatCalculator->calculateVatAmount($subtotal, $taxRate, $reverseCharge);
 
             // Calculate total price (with or without VAT based on reverse charge)
             $totalPrice = $subtotal + $taxAmount;

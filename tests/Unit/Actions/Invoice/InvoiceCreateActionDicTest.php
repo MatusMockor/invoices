@@ -51,12 +51,7 @@ class InvoiceCreateActionDicTest extends TestCase
         $this->companyFetchOrCreate = app(CompanyFetchOrCreateAction::class);
         $this->totalCalculator = app(InvoiceTotalCalculatorService::class);
 
-        $this->action = new InvoiceCreateAction(
-            $this->invoiceRepository,
-            $this->invoiceItemRepository,
-            $this->companyFetchOrCreate,
-            $this->totalCalculator
-        );
+        $this->action = app(InvoiceCreateAction::class);
     }
 
     public function test_creates_invoice_with_dic_and_ic_dph_from_company(): void

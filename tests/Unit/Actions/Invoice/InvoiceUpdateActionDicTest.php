@@ -48,12 +48,7 @@ class InvoiceUpdateActionDicTest extends TestCase
         $this->companyFetchOrCreate = app(CompanyFetchOrCreateAction::class);
         $this->totalCalculator = app(InvoiceTotalCalculatorService::class);
 
-        $this->action = new InvoiceUpdateAction(
-            $this->invoiceRepository,
-            $this->invoiceItemRepository,
-            $this->companyFetchOrCreate,
-            $this->totalCalculator
-        );
+        $this->action = app(InvoiceUpdateAction::class);
 
         $this->user = User::factory()->create();
         $this->supplierCompany = UserCompany::factory()->create();
