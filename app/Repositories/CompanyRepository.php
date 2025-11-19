@@ -183,6 +183,7 @@ class CompanyRepository implements CompanyRepositoryContract
 
                 if ($updated) {
                     $stats['updated']++;
+
                     continue;
                 }
 

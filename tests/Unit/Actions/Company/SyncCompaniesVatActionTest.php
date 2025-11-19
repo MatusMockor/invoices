@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace Tests\Unit\Actions\Company;
 
-use App\Actions\Company\SyncCompaniesVatAction;
 use App\Enums\CompanySyncStatus;
 use App\Enums\CompanySyncType;
 use App\Enums\VatPayerStatus;
