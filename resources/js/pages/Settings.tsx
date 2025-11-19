@@ -624,27 +624,25 @@ const Settings = () => {
                       autoComplete="off"
                     />
                   </div>
-                </div>
-
-                <div className="space-y-2">
-                  <Label htmlFor="vatPayerStatus">Status platcu DPH</Label>
-                  <Select
-                    value={companyData.vat_payer_status}
-                    onValueChange={(value) => setCompanyData({ ...companyData, vat_payer_status: value })}
-                    disabled={isSavingCompany}
-                  >
-                    <SelectTrigger id="vatPayerStatus">
-                      <SelectValue placeholder="Vyberte status platcu DPH" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="">Nezadané</SelectItem>
-                      {VAT_PAYER_STATUS_OPTIONS.map((option) => (
-                        <SelectItem key={option.value} value={option.value}>
-                          {option.label}
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
+                  <div className="space-y-2">
+                    <Label htmlFor="vatPayerStatus">Status platcu DPH</Label>
+                    <Select
+                      value={companyData.vat_payer_status}
+                      onValueChange={(value) => setCompanyData({ ...companyData, vat_payer_status: value })}
+                      disabled={isSavingCompany}
+                    >
+                      <SelectTrigger id="vatPayerStatus">
+                        <SelectValue placeholder="Vyberte status" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {VAT_PAYER_STATUS_OPTIONS.map((option) => (
+                          <SelectItem key={option.value} value={option.value}>
+                            {option.label}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  </div>
                 </div>
 
                 <div className="space-y-2">
