@@ -8,13 +8,14 @@ import { Input } from "@/components/ui/input";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
 import { Command, CommandEmpty, CommandGroup, CommandItem, CommandList } from "@/components/ui/command";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Search, Building2, Loader2 } from "lucide-react";
 import { toast } from "sonner";
 import { onboardingService, type CompanyData } from "@/services/onboardingService";
 import { businessEntityService } from "@/services/businessEntityService";
 import { companyService } from "@/services/companyService";
 import { useAuthContext } from "@/contexts/AuthContext";
-import {ZodString} from "zod";
+import { VAT_PAYER_STATUS_OPTIONS } from "@/constants/vatPayerStatus";
 
 const companySchema = z.object({
   ico: z.string().trim().min(1, "IČO je povinné").max(20),
@@ -24,6 +25,7 @@ const companySchema = z.object({
   postal_code: z.string().trim().min(1, "PSČ je povinné").max(10),
   dic: z.string().trim().max(20).optional(),
   ic_dph: z.string().trim().max(20).optional(),
+  vat_payer_status: z.enum(['not_vat_payer', 'vat_payer', 'vat_payer_paragraph_7']).optional(),
 });
 
 type CompanyFormData = z.infer<typeof companySchema>;
@@ -54,6 +56,7 @@ const Onboarding = () => {
       postal_code: "",
       dic: "",
       ic_dph: "",
+      vat_payer_status: undefined,
     },
   });
 
@@ -93,6 +96,9 @@ const Onboarding = () => {
     companyForm.setValue("postal_code", company.postal_code || "");
     companyForm.setValue("dic", company.dic || "");
     companyForm.setValue("ic_dph", company.ic_dph || "");
+    if (company.vat_payer_status) {
+      companyForm.setValue("vat_payer_status", company.vat_payer_status);
+    }
 
     setIcoSearch(company.ico || "");
     setShowSuggestions(false);
@@ -105,18 +111,11 @@ const Onboarding = () => {
 
     try {
       // Convert empty strings to undefined for optional fields
-      const submissionData: {
-          ico?: ZodString["_output"];
-          name?: ZodString["_output"];
-          street?: ZodString["_output"];
-          city?: ZodString["_output"];
-          postal_code?: ZodString["_output"];
-          dic: string;
-          ic_dph: string
-      } = {
+      const submissionData: CompanyData = {
         ...data,
         dic: data.dic?.trim() || undefined,
         ic_dph: data.ic_dph?.trim() || undefined,
+        vat_payer_status: data.vat_payer_status || undefined,
       };
 
       await onboardingService.createCompany(submissionData);
@@ -325,6 +324,31 @@ const Onboarding = () => {
                       )}
                     />
                   </div>
+
+                  <FormField
+                    control={companyForm.control}
+                    name="vat_payer_status"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>Status platcu DPH</FormLabel>
+                        <Select onValueChange={field.onChange} value={field.value}>
+                          <FormControl>
+                            <SelectTrigger>
+                              <SelectValue placeholder="Vyberte status platcu DPH" />
+                            </SelectTrigger>
+                          </FormControl>
+                          <SelectContent>
+                            {VAT_PAYER_STATUS_OPTIONS.map((option) => (
+                              <SelectItem key={option.value} value={option.value}>
+                                {option.label}
+                              </SelectItem>
+                            ))}
+                          </SelectContent>
+                        </Select>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
                 </div>
 
                 <Button

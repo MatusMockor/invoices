@@ -49,6 +49,8 @@ export interface UserCompany {
   ico: string;
   dic: string | null;
   ic_dph: string | null;
+  vat_payer_status: 'not_vat_payer' | 'vat_payer' | 'vat_payer_paragraph_7' | null;
+  vat_payer_status_label?: string;
   street: string;
   address: string; // Formatted: "street, postal_code city"
   city: string;

@@ -4,7 +4,9 @@ declare(strict_types=1);
 
 namespace App\Http\Requests;
 
+use App\Enums\VatPayerStatus;
 use Illuminate\Foundation\Http\FormRequest;
+use Illuminate\Validation\Rule;
 
 final class UpdateCompanyRequest extends FormRequest
 {
@@ -20,6 +22,7 @@ final class UpdateCompanyRequest extends FormRequest
             'ico' => 'required|string|max:20|regex:/^\d+$/',
             'dic' => 'nullable|string|max:20|regex:/^\d*$/',
             'ic_dph' => 'nullable|string|max:30',
+            'vat_payer_status' => ['nullable', Rule::in(VatPayerStatus::values())],
             'street' => 'required|string|max:255',
             'city' => 'required|string|max:100',
             'postal_code' => 'required|string|max:20',
@@ -49,6 +52,13 @@ final class UpdateCompanyRequest extends FormRequest
     public function getIcDph(): ?string
     {
         return $this->validated('ic_dph');
+    }
+
+    public function getVatPayerStatus(): ?VatPayerStatus
+    {
+        $value = $this->validated('vat_payer_status');
+
+        return $value ? VatPayerStatus::from($value) : null;
     }
 
     public function getStreet(): string
@@ -98,6 +108,7 @@ final class UpdateCompanyRequest extends FormRequest
             'ico' => $this->getIco(),
             'dic' => $this->getDic(),
             'ic_dph' => $this->getIcDph(),
+            'vat_payer_status' => $this->getVatPayerStatus(),
             'street' => $this->getStreet(),
             'city' => $this->getCity(),
             'postal_code' => $this->getPostalCode(),
