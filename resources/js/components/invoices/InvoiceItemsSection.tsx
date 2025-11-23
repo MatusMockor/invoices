@@ -106,7 +106,7 @@ export const InvoiceItemsSection = ({
                   {(() => {
                     const qty = watch(`items.${index}.quantity`) || 0;
                     const price = watch(`items.${index}.price`) || 0;
-                    const taxRate = watch(`items.${index}.tax_rate`) || 20;
+                    const taxRate = watch(`items.${index}.tax_rate`) ?? 20;
                     const subtotal = qty * price;
                     const total = reverseCharge ? subtotal : subtotal + (subtotal * (taxRate / 100));
                     return total.toFixed(2);

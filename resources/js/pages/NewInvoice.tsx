@@ -1,5 +1,5 @@
 import { useNavigate, useParams } from "react-router-dom";
-import { useForm, useFieldArray } from "react-hook-form";
+import { useForm, useFieldArray, FieldErrors } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";
 import { Save, ArrowLeft, Loader2, FileText, CreditCard, Receipt, Calculator } from "lucide-react";
@@ -129,6 +129,50 @@ const invoiceSchema = z.object({
   }
 });
 
+// Type for tab values - ensures type safety when switching tabs
+type TabValue = "basic" | "payment" | "items" | "summary";
+
+// Constants for validation error handling
+const MAX_VISIBLE_ERRORS = 5;
+const ERROR_TOAST_DURATION_MS = 12000;
+const MAX_RECURSION_DEPTH = 10;
+
+// Tab order for determining which tab to show first when errors occur
+const TAB_ORDER: TabValue[] = ["basic", "payment", "items", "summary"];
+
+// Field to tab mapping - maps form field names to their corresponding tab
+const BASIC_TAB_FIELDS = [
+  "invoiceNumber",
+  "clientName", "clientIco", "clientDic", "clientIcDph", "clientStreet", "clientCity", "clientPostalCode",
+  "customCompanyIco", "customCompanyDic", "customCompanyIcDph", "customCompanyName",
+  "customCompanyAddress", "customCompanyCity", "customCompanyZip", "customCompanyCountry",
+  "issueDate", "dueDate", "deliveryDate"
+];
+
+const PAYMENT_TAB_FIELDS = [
+  "variableSymbol", "constantSymbol", "specificSymbol",
+  "reverseCharge", "taxExemptionReason", "specialText", "notes"
+];
+
+// Helper function to determine which tab a field belongs to
+const getTabForField = (fieldName: string): TabValue => {
+  // Items tab: items array
+  if (fieldName === "items" || fieldName.startsWith("items.")) {
+    return "items";
+  }
+
+  if (BASIC_TAB_FIELDS.includes(fieldName)) {
+    return "basic";
+  }
+
+  if (PAYMENT_TAB_FIELDS.includes(fieldName)) {
+    return "payment";
+  }
+
+  // Default to basic if unknown
+  return "basic";
+};
+
 const NewInvoice = () => {
   const navigate = useNavigate();
   const { id } = useParams();
@@ -156,6 +200,9 @@ const NewInvoice = () => {
 
   // State for generated invoice number
   const [generatedInvoiceNumber, setGeneratedInvoiceNumber] = useState<string>("");
+
+  // State for controlled tabs
+  const [activeTab, setActiveTab] = useState<TabValue>("basic");
 
   const form = useForm<InvoiceFormData>({
     resolver: zodResolver(invoiceSchema),
@@ -242,6 +289,75 @@ const NewInvoice = () => {
 
   const items = watch("items");
   const useCustomCompany = watch("useCustomCompany");
+
+  // Handle validation errors with proper typing and depth protection
+  const onError = useCallback((errors: FieldErrors<InvoiceFormData>) => {
+    if (import.meta.env.DEV) {
+      console.log("Validation errors:", errors);
+    }
+
+    // Collect all error messages
+    const errorMessages: string[] = [];
+    const errorTabs = new Set<TabValue>();
+
+    // Helper to process errors recursively with depth protection
+    const processErrors = (obj: any, path: string = "", depth: number = 0): void => {
+      if (!obj || depth > MAX_RECURSION_DEPTH) return; // Protect against infinite recursion
+
+      Object.keys(obj).forEach(key => {
+        const fullPath = path ? `${path}.${key}` : key;
+        const error = obj[key];
+
+        if (error?.message) {
+          // Direct error message
+          errorMessages.push(error.message);
+          errorTabs.add(getTabForField(fullPath));
+        } else if (Array.isArray(error)) {
+          // Array errors (for items)
+          error.forEach((item, index) => {
+            if (item) {
+              processErrors(item, `${fullPath}.${index}`, depth + 1);
+            }
+          });
+        } else if (typeof error === "object") {
+          // Nested errors
+          processErrors(error, fullPath, depth + 1);
+        }
+      });
+    };
+
+    processErrors(errors);
+
+    // Switch to the first tab with errors
+    const firstErrorTab = TAB_ORDER.find(tab => errorTabs.has(tab));
+    if (firstErrorTab) {
+      setActiveTab(firstErrorTab);
+    }
+
+    // Show toast with errors (max from constant)
+    const displayErrors = errorMessages.slice(0, MAX_VISIBLE_ERRORS);
+    const remainingCount = errorMessages.length - MAX_VISIBLE_ERRORS;
+
+    toast({
+      title: "Chyba pri validácii",
+      description: (
+        <div className="space-y-2">
+          <ol className="list-decimal list-inside space-y-1 text-sm">
+            {displayErrors.map((msg, idx) => (
+              <li key={idx}>{msg}</li>
+            ))}
+          </ol>
+          {remainingCount > 0 && (
+            <p className="text-sm font-semibold">
+              ...a ďalších {remainingCount}
+            </p>
+          )}
+        </div>
+      ),
+      variant: "destructive",
+      duration: ERROR_TOAST_DURATION_MS,
+    });
+  }, [toast, setActiveTab]);
 
   // Reset form and state when switching from edit to create mode
   useEffect(() => {
@@ -376,7 +492,7 @@ const NewInvoice = () => {
           description: item.description,
           quantity: Number(item.quantity),
           price: Number(item.unit_price_without_tax || item.unit_price || 0),
-          tax_rate: Number(item.tax_rate || 20),
+          tax_rate: Number(item.tax_rate ?? 20),
         }));
         setValue("items", formattedItems);
       }
@@ -457,7 +573,7 @@ const NewInvoice = () => {
           description: item.description,
           quantity: item.quantity,
           price: item.price, // Backend expects this as unit_price_without_tax
-          tax_rate: item.tax_rate || 20,
+          tax_rate: item.tax_rate ?? 20,
         })),
       };
 
@@ -574,8 +690,8 @@ const NewInvoice = () => {
           </div>
         </div>
 
-        <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
-          <Tabs defaultValue="basic" className="w-full">
+        <form onSubmit={handleSubmit(onSubmit, onError)} className="space-y-6">
+          <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
             <TabsList className="grid w-full grid-cols-4 h-auto">
               <TabsTrigger value="basic" className="flex items-center gap-2 py-3">
                 <FileText className="h-4 w-4" />

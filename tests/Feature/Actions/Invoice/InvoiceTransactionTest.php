@@ -311,4 +311,111 @@ final class InvoiceTransactionTest extends TestCase
         $this->assertEquals($newDescription, $item->description);
         $this->assertEquals(5, $item->quantity);
     }
+
+    public function test_invoice_create_with_explicit_zero_percent_vat(): void
+    {
+        $action = app(InvoiceCreateAction::class);
+
+        $clientIco = fake()->numerify('########');
+
+        $dto = new InvoiceCreateDTO(
+            clientName: fake()->company(),
+            clientIco: $clientIco,
+            clientDic: fake()->numerify('20########'),
+            clientIcDph: null,
+            clientStreet: fake()->streetAddress(),
+            clientCity: fake()->city(),
+            clientPostalCode: fake()->postcode(),
+            clientCountry: fake()->countryCode(),
+            invoiceNumber: fake()->unique()->numerify('INV-####-####'),
+            issueDate: now()->format('Y-m-d'),
+            dueDate: now()->addDays(14)->format('Y-m-d'),
+            deliveryDate: now()->format('Y-m-d'),
+            variableSymbol: null,
+            constantSymbol: null,
+            specificSymbol: null,
+            currency: 'EUR',
+            notes: null,
+            status: InvoiceStatus::DRAFT,
+            items: [
+                [
+                    'description' => fake()->words(2, true),
+                    'quantity' => 1,
+                    'price' => 100.00,
+                    'tax_rate' => 0, // Explicit 0% VAT
+                ],
+            ]
+        );
+
+        $invoice = $action->handle($dto, $this->user->id, $this->userCompany->id);
+
+        // Expected total with 0% VAT: 100 * 1.00 = 100.00 (no VAT added)
+        $this->assertDatabaseHas(Invoice::class, [
+            'id' => $invoice->id,
+            'total_amount' => 100.00,
+        ]);
+
+        $this->assertEquals(100.00, $invoice->total_amount);
+    }
+
+    public function test_invoice_create_with_mixed_vat_rates(): void
+    {
+        $action = app(InvoiceCreateAction::class);
+
+        $clientIco = fake()->numerify('########');
+
+        $dto = new InvoiceCreateDTO(
+            clientName: fake()->company(),
+            clientIco: $clientIco,
+            clientDic: fake()->numerify('20########'),
+            clientIcDph: null,
+            clientStreet: fake()->streetAddress(),
+            clientCity: fake()->city(),
+            clientPostalCode: fake()->postcode(),
+            clientCountry: fake()->countryCode(),
+            invoiceNumber: fake()->unique()->numerify('INV-####-####'),
+            issueDate: now()->format('Y-m-d'),
+            dueDate: now()->addDays(14)->format('Y-m-d'),
+            deliveryDate: now()->format('Y-m-d'),
+            variableSymbol: null,
+            constantSymbol: null,
+            specificSymbol: null,
+            currency: 'EUR',
+            notes: null,
+            status: InvoiceStatus::DRAFT,
+            items: [
+                [
+                    'description' => fake()->words(2, true),
+                    'quantity' => 1,
+                    'price' => 100.00,
+                    // No tax_rate - defaults to 20%
+                ],
+                [
+                    'description' => fake()->words(2, true),
+                    'quantity' => 1,
+                    'price' => 50.00,
+                    'tax_rate' => 0, // Explicit 0% VAT
+                ],
+                [
+                    'description' => fake()->words(2, true),
+                    'quantity' => 2,
+                    'price' => 25.00,
+                    'tax_rate' => 10, // Explicit 10% VAT
+                ],
+            ]
+        );
+
+        $invoice = $action->handle($dto, $this->user->id, $this->userCompany->id);
+
+        // Expected calculation:
+        // Subtotal: 100 + 50 + (2*25) = 200.00
+        // Tax: (100*0.20) + (50*0) + (50*0.10) = 20 + 0 + 5 = 25.00
+        // Total: 200 + 25 = 225.00
+        $this->assertDatabaseHas(Invoice::class, [
+            'id' => $invoice->id,
+            'total_amount' => 225.00,
+        ]);
+
+        $this->assertCount(3, $invoice->items);
+    }
 }
