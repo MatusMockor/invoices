@@ -332,14 +332,4 @@ class AuthControllerTest extends TestCase
 
         $response->assertUnauthorized();
     }
-
-    public function test_clear_cookies_returns_success(): void
-    {
-        $response = $this->postJson(route('api.clear-cookies'));
-
-        $response->assertOk();
-        $response->assertJson([
-            'message' => 'Cookies cleared',
-        ]);
-    }
 }

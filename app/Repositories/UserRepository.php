@@ -7,7 +7,7 @@ namespace App\Repositories;
 use App\Models\User;
 use App\Repositories\Contracts\UserRepository as UserRepositoryContract;
 
-class UserRepository implements UserRepositoryContract
+final class UserRepository implements UserRepositoryContract
 {
     /**
      * Find a user by ID
