@@ -65,4 +65,66 @@ class CompanyFactory extends Factory
             'postal_code' => fake()->numerify('#####'),
         ]);
     }
+
+    /**
+     * Create a sole proprietorship (živnosť) that is not a VAT payer.
+     * Živnosť cannot have IC DPH.
+     */
+    public function soleProprietorship(): Factory
+    {
+        return $this->state(fn (array $attributes): array => [
+            'company_type' => 'živnosť',
+            'ic_dph' => null,
+            'vat_payer_status' => VatPayerStatus::NOT_VAT_PAYER,
+            'registration_office' => fake()->randomElement([
+                'Okresný úrad Bratislava',
+                'Okresný úrad Košice',
+                'Okresný úrad Žilina',
+                'Okresný úrad Prešov',
+                'Okresný úrad Banská Bystrica',
+            ]),
+            'registration_number' => fake()->numerify('######-####'),
+        ]);
+    }
+
+    /**
+     * Create an s.r.o. (limited liability company) that is a VAT payer according to paragraph 7.
+     */
+    public function sroVatPayerParagraph7(): Factory
+    {
+        return $this->state(fn (array $attributes): array => [
+            'company_type' => 's.r.o.',
+            'ic_dph' => 'SK'.fake()->numerify('##########'),
+            'vat_payer_status' => VatPayerStatus::VAT_PAYER_PARAGRAPH_7,
+            'registration_office' => fake()->randomElement([
+                'Okresný súd Bratislava I',
+                'Okresný súd Košice I',
+                'Okresný súd Žilina',
+                'Okresný súd Prešov',
+                'Okresný súd Banská Bystrica',
+            ]),
+            'registration_number' => 'Oddiel: Sro, Vložka č. '.fake()->numerify('######/B'),
+        ]);
+    }
+
+    /**
+     * Create an s.r.o. (limited liability company) that is not a VAT payer.
+     * Does not have IC DPH.
+     */
+    public function sroNotVatPayer(): Factory
+    {
+        return $this->state(fn (array $attributes): array => [
+            'company_type' => 's.r.o.',
+            'ic_dph' => null,
+            'vat_payer_status' => VatPayerStatus::NOT_VAT_PAYER,
+            'registration_office' => fake()->randomElement([
+                'Okresný súd Bratislava I',
+                'Okresný súd Košice I',
+                'Okresný súd Žilina',
+                'Okresný súd Prešov',
+                'Okresný súd Banská Bystrica',
+            ]),
+            'registration_number' => 'Oddiel: Sro, Vložka č. '.fake()->numerify('######/B'),
+        ]);
+    }
 }
