@@ -194,4 +194,147 @@ final class CompanyFactoryTest extends TestCase
             }
         }
     }
+
+    /**
+     * Test that soleProprietorship() creates živnosť without IC DPH.
+     * IMPORTANT: Živnosť CANNOT have IC DPH!
+     */
+    public function test_sole_proprietorship_creates_zivnost_without_ic_dph(): void
+    {
+        // Arrange & Act
+        $company = Company::factory()->soleProprietorship()->create();
+
+        // Assert
+        $this->assertSame('živnosť', $company->company_type);
+        $this->assertNull($company->ic_dph, 'Živnosť CANNOT have IC DPH!');
+        $this->assertSame(VatPayerStatus::NOT_VAT_PAYER, $company->vat_payer_status);
+        $this->assertStringContainsString('Okresný úrad', $company->registration_office);
+        $this->assertMatchesRegularExpression('/^\d{6}-\d{4}$/', $company->registration_number);
+    }
+
+    /**
+     * Test that multiple sole proprietorships never have IC DPH.
+     */
+    public function test_multiple_sole_proprietorships_never_have_ic_dph(): void
+    {
+        // Arrange & Act
+        $companies = Company::factory()->soleProprietorship()->count(20)->create();
+
+        // Assert
+        foreach ($companies as $company) {
+            $this->assertSame('živnosť', $company->company_type);
+            $this->assertNull($company->ic_dph, 'Živnosť CANNOT have IC DPH!');
+            $this->assertSame(VatPayerStatus::NOT_VAT_PAYER, $company->vat_payer_status);
+        }
+    }
+
+    /**
+     * Test that sroVatPayerParagraph7() creates s.r.o. with IC DPH and correct status.
+     */
+    public function test_sro_vat_payer_paragraph_7_creates_valid_company(): void
+    {
+        // Arrange & Act
+        $company = Company::factory()->sroVatPayerParagraph7()->create();
+
+        // Assert
+        $this->assertSame('s.r.o.', $company->company_type);
+        $this->assertNotNull($company->ic_dph, 'S.r.o. VAT payer must have IC DPH');
+        $this->assertStringStartsWith('SK', $company->ic_dph);
+        $this->assertMatchesRegularExpression('/^SK\d{10}$/', $company->ic_dph);
+        $this->assertSame(VatPayerStatus::VAT_PAYER_PARAGRAPH_7, $company->vat_payer_status);
+        $this->assertStringContainsString('Okresný súd', $company->registration_office);
+        $this->assertStringContainsString('Oddiel: Sro', $company->registration_number);
+        $this->assertStringContainsString('Vložka č.', $company->registration_number);
+    }
+
+    /**
+     * Test that multiple s.r.o. VAT payer paragraph 7 companies have valid IC DPH.
+     */
+    public function test_multiple_sro_vat_payer_paragraph_7_have_valid_ic_dph(): void
+    {
+        // Arrange & Act
+        $companies = Company::factory()->sroVatPayerParagraph7()->count(20)->create();
+
+        // Assert
+        foreach ($companies as $company) {
+            $this->assertSame('s.r.o.', $company->company_type);
+            $this->assertNotNull($company->ic_dph);
+            $this->assertMatchesRegularExpression('/^SK\d{10}$/', $company->ic_dph);
+            $this->assertSame(VatPayerStatus::VAT_PAYER_PARAGRAPH_7, $company->vat_payer_status);
+        }
+    }
+
+    /**
+     * Test that sroNotVatPayer() creates s.r.o. without IC DPH.
+     */
+    public function test_sro_not_vat_payer_creates_valid_company(): void
+    {
+        // Arrange & Act
+        $company = Company::factory()->sroNotVatPayer()->create();
+
+        // Assert
+        $this->assertSame('s.r.o.', $company->company_type);
+        $this->assertNull($company->ic_dph, 'S.r.o. non-VAT payer must not have IC DPH');
+        $this->assertSame(VatPayerStatus::NOT_VAT_PAYER, $company->vat_payer_status);
+        $this->assertStringContainsString('Okresný súd', $company->registration_office);
+        $this->assertStringContainsString('Oddiel: Sro', $company->registration_number);
+        $this->assertStringContainsString('Vložka č.', $company->registration_number);
+    }
+
+    /**
+     * Test that multiple s.r.o. not VAT payer companies do not have IC DPH.
+     */
+    public function test_multiple_sro_not_vat_payer_do_not_have_ic_dph(): void
+    {
+        // Arrange & Act
+        $companies = Company::factory()->sroNotVatPayer()->count(20)->create();
+
+        // Assert
+        foreach ($companies as $company) {
+            $this->assertSame('s.r.o.', $company->company_type);
+            $this->assertNull($company->ic_dph);
+            $this->assertSame(VatPayerStatus::NOT_VAT_PAYER, $company->vat_payer_status);
+        }
+    }
+
+    /**
+     * Test registration office formats for different company types.
+     */
+    public function test_registration_office_formats_match_company_type(): void
+    {
+        // Arrange & Act
+        $zivnost = Company::factory()->soleProprietorship()->create();
+        $sroVat = Company::factory()->sroVatPayerParagraph7()->create();
+        $sroNonVat = Company::factory()->sroNotVatPayer()->create();
+
+        // Assert - Živnosť uses Okresný úrad
+        $this->assertStringContainsString('Okresný úrad', $zivnost->registration_office);
+
+        // Assert - S.r.o. uses Okresný súd
+        $this->assertStringContainsString('Okresný súd', $sroVat->registration_office);
+        $this->assertStringContainsString('Okresný súd', $sroNonVat->registration_office);
+    }
+
+    /**
+     * Test registration number formats for different company types.
+     */
+    public function test_registration_number_formats_match_company_type(): void
+    {
+        // Arrange & Act
+        $zivnost = Company::factory()->soleProprietorship()->create();
+        $sroVat = Company::factory()->sroVatPayerParagraph7()->create();
+        $sroNonVat = Company::factory()->sroNotVatPayer()->create();
+
+        // Assert - Živnosť uses format: 123456-1234
+        $this->assertMatchesRegularExpression('/^\d{6}-\d{4}$/', $zivnost->registration_number);
+
+        // Assert - S.r.o. uses format: Oddiel: Sro, Vložka č. 123456/B
+        $this->assertStringContainsString('Oddiel:', $sroVat->registration_number);
+        $this->assertStringContainsString('Sro', $sroVat->registration_number);
+        $this->assertStringContainsString('Vložka č.', $sroVat->registration_number);
+
+        $this->assertStringContainsString('Oddiel:', $sroNonVat->registration_number);
+        $this->assertStringContainsString('Sro', $sroNonVat->registration_number);
+        $this->assertStringContainsString('Vložka č.', $sroNonVat->registration_number);
+    }
 }
