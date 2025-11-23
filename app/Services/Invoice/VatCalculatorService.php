@@ -71,7 +71,8 @@ final class VatCalculatorService
         foreach ($items as $item) {
             $quantity = $item['quantity'] ?? 0;
             $unitPrice = $item['unit_price_without_tax'] ?? $item['price'] ?? 0;
-            $taxRate = $item['tax_rate'] ?? 20.0;
+            // Use 20.0 as default if tax_rate is not set (Slovak standard VAT rate), allows explicit 0% when provided
+            $taxRate = isset($item['tax_rate']) ? (float) $item['tax_rate'] : 20.0;
             $itemDiscount = $item['discount_amount'] ?? null;
 
             $itemSubtotal = $this->calculateItemSubtotal($quantity, $unitPrice, $itemDiscount);

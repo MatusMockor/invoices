@@ -26,7 +26,7 @@ export const InvoiceSummarySection = ({ form, items }: InvoiceSummarySectionProp
     return items.reduce((total, item) => {
       const quantity = item.quantity || 0;
       const price = item.price || 0;
-      const taxRate = item.tax_rate || 20;
+      const taxRate = item.tax_rate ?? 20;
       const subtotal = quantity * price;
       const taxAmount = subtotal * (taxRate / 100);
       return total + subtotal + taxAmount;
@@ -48,7 +48,7 @@ export const InvoiceSummarySection = ({ form, items }: InvoiceSummarySectionProp
     return items.reduce((sum, item) => {
       const quantity = item.quantity || 0;
       const price = item.price || 0;
-      const taxRate = item.tax_rate || 20;
+      const taxRate = item.tax_rate ?? 20;
       const subtotal = quantity * price;
       return sum + (subtotal * (taxRate / 100));
     }, 0);
@@ -62,7 +62,7 @@ export const InvoiceSummarySection = ({ form, items }: InvoiceSummarySectionProp
     items.forEach(item => {
       const quantity = item.quantity || 0;
       const price = item.price || 0;
-      const taxRate = item.tax_rate || 20;
+      const taxRate = item.tax_rate ?? 20;
       const subtotal = quantity * price;
       const vatAmount = subtotal * (taxRate / 100);
 
@@ -129,7 +129,7 @@ export const InvoiceSummarySection = ({ form, items }: InvoiceSummarySectionProp
           {items.map((item, index) => {
             const quantity = item.quantity || 0;
             const price = item.price || 0;
-            const taxRate = item.tax_rate || 20;
+            const taxRate = item.tax_rate ?? 20;
             const subtotal = quantity * price;
             const vatAmount = reverseCharge ? 0 : subtotal * (taxRate / 100);
             const total = subtotal + vatAmount;
