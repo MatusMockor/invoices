@@ -4,52 +4,45 @@ declare(strict_types=1);
 
 namespace App\Http\Controllers\Api;
 
+use App\Actions\User\UserLoginAction;
+use App\Actions\User\UserLogoutAction;
 use App\Actions\User\UserRegistrationAction;
+use App\Actions\User\UserSimpleRegistrationAction;
+use App\DTOs\User\LoginDTO;
+use App\DTOs\User\SimpleUserRegistrationDTO;
 use App\DTOs\User\UserRegistrationDTO;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\LoginRequest;
 use App\Http\Requests\RegisterRequest;
 use App\Http\Requests\RegisterWithCompanyRequest;
 use App\Http\Resources\UserResource;
-use App\Models\User;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Hash;
-use Illuminate\Validation\ValidationException;
 
-class AuthController extends Controller
+final class AuthController extends Controller
 {
     /**
      * Handle user login request.
      */
-    public function login(LoginRequest $request): JsonResponse
+    public function login(LoginRequest $request, UserLoginAction $action): JsonResponse
     {
-        // Find user by email
-        $user = User::where('email', $request->getEmail())->first();
-
-        // Check if user exists and password is correct
-        if (! $user || ! Hash::check($request->getPassword(), $user->password)) {
-            throw ValidationException::withMessages([
-                'email' => ['The provided credentials are incorrect.'],
-            ]);
-        }
-
-        // Create token without creating session
-        $token = $user->createToken('auth-token')->plainTextToken;
+        $dto = LoginDTO::fromFormRequest($request);
+        $result = $action->handle($dto);
 
         return response()->json([
             'message' => 'Logged in successfully',
-            'user' => new UserResource($user),
-            'token' => $token,
+            'user' => new UserResource($result->user),
+            'token' => $result->token,
         ]);
     }
 
     /**
      * Handle user registration request.
      */
-    public function register(RegisterRequest $request): JsonResponse
+    public function register(RegisterRequest $request, UserSimpleRegistrationAction $action): JsonResponse
     {
-        $user = User::create($request->getData());
+        $dto = SimpleUserRegistrationDTO::fromFormRequest($request);
+        $user = $action->handle($dto);
 
         $token = $user->createToken('auth-token')->plainTextToken;
 
@@ -83,10 +76,9 @@ class AuthController extends Controller
     /**
      * Handle user logout request.
      */
-    public function logout(Request $request): JsonResponse
+    public function logout(Request $request, UserLogoutAction $action): JsonResponse
     {
-        // Revoke the current token that was used to authenticate the request
-        $request->user()->currentAccessToken()->delete();
+        $action->handle($request->user());
 
         return response()->json([
             'message' => 'Logged out successfully',
@@ -99,32 +91,5 @@ class AuthController extends Controller
     public function user(Request $request): UserResource
     {
         return new UserResource($request->user());
-    }
-
-    /**
-     * Clear old session cookies (helper for migration to token-based auth).
-     */
-    public function clearCookies(): JsonResponse
-    {
-        $response = response()->json([
-            'message' => 'Cookies cleared',
-        ]);
-
-        // Expire all possible session cookies
-        $cookies = ['laravel_session', 'XSRF-TOKEN'];
-
-        // Also try to get any encrypted session cookie name
-        foreach ($cookies as $cookie) {
-            $response->cookie($cookie, '', -1, '/', null, false, false);
-        }
-
-        // Try to clear any possible encrypted cookie names
-        if (isset($_COOKIE)) {
-            foreach (array_keys($_COOKIE) as $cookieName) {
-                $response->cookie($cookieName, '', -1, '/', null, false, false);
-            }
-        }
-
-        return $response;
     }
 }

@@ -37,8 +37,6 @@ Route::post('/register-with-company', [AuthController::class, 'registerWithCompa
 Route::post('/login', [AuthController::class, 'login'])
     ->middleware('throttle:6,1')
     ->name('api.login');
-Route::post('/clear-cookies', [AuthController::class, 'clearCookies'])
-    ->name('api.clear-cookies');
 
 // Protected routes (require authentication via Sanctum)
 Route::middleware('auth:sanctum')->group(function () {
