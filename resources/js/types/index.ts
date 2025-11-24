@@ -138,9 +138,13 @@ export interface Invoice {
 
   // Relationships
   business_entity?: BusinessEntity;
-  supplier_company?: Company;
+  supplier_company?: UserCompany;
   items?: InvoiceItem[];
   qr_code?: string;
+
+  // Supplier VAT payer status for conditional display
+  supplier_vat_payer_status?: 'not_vat_payer' | 'vat_payer' | 'vat_payer_paragraph_7' | null;
+  supplier_is_vat_payer?: boolean;
 }
 
 export interface InvoiceItem {

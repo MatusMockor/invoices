@@ -17,7 +17,18 @@ interface InvoiceData {
     description: string;
     quantity: number;
     price: number;
+    unitPriceWithoutTax?: number;
+    taxRate?: number;
+    taxAmount?: number;
+    totalPrice?: number;
   }>;
+  // VAT related fields
+  isVatPayer?: boolean;
+  subtotal?: number;
+  taxRate?: number;
+  taxAmount?: number;
+  totalAmount?: number;
+  currency?: string;
 }
 
 interface InvoicePreviewModernProps {
@@ -25,9 +36,13 @@ interface InvoicePreviewModernProps {
 }
 
 export const InvoicePreviewModern = ({ invoiceData }: InvoicePreviewModernProps) => {
-  const subtotal = invoiceData.items.reduce((sum, item) => sum + item.quantity * item.price, 0);
-  const vat = subtotal * 0.2; // 20% DPH
-  const total = subtotal + vat;
+  // Use actual VAT data if available, otherwise calculate
+  const isVatPayer = invoiceData.isVatPayer ?? true;
+  const subtotal = invoiceData.subtotal ?? invoiceData.items.reduce((sum, item) => sum + item.quantity * item.price, 0);
+  const taxRate = invoiceData.taxRate ?? 20;
+  const vat = invoiceData.taxAmount ?? subtotal * (taxRate / 100);
+  const total = invoiceData.totalAmount ?? subtotal + vat;
+  const currency = invoiceData.currency ?? 'EUR';
 
   const generatePayBySquareData = () => {
     const iban = "SK1234567890123456789012";
@@ -184,9 +199,20 @@ export const InvoicePreviewModern = ({ invoiceData }: InvoicePreviewModernProps)
             <thead>
               <tr className="bg-gradient-to-r from-blue-600 to-purple-600 text-white">
                 <th className="text-left py-3 px-3 font-semibold text-xs uppercase tracking-wide">Popis</th>
-                <th className="text-right py-3 px-3 w-20 font-semibold text-xs uppercase tracking-wide">Počet</th>
-                <th className="text-right py-3 px-3 w-28 font-semibold text-xs uppercase tracking-wide">Cena/ks</th>
-                <th className="text-right py-3 px-3 w-28 font-semibold text-xs uppercase tracking-wide">Celkom</th>
+                <th className="text-right py-3 px-3 w-16 font-semibold text-xs uppercase tracking-wide">Počet</th>
+                {isVatPayer ? (
+                  <>
+                    <th className="text-right py-3 px-3 w-24 font-semibold text-xs uppercase tracking-wide">Cena/ks<br/><span className="text-[10px] font-normal opacity-80">(bez DPH)</span></th>
+                    <th className="text-right py-3 px-3 w-16 font-semibold text-xs uppercase tracking-wide">DPH</th>
+                    <th className="text-right py-3 px-3 w-24 font-semibold text-xs uppercase tracking-wide">Výška<br/><span className="text-[10px] font-normal opacity-80">DPH</span></th>
+                    <th className="text-right py-3 px-3 w-28 font-semibold text-xs uppercase tracking-wide">Celkom</th>
+                  </>
+                ) : (
+                  <>
+                    <th className="text-right py-3 px-3 w-28 font-semibold text-xs uppercase tracking-wide">Cena/ks</th>
+                    <th className="text-right py-3 px-3 w-28 font-semibold text-xs uppercase tracking-wide">Celkom</th>
+                  </>
+                )}
               </tr>
             </thead>
             <tbody>
@@ -197,10 +223,19 @@ export const InvoicePreviewModern = ({ invoiceData }: InvoicePreviewModernProps)
                 >
                   <td className="py-3 px-3 text-slate-900 text-sm">{item.description}</td>
                   <td className="text-right py-3 px-3 text-slate-700 text-sm">{item.quantity}</td>
-                  <td className="text-right py-3 px-3 text-slate-700 text-sm">€{item.price.toFixed(2)}</td>
-                  <td className="text-right py-3 px-3 font-bold text-slate-900 text-sm">
-                    €{(item.quantity * item.price).toFixed(2)}
-                  </td>
+                  {isVatPayer ? (
+                    <>
+                      <td className="text-right py-3 px-3 text-slate-700 text-sm">{(item.unitPriceWithoutTax ?? item.price).toFixed(2)} €</td>
+                      <td className="text-right py-3 px-3 text-slate-700 text-sm">{(item.taxRate ?? taxRate).toFixed(0)}%</td>
+                      <td className="text-right py-3 px-3 text-slate-700 text-sm">{(item.taxAmount ?? 0).toFixed(2)} €</td>
+                      <td className="text-right py-3 px-3 font-bold text-slate-900 text-sm">{(item.totalPrice ?? item.quantity * item.price).toFixed(2)} €</td>
+                    </>
+                  ) : (
+                    <>
+                      <td className="text-right py-3 px-3 text-slate-700 text-sm">{item.price.toFixed(2)} €</td>
+                      <td className="text-right py-3 px-3 font-bold text-slate-900 text-sm">{(item.totalPrice ?? item.quantity * item.price).toFixed(2)} €</td>
+                    </>
+                  )}
                 </tr>
               ))}
             </tbody>
@@ -212,17 +247,21 @@ export const InvoicePreviewModern = ({ invoiceData }: InvoicePreviewModernProps)
       <div className="flex justify-end mb-6">
         <div className="w-80">
           <div className="bg-white rounded-2xl p-4 shadow-xl border border-slate-200">
-            <div className="flex justify-between py-2 border-b border-slate-200">
-              <span className="text-slate-600 font-medium text-sm">Medzisúčet:</span>
-              <span className="font-semibold text-slate-900 text-sm">€{subtotal.toFixed(2)}</span>
-            </div>
-            <div className="flex justify-between py-2 border-b border-slate-200">
-              <span className="text-slate-600 font-medium text-sm">DPH (20%):</span>
-              <span className="font-semibold text-slate-900 text-sm">€{vat.toFixed(2)}</span>
-            </div>
+            {isVatPayer && (
+              <>
+                <div className="flex justify-between py-2 border-b border-slate-200">
+                  <span className="text-slate-600 font-medium text-sm">Základ dane (bez DPH):</span>
+                  <span className="font-semibold text-slate-900 text-sm">{subtotal.toFixed(2)} €</span>
+                </div>
+                <div className="flex justify-between py-2 border-b border-slate-200">
+                  <span className="text-slate-600 font-medium text-sm">DPH ({taxRate.toFixed(0)}%):</span>
+                  <span className="font-semibold text-slate-900 text-sm">{vat.toFixed(2)} €</span>
+                </div>
+              </>
+            )}
             <div className="flex justify-between py-3 mt-2 bg-gradient-to-r from-blue-600 to-purple-600 px-4 rounded-xl">
               <span className="font-bold text-base text-white">Celkom k úhrade:</span>
-              <span className="font-black text-xl text-white">€{total.toFixed(2)}</span>
+              <span className="font-black text-xl text-white">{total.toFixed(2)} €</span>
             </div>
           </div>
         </div>

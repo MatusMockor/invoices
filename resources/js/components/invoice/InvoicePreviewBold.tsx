@@ -17,7 +17,18 @@ interface InvoiceData {
     description: string;
     quantity: number;
     price: number;
+    unitPriceWithoutTax?: number;
+    taxRate?: number;
+    taxAmount?: number;
+    totalPrice?: number;
   }>;
+  // VAT related fields
+  isVatPayer?: boolean;
+  subtotal?: number;
+  taxRate?: number;
+  taxAmount?: number;
+  totalAmount?: number;
+  currency?: string;
 }
 
 interface InvoicePreviewBoldProps {
@@ -25,9 +36,13 @@ interface InvoicePreviewBoldProps {
 }
 
 export const InvoicePreviewBold = ({ invoiceData }: InvoicePreviewBoldProps) => {
-  const subtotal = invoiceData.items.reduce((sum, item) => sum + item.quantity * item.price, 0);
-  const vat = subtotal * 0.2; // 20% DPH
-  const total = subtotal + vat;
+  // Use actual VAT data if available, otherwise calculate
+  const isVatPayer = invoiceData.isVatPayer ?? true;
+  const subtotal = invoiceData.subtotal ?? invoiceData.items.reduce((sum, item) => sum + item.quantity * item.price, 0);
+  const taxRate = invoiceData.taxRate ?? 20;
+  const vat = invoiceData.taxAmount ?? subtotal * (taxRate / 100);
+  const total = invoiceData.totalAmount ?? subtotal + vat;
+  const currency = invoiceData.currency ?? 'EUR';
 
   const generatePayBySquareData = () => {
     const iban = "SK1234567890123456789012";
@@ -144,10 +159,21 @@ export const InvoicePreviewBold = ({ invoiceData }: InvoicePreviewBoldProps) => 
         <table className="w-full">
           <thead>
             <tr className="bg-gradient-to-r from-cyan-500/20 to-blue-500/20">
-              <th className="text-left py-4 px-5 text-xs font-bold text-cyan-400 uppercase tracking-wider">Description</th>
-              <th className="text-right py-4 px-5 w-24 text-xs font-bold text-cyan-400 uppercase tracking-wider">Qty</th>
-              <th className="text-right py-4 px-5 w-32 text-xs font-bold text-cyan-400 uppercase tracking-wider">Price</th>
-              <th className="text-right py-4 px-5 w-32 text-xs font-bold text-cyan-400 uppercase tracking-wider">Total</th>
+              <th className="text-left py-4 px-5 text-xs font-bold text-cyan-400 uppercase tracking-wider">Popis</th>
+              <th className="text-right py-4 px-5 w-16 text-xs font-bold text-cyan-400 uppercase tracking-wider">Počet</th>
+              {isVatPayer ? (
+                <>
+                  <th className="text-right py-4 px-5 w-24 text-xs font-bold text-cyan-400 uppercase tracking-wider">Cena/ks<br/><span className="text-[10px] font-normal opacity-80">(bez DPH)</span></th>
+                  <th className="text-right py-4 px-5 w-16 text-xs font-bold text-cyan-400 uppercase tracking-wider">DPH</th>
+                  <th className="text-right py-4 px-5 w-24 text-xs font-bold text-cyan-400 uppercase tracking-wider">Výška<br/><span className="text-[10px] font-normal opacity-80">DPH</span></th>
+                  <th className="text-right py-4 px-5 w-28 text-xs font-bold text-cyan-400 uppercase tracking-wider">Celkom</th>
+                </>
+              ) : (
+                <>
+                  <th className="text-right py-4 px-5 w-32 text-xs font-bold text-cyan-400 uppercase tracking-wider">Cena/ks</th>
+                  <th className="text-right py-4 px-5 w-32 text-xs font-bold text-cyan-400 uppercase tracking-wider">Celkom</th>
+                </>
+              )}
             </tr>
           </thead>
           <tbody>
@@ -155,10 +181,19 @@ export const InvoicePreviewBold = ({ invoiceData }: InvoicePreviewBoldProps) => 
               <tr key={index} className="border-t border-white/10 hover:bg-white/5 transition-colors">
                 <td className="py-4 px-5 text-sm text-white font-medium">{item.description}</td>
                 <td className="text-right py-4 px-5 text-sm text-slate-300">{item.quantity}</td>
-                <td className="text-right py-4 px-5 text-sm text-slate-300">€{item.price.toFixed(2)}</td>
-                <td className="text-right py-4 px-5 text-sm font-bold text-white">
-                  €{(item.quantity * item.price).toFixed(2)}
-                </td>
+                {isVatPayer ? (
+                  <>
+                    <td className="text-right py-4 px-5 text-sm text-slate-300">{(item.unitPriceWithoutTax ?? item.price).toFixed(2)} €</td>
+                    <td className="text-right py-4 px-5 text-sm text-slate-300">{(item.taxRate ?? taxRate).toFixed(0)}%</td>
+                    <td className="text-right py-4 px-5 text-sm text-slate-300">{(item.taxAmount ?? 0).toFixed(2)} €</td>
+                    <td className="text-right py-4 px-5 text-sm font-bold text-white">{(item.totalPrice ?? item.quantity * item.price).toFixed(2)} €</td>
+                  </>
+                ) : (
+                  <>
+                    <td className="text-right py-4 px-5 text-sm text-slate-300">{item.price.toFixed(2)} €</td>
+                    <td className="text-right py-4 px-5 text-sm font-bold text-white">{(item.totalPrice ?? item.quantity * item.price).toFixed(2)} €</td>
+                  </>
+                )}
               </tr>
             ))}
           </tbody>
@@ -169,18 +204,22 @@ export const InvoicePreviewBold = ({ invoiceData }: InvoicePreviewBoldProps) => 
       <div className="flex justify-end mb-8">
         <div className="w-96 bg-gradient-to-br from-cyan-500/10 to-blue-500/10 backdrop-blur-sm rounded-xl p-6 border border-cyan-500/30">
           <div className="space-y-3">
-            <div className="flex justify-between py-2 text-sm border-b border-white/10">
-              <span className="text-slate-300">Subtotal:</span>
-              <span className="font-bold text-white">€{subtotal.toFixed(2)}</span>
-            </div>
-            <div className="flex justify-between py-2 text-sm border-b border-white/10">
-              <span className="text-slate-300">VAT (20%):</span>
-              <span className="font-bold text-white">€{vat.toFixed(2)}</span>
-            </div>
+            {isVatPayer && (
+              <>
+                <div className="flex justify-between py-2 text-sm border-b border-white/10">
+                  <span className="text-slate-300">Základ dane (bez DPH):</span>
+                  <span className="font-bold text-white">{subtotal.toFixed(2)} €</span>
+                </div>
+                <div className="flex justify-between py-2 text-sm border-b border-white/10">
+                  <span className="text-slate-300">DPH ({taxRate.toFixed(0)}%):</span>
+                  <span className="font-bold text-white">{vat.toFixed(2)} €</span>
+                </div>
+              </>
+            )}
             <div className="flex justify-between py-3 pt-4">
-              <span className="font-bold text-cyan-400 text-base uppercase tracking-wider">Total Amount:</span>
+              <span className="font-bold text-cyan-400 text-base uppercase tracking-wider">Celkom k úhrade:</span>
               <span className="font-bold text-2xl bg-gradient-to-r from-cyan-400 to-blue-400 bg-clip-text text-transparent">
-                €{total.toFixed(2)}
+                {total.toFixed(2)} €
               </span>
             </div>
           </div>

@@ -54,8 +54,19 @@ export const InvoicePreview = ({ open, onOpenChange, invoiceId }: InvoicePreview
       items: invoice.items?.map(item => ({
         description: item.description,
         quantity: Number(item.quantity),
-        price: Number(item.unit_price),
+        price: Number(item.unit_price_without_tax || item.unit_price || 0),
+        unitPriceWithoutTax: Number(item.unit_price_without_tax || 0),
+        taxRate: Number(item.tax_rate || 0),
+        taxAmount: Number(item.tax_amount || 0),
+        totalPrice: Number(item.total_price || 0),
       })) || [],
+      // VAT related fields
+      isVatPayer: invoice.supplier_is_vat_payer || false,
+      subtotal: Number(invoice.subtotal || 0),
+      taxRate: Number(invoice.tax_rate || 0),
+      taxAmount: Number(invoice.tax_amount || 0),
+      totalAmount: Number(invoice.total_amount || 0),
+      currency: invoice.currency || 'EUR',
     };
   }, [invoice]);
 
@@ -247,9 +258,20 @@ export const InvoicePreview = ({ open, onOpenChange, invoiceId }: InvoicePreview
               <thead>
                 <tr className="border-b-2 border-gray-300">
                   <th className="text-left py-3 px-2">Popis</th>
-                  <th className="text-right py-3 px-2 w-20">Počet</th>
-                  <th className="text-right py-3 px-2 w-28">Cena/ks</th>
-                  <th className="text-right py-3 px-2 w-28">Celkom</th>
+                  <th className="text-right py-3 px-2 w-16">Počet</th>
+                  {invoice.supplier_is_vat_payer ? (
+                    <>
+                      <th className="text-right py-3 px-2 w-24">Cena/ks<br/><span className="text-xs font-normal">(bez DPH)</span></th>
+                      <th className="text-right py-3 px-2 w-20">Sadzba<br/><span className="text-xs font-normal">DPH</span></th>
+                      <th className="text-right py-3 px-2 w-24">Výška<br/><span className="text-xs font-normal">DPH</span></th>
+                      <th className="text-right py-3 px-2 w-28">Celkom<br/><span className="text-xs font-normal">(s DPH)</span></th>
+                    </>
+                  ) : (
+                    <>
+                      <th className="text-right py-3 px-2 w-28">Cena/ks</th>
+                      <th className="text-right py-3 px-2 w-32">Celkom</th>
+                    </>
+                  )}
                 </tr>
               </thead>
               <tbody>
@@ -257,10 +279,19 @@ export const InvoicePreview = ({ open, onOpenChange, invoiceId }: InvoicePreview
                   <tr key={index} className="border-b border-gray-200">
                     <td className="py-3 px-2">{item.description}</td>
                     <td className="text-right py-3 px-2">{Number(item.quantity)}</td>
-                    <td className="text-right py-3 px-2">{Number(item.unit_price).toFixed(2)} {invoice.currency}</td>
-                    <td className="text-right py-3 px-2 font-semibold">
-                      {Number(item.total_price).toFixed(2)} {invoice.currency}
-                    </td>
+                    {invoice.supplier_is_vat_payer ? (
+                      <>
+                        <td className="text-right py-3 px-2">{Number(item.unit_price_without_tax).toFixed(2)} €</td>
+                        <td className="text-right py-3 px-2">{Number(item.tax_rate).toFixed(0)}%</td>
+                        <td className="text-right py-3 px-2">{Number(item.tax_amount).toFixed(2)} €</td>
+                        <td className="text-right py-3 px-2 font-semibold">{Number(item.total_price).toFixed(2)} €</td>
+                      </>
+                    ) : (
+                      <>
+                        <td className="text-right py-3 px-2">{Number(item.unit_price).toFixed(2)} {invoice.currency}</td>
+                        <td className="text-right py-3 px-2 font-semibold">{Number(item.total_price).toFixed(2)} {invoice.currency}</td>
+                      </>
+                    )}
                   </tr>
                 ))}
               </tbody>
@@ -270,9 +301,26 @@ export const InvoicePreview = ({ open, onOpenChange, invoiceId }: InvoicePreview
           {/* Totals */}
           <div className="flex justify-end mb-8">
             <div className="w-80">
-              <div className="flex justify-between py-3 bg-purple-50 px-4 rounded-lg">
-                <span className="font-bold text-lg">Celkom k úhrade:</span>
-                <span className="font-bold text-lg text-purple-600">{Number(invoice.total_amount).toFixed(2)} {invoice.currency}</span>
+              <div className="space-y-2">
+                {invoice.supplier_is_vat_payer && (
+                  <>
+                    {/* Subtotal without VAT */}
+                    <div className="flex justify-between py-2 px-4 border-b border-gray-200">
+                      <span className="text-gray-700">Základ dane (bez DPH):</span>
+                      <span className="font-semibold">{Number(invoice.subtotal).toFixed(2)} €</span>
+                    </div>
+                    {/* VAT Amount */}
+                    <div className="flex justify-between py-2 px-4 border-b border-gray-200">
+                      <span className="text-gray-700">DPH {Number(invoice.tax_rate).toFixed(0)}%:</span>
+                      <span className="font-semibold">{Number(invoice.tax_amount).toFixed(2)} €</span>
+                    </div>
+                  </>
+                )}
+                {/* Total */}
+                <div className="flex justify-between py-3 bg-purple-50 px-4 rounded-lg mt-2">
+                  <span className="font-bold text-lg">Celkom k úhrade:</span>
+                  <span className="font-bold text-lg text-purple-600">{Number(invoice.total_amount).toFixed(2)} {invoice.currency}</span>
+                </div>
               </div>
             </div>
           </div>
