@@ -1053,4 +1053,137 @@ class InvoiceControllerTest extends TestCase
             $response->assertJsonPath('data.supplier_is_vat_payer', $expectedIsVatPayer);
         }
     }
+
+    public function test_show_includes_item_vat_fields(): void
+    {
+        $company = Company::factory()->create();
+
+        $invoice = Invoice::factory()->create([
+            'supplier_company_id' => $this->userCompany->id,
+            'company_id' => $company->id,
+            'user_id' => $this->user->id,
+        ]);
+
+        InvoiceItem::factory()->create([
+            'invoice_id' => $invoice->id,
+            'unit_price_without_tax' => 100.00,
+            'tax_rate' => 20.0,
+            'tax_amount' => 20.00,
+            'total_price' => 120.00,
+        ]);
+
+        $response = $this->getJson(route('api.invoices.show', $invoice));
+
+        $response->assertOk();
+        $response->assertJsonStructure([
+            'data' => [
+                'items' => [
+                    '*' => [
+                        'id',
+                        'description',
+                        'quantity',
+                        'unit_price_without_tax',
+                        'unit_price',
+                        'tax_rate',
+                        'tax_amount',
+                        'total_price',
+                    ],
+                ],
+            ],
+        ]);
+    }
+
+    public function test_show_item_unit_price_equals_unit_price_without_tax(): void
+    {
+        $company = Company::factory()->create();
+
+        $invoice = Invoice::factory()->create([
+            'supplier_company_id' => $this->userCompany->id,
+            'company_id' => $company->id,
+            'user_id' => $this->user->id,
+        ]);
+
+        $unitPriceWithoutTax = 150.75;
+
+        InvoiceItem::factory()->create([
+            'invoice_id' => $invoice->id,
+            'unit_price_without_tax' => $unitPriceWithoutTax,
+        ]);
+
+        $response = $this->getJson(route('api.invoices.show', $invoice));
+
+        $response->assertOk();
+
+        $item = $response->json('data.items.0');
+
+        $this->assertEquals($unitPriceWithoutTax, $item['unit_price']);
+        $this->assertEquals($unitPriceWithoutTax, $item['unit_price_without_tax']);
+        $this->assertEquals($item['unit_price'], $item['unit_price_without_tax']);
+    }
+
+    public function test_show_items_include_correct_tax_calculations(): void
+    {
+        $company = Company::factory()->create();
+
+        $invoice = Invoice::factory()->create([
+            'supplier_company_id' => $this->userCompany->id,
+            'company_id' => $company->id,
+            'user_id' => $this->user->id,
+        ]);
+
+        // Item with 20% VAT
+        InvoiceItem::factory()->create([
+            'invoice_id' => $invoice->id,
+            'description' => 'Item with 20% VAT',
+            'unit_price_without_tax' => 100.00,
+            'tax_rate' => 20.0,
+            'tax_amount' => 20.00,
+            'total_price' => 120.00,
+        ]);
+
+        // Item with 10% VAT
+        InvoiceItem::factory()->create([
+            'invoice_id' => $invoice->id,
+            'description' => 'Item with 10% VAT',
+            'unit_price_without_tax' => 100.00,
+            'tax_rate' => 10.0,
+            'tax_amount' => 10.00,
+            'total_price' => 110.00,
+        ]);
+
+        // Item with 0% VAT
+        InvoiceItem::factory()->create([
+            'invoice_id' => $invoice->id,
+            'description' => 'Item with 0% VAT',
+            'unit_price_without_tax' => 100.00,
+            'tax_rate' => 0.0,
+            'tax_amount' => 0.00,
+            'total_price' => 100.00,
+        ]);
+
+        $response = $this->getJson(route('api.invoices.show', $invoice));
+
+        $response->assertOk();
+
+        $items = $response->json('data.items');
+
+        $this->assertCount(3, $items);
+
+        // Find and verify each item by description
+        $item20 = collect($items)->firstWhere('description', 'Item with 20% VAT');
+        $item10 = collect($items)->firstWhere('description', 'Item with 10% VAT');
+        $item0 = collect($items)->firstWhere('description', 'Item with 0% VAT');
+
+        $this->assertEquals(20.0, $item20['tax_rate']);
+        $this->assertEquals(20.00, $item20['tax_amount']);
+        $this->assertEquals(120.00, $item20['total_price']);
+
+        $this->assertEquals(10.0, $item10['tax_rate']);
+        $this->assertEquals(10.00, $item10['tax_amount']);
+        $this->assertEquals(110.00, $item10['total_price']);
+
+        $this->assertEquals(0.0, $item0['tax_rate']);
+        $this->assertEquals(0.00, $item0['tax_amount']);
+        $this->assertEquals(100.00, $item0['total_price']);
+    }
 }
