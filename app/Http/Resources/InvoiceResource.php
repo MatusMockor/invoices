@@ -56,6 +56,10 @@ class InvoiceResource extends JsonResource
             'supplier_company' => new UserCompanyResource($this->whenLoaded('supplierCompany')),
             'items' => InvoiceItemResource::collection($this->whenLoaded('items')),
             'qr_code' => $this->qr_code ?? null,
+
+            // Supplier VAT payer status for conditional display
+            'supplier_vat_payer_status' => $this->supplierCompany?->vat_payer_status?->value,
+            'supplier_is_vat_payer' => $this->supplierCompany?->vat_payer_status !== \App\Enums\VatPayerStatus::NOT_VAT_PAYER,
         ];
     }
 }

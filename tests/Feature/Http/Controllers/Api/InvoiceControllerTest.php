@@ -92,6 +92,8 @@ class InvoiceControllerTest extends TestCase
                 'status',
                 'business_entity',
                 'items',
+                'supplier_vat_payer_status',
+                'supplier_is_vat_payer',
             ],
         ]);
     }
@@ -903,5 +905,152 @@ class InvoiceControllerTest extends TestCase
                 'latest_number' => '20250010',
             ],
         ]);
+    }
+
+    public function test_show_includes_supplier_vat_payer_status_for_vat_payer(): void
+    {
+        $supplierCompany = UserCompany::factory()->create([
+            'vat_payer_status' => \App\Enums\VatPayerStatus::VAT_PAYER,
+        ]);
+
+        $this->user->update(['current_company_id' => $supplierCompany->id]);
+
+        $company = Company::factory()->create();
+
+        $invoice = Invoice::factory()->create([
+            'supplier_company_id' => $supplierCompany->id,
+            'company_id' => $company->id,
+            'user_id' => $this->user->id,
+        ]);
+
+        $response = $this->getJson(route('api.invoices.show', $invoice));
+
+        $response->assertOk();
+        $response->assertJsonPath('data.supplier_vat_payer_status', 'vat_payer');
+        $response->assertJsonPath('data.supplier_is_vat_payer', true);
+    }
+
+    public function test_show_includes_supplier_vat_payer_status_for_not_vat_payer(): void
+    {
+        $supplierCompany = UserCompany::factory()->create([
+            'vat_payer_status' => \App\Enums\VatPayerStatus::NOT_VAT_PAYER,
+        ]);
+
+        $this->user->update(['current_company_id' => $supplierCompany->id]);
+
+        $company = Company::factory()->create();
+
+        $invoice = Invoice::factory()->create([
+            'supplier_company_id' => $supplierCompany->id,
+            'company_id' => $company->id,
+            'user_id' => $this->user->id,
+        ]);
+
+        $response = $this->getJson(route('api.invoices.show', $invoice));
+
+        $response->assertOk();
+        $response->assertJsonPath('data.supplier_vat_payer_status', 'not_vat_payer');
+        $response->assertJsonPath('data.supplier_is_vat_payer', false);
+    }
+
+    public function test_show_includes_supplier_vat_payer_status_for_vat_payer_paragraph_7(): void
+    {
+        $supplierCompany = UserCompany::factory()->create([
+            'vat_payer_status' => \App\Enums\VatPayerStatus::VAT_PAYER_PARAGRAPH_7,
+        ]);
+
+        $this->user->update(['current_company_id' => $supplierCompany->id]);
+
+        $company = Company::factory()->create();
+
+        $invoice = Invoice::factory()->create([
+            'supplier_company_id' => $supplierCompany->id,
+            'company_id' => $company->id,
+            'user_id' => $this->user->id,
+        ]);
+
+        $response = $this->getJson(route('api.invoices.show', $invoice));
+
+        $response->assertOk();
+        $response->assertJsonPath('data.supplier_vat_payer_status', 'vat_payer_paragraph_7');
+        $response->assertJsonPath('data.supplier_is_vat_payer', true);
+    }
+
+    public function test_index_includes_supplier_is_vat_payer_in_list(): void
+    {
+        $vatPayerCompany = UserCompany::factory()->create([
+            'vat_payer_status' => \App\Enums\VatPayerStatus::VAT_PAYER,
+        ]);
+
+        $notVatPayerCompany = UserCompany::factory()->create([
+            'vat_payer_status' => \App\Enums\VatPayerStatus::NOT_VAT_PAYER,
+        ]);
+
+        $this->user->update(['current_company_id' => $vatPayerCompany->id]);
+
+        $company = Company::factory()->create();
+
+        $vatPayerInvoice = Invoice::factory()->create([
+            'supplier_company_id' => $vatPayerCompany->id,
+            'company_id' => $company->id,
+            'user_id' => $this->user->id,
+        ]);
+
+        $response = $this->getJson(route('api.invoices.index'));
+
+        $response->assertOk();
+        $response->assertJsonPath('data.0.supplier_vat_payer_status', 'vat_payer');
+        $response->assertJsonPath('data.0.supplier_is_vat_payer', true);
+    }
+
+    public function test_supplier_is_vat_payer_field_is_boolean(): void
+    {
+        $company = Company::factory()->create();
+
+        $invoice = Invoice::factory()->create([
+            'supplier_company_id' => $this->userCompany->id,
+            'company_id' => $company->id,
+            'user_id' => $this->user->id,
+        ]);
+
+        $response = $this->getJson(route('api.invoices.show', $invoice));
+
+        $response->assertOk();
+
+        $data = $response->json('data');
+
+        $this->assertArrayHasKey('supplier_is_vat_payer', $data);
+        $this->assertIsBool($data['supplier_is_vat_payer']);
+    }
+
+    public function test_supplier_vat_payer_status_reflects_actual_company_status(): void
+    {
+        $company = Company::factory()->create();
+
+        $vatStatuses = [
+            \App\Enums\VatPayerStatus::VAT_PAYER->value => true,
+            \App\Enums\VatPayerStatus::NOT_VAT_PAYER->value => false,
+            \App\Enums\VatPayerStatus::VAT_PAYER_PARAGRAPH_7->value => true,
+        ];
+
+        foreach ($vatStatuses as $status => $expectedIsVatPayer) {
+            $supplierCompany = UserCompany::factory()->create([
+                'vat_payer_status' => $status,
+            ]);
+
+            $this->user->update(['current_company_id' => $supplierCompany->id]);
+
+            $invoice = Invoice::factory()->create([
+                'supplier_company_id' => $supplierCompany->id,
+                'company_id' => $company->id,
+                'user_id' => $this->user->id,
+            ]);
+
+            $response = $this->getJson(route('api.invoices.show', $invoice));
+
+            $response->assertOk();
+            $response->assertJsonPath('data.supplier_vat_payer_status', $status);
+            $response->assertJsonPath('data.supplier_is_vat_payer', $expectedIsVatPayer);
+        }
     }
 }

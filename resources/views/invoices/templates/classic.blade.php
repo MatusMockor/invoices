@@ -100,15 +100,24 @@
 
     <!-- Items Table -->
     <div class="mb-8">
+        @php
+            $isVatPayer = $invoice->supplierCompany->vat_payer_status !== \App\Enums\VatPayerStatus::NOT_VAT_PAYER;
+        @endphp
         <table class="w-full">
             <thead>
                 <tr class="border-b-2 border-gray-300">
                     <th class="text-left py-3 px-2">Popis</th>
                     <th class="text-right py-3 px-2 w-16">Počet</th>
-                    <th class="text-right py-3 px-2 w-24">Cena/ks<br><span class="text-xs font-normal">(bez DPH)</span></th>
-                    <th class="text-right py-3 px-2 w-20">Sadzba<br><span class="text-xs font-normal">DPH</span></th>
-                    <th class="text-right py-3 px-2 w-24">Výška<br><span class="text-xs font-normal">DPH</span></th>
-                    <th class="text-right py-3 px-2 w-28">Celkom<br><span class="text-xs font-normal">(s DPH)</span></th>
+                    @if($isVatPayer)
+                        <th class="text-right py-3 px-2 w-24">Cena/ks<br><span class="text-xs font-normal">(bez DPH)</span></th>
+                        <th class="text-right py-3 px-2 w-20">Sadzba<br><span class="text-xs font-normal">DPH</span></th>
+                        <th class="text-right py-3 px-2 w-24">Výška<br><span class="text-xs font-normal">DPH</span></th>
+                        <th class="text-right py-3 px-2 w-28">Celkom<br><span class="text-xs font-normal">(s DPH)</span></th>
+                    @endif
+                    @if(!$isVatPayer)
+                        <th class="text-right py-3 px-2 w-28">Cena/ks</th>
+                        <th class="text-right py-3 px-2 w-32">Celkom</th>
+                    @endif
                 </tr>
             </thead>
             <tbody>
@@ -116,12 +125,20 @@
                     <tr class="border-b border-gray-200">
                         <td class="py-3 px-2">{{ $item->description }}</td>
                         <td class="text-right py-3 px-2">{{ number_format($item->quantity, 0, ',', ' ') }}</td>
-                        <td class="text-right py-3 px-2">{{ number_format($item->unit_price_without_tax, 2, ',', ' ') }} €</td>
-                        <td class="text-right py-3 px-2">{{ number_format($item->tax_rate, 0) }}%</td>
-                        <td class="text-right py-3 px-2">{{ number_format($item->tax_amount, 2, ',', ' ') }} €</td>
-                        <td class="text-right py-3 px-2 font-semibold">
-                            {{ number_format($item->total_price, 2, ',', ' ') }} €
-                        </td>
+                        @if($isVatPayer)
+                            <td class="text-right py-3 px-2">{{ number_format($item->unit_price_without_tax, 2, ',', ' ') }} €</td>
+                            <td class="text-right py-3 px-2">{{ number_format($item->tax_rate, 0) }}%</td>
+                            <td class="text-right py-3 px-2">{{ number_format($item->tax_amount, 2, ',', ' ') }} €</td>
+                            <td class="text-right py-3 px-2 font-semibold">
+                                {{ number_format($item->total_price, 2, ',', ' ') }} €
+                            </td>
+                        @endif
+                        @if(!$isVatPayer)
+                            <td class="text-right py-3 px-2">{{ number_format($item->unit_price, 2, ',', ' ') }} €</td>
+                            <td class="text-right py-3 px-2 font-semibold">
+                                {{ number_format($item->total_price, 2, ',', ' ') }} €
+                            </td>
+                        @endif
                     </tr>
                 @endforeach
             </tbody>
@@ -132,17 +149,19 @@
     <div class="flex justify-end mb-8">
         <div class="w-80">
             <div class="space-y-2">
-                <!-- Subtotal without VAT -->
-                <div class="flex justify-between py-2 px-4 border-b border-gray-200">
-                    <span class="text-gray-700">Základ dane (bez DPH):</span>
-                    <span class="font-semibold">{{ number_format($invoice->subtotal, 2, ',', ' ') }} €</span>
-                </div>
+                @if($isVatPayer)
+                    <!-- Subtotal without VAT -->
+                    <div class="flex justify-between py-2 px-4 border-b border-gray-200">
+                        <span class="text-gray-700">Základ dane (bez DPH):</span>
+                        <span class="font-semibold">{{ number_format($invoice->subtotal, 2, ',', ' ') }} €</span>
+                    </div>
 
-                <!-- VAT Amount -->
-                <div class="flex justify-between py-2 px-4 border-b border-gray-200">
-                    <span class="text-gray-700">DPH {{ number_format($invoice->tax_rate, 0) }}%:</span>
-                    <span class="font-semibold">{{ number_format($invoice->tax_amount, 2, ',', ' ') }} €</span>
-                </div>
+                    <!-- VAT Amount -->
+                    <div class="flex justify-between py-2 px-4 border-b border-gray-200">
+                        <span class="text-gray-700">DPH {{ number_format($invoice->tax_rate, 0) }}%:</span>
+                        <span class="font-semibold">{{ number_format($invoice->tax_amount, 2, ',', ' ') }} €</span>
+                    </div>
+                @endif
 
                 <!-- Total with VAT -->
                 <div class="flex justify-between py-3 bg-purple-50 px-4 rounded-lg mt-2">

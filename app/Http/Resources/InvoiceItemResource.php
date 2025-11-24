@@ -21,6 +21,7 @@ class InvoiceItemResource extends JsonResource
             'description' => $this->description,
             'quantity' => $this->quantity,
             'unit_price_without_tax' => $this->unit_price_without_tax,
+            'unit_price' => $this->unit_price_without_tax, // Legacy alias for backwards compatibility
             'tax_rate' => $this->tax_rate,
             'tax_amount' => $this->tax_amount,
             'subtotal' => $this->subtotal,
