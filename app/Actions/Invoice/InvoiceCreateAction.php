@@ -46,7 +46,7 @@ final class InvoiceCreateAction
                 'delivery_date' => $dto->deliveryDate,
                 'supplier_company_id' => $supplierCompanyId,
                 // Supplier registry snapshot - immutable after creation
-                'supplier_registry_office' => $supplierCompany?->registry_office,
+                'supplier_registry_office' => $supplierCompany?->registration_office,
                 'supplier_registry_number' => $supplierCompany?->registration_number,
                 'subtotal' => $totals['subtotal'],
                 'tax_amount' => $totals['tax_amount'],
