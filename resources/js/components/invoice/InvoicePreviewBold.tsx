@@ -7,6 +7,15 @@ interface InvoiceData {
   variableSymbol?: string;
   constantSymbol?: string;
   specificSymbol?: string;
+  supplier?: {
+    name: string;
+    address: string;
+    ico: string;
+    dic: string;
+    icDph?: string;
+    registryOffice?: string;
+    registryNumber?: string;
+  };
   client: {
     name: string;
     address: string;
@@ -79,12 +88,22 @@ export const InvoicePreviewBold = ({ invoiceData }: InvoicePreviewBoldProps) => 
             <div className="h-8 w-1 bg-cyan-500 rounded-full"></div>
             <p className="text-xs font-bold text-cyan-400 uppercase tracking-wider">From</p>
           </div>
-          <p className="font-bold text-white mb-2 text-lg">Vaša firma s.r.o.</p>
-          <p className="text-sm text-slate-300 mb-1">Podnikateľská 456</p>
-          <p className="text-sm text-slate-300 mb-3">811 02 Bratislava</p>
-          <div className="space-y-1 pt-3 border-t border-white/10">
-            <p className="text-xs text-slate-400">IČO: <span className="text-white font-semibold">87654321</span></p>
-            <p className="text-xs text-slate-400">DIČ: <span className="text-white font-semibold">9876543210</span></p>
+          <p className="font-bold text-white mb-2 text-lg">{invoiceData.supplier?.name || 'N/A'}</p>
+          {invoiceData.supplier?.address.split(',').map((part, index) => (
+            <p key={index} className="text-sm text-slate-300 mb-1">{part.trim()}</p>
+          ))}
+          <div className="space-y-1 pt-3 border-t border-white/10 mt-3">
+            <p className="text-xs text-slate-400">IČO: <span className="text-white font-semibold">{invoiceData.supplier?.ico}</span></p>
+            <p className="text-xs text-slate-400">DIČ: <span className="text-white font-semibold">{invoiceData.supplier?.dic}</span></p>
+            {invoiceData.supplier?.icDph && (
+              <p className="text-xs text-slate-400">IČ DPH: <span className="text-white font-semibold">{invoiceData.supplier?.icDph}</span></p>
+            )}
+            {invoiceData.supplier?.registryOffice && (
+              <p className="text-xs text-slate-400"><span className="text-white">{invoiceData.supplier.registryOffice}</span></p>
+            )}
+            {invoiceData.supplier?.registryNumber && (
+              <p className="text-xs text-slate-400"><span className="text-white">{invoiceData.supplier.registryNumber}</span></p>
+            )}
           </div>
         </div>
 

@@ -7,6 +7,15 @@ interface InvoiceData {
   variableSymbol?: string;
   constantSymbol?: string;
   specificSymbol?: string;
+  supplier?: {
+    name: string;
+    address: string;
+    ico: string;
+    dic: string;
+    icDph?: string;
+    registryOffice?: string;
+    registryNumber?: string;
+  };
   client: {
     name: string;
     address: string;
@@ -74,12 +83,22 @@ export const InvoicePreviewMinimal = ({ invoiceData }: InvoicePreviewMinimalProp
         {/* Supplier */}
         <div>
           <p className="text-xs font-semibold text-slate-500 uppercase tracking-wider mb-3">From</p>
-          <p className="font-medium text-slate-900 mb-1">Vaša firma s.r.o.</p>
-          <p className="text-sm text-slate-600">Podnikateľská 456</p>
-          <p className="text-sm text-slate-600 mb-3">811 02 Bratislava</p>
-          <div className="space-y-0.5">
-            <p className="text-xs text-slate-500">IČO: 87654321</p>
-            <p className="text-xs text-slate-500">DIČ: 9876543210</p>
+          <p className="font-medium text-slate-900 mb-1">{invoiceData.supplier?.name || 'N/A'}</p>
+          {invoiceData.supplier?.address.split(',').map((part, index) => (
+            <p key={index} className="text-sm text-slate-600">{part.trim()}</p>
+          ))}
+          <div className="space-y-0.5 mt-3">
+            <p className="text-xs text-slate-500">IČO: {invoiceData.supplier?.ico}</p>
+            <p className="text-xs text-slate-500">DIČ: {invoiceData.supplier?.dic}</p>
+            {invoiceData.supplier?.icDph && (
+              <p className="text-xs text-slate-500">IČ DPH: {invoiceData.supplier?.icDph}</p>
+            )}
+            {invoiceData.supplier?.registryOffice && (
+              <p className="text-xs text-slate-500">{invoiceData.supplier.registryOffice}</p>
+            )}
+            {invoiceData.supplier?.registryNumber && (
+              <p className="text-xs text-slate-500">{invoiceData.supplier.registryNumber}</p>
+            )}
           </div>
         </div>
 

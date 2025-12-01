@@ -7,6 +7,15 @@ interface InvoiceData {
   variableSymbol?: string;
   constantSymbol?: string;
   specificSymbol?: string;
+  supplier?: {
+    name: string;
+    address: string;
+    ico: string;
+    dic: string;
+    icDph?: string;
+    registryOffice?: string;
+    registryNumber?: string;
+  };
   client: {
     name: string;
     address: string;
@@ -86,12 +95,22 @@ export const InvoicePreviewModern = ({ invoiceData }: InvoicePreviewModernProps)
                   </div>
                   <h3 className="font-bold text-slate-700 uppercase text-[10px] tracking-wider">Dodávateľ</h3>
                 </div>
-                <p className="font-bold text-sm mb-1 text-slate-900">Vaša firma s.r.o.</p>
-                <p className="text-xs text-slate-600">Podnikateľská 456</p>
-                <p className="text-xs text-slate-600 mb-2">811 02 Bratislava</p>
+                <p className="font-bold text-sm mb-1 text-slate-900">{invoiceData.supplier?.name || 'N/A'}</p>
+                {invoiceData.supplier?.address.split(',').map((part, index) => (
+                  <p key={index} className="text-xs text-slate-600">{part.trim()}</p>
+                ))}
                 <div className="border-t border-slate-200 pt-1.5 mt-1.5 space-y-0.5">
-                  <p className="text-[10px] text-slate-500"><span className="font-semibold">IČO:</span> 87654321</p>
-                  <p className="text-[10px] text-slate-500"><span className="font-semibold">DIČ:</span> 9876543210</p>
+                  <p className="text-[10px] text-slate-500"><span className="font-semibold">IČO:</span> {invoiceData.supplier?.ico}</p>
+                  <p className="text-[10px] text-slate-500"><span className="font-semibold">DIČ:</span> {invoiceData.supplier?.dic}</p>
+                  {invoiceData.supplier?.icDph && (
+                    <p className="text-[10px] text-slate-500"><span className="font-semibold">IČ DPH:</span> {invoiceData.supplier?.icDph}</p>
+                  )}
+                  {invoiceData.supplier?.registryOffice && (
+                    <p className="text-[10px] text-slate-500">{invoiceData.supplier.registryOffice}</p>
+                  )}
+                  {invoiceData.supplier?.registryNumber && (
+                    <p className="text-[10px] text-slate-500">{invoiceData.supplier.registryNumber}</p>
+                  )}
                 </div>
               </div>
             </div>

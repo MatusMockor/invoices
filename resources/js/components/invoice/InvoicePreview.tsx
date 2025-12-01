@@ -45,6 +45,15 @@ export const InvoicePreview = ({ open, onOpenChange, invoiceId }: InvoicePreview
       date: new Date(invoice.issue_date).toLocaleDateString('sk-SK'),
       dueDate: new Date(invoice.due_date).toLocaleDateString('sk-SK'),
       variableSymbol: invoice.variable_symbol,
+      supplier: {
+        name: invoice.supplier_company?.name || 'N/A',
+        address: `${invoice.supplier_company?.address || ''}, ${invoice.supplier_company?.postal_code || ''} ${invoice.supplier_company?.city || ''}`,
+        ico: invoice.supplier_company?.ico || '',
+        dic: invoice.supplier_company?.dic || '',
+        icDph: invoice.supplier_company?.ic_dph || '',
+        registryOffice: invoice.supplier_registry_office || '',
+        registryNumber: invoice.supplier_registry_number || '',
+      },
       client: {
         name: invoice.business_entity?.name || 'N/A',
         address: `${invoice.business_entity?.address || ''}, ${invoice.business_entity?.postal_code || ''} ${invoice.business_entity?.city || ''}`,
@@ -174,6 +183,12 @@ export const InvoicePreview = ({ open, onOpenChange, invoiceId }: InvoicePreview
                   <p className="text-xs text-gray-600">DIČ: {invoice.supplier_company?.dic || 'N/A'}</p>
                   {invoice.supplier_company?.ic_dph && (
                     <p className="text-xs text-gray-600">IČ DPH: {invoice.supplier_company.ic_dph}</p>
+                  )}
+                  {invoice.supplier_registry_office && (
+                    <p className="text-xs text-gray-600">{invoice.supplier_registry_office}</p>
+                  )}
+                  {invoice.supplier_registry_number && (
+                    <p className="text-xs text-gray-600">{invoice.supplier_registry_number}</p>
                   )}
                 </div>
               </div>
