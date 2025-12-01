@@ -35,6 +35,8 @@ final class CreateCompanyRequest extends FormRequest
             'dic' => 'nullable|string|max:255',
             'ic_dph' => 'nullable|string|max:255',
             'vat_payer_status' => ['nullable', Rule::in(VatPayerStatus::values())],
+            'registration_number' => 'nullable|string|max:255',
+            'registry_office' => 'nullable|string|max:255',
         ];
     }
 
@@ -83,5 +85,15 @@ final class CreateCompanyRequest extends FormRequest
         $value = $this->validated('vat_payer_status');
 
         return $value ? VatPayerStatus::from($value) : null;
+    }
+
+    public function getRegistrationNumber(): ?string
+    {
+        return $this->validated('registration_number');
+    }
+
+    public function getRegistryOffice(): ?string
+    {
+        return $this->validated('registry_office');
     }
 }

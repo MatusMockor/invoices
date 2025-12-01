@@ -279,13 +279,15 @@ class InvoiceSeeder extends Seeder
     {
         $users = User::with('currentCompany')->get();
         $companies = Company::inRandomOrder()->limit(500)->get();
-        $userCompanies = UserCompany::pluck('id')->toArray();
+        $userCompanies = UserCompany::all()->keyBy('id');
 
-        if ($users->isEmpty() || $companies->isEmpty() || empty($userCompanies)) {
+        if ($users->isEmpty() || $companies->isEmpty() || $userCompanies->isEmpty()) {
             $this->command->warn('Insufficient data: need users, companies, and user companies');
 
             return;
         }
+
+        $userCompanyIds = $userCompanies->keys()->toArray();
 
         $statuses = [
             InvoiceStatus::DRAFT,
@@ -303,7 +305,8 @@ class InvoiceSeeder extends Seeder
             for ($i = 0; $i < $batchSize; $i++) {
                 $user = $users->random();
                 $company = $companies->random();
-                $supplierCompanyId = $userCompanies[array_rand($userCompanies)];
+                $supplierCompanyId = $userCompanyIds[array_rand($userCompanyIds)];
+                $supplierCompany = $userCompanies->get($supplierCompanyId);
 
                 $issueDate = Carbon::now()->subDays(fake()->numberBetween(0, 180));
                 $dueDate = (clone $issueDate)->addDays(fake()->numberBetween(7, 30));
@@ -312,6 +315,9 @@ class InvoiceSeeder extends Seeder
                 $invoicesBatch[] = [
                     'user_id' => $user->id,
                     'supplier_company_id' => $supplierCompanyId,
+                    // Supplier registry snapshot
+                    'supplier_registry_office' => $supplierCompany?->registry_office,
+                    'supplier_registry_number' => $supplierCompany?->registration_number,
                     'company_id' => $company->id,
                     'company_ico' => $company->ico,
                     'company_dic' => $company->dic,

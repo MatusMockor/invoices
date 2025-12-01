@@ -45,7 +45,8 @@ final class UserRegistrationAction
                 'email' => $dto->companyEmail,
                 'website' => $dto->companyWebsite,
                 'company_type' => $dto->companyType,
-                'registration_number' => '',
+                'registration_number' => $dto->companyRegistrationNumber ?? '',
+                'registry_office' => $dto->companyRegistryOffice,
             ]);
 
             $user->current_company_id = $userCompany->id;

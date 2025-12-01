@@ -6,6 +6,7 @@ namespace App\Models;
 
 use App\Enums\InvoiceStatus;
 use App\Observers\InvoiceObserver;
+use Illuminate\Database\Eloquent\Attributes\ObservedBy;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
@@ -25,6 +26,8 @@ use Illuminate\Support\Carbon;
  * @property Carbon $delivery_date
  * @property int|null $company_id
  * @property int|null $supplier_company_id
+ * @property string|null $supplier_registry_office Snapshot of supplier registry office
+ * @property string|null $supplier_registry_number Snapshot of supplier registration number
  * @property string|null $company_ico
  * @property string|null $company_dic
  * @property string|null $company_ic_dph
@@ -69,6 +72,8 @@ class Invoice extends Model
         'delivery_date',
         'company_id',
         'supplier_company_id',
+        'supplier_registry_office',
+        'supplier_registry_number',
         'company_ico',
         'company_dic',
         'company_ic_dph',

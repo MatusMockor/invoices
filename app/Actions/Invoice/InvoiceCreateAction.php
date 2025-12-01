@@ -8,6 +8,7 @@ use App\Actions\Company\CompanyFetchOrCreateAction;
 use App\DTOs\Invoice\InvoiceCreateDTO;
 use App\Models\Company;
 use App\Models\Invoice;
+use App\Models\UserCompany;
 use App\Repositories\Contracts\InvoiceItemRepository;
 use App\Repositories\Contracts\InvoiceRepository;
 use App\Services\Invoice\InvoiceTotalCalculatorService;
@@ -31,6 +32,9 @@ final class InvoiceCreateAction
     public function handle(InvoiceCreateDTO $dto, int $userId, int $supplierCompanyId): Invoice
     {
         return DB::transaction(function () use ($dto, $userId, $supplierCompanyId) {
+            // Fetch supplier company for registry data snapshot
+            $supplierCompany = UserCompany::find($supplierCompanyId);
+
             // Calculate invoice totals with VAT (respecting reverse charge)
             $totals = $this->totalCalculator->calculateTotals($dto->items, $dto->discountAmount ?? null, $dto->reverseCharge);
 
@@ -41,6 +45,9 @@ final class InvoiceCreateAction
                 'due_date' => $dto->dueDate,
                 'delivery_date' => $dto->deliveryDate,
                 'supplier_company_id' => $supplierCompanyId,
+                // Supplier registry snapshot - immutable after creation
+                'supplier_registry_office' => $supplierCompany?->registry_office,
+                'supplier_registry_number' => $supplierCompany?->registration_number,
                 'subtotal' => $totals['subtotal'],
                 'tax_amount' => $totals['tax_amount'],
                 'tax_rate' => $dto->taxRate ?? 20.0,
@@ -110,7 +117,7 @@ final class InvoiceCreateAction
 
     private function createInvoiceItems(Invoice $invoice, array $items, bool $reverseCharge): void
     {
-        $preparedItems = array_map(function (array $item) use ($invoice, $reverseCharge): array {
+        $preparedItems = array_map(static function (array $item) use ($invoice, $reverseCharge): array {
             $quantity = $item['quantity'];
             $unitPriceWithoutTax = $item['price'] ?? $item['unit_price_without_tax'] ?? 0;
             $taxRate = $item['tax_rate'] ?? 20.0;

@@ -32,6 +32,8 @@ class UserCompanyResource extends JsonResource
             'bank_account' => null,
             'iban' => $this->iban,
             'swift' => $this->swift,
+            'registration_number' => $this->registration_number,
+            'registry_office' => $this->registry_office,
             'status' => $this->status,
             'vehicles' => $this->vehicles_count,
             'clients' => $this->clients_count,

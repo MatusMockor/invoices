@@ -251,6 +251,31 @@ export const CompanyFormDialog: React.FC<CompanyFormDialogProps> = ({
             </div>
           </div>
 
+          {/* Registration Information Section */}
+          <div className="bg-gradient-card rounded-xl p-6 border-2 border-primary/30">
+            <h3 className="text-lg font-bold text-primary mb-4">
+              Registračné údaje
+            </h3>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <FormField
+                id={`${idPrefix}RegistryOffice`}
+                label="Registrový úrad"
+                placeholder="Napr. Okresný súd Bratislava I"
+                value={formData.registry_office || ""}
+                onChange={(value) => updateField('registry_office', value)}
+                maxLength={255}
+              />
+              <FormField
+                id={`${idPrefix}RegistrationNumber`}
+                label="Registračné číslo"
+                placeholder="Napr. Oddiel: Sro, Vložka č. 123456/B"
+                value={formData.registration_number || ""}
+                onChange={(value) => updateField('registration_number', value)}
+                maxLength={255}
+              />
+            </div>
+          </div>
+
           {/* Bank Information Section */}
           <div className="bg-gradient-card rounded-xl p-6 border-2 border-primary/30">
             <h3 className="text-lg font-bold text-primary mb-4">

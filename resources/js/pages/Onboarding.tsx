@@ -26,6 +26,8 @@ const companySchema = z.object({
   dic: z.string().trim().max(20).optional(),
   ic_dph: z.string().trim().max(20).optional(),
   vat_payer_status: z.enum(['not_vat_payer', 'vat_payer', 'vat_payer_paragraph_7']).optional(),
+  registry_office: z.string().trim().max(255).optional(),
+  registration_number: z.string().trim().max(255).optional(),
 });
 
 type CompanyFormData = z.infer<typeof companySchema>;
@@ -57,6 +59,8 @@ const Onboarding = () => {
       dic: "",
       ic_dph: "",
       vat_payer_status: undefined,
+      registry_office: "",
+      registration_number: "",
     },
   });
 
@@ -116,6 +120,8 @@ const Onboarding = () => {
         dic: data.dic?.trim() || undefined,
         ic_dph: data.ic_dph?.trim() || undefined,
         vat_payer_status: data.vat_payer_status || undefined,
+        registry_office: data.registry_office?.trim() || undefined,
+        registration_number: data.registration_number?.trim() || undefined,
       };
 
       await onboardingService.createCompany(submissionData);
@@ -349,6 +355,46 @@ const Onboarding = () => {
                       </FormItem>
                     )}
                   />
+
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <FormField
+                      control={companyForm.control}
+                      name="registry_office"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel>Registrový úrad</FormLabel>
+                          <FormControl>
+                            <Input
+                              placeholder="Napr. Okresný súd Bratislava I"
+                              {...field}
+                              autoComplete="off"
+                              maxLength={255}
+                            />
+                          </FormControl>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+
+                    <FormField
+                      control={companyForm.control}
+                      name="registration_number"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel>Registračné číslo</FormLabel>
+                          <FormControl>
+                            <Input
+                              placeholder="Napr. Oddiel: Sro, Vložka č. 123456/B"
+                              {...field}
+                              autoComplete="off"
+                              maxLength={255}
+                            />
+                          </FormControl>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+                  </div>
                 </div>
 
                 <Button

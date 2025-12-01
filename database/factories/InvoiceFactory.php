@@ -54,6 +54,9 @@ class InvoiceFactory extends Factory
             'delivery_date' => fake()->dateTimeBetween('-15 days', '+15 days'),
             'company_id' => Company::factory(),
             'supplier_company_id' => UserCompany::factory(),
+            // Supplier registry snapshot fields - will be set in configure()
+            'supplier_registry_office' => null,
+            'supplier_registry_number' => null,
             'company_ico' => null,
             'company_dic' => null,
             'company_ic_dph' => null,
@@ -89,7 +92,8 @@ class InvoiceFactory extends Factory
      */
     public function configure(): Factory
     {
-        return $this->afterCreating(static function (Invoice $invoice): void {
+        return $this->afterCreating(function (Invoice $invoice): void {
+            // Copy customer company data
             if ($invoice->company_id && ! $invoice->company_name) {
                 $company = Company::find($invoice->company_id);
 
@@ -103,6 +107,18 @@ class InvoiceFactory extends Factory
                         'company_city' => $company->city,
                         'company_zip' => $company->postal_code,
                         'company_country' => $company->country,
+                    ]);
+                }
+            }
+
+            // Copy supplier registry data
+            if ($invoice->supplier_company_id && ! $invoice->supplier_registry_office) {
+                $supplierCompany = UserCompany::find($invoice->supplier_company_id);
+
+                if ($supplierCompany) {
+                    $invoice->update([
+                        'supplier_registry_office' => $supplierCompany->registry_office,
+                        'supplier_registry_number' => $supplierCompany->registration_number,
                     ]);
                 }
             }
@@ -164,6 +180,32 @@ class InvoiceFactory extends Factory
             'company_city' => fake()->city(),
             'company_zip' => fake()->postcode(),
             'company_country' => fake()->country(),
+        ]);
+    }
+
+    /**
+     * Create an invoice with supplier registry snapshot data.
+     */
+    public function withSupplierRegistry(): Factory
+    {
+        return $this->state(fn (array $attributes): array => [
+            'supplier_registry_office' => fake()->randomElement([
+                'Okresny sud Bratislava I',
+                'Okresny sud Kosice I',
+                'Okresny sud Zilina',
+            ]),
+            'supplier_registry_number' => 'Oddiel: Sro, Vlozka c. '.fake()->numerify('######/B'),
+        ]);
+    }
+
+    /**
+     * Create an invoice without supplier registry data (for backwards compatibility testing).
+     */
+    public function withoutSupplierRegistry(): Factory
+    {
+        return $this->state(fn (array $attributes): array => [
+            'supplier_registry_office' => null,
+            'supplier_registry_number' => null,
         ]);
     }
 }
