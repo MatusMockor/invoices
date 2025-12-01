@@ -93,11 +93,13 @@ export const InvoicePreviewMinimal = ({ invoiceData }: InvoicePreviewMinimalProp
             {invoiceData.supplier?.icDph && (
               <p className="text-xs text-slate-500">IČ DPH: {invoiceData.supplier?.icDph}</p>
             )}
-            {invoiceData.supplier?.registryOffice && (
-              <p className="text-xs text-slate-500">{invoiceData.supplier.registryOffice}</p>
-            )}
-            {invoiceData.supplier?.registryNumber && (
-              <p className="text-xs text-slate-500">{invoiceData.supplier.registryNumber}</p>
+            {(invoiceData.supplier?.registryOffice || invoiceData.supplier?.registryNumber) && (
+              <p className="text-xs text-slate-500 mt-2">
+                {invoiceData.supplier?.registryOffice}
+                {invoiceData.supplier?.registryOffice && invoiceData.supplier?.registryNumber && ', registrácia č. '}
+                {!invoiceData.supplier?.registryOffice && invoiceData.supplier?.registryNumber && 'registrácia č. '}
+                {invoiceData.supplier?.registryNumber}
+              </p>
             )}
           </div>
         </div>

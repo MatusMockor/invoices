@@ -20,11 +20,10 @@
                     @if($invoice->supplierCompany->ic_dph ?? false)
                         <p class="text-xs text-gray-600">IČ DPH: {{ $invoice->supplierCompany->ic_dph }}</p>
                     @endif
-                    @if($invoice->supplier_registry_office ?? false)
-                        <p class="text-xs text-gray-600">{{ $invoice->supplier_registry_office }}</p>
-                    @endif
-                    @if($invoice->supplier_registry_number ?? false)
-                        <p class="text-xs text-gray-600">{{ $invoice->supplier_registry_number }}</p>
+                    @if($invoice->supplier_registry_office || $invoice->supplier_registry_number)
+                        <p class="text-xs text-gray-600 mt-2">
+                            @if($invoice->supplier_registry_office){{ $invoice->supplier_registry_office }}@endif@if($invoice->supplier_registry_office && $invoice->supplier_registry_number), @endif@if($invoice->supplier_registry_number)registrácia č. {{ $invoice->supplier_registry_number }}@endif
+                        </p>
                     @endif
                 </div>
             </div>

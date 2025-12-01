@@ -98,11 +98,15 @@ export const InvoicePreviewBold = ({ invoiceData }: InvoicePreviewBoldProps) => 
             {invoiceData.supplier?.icDph && (
               <p className="text-xs text-slate-400">IČ DPH: <span className="text-white font-semibold">{invoiceData.supplier?.icDph}</span></p>
             )}
-            {invoiceData.supplier?.registryOffice && (
-              <p className="text-xs text-slate-400"><span className="text-white">{invoiceData.supplier.registryOffice}</span></p>
-            )}
-            {invoiceData.supplier?.registryNumber && (
-              <p className="text-xs text-slate-400"><span className="text-white">{invoiceData.supplier.registryNumber}</span></p>
+            {(invoiceData.supplier?.registryOffice || invoiceData.supplier?.registryNumber) && (
+              <p className="text-xs text-slate-400 mt-2">
+                <span className="text-white">
+                  {invoiceData.supplier?.registryOffice}
+                  {invoiceData.supplier?.registryOffice && invoiceData.supplier?.registryNumber && ', registrácia č. '}
+                  {!invoiceData.supplier?.registryOffice && invoiceData.supplier?.registryNumber && 'registrácia č. '}
+                  {invoiceData.supplier?.registryNumber}
+                </span>
+              </p>
             )}
           </div>
         </div>

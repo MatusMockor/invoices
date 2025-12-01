@@ -105,11 +105,13 @@ export const InvoicePreviewModern = ({ invoiceData }: InvoicePreviewModernProps)
                   {invoiceData.supplier?.icDph && (
                     <p className="text-[10px] text-slate-500"><span className="font-semibold">IČ DPH:</span> {invoiceData.supplier?.icDph}</p>
                   )}
-                  {invoiceData.supplier?.registryOffice && (
-                    <p className="text-[10px] text-slate-500">{invoiceData.supplier.registryOffice}</p>
-                  )}
-                  {invoiceData.supplier?.registryNumber && (
-                    <p className="text-[10px] text-slate-500">{invoiceData.supplier.registryNumber}</p>
+                  {(invoiceData.supplier?.registryOffice || invoiceData.supplier?.registryNumber) && (
+                    <p className="text-[10px] text-slate-500 mt-1.5">
+                      {invoiceData.supplier?.registryOffice}
+                      {invoiceData.supplier?.registryOffice && invoiceData.supplier?.registryNumber && ', registrácia č. '}
+                      {!invoiceData.supplier?.registryOffice && invoiceData.supplier?.registryNumber && 'registrácia č. '}
+                      {invoiceData.supplier?.registryNumber}
+                    </p>
                   )}
                 </div>
               </div>
