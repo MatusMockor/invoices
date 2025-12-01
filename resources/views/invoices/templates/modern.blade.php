@@ -37,7 +37,7 @@
                             <p class="text-[10px] text-slate-500"><span class="font-semibold">DIČ:</span> {{ $invoice->supplierCompany->dic ?? 'N/A' }}</p>
                             @if($invoice->supplier_registry_office || $invoice->supplier_registry_number)
                                 <p class="text-[10px] text-slate-500 mt-1.5">
-                                    @if($invoice->supplier_registry_office){{ $invoice->supplier_registry_office }}@endif@if($invoice->supplier_registry_office && $invoice->supplier_registry_number), @endif@if($invoice->supplier_registry_number)registrácia č. {{ $invoice->supplier_registry_number }}@endif
+                                    {{ $invoice->supplier_registry_office }}{{ $invoice->supplier_registry_office && $invoice->supplier_registry_number ? ', ' : '' }}{{ $invoice->supplier_registry_number ? 'registrácia č. ' . $invoice->supplier_registry_number : '' }}
                                 </p>
                             @endif
                         </div>

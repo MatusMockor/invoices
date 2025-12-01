@@ -34,7 +34,7 @@
                 @endif
                 @if($invoice->supplier_registry_office || $invoice->supplier_registry_number)
                     <p class="text-[10px] text-slate-400 mt-2">
-                        <span class="text-white font-semibold">@if($invoice->supplier_registry_office){{ $invoice->supplier_registry_office }}@endif@if($invoice->supplier_registry_office && $invoice->supplier_registry_number), @endif@if($invoice->supplier_registry_number)registrácia č. {{ $invoice->supplier_registry_number }}@endif</span>
+                        <span class="text-white font-semibold">{{ $invoice->supplier_registry_office }}{{ $invoice->supplier_registry_office && $invoice->supplier_registry_number ? ', ' : '' }}{{ $invoice->supplier_registry_number ? 'registrácia č. ' . $invoice->supplier_registry_number : '' }}</span>
                     </p>
                 @endif
             </div>
