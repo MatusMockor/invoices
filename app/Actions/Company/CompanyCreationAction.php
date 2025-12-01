@@ -33,7 +33,8 @@ final class CompanyCreationAction
                 'dic' => $dto->dic,
                 'ic_dph' => $dto->icDph,
                 'company_type' => config('invoices.default_company_type', 's.r.o.'),
-                'registration_number' => '',
+                'registration_number' => $dto->registrationNumber ?? '',
+                'registry_office' => $dto->registryOffice,
             ]);
 
             $user->current_company_id = $userCompany->id;

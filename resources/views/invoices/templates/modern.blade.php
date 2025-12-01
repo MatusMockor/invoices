@@ -35,6 +35,12 @@
                         <div class="border-t border-slate-200 pt-1.5 mt-1.5 space-y-0.5">
                             <p class="text-[10px] text-slate-500"><span class="font-semibold">IČO:</span> {{ $invoice->supplierCompany->ico ?? 'N/A' }}</p>
                             <p class="text-[10px] text-slate-500"><span class="font-semibold">DIČ:</span> {{ $invoice->supplierCompany->dic ?? 'N/A' }}</p>
+                            @if($invoice->supplier_registry_office ?? false)
+                                <p class="text-[10px] text-slate-500">{{ $invoice->supplier_registry_office }}</p>
+                            @endif
+                            @if($invoice->supplier_registry_number ?? false)
+                                <p class="text-[10px] text-slate-500">{{ $invoice->supplier_registry_number }}</p>
+                            @endif
                         </div>
                     </div>
                 </div>

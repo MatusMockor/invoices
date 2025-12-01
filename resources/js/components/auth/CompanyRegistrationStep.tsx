@@ -21,6 +21,8 @@ const companySchema = z.object({
   companyPostalCode: z.string().trim().min(1, "PSČ je povinné").max(10),
   companyDic: z.string().trim().min(1, "DIČ je povinné").max(20),
   companyIcDph: z.string().trim().min(1, "IČ DPH je povinné").max(20),
+  companyRegistryOffice: z.string().trim().max(255).optional(),
+  companyRegistrationNumber: z.string().trim().max(255).optional(),
 });
 
 type CompanyFormData = z.infer<typeof companySchema>;
@@ -46,6 +48,8 @@ export const CompanyRegistrationStep = ({ userData, onBack }: CompanyRegistratio
       companyPostalCode: "",
       companyDic: "",
       companyIcDph: "",
+      companyRegistryOffice: "",
+      companyRegistrationNumber: "",
     },
   });
 
@@ -95,6 +99,8 @@ export const CompanyRegistrationStep = ({ userData, onBack }: CompanyRegistratio
         company_postal_code: companyData.companyPostalCode,
         company_dic: companyData.companyDic,
         company_ic_dph: companyData.companyIcDph,
+        company_registry_office: companyData.companyRegistryOffice || undefined,
+        company_registration_number: companyData.companyRegistrationNumber || undefined,
       });
 
       toast.success("Registrácia úspešná!");
@@ -230,6 +236,36 @@ export const CompanyRegistrationStep = ({ userData, onBack }: CompanyRegistratio
                       <FormLabel>IČ DPH *</FormLabel>
                       <FormControl>
                         <Input placeholder="SK2023456789" {...field} />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+              </div>
+
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <FormField
+                  control={companyForm.control}
+                  name="companyRegistryOffice"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Registrový úrad</FormLabel>
+                      <FormControl>
+                        <Input placeholder="Napr. Okresný súd Bratislava I" {...field} maxLength={255} />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+
+                <FormField
+                  control={companyForm.control}
+                  name="companyRegistrationNumber"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Registračné číslo</FormLabel>
+                      <FormControl>
+                        <Input placeholder="Napr. Oddiel: Sro, Vložka č. 123456/B" {...field} maxLength={255} />
                       </FormControl>
                       <FormMessage />
                     </FormItem>

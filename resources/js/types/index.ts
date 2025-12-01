@@ -69,6 +69,7 @@ export interface UserCompany {
   // Company details
   company_type: string; // živnosť or s.r.o.
   registration_number: string; // Registration number in business or trade register
+  registry_office: string | null; // Registry office (e.g., "Okresný súd Bratislava I")
 
   status: 'active' | 'inactive';
   vehicles: number;
@@ -145,6 +146,10 @@ export interface Invoice {
   // Supplier VAT payer status for conditional display
   supplier_vat_payer_status?: 'not_vat_payer' | 'vat_payer' | 'vat_payer_paragraph_7' | null;
   supplier_is_vat_payer?: boolean;
+
+  // Supplier registry snapshot fields (immutable after invoice creation)
+  supplier_registry_office?: string | null;
+  supplier_registry_number?: string | null;
 }
 
 export interface InvoiceItem {
@@ -383,6 +388,8 @@ export interface UserCompanyFormData {
   iban?: string;
   swift?: string;
   status?: 'active' | 'inactive';
+  registry_office?: string;
+  registration_number?: string;
 }
 
 export interface CompanyStats {

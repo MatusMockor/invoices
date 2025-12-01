@@ -10,6 +10,8 @@ export interface CompanyData {
   dic?: string;
   ic_dph?: string;
   vat_payer_status?: 'not_vat_payer' | 'vat_payer' | 'vat_payer_paragraph_7';
+  registry_office?: string;
+  registration_number?: string;
 }
 
 export const onboardingService = {

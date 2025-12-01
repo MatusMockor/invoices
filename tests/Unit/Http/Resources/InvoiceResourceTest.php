@@ -171,4 +171,111 @@ final class InvoiceResourceTest extends TestCase
         $this->assertArrayHasKey('supplier_is_vat_payer', $response);
         $this->assertIsBool($response['supplier_is_vat_payer']);
     }
+
+    public function test_resource_includes_supplier_registry_office(): void
+    {
+        $registryOffice = 'Okresny sud Bratislava I';
+
+        $supplierCompany = UserCompany::factory()->create([
+            'registry_office' => $registryOffice,
+        ]);
+
+        $invoice = Invoice::factory()->create([
+            'supplier_company_id' => $supplierCompany->id,
+            'supplier_registry_office' => $registryOffice,
+        ]);
+
+        $resource = new InvoiceResource($invoice);
+        $response = $resource->toArray(Request::create('/'));
+
+        $this->assertArrayHasKey('supplier_registry_office', $response);
+        $this->assertEquals($registryOffice, $response['supplier_registry_office']);
+    }
+
+    public function test_resource_includes_supplier_registry_number(): void
+    {
+        $registryNumber = 'Oddiel: Sro, Vlozka c. 123456/B';
+
+        $supplierCompany = UserCompany::factory()->create([
+            'registration_number' => $registryNumber,
+        ]);
+
+        $invoice = Invoice::factory()->create([
+            'supplier_company_id' => $supplierCompany->id,
+            'supplier_registry_number' => $registryNumber,
+        ]);
+
+        $resource = new InvoiceResource($invoice);
+        $response = $resource->toArray(Request::create('/'));
+
+        $this->assertArrayHasKey('supplier_registry_number', $response);
+        $this->assertEquals($registryNumber, $response['supplier_registry_number']);
+    }
+
+    public function test_resource_includes_both_registry_fields(): void
+    {
+        $registryOffice = 'Okresny sud Kosice I';
+        $registryNumber = 'Oddiel: Sro, Vlozka c. 789012/K';
+
+        $supplierCompany = UserCompany::factory()->create([
+            'registry_office' => $registryOffice,
+            'registration_number' => $registryNumber,
+        ]);
+
+        $invoice = Invoice::factory()->create([
+            'supplier_company_id' => $supplierCompany->id,
+            'supplier_registry_office' => $registryOffice,
+            'supplier_registry_number' => $registryNumber,
+        ]);
+
+        $resource = new InvoiceResource($invoice);
+        $response = $resource->toArray(Request::create('/'));
+
+        $this->assertArrayHasKey('supplier_registry_office', $response);
+        $this->assertArrayHasKey('supplier_registry_number', $response);
+        $this->assertEquals($registryOffice, $response['supplier_registry_office']);
+        $this->assertEquals($registryNumber, $response['supplier_registry_number']);
+    }
+
+    public function test_resource_returns_null_for_registry_fields_when_not_set(): void
+    {
+        // Create invoice without supplier company to get null registry values
+        $invoice = Invoice::factory()->create([
+            'supplier_company_id' => null,
+            'supplier_registry_office' => null,
+            'supplier_registry_number' => null,
+        ]);
+
+        $resource = new InvoiceResource($invoice);
+        $response = $resource->toArray(Request::create('/'));
+
+        $this->assertArrayHasKey('supplier_registry_office', $response);
+        $this->assertArrayHasKey('supplier_registry_number', $response);
+        $this->assertNull($response['supplier_registry_office']);
+        $this->assertNull($response['supplier_registry_number']);
+    }
+
+    public function test_resource_includes_sole_proprietorship_registry_data(): void
+    {
+        $registryOffice = 'Okresny urad Bratislava, odbor zivnostenskeho podnikania';
+        $registryNumber = 'Cislo zivnostenskeho registra: 820-12345';
+
+        $supplierCompany = UserCompany::factory()->create([
+            'company_type' => 'zivnost',
+            'registry_office' => $registryOffice,
+            'registration_number' => $registryNumber,
+        ]);
+
+        $invoice = Invoice::factory()->create([
+            'supplier_company_id' => $supplierCompany->id,
+            'supplier_registry_office' => $registryOffice,
+            'supplier_registry_number' => $registryNumber,
+        ]);
+
+        $resource = new InvoiceResource($invoice);
+        $response = $resource->toArray(Request::create('/'));
+
+        $this->assertEquals($registryOffice, $response['supplier_registry_office']);
+        $this->assertEquals($registryNumber, $response['supplier_registry_number']);
+    }
 }

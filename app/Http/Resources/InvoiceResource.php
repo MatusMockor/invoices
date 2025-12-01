@@ -18,6 +18,9 @@ class InvoiceResource extends JsonResource
         return [
             'id' => $this->id,
             'supplier_company_id' => $this->supplier_company_id,
+            // Supplier registry data snapshot
+            'supplier_registry_office' => $this->supplier_registry_office,
+            'supplier_registry_number' => $this->supplier_registry_number,
             'business_entity_id' => $this->business_entity_id,
             'invoice_number' => $this->invoice_number,
             'issue_date' => $this->issue_date->format('Y-m-d'),

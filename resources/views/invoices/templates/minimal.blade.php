@@ -21,6 +21,12 @@
                 @if($invoice->supplierCompany->ic_dph ?? false)
                     <p>IČ DPH: {{ $invoice->supplierCompany->ic_dph }}</p>
                 @endif
+                @if($invoice->supplier_registry_office ?? false)
+                    <p>{{ $invoice->supplier_registry_office }}</p>
+                @endif
+                @if($invoice->supplier_registry_number ?? false)
+                    <p>{{ $invoice->supplier_registry_number }}</p>
+                @endif
             </div>
         </div>
 
