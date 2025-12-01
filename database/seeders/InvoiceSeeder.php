@@ -316,7 +316,7 @@ class InvoiceSeeder extends Seeder
                     'user_id' => $user->id,
                     'supplier_company_id' => $supplierCompanyId,
                     // Supplier registry snapshot
-                    'supplier_registry_office' => $supplierCompany?->registry_office,
+                    'supplier_registry_office' => $supplierCompany?->registration_office,
                     'supplier_registry_number' => $supplierCompany?->registration_number,
                     'company_id' => $company->id,
                     'company_ico' => $company->ico,

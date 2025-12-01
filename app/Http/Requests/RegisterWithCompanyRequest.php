@@ -33,7 +33,7 @@ final class RegisterWithCompanyRequest extends FormRequest
             'company_website' => 'nullable|string|url|max:255',
             'company_type' => 'required|string|max:50',
             'company_registration_number' => 'nullable|string|max:255',
-            'company_registry_office' => 'nullable|string|max:255',
+            'company_registration_office' => 'nullable|string|max:255',
         ];
     }
 
@@ -122,8 +122,8 @@ final class RegisterWithCompanyRequest extends FormRequest
         return $this->validated('company_registration_number');
     }
 
-    public function getCompanyRegistryOffice(): ?string
+    public function getCompanyRegistrationOffice(): ?string
     {
-        return $this->validated('company_registry_office');
+        return $this->validated('company_registration_office');
     }
 }

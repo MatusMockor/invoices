@@ -28,7 +28,7 @@ final class InvoiceRegistrySnapshotTest extends TestCase
         $this->supplierCompany = UserCompany::factory()->create([
             'user_id' => $this->user->id,
             'company_type' => 's.r.o.',
-            'registry_office' => 'Okresny sud Bratislava I',
+            'registration_office' => 'Okresny sud Bratislava I',
             'registration_number' => 'Oddiel: Sro, Vlozka c. 123456/B',
         ]);
         $this->user->update(['current_company_id' => $this->supplierCompany->id]);
@@ -51,7 +51,7 @@ final class InvoiceRegistrySnapshotTest extends TestCase
 
         // Update supplier company after invoice creation
         $this->supplierCompany->update([
-            'registry_office' => 'Okresny sud Kosice I',
+            'registration_office' => 'Okresny sud Kosice I',
             'registration_number' => 'Oddiel: Sro, Vlozka c. 999999/K',
         ]);
 
@@ -77,7 +77,7 @@ final class InvoiceRegistrySnapshotTest extends TestCase
 
         // Update supplier company after invoice creation
         $this->supplierCompany->update([
-            'registry_office' => 'Okresny sud Kosice I',
+            'registration_office' => 'Okresny sud Kosice I',
             'registration_number' => 'Oddiel: Sro, Vlozka c. 999999/K',
         ]);
 
@@ -102,7 +102,7 @@ final class InvoiceRegistrySnapshotTest extends TestCase
 
         // Update supplier company
         $this->supplierCompany->update([
-            'registry_office' => 'New Office',
+            'registration_office' => 'New Office',
             'registration_number' => 'New Number',
         ]);
 
@@ -155,7 +155,7 @@ final class InvoiceRegistrySnapshotTest extends TestCase
         $soleProprietorship = UserCompany::factory()->create([
             'user_id' => $this->user->id,
             'company_type' => 'zivnost',
-            'registry_office' => 'Okresny urad Bratislava, odbor zivnostenskeho podnikania',
+            'registration_office' => 'Okresny urad Bratislava, odbor zivnostenskeho podnikania',
             'registration_number' => 'Cislo zivnostenskeho registra: 820-12345',
         ]);
 
@@ -225,7 +225,7 @@ final class InvoiceRegistrySnapshotTest extends TestCase
 
         // Supplier company has one set of values
         $this->supplierCompany->update([
-            'registry_office' => 'Live Office Value',
+            'registration_office' => 'Live Office Value',
             'registration_number' => 'Live Number Value',
         ]);
 
@@ -247,7 +247,7 @@ final class InvoiceRegistrySnapshotTest extends TestCase
 
         // Verify company still has its own values
         $this->supplierCompany->refresh();
-        $this->assertEquals('Live Office Value', $this->supplierCompany->registry_office);
+        $this->assertEquals('Live Office Value', $this->supplierCompany->registration_office);
         $this->assertEquals('Live Number Value', $this->supplierCompany->registration_number);
     }
 

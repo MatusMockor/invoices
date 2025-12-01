@@ -117,7 +117,7 @@ class InvoiceFactory extends Factory
 
                 if ($supplierCompany) {
                     $invoice->update([
-                        'supplier_registry_office' => $supplierCompany->registry_office,
+                        'supplier_registry_office' => $supplierCompany->registration_office,
                         'supplier_registry_number' => $supplierCompany->registration_number,
                     ]);
                 }

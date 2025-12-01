@@ -10,7 +10,7 @@ export interface Company {
   postal_code?: string;
   dic?: string;
   ic_dph?: string;
-  registry_office?: string;
+  registration_office?: string;
   registration_number?: string;
   vat_payer_status?: 'not_vat_payer' | 'vat_payer' | 'vat_payer_paragraph_7';
 }

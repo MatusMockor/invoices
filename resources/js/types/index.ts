@@ -69,7 +69,7 @@ export interface UserCompany {
   // Company details
   company_type: string; // živnosť or s.r.o.
   registration_number: string; // Registration number in business or trade register
-  registry_office: string | null; // Registry office (e.g., "Okresný súd Bratislava I")
+  registration_office: string | null; // Registry office (e.g., "Okresný súd Bratislava I")
 
   status: 'active' | 'inactive';
   vehicles: number;
@@ -388,7 +388,7 @@ export interface UserCompanyFormData {
   iban?: string;
   swift?: string;
   status?: 'active' | 'inactive';
-  registry_office?: string;
+  registration_office?: string;
   registration_number?: string;
 }
 

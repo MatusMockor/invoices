@@ -51,7 +51,7 @@ class UserCompanyFactory extends Factory
             'website' => fake()->url(),
             'company_type' => fake()->randomElement($companyTypes),
             'registration_number' => 'Oddiel: '.fake()->randomElement(['Sro', 'Sa']).', Vlozka c. '.fake()->numerify('######/B'),
-            'registry_office' => fake()->randomElement([
+            'registration_office' => fake()->randomElement([
                 'Okresny sud Bratislava I',
                 'Okresny sud Kosice I',
                 'Okresny sud Zilina',
@@ -94,7 +94,7 @@ class UserCompanyFactory extends Factory
             'company_type' => 'zivnost',
             'ic_dph' => null,
             'vat_payer_status' => VatPayerStatus::NOT_VAT_PAYER->value,
-            'registry_office' => fake()->randomElement([
+            'registration_office' => fake()->randomElement([
                 'Okresny urad Bratislava, odbor zivnostenskeho podnikania',
                 'Okresny urad Kosice, odbor zivnostenskeho podnikania',
                 'Okresny urad Zilina, odbor zivnostenskeho podnikania',
@@ -110,7 +110,7 @@ class UserCompanyFactory extends Factory
     {
         return $this->state(fn (array $attributes): array => [
             'company_type' => 's.r.o.',
-            'registry_office' => fake()->randomElement([
+            'registration_office' => fake()->randomElement([
                 'Okresny sud Bratislava I',
                 'Okresny sud Kosice I',
                 'Okresny sud Zilina',
