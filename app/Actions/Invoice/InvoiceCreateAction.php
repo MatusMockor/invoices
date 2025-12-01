@@ -117,17 +117,19 @@ final class InvoiceCreateAction
 
     private function createInvoiceItems(Invoice $invoice, array $items, bool $reverseCharge): void
     {
-        $preparedItems = array_map(static function (array $item) use ($invoice, $reverseCharge): array {
+        $vatCalculator = $this->vatCalculator;
+
+        $preparedItems = array_map(static function (array $item) use ($invoice, $reverseCharge, $vatCalculator): array {
             $quantity = $item['quantity'];
             $unitPriceWithoutTax = $item['price'] ?? $item['unit_price_without_tax'] ?? 0;
             $taxRate = $item['tax_rate'] ?? 20.0;
             $discountAmount = $item['discount_amount'] ?? null;
 
             // Calculate item subtotal (without VAT)
-            $subtotal = $this->vatCalculator->calculateItemSubtotal($quantity, $unitPriceWithoutTax, $discountAmount);
+            $subtotal = $vatCalculator->calculateItemSubtotal($quantity, $unitPriceWithoutTax, $discountAmount);
 
             // Calculate VAT amount (respect reverse charge)
-            $taxAmount = $this->vatCalculator->calculateVatAmount($subtotal, $taxRate, $reverseCharge);
+            $taxAmount = $vatCalculator->calculateVatAmount($subtotal, $taxRate, $reverseCharge);
 
             // Calculate total price (with or without VAT based on reverse charge)
             $totalPrice = $subtotal + $taxAmount;
