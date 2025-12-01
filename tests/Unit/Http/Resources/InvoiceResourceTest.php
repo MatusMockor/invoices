@@ -177,7 +177,7 @@ final class InvoiceResourceTest extends TestCase
         $registryOffice = 'Okresny sud Bratislava I';
 
         $supplierCompany = UserCompany::factory()->create([
-            'registry_office' => $registryOffice,
+            'registration_office' => $registryOffice,
         ]);
 
         $invoice = Invoice::factory()->create([
@@ -218,7 +218,7 @@ final class InvoiceResourceTest extends TestCase
         $registryNumber = 'Oddiel: Sro, Vlozka c. 789012/K';
 
         $supplierCompany = UserCompany::factory()->create([
-            'registry_office' => $registryOffice,
+            'registration_office' => $registryOffice,
             'registration_number' => $registryNumber,
         ]);
 
@@ -262,7 +262,7 @@ final class InvoiceResourceTest extends TestCase
 
         $supplierCompany = UserCompany::factory()->create([
             'company_type' => 'zivnost',
-            'registry_office' => $registryOffice,
+            'registration_office' => $registryOffice,
             'registration_number' => $registryNumber,
         ]);
 

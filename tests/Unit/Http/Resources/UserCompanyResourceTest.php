@@ -15,19 +15,19 @@ final class UserCompanyResourceTest extends TestCase
 {
     use RefreshDatabase;
 
-    public function test_resource_includes_registry_office(): void
+    public function test_resource_includes_registration_office(): void
     {
-        $registryOffice = 'Okresny sud Bratislava I';
+        $registrationOffice = 'Okresny sud Bratislava I';
 
         $company = UserCompany::factory()->create([
-            'registry_office' => $registryOffice,
+            'registration_office' => $registrationOffice,
         ]);
 
         $resource = new UserCompanyResource($company);
         $response = $resource->toArray(Request::create('/'));
 
-        $this->assertArrayHasKey('registry_office', $response);
-        $this->assertEquals($registryOffice, $response['registry_office']);
+        $this->assertArrayHasKey('registration_office', $response);
+        $this->assertEquals($registrationOffice, $response['registration_office']);
     }
 
     public function test_resource_includes_registration_number(): void
@@ -47,36 +47,36 @@ final class UserCompanyResourceTest extends TestCase
 
     public function test_resource_includes_both_registry_fields(): void
     {
-        $registryOffice = 'Okresny sud Kosice I';
+        $registrationOffice = 'Okresny sud Kosice I';
         $registrationNumber = 'Oddiel: Sro, Vlozka c. 789012/K';
 
         $company = UserCompany::factory()->create([
-            'registry_office' => $registryOffice,
+            'registration_office' => $registrationOffice,
             'registration_number' => $registrationNumber,
         ]);
 
         $resource = new UserCompanyResource($company);
         $response = $resource->toArray(Request::create('/'));
 
-        $this->assertArrayHasKey('registry_office', $response);
+        $this->assertArrayHasKey('registration_office', $response);
         $this->assertArrayHasKey('registration_number', $response);
-        $this->assertEquals($registryOffice, $response['registry_office']);
+        $this->assertEquals($registrationOffice, $response['registration_office']);
         $this->assertEquals($registrationNumber, $response['registration_number']);
     }
 
-    public function test_resource_returns_null_for_registry_office_when_not_set(): void
+    public function test_resource_returns_null_for_registration_office_when_not_set(): void
     {
         $company = UserCompany::factory()->create([
-            'registry_office' => null,
+            'registration_office' => null,
             // registration_number is NOT nullable in DB, factory provides default
         ]);
 
         $resource = new UserCompanyResource($company);
         $response = $resource->toArray(Request::create('/'));
 
-        $this->assertArrayHasKey('registry_office', $response);
+        $this->assertArrayHasKey('registration_office', $response);
         $this->assertArrayHasKey('registration_number', $response);
-        $this->assertNull($response['registry_office']);
+        $this->assertNull($response['registration_office']);
         // registration_number should have factory default value
         $this->assertNotNull($response['registration_number']);
     }
@@ -85,32 +85,32 @@ final class UserCompanyResourceTest extends TestCase
     {
         $company = UserCompany::factory()->create([
             'company_type' => 's.r.o.',
-            'registry_office' => 'Okresny sud Bratislava I',
+            'registration_office' => 'Okresny sud Bratislava I',
             'registration_number' => 'Oddiel: Sro, Vlozka c. 123456/B',
         ]);
 
         $resource = new UserCompanyResource($company);
         $response = $resource->toArray(Request::create('/'));
 
-        $this->assertEquals('Okresny sud Bratislava I', $response['registry_office']);
+        $this->assertEquals('Okresny sud Bratislava I', $response['registration_office']);
         $this->assertEquals('Oddiel: Sro, Vlozka c. 123456/B', $response['registration_number']);
     }
 
     public function test_resource_includes_sole_proprietorship_registry_data(): void
     {
-        $registryOffice = 'Okresny urad Bratislava, odbor zivnostenskeho podnikania';
+        $registrationOffice = 'Okresny urad Bratislava, odbor zivnostenskeho podnikania';
         $registrationNumber = 'Cislo zivnostenskeho registra: 820-12345';
 
         $company = UserCompany::factory()->create([
             'company_type' => 'zivnost',
-            'registry_office' => $registryOffice,
+            'registration_office' => $registrationOffice,
             'registration_number' => $registrationNumber,
         ]);
 
         $resource = new UserCompanyResource($company);
         $response = $resource->toArray(Request::create('/'));
 
-        $this->assertEquals($registryOffice, $response['registry_office']);
+        $this->assertEquals($registrationOffice, $response['registration_office']);
         $this->assertEquals($registrationNumber, $response['registration_number']);
     }
 
@@ -122,7 +122,7 @@ final class UserCompanyResourceTest extends TestCase
             'dic' => '2012345678',
             'ic_dph' => 'SK2012345678',
             'vat_payer_status' => VatPayerStatus::VAT_PAYER,
-            'registry_office' => 'Okresny sud Bratislava I',
+            'registration_office' => 'Okresny sud Bratislava I',
             'registration_number' => 'Oddiel: Sro, Vlozka c. 123456/B',
         ]);
 
@@ -136,7 +136,7 @@ final class UserCompanyResourceTest extends TestCase
         $this->assertArrayHasKey('dic', $response);
         $this->assertArrayHasKey('ic_dph', $response);
         $this->assertArrayHasKey('vat_payer_status', $response);
-        $this->assertArrayHasKey('registry_office', $response);
+        $this->assertArrayHasKey('registration_office', $response);
         $this->assertArrayHasKey('registration_number', $response);
 
         // Verify values
@@ -145,7 +145,7 @@ final class UserCompanyResourceTest extends TestCase
         $this->assertEquals('2012345678', $response['dic']);
         $this->assertEquals('SK2012345678', $response['ic_dph']);
         $this->assertEquals('vat_payer', $response['vat_payer_status']);
-        $this->assertEquals('Okresny sud Bratislava I', $response['registry_office']);
+        $this->assertEquals('Okresny sud Bratislava I', $response['registration_office']);
         $this->assertEquals('Oddiel: Sro, Vlozka c. 123456/B', $response['registration_number']);
     }
 

@@ -15,7 +15,7 @@ final readonly class CompanyCreationDTO
         public ?string $dic,
         public ?string $icDph,
         public ?string $registrationNumber,
-        public ?string $registryOffice,
+        public ?string $registrationOffice,
     ) {}
 
     public static function fromRequest(array $data): self
@@ -29,7 +29,7 @@ final readonly class CompanyCreationDTO
             dic: $data['dic'] ?? null,
             icDph: $data['ic_dph'] ?? null,
             registrationNumber: $data['registration_number'] ?? null,
-            registryOffice: $data['registry_office'] ?? null,
+            registrationOffice: $data['registration_office'] ?? null,
         );
     }
 }

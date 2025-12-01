@@ -258,11 +258,11 @@ export const CompanyFormDialog: React.FC<CompanyFormDialogProps> = ({
             </h3>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <FormField
-                id={`${idPrefix}RegistryOffice`}
+                id={`${idPrefix}RegistrationOffice`}
                 label="Registrový úrad"
                 placeholder="Napr. Okresný súd Bratislava I"
-                value={formData.registry_office || ""}
-                onChange={(value) => updateField('registry_office', value)}
+                value={formData.registration_office || ""}
+                onChange={(value) => updateField('registration_office', value)}
                 maxLength={255}
               />
               <FormField

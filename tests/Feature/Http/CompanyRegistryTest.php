@@ -33,19 +33,19 @@ final class CompanyRegistryTest extends TestCase
         Sanctum::actingAs($this->user);
     }
 
-    public function test_company_show_api_response_includes_registry_office(): void
+    public function test_company_show_api_response_includes_registration_office(): void
     {
-        $registryOffice = 'Okresny sud Bratislava I';
+        $registrationOffice = 'Okresny sud Bratislava I';
 
         $company = UserCompany::factory()->create([
             'user_id' => $this->user->id,
-            'registry_office' => $registryOffice,
+            'registration_office' => $registrationOffice,
         ]);
 
         $response = $this->getJson(route('api.user.companies.show', $company));
 
         $response->assertSuccessful()
-            ->assertJsonPath('data.registry_office', $registryOffice);
+            ->assertJsonPath('data.registration_office', $registrationOffice);
     }
 
     public function test_company_show_api_response_includes_registration_number(): void
@@ -65,19 +65,19 @@ final class CompanyRegistryTest extends TestCase
 
     public function test_company_show_api_response_includes_both_registry_fields(): void
     {
-        $registryOffice = 'Okresny sud Bratislava I';
+        $registrationOffice = 'Okresny sud Bratislava I';
         $registrationNumber = 'Oddiel: Sro, Vlozka c. 123456/B';
 
         $company = UserCompany::factory()->create([
             'user_id' => $this->user->id,
-            'registry_office' => $registryOffice,
+            'registration_office' => $registrationOffice,
             'registration_number' => $registrationNumber,
         ]);
 
         $response = $this->getJson(route('api.user.companies.show', $company));
 
         $response->assertSuccessful()
-            ->assertJsonPath('data.registry_office', $registryOffice)
+            ->assertJsonPath('data.registration_office', $registrationOffice)
             ->assertJsonPath('data.registration_number', $registrationNumber);
     }
 
@@ -107,12 +107,12 @@ final class CompanyRegistryTest extends TestCase
 
     public function test_company_list_api_includes_registry_fields(): void
     {
-        $registryOffice = 'Okresny sud Bratislava I';
+        $registrationOffice = 'Okresny sud Bratislava I';
         $registrationNumber = 'Oddiel: Sro, Vlozka c. 123456/B';
 
         UserCompany::factory()->create([
             'user_id' => $this->user->id,
-            'registry_office' => $registryOffice,
+            'registration_office' => $registrationOffice,
             'registration_number' => $registrationNumber,
         ]);
 
@@ -120,7 +120,7 @@ final class CompanyRegistryTest extends TestCase
 
         $response->assertSuccessful()
             ->assertJsonFragment([
-                'registry_office' => $registryOffice,
+                'registration_office' => $registrationOffice,
                 'registration_number' => $registrationNumber,
             ]);
     }
@@ -151,24 +151,24 @@ final class CompanyRegistryTest extends TestCase
             ]);
     }
 
-    public function test_company_show_returns_null_registry_office_when_not_set(): void
+    public function test_company_show_returns_null_registration_office_when_not_set(): void
     {
         $company = UserCompany::factory()->create([
             'user_id' => $this->user->id,
-            'registry_office' => null,
+            'registration_office' => null,
         ]);
 
         $response = $this->getJson(route('api.user.companies.show', $company));
 
         $response->assertSuccessful()
-            ->assertJsonPath('data.registry_office', null);
+            ->assertJsonPath('data.registration_office', null);
     }
 
     public function test_invoice_show_returns_null_registry_snapshot_when_not_set(): void
     {
         $supplierCompany = UserCompany::factory()->create([
             'user_id' => $this->user->id,
-            'registry_office' => null,
+            'registration_office' => null,
         ]);
         $this->user->update(['current_company_id' => $supplierCompany->id]);
 
@@ -199,33 +199,33 @@ final class CompanyRegistryTest extends TestCase
         $company = UserCompany::factory()->create([
             'user_id' => $this->user->id,
             'company_type' => 's.r.o.',
-            'registry_office' => 'Okresny sud Bratislava I',
+            'registration_office' => 'Okresny sud Bratislava I',
             'registration_number' => 'Oddiel: Sro, Vlozka c. 123456/B',
         ]);
 
         $response = $this->getJson(route('api.user.companies.show', $company));
 
         $response->assertSuccessful()
-            ->assertJsonPath('data.registry_office', 'Okresny sud Bratislava I')
+            ->assertJsonPath('data.registration_office', 'Okresny sud Bratislava I')
             ->assertJsonPath('data.registration_number', 'Oddiel: Sro, Vlozka c. 123456/B');
     }
 
     public function test_sole_proprietorship_registry_data_is_returned_in_api(): void
     {
-        $registryOffice = 'Okresny urad Bratislava, odbor zivnostenskeho podnikania';
+        $registrationOffice = 'Okresny urad Bratislava, odbor zivnostenskeho podnikania';
         $registrationNumber = 'Cislo zivnostenskeho registra: 820-12345';
 
         $company = UserCompany::factory()->create([
             'user_id' => $this->user->id,
             'company_type' => 'zivnost',
-            'registry_office' => $registryOffice,
+            'registration_office' => $registrationOffice,
             'registration_number' => $registrationNumber,
         ]);
 
         $response = $this->getJson(route('api.user.companies.show', $company));
 
         $response->assertSuccessful()
-            ->assertJsonPath('data.registry_office', $registryOffice)
+            ->assertJsonPath('data.registration_office', $registrationOffice)
             ->assertJsonPath('data.registration_number', $registrationNumber);
     }
 
@@ -233,7 +233,7 @@ final class CompanyRegistryTest extends TestCase
     {
         $supplierCompany = UserCompany::factory()->create([
             'user_id' => $this->user->id,
-            'registry_office' => 'Updated Office',
+            'registration_office' => 'Updated Office',
             'registration_number' => 'Updated Number',
         ]);
         $this->user->update(['current_company_id' => $supplierCompany->id]);

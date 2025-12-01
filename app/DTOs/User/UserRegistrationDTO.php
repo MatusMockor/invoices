@@ -26,7 +26,7 @@ final readonly class UserRegistrationDTO
         public ?string $companyEmail,
         public ?string $companyWebsite,
         public ?string $companyRegistrationNumber,
-        public ?string $companyRegistryOffice,
+        public ?string $companyRegistrationOffice,
     ) {}
 
     public static function fromFormRequest(RegisterWithCompanyRequest $request): self
@@ -49,7 +49,7 @@ final readonly class UserRegistrationDTO
             companyEmail: $request->getCompanyEmail(),
             companyWebsite: $request->getCompanyWebsite(),
             companyRegistrationNumber: $request->getCompanyRegistrationNumber(),
-            companyRegistryOffice: $request->getCompanyRegistryOffice(),
+            companyRegistrationOffice: $request->getCompanyRegistrationOffice(),
         );
     }
 
@@ -76,7 +76,7 @@ final readonly class UserRegistrationDTO
             companyEmail: $data['company_email'] ?? null,
             companyWebsite: $data['company_website'] ?? null,
             companyRegistrationNumber: $data['company_registration_number'] ?? null,
-            companyRegistryOffice: $data['company_registry_office'] ?? null,
+            companyRegistrationOffice: $data['company_registration_office'] ?? null,
         );
     }
 }

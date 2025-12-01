@@ -14,7 +14,7 @@ return new class extends Migration
     public function up(): void
     {
         Schema::table('user_companies', static function (Blueprint $table): void {
-            $table->string('registry_office', 255)
+            $table->string('registration_office', 255)
                 ->nullable()
                 ->after('registration_number')
                 ->comment('Registration office (e.g., Okresny sud Bratislava I)');
@@ -27,7 +27,7 @@ return new class extends Migration
     public function down(): void
     {
         Schema::table('user_companies', static function (Blueprint $table): void {
-            $table->dropColumn('registry_office');
+            $table->dropColumn('registration_office');
         });
     }
 };

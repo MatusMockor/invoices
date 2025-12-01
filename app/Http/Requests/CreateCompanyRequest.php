@@ -23,7 +23,7 @@ final class CreateCompanyRequest extends FormRequest
             'postal_code' => 'required|string|max:10',
             'dic' => 'nullable|string|max:20',
             'ic_dph' => 'nullable|string|max:20',
-            'registry_office' => 'nullable|string|max:255',
+            'registration_office' => 'nullable|string|max:255',
             'registration_number' => 'nullable|string|max:255',
         ];
     }
@@ -63,9 +63,9 @@ final class CreateCompanyRequest extends FormRequest
         return $this->validated('ic_dph');
     }
 
-    public function getRegistryOffice(): ?string
+    public function getRegistrationOffice(): ?string
     {
-        return $this->validated('registry_office');
+        return $this->validated('registration_office');
     }
 
     public function getRegistrationNumber(): ?string

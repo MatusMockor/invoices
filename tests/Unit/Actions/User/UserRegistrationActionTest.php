@@ -45,7 +45,7 @@ final class UserRegistrationActionTest extends TestCase
             companyEmail: 'info@testcompany.sk',
             companyWebsite: 'https://testcompany.sk',
             companyRegistrationNumber: 'Sro/12345/B',
-            companyRegistryOffice: 'Okresný súd Bratislava I',
+            companyRegistrationOffice: 'Okresný súd Bratislava I',
         );
 
         $user = $this->action->handle($dto);
@@ -72,7 +72,7 @@ final class UserRegistrationActionTest extends TestCase
             'email' => $dto->companyEmail,
             'website' => $dto->companyWebsite,
             'registration_number' => $dto->companyRegistrationNumber,
-            'registry_office' => $dto->companyRegistryOffice,
+            'registration_office' => $dto->companyRegistrationOffice,
         ]);
 
         $this->assertNotNull($user->current_company_id);
@@ -105,7 +105,7 @@ final class UserRegistrationActionTest extends TestCase
             companyEmail: null,
             companyWebsite: null,
             companyRegistrationNumber: null,
-            companyRegistryOffice: null,
+            companyRegistrationOffice: null,
         );
 
         app(UserRegistrationAction::class)->handle($dto);
@@ -131,7 +131,7 @@ final class UserRegistrationActionTest extends TestCase
             companyEmail: null,
             companyWebsite: null,
             companyRegistrationNumber: null,
-            companyRegistryOffice: null,
+            companyRegistrationOffice: null,
         );
 
         $user = $this->action->handle($dto);

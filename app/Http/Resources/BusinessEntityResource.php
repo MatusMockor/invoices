@@ -27,7 +27,7 @@ final class BusinessEntityResource extends JsonResource
             'city' => $this->city,
             'postal_code' => $this->postal_code,
             'country' => $this->country,
-            'registry_office' => $this->registry_office,
+            'registration_office' => $this->registration_office,
             'registration_number' => $this->registration_number,
             'phone' => null,
             'email' => null,

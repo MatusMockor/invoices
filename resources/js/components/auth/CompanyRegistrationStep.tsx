@@ -21,7 +21,7 @@ const companySchema = z.object({
   companyPostalCode: z.string().trim().min(1, "PSČ je povinné").max(10),
   companyDic: z.string().trim().min(1, "DIČ je povinné").max(20),
   companyIcDph: z.string().trim().min(1, "IČ DPH je povinné").max(20),
-  companyRegistryOffice: z.string().trim().max(255).optional(),
+  companyRegistrationOffice: z.string().trim().max(255).optional(),
   companyRegistrationNumber: z.string().trim().max(255).optional(),
 });
 
@@ -48,7 +48,7 @@ export const CompanyRegistrationStep = ({ userData, onBack }: CompanyRegistratio
       companyPostalCode: "",
       companyDic: "",
       companyIcDph: "",
-      companyRegistryOffice: "",
+      companyRegistrationOffice: "",
       companyRegistrationNumber: "",
     },
   });
@@ -99,7 +99,7 @@ export const CompanyRegistrationStep = ({ userData, onBack }: CompanyRegistratio
         company_postal_code: companyData.companyPostalCode,
         company_dic: companyData.companyDic,
         company_ic_dph: companyData.companyIcDph,
-        company_registry_office: companyData.companyRegistryOffice || undefined,
+        company_registration_office: companyData.companyRegistrationOffice || undefined,
         company_registration_number: companyData.companyRegistrationNumber || undefined,
       });
 
@@ -246,7 +246,7 @@ export const CompanyRegistrationStep = ({ userData, onBack }: CompanyRegistratio
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <FormField
                   control={companyForm.control}
-                  name="companyRegistryOffice"
+                  name="companyRegistrationOffice"
                   render={({ field }) => (
                     <FormItem>
                       <FormLabel>Registrový úrad</FormLabel>

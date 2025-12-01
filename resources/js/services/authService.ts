@@ -26,7 +26,7 @@ export interface RegisterWithCompanyData {
   company_postal_code: string;
   company_dic: string;
   company_ic_dph: string;
-  company_registry_office?: string;
+  company_registration_office?: string;
   company_registration_number?: string;
 }
 

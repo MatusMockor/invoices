@@ -32,7 +32,7 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
  * @property string|null $website Company website
  * @property string $company_type Legal form of the company
  * @property string $registration_number Registration number in business register
- * @property string|null $registry_office Registration office (e.g., Okresny sud Bratislava I)
+ * @property string|null $registration_office Registration office (e.g., Okresny sud Bratislava I)
  * @property \Illuminate\Support\Carbon|null $created_at
  * @property \Illuminate\Support\Carbon|null $updated_at
  * @property-read int $clients_count Number of unique clients
@@ -67,7 +67,7 @@ class UserCompany extends Model
         'user_id',
         'company_type',
         'registration_number',
-        'registry_office',
+        'registration_office',
     ];
 
     /**

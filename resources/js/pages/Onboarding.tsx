@@ -27,7 +27,7 @@ const companySchema = z.object({
   dic: z.string().trim().max(20).optional(),
   ic_dph: z.string().trim().max(20).optional(),
   vat_payer_status: z.enum(['not_vat_payer', 'vat_payer', 'vat_payer_paragraph_7']).optional(),
-  registry_office: z.string().trim().max(255).optional(),
+  registration_office: z.string().trim().max(255).optional(),
   registration_number: z.string().trim().max(255).optional(),
 });
 
@@ -60,7 +60,7 @@ const Onboarding = () => {
       dic: "",
       ic_dph: "",
       vat_payer_status: undefined,
-      registry_office: "",
+      registration_office: "",
       registration_number: "",
     },
   });
@@ -101,7 +101,7 @@ const Onboarding = () => {
     companyForm.setValue("postal_code", company.postal_code || "");
     companyForm.setValue("dic", company.dic || "");
     companyForm.setValue("ic_dph", company.ic_dph || "");
-    companyForm.setValue("registry_office", company.registry_office || "");
+    companyForm.setValue("registration_office", company.registration_office || "");
     companyForm.setValue("registration_number", company.registration_number || "");
     if (company.vat_payer_status) {
       companyForm.setValue("vat_payer_status", company.vat_payer_status);
@@ -123,7 +123,7 @@ const Onboarding = () => {
         dic: data.dic?.trim() || undefined,
         ic_dph: data.ic_dph?.trim() || undefined,
         vat_payer_status: data.vat_payer_status || undefined,
-        registry_office: data.registry_office?.trim() || undefined,
+        registration_office: data.registration_office?.trim() || undefined,
         registration_number: data.registration_number?.trim() || undefined,
       };
 
@@ -362,7 +362,7 @@ const Onboarding = () => {
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <FormField
                       control={companyForm.control}
-                      name="registry_office"
+                      name="registration_office"
                       render={({ field }) => (
                         <FormItem>
                           <FormLabel>Registrový úrad</FormLabel>
