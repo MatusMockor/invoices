@@ -11,7 +11,7 @@ use Illuminate\Http\Resources\Json\JsonResource;
 /**
  * @mixin UserCompany
  */
-class BusinessEntityResource extends JsonResource
+final class BusinessEntityResource extends JsonResource
 {
     public function toArray(Request $request): array
     {
@@ -22,10 +22,13 @@ class BusinessEntityResource extends JsonResource
             'ico' => $this->ico,
             'dic' => $this->dic,
             'ic_dph' => $this->ic_dph,
+            'is_vat_payer' => $this->ic_dph !== null && $this->ic_dph !== '',
             'address' => $this->street,
             'city' => $this->city,
             'postal_code' => $this->postal_code,
             'country' => $this->country,
+            'registry_office' => $this->registry_office,
+            'registration_number' => $this->registration_number,
             'phone' => null,
             'email' => null,
             'created_at' => $this->created_at?->toISOString(),

@@ -16,6 +16,7 @@ import { businessEntityService } from "@/services/businessEntityService";
 import { companyService } from "@/services/companyService";
 import { useAuthContext } from "@/contexts/AuthContext";
 import { VAT_PAYER_STATUS_OPTIONS } from "@/constants/vatPayerStatus";
+import { Company } from "@/types/company";
 
 const companySchema = z.object({
   ico: z.string().trim().min(1, "IČO je povinné").max(20),
@@ -37,7 +38,7 @@ const Onboarding = () => {
   const [isSearching, setIsSearching] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [showSuggestions, setShowSuggestions] = useState(false);
-  const [filteredCompanies, setFilteredCompanies] = useState<any[]>([]);
+  const [filteredCompanies, setFilteredCompanies] = useState<Company[]>([]);
   const navigate = useNavigate();
   const { user, refetch } = useAuthContext();
 
@@ -92,7 +93,7 @@ const Onboarding = () => {
     }
   }, [icoSearch, showSuggestions]);
 
-  const onCompanySelect = (company: any) => {
+  const onCompanySelect = (company: Company) => {
     companyForm.setValue("ico", company.ico || "");
     companyForm.setValue("name", company.name || "");
     companyForm.setValue("street", company.address || "");
@@ -100,6 +101,8 @@ const Onboarding = () => {
     companyForm.setValue("postal_code", company.postal_code || "");
     companyForm.setValue("dic", company.dic || "");
     companyForm.setValue("ic_dph", company.ic_dph || "");
+    companyForm.setValue("registry_office", company.registry_office || "");
+    companyForm.setValue("registration_number", company.registration_number || "");
     if (company.vat_payer_status) {
       companyForm.setValue("vat_payer_status", company.vat_payer_status);
     }
