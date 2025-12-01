@@ -184,11 +184,13 @@ export const InvoicePreview = ({ open, onOpenChange, invoiceId }: InvoicePreview
                   {invoice.supplier_company?.ic_dph && (
                     <p className="text-xs text-gray-600">IČ DPH: {invoice.supplier_company.ic_dph}</p>
                   )}
-                  {invoice.supplier_registry_office && (
-                    <p className="text-xs text-gray-600">{invoice.supplier_registry_office}</p>
-                  )}
-                  {invoice.supplier_registry_number && (
-                    <p className="text-xs text-gray-600">{invoice.supplier_registry_number}</p>
+                  {(invoice.supplier_registry_office || invoice.supplier_registry_number) && (
+                    <p className="text-xs text-gray-600 mt-2">
+                      {invoice.supplier_registry_office}
+                      {invoice.supplier_registry_office && invoice.supplier_registry_number && ', registrácia č. '}
+                      {!invoice.supplier_registry_office && invoice.supplier_registry_number && 'registrácia č. '}
+                      {invoice.supplier_registry_number}
+                    </p>
                   )}
                 </div>
               </div>
