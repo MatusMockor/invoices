@@ -1,6 +1,6 @@
 import React, { useRef, useEffect } from "react";
 import { UseFormReturn } from "react-hook-form";
-import { Loader2, Building2, MapPin, FileText, Search } from "lucide-react";
+import { Loader2, Building2, Search } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
@@ -269,71 +269,33 @@ const ClientInformationSectionComponent = ({
 
       {/* Selected company - display card */}
       {selectedCompany && !isSelectingCompany && (
-        <Card className="p-5 bg-primary/5 border-primary/30">
-          <div className="flex items-start justify-between mb-4">
-            <div className="flex items-center gap-3">
-              <div className="w-12 h-12 rounded-full bg-primary/10 flex items-center justify-center">
-                <Building2 className="h-6 w-6 text-primary" />
-              </div>
-              <div>
-                <h4 className="font-bold text-lg text-foreground truncate max-w-xs">{selectedCompany.name}</h4>
-                <p className="text-sm text-muted-foreground">IČO: {selectedCompany.ico}</p>
-              </div>
+        <div className="p-4 rounded-lg bg-primary/5 border border-primary/20">
+          <div className="flex justify-between items-start mb-3">
+            <div className="flex items-center gap-2">
+              <Building2 className="h-4 w-4 text-primary" />
+              <span className="font-semibold">{selectedCompany.name}</span>
             </div>
             {(!isEditMode || useCustomCompany) && (
-              <Button
-                type="button"
-                variant="ghost"
-                size="sm"
-                onClick={onClearSelection}
-                className="text-muted-foreground hover:text-foreground"
-                aria-label={`Zmeniť spoločnosť ${selectedCompany.name}`}
-              >
+              <Button type="button" variant="ghost" size="sm" onClick={onClearSelection}>
                 Zmeniť
               </Button>
             )}
           </div>
-
-          <div className="space-y-3">
+          <div className="text-sm text-muted-foreground space-y-1">
             {selectedCompany.address && (
-              <div className="flex items-start gap-2">
-                <MapPin className="h-4 w-4 text-primary mt-0.5 shrink-0" />
-                <div>
-                  <p className="text-xs text-muted-foreground">Adresa</p>
-                  <p className="text-sm font-medium">
-                    {selectedCompany.address}
-                    {selectedCompany.postal_code && selectedCompany.city &&
-                      `, ${selectedCompany.postal_code} ${selectedCompany.city}`}
-                  </p>
-                </div>
-              </div>
+              <p>
+                {selectedCompany.address}
+                {selectedCompany.postal_code && selectedCompany.city &&
+                  `, ${selectedCompany.postal_code} ${selectedCompany.city}`}
+              </p>
             )}
-
-            {(selectedCompany.dic || selectedCompany.ic_dph) && (
-              <div className="grid grid-cols-2 gap-4">
-                {selectedCompany.dic && (
-                  <div className="flex items-start gap-2">
-                    <FileText className="h-4 w-4 text-primary mt-0.5 shrink-0" />
-                    <div>
-                      <p className="text-xs text-muted-foreground">DIČ</p>
-                      <p className="text-sm font-medium">{selectedCompany.dic}</p>
-                    </div>
-                  </div>
-                )}
-
-                {selectedCompany.ic_dph && (
-                  <div className="flex items-start gap-2">
-                    <FileText className="h-4 w-4 text-primary mt-0.5 shrink-0" />
-                    <div>
-                      <p className="text-xs text-muted-foreground">IČ DPH</p>
-                      <p className="text-sm font-medium">{selectedCompany.ic_dph}</p>
-                    </div>
-                  </div>
-                )}
-              </div>
-            )}
+            <p>
+              IČO: {selectedCompany.ico}
+              {selectedCompany.dic && ` · DIČ: ${selectedCompany.dic}`}
+              {selectedCompany.ic_dph && ` · IČ DPH: ${selectedCompany.ic_dph}`}
+            </p>
           </div>
-        </Card>
+        </div>
       )}
 
       {/* Hidden inputs for form validation */}
