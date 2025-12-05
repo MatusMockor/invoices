@@ -12,6 +12,8 @@ export interface CompanyData {
   vat_payer_status?: 'not_vat_payer' | 'vat_payer' | 'vat_payer_paragraph_7';
   registration_office?: string;
   registration_number?: string;
+  iban?: string;
+  swift?: string;
 }
 
 export const onboardingService = {

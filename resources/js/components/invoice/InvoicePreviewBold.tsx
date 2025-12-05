@@ -1,9 +1,8 @@
-import { QRCodeSVG } from "qrcode.react";
-
 interface InvoiceData {
   id: string;
   date: string;
   dueDate: string;
+  deliveryDate?: string;
   variableSymbol?: string;
   constantSymbol?: string;
   specificSymbol?: string;
@@ -13,6 +12,7 @@ interface InvoiceData {
     ico: string;
     dic: string;
     icDph?: string;
+    iban?: string;
     registryOffice?: string;
     registryNumber?: string;
   };
@@ -38,6 +38,11 @@ interface InvoiceData {
   taxAmount?: number;
   totalAmount?: number;
   currency?: string;
+  // QR code from API
+  qrCode?: string;
+  // Legal texts
+  reverseChargeText?: string;
+  taxExemptionText?: string;
 }
 
 interface InvoicePreviewBoldProps {
@@ -52,15 +57,6 @@ export const InvoicePreviewBold = ({ invoiceData }: InvoicePreviewBoldProps) => 
   const vat = invoiceData.taxAmount ?? subtotal * (taxRate / 100);
   const total = invoiceData.totalAmount ?? subtotal + vat;
   const currency = invoiceData.currency ?? 'EUR';
-
-  const generatePayBySquareData = () => {
-    const iban = "SK1234567890123456789012";
-    const amount = total.toFixed(2);
-    const vs = invoiceData.id.replace("INV-", "");
-    const message = `Faktura ${invoiceData.id}`;
-
-    return `PAY|${iban}|${amount}|EUR|${vs}|${message}`;
-  };
 
   return (
     <div className="bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900 text-white p-8 rounded-xl shadow-2xl" id="invoice-content">
@@ -140,10 +136,22 @@ export const InvoicePreviewBold = ({ invoiceData }: InvoicePreviewBoldProps) => 
               <p className="text-xs text-cyan-400 uppercase tracking-wider mb-2 font-semibold">Due Date</p>
               <p className="text-base font-bold text-white">{invoiceData.dueDate}</p>
             </div>
+            {invoiceData.deliveryDate && (
+              <div>
+                <p className="text-xs text-cyan-400 uppercase tracking-wider mb-2 font-semibold">Delivery Date</p>
+                <p className="text-base font-bold text-white">{invoiceData.deliveryDate}</p>
+              </div>
+            )}
             <div>
-              <p className="text-xs text-cyan-400 uppercase tracking-wider mb-2 font-semibold">Account Number</p>
-              <p className="text-xs font-mono font-semibold text-white">SK12 3456 7890 1234 5678 9012</p>
+              <p className="text-xs text-cyan-400 uppercase tracking-wider mb-2 font-semibold">Payment Method</p>
+              <p className="text-base font-bold text-white">Bank Transfer</p>
             </div>
+            {invoiceData.supplier?.iban && (
+              <div>
+                <p className="text-xs text-cyan-400 uppercase tracking-wider mb-2 font-semibold">Account Number</p>
+                <p className="text-xs font-mono font-semibold text-white">{invoiceData.supplier.iban}</p>
+              </div>
+            )}
             <div>
               <p className="text-xs text-cyan-400 uppercase tracking-wider mb-2 font-semibold">Variable Symbol</p>
               <p className="text-xs font-mono font-semibold text-white">{invoiceData.variableSymbol || invoiceData.id.replace("INV-", "")}</p>
@@ -164,17 +172,14 @@ export const InvoicePreviewBold = ({ invoiceData }: InvoicePreviewBoldProps) => 
         </div>
 
         {/* QR Code with Glow */}
-        <div className="flex flex-col items-center justify-center">
-          <div className="bg-white p-4 rounded-xl shadow-[0_0_30px_rgba(6,182,212,0.3)]">
-            <QRCodeSVG
-              value={generatePayBySquareData()}
-              size={100}
-              level="M"
-              includeMargin={false}
-            />
+        {invoiceData.qrCode && (
+          <div className="flex flex-col items-center justify-center">
+            <div className="bg-white p-4 rounded-xl shadow-[0_0_30px_rgba(6,182,212,0.3)]">
+              <img src={invoiceData.qrCode} alt="Pay by Square QR Code" className="w-[100px] h-[100px]" />
+            </div>
+            <p className="text-xs text-cyan-400 mt-3 font-semibold">Pay by Square</p>
           </div>
-          <p className="text-xs text-cyan-400 mt-3 font-semibold">Pay by Square</p>
-        </div>
+        )}
       </div>
 
       {/* Items Table */}
@@ -248,6 +253,19 @@ export const InvoicePreviewBold = ({ invoiceData }: InvoicePreviewBoldProps) => 
           </div>
         </div>
       </div>
+
+      {/* Reverse Charge or Tax Exemption Text */}
+      {invoiceData.reverseChargeText && (
+        <div className="mb-4 p-3 bg-yellow-500/20 border border-yellow-500/30 rounded-xl">
+          <p className="text-sm font-semibold text-yellow-300">{invoiceData.reverseChargeText}</p>
+        </div>
+      )}
+
+      {invoiceData.taxExemptionText && (
+        <div className="mb-4 p-3 bg-blue-500/20 border border-blue-500/30 rounded-xl">
+          <p className="text-sm font-semibold text-blue-300">{invoiceData.taxExemptionText}</p>
+        </div>
+      )}
 
       {/* Footer */}
       <div className="mt-8 pt-6 border-t border-white/10 text-center">

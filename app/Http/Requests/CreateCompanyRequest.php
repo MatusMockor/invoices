@@ -25,6 +25,8 @@ final class CreateCompanyRequest extends FormRequest
             'ic_dph' => 'nullable|string|max:20',
             'registration_office' => 'nullable|string|max:255',
             'registration_number' => 'nullable|string|max:255',
+            'iban' => 'nullable|string|max:34',
+            'swift' => ['nullable', 'string', 'max:11', 'regex:/^[A-Z]{4}[A-Z]{2}[A-Z0-9]{2}([A-Z0-9]{3})?$/i'],
         ];
     }
 
@@ -71,5 +73,27 @@ final class CreateCompanyRequest extends FormRequest
     public function getRegistrationNumber(): ?string
     {
         return $this->validated('registration_number');
+    }
+
+    public function getIban(): ?string
+    {
+        $iban = $this->validated('iban');
+
+        if (! $iban) {
+            return null;
+        }
+
+        return str_replace(' ', '', strtoupper($iban));
+    }
+
+    public function getSwift(): ?string
+    {
+        $swift = $this->validated('swift');
+
+        if (! $swift) {
+            return null;
+        }
+
+        return strtoupper($swift);
     }
 }
