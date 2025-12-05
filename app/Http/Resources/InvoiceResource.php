@@ -63,6 +63,10 @@ class InvoiceResource extends JsonResource
             // Supplier VAT payer status for conditional display
             'supplier_vat_payer_status' => $this->supplierCompany?->vat_payer_status?->value,
             'supplier_is_vat_payer' => $this->supplierCompany?->vat_payer_status !== \App\Enums\VatPayerStatus::NOT_VAT_PAYER,
+
+            // Computed text fields for display
+            'reverse_charge_text' => $this->reverse_charge_text,
+            'tax_exemption_text' => $this->tax_exemption_text,
         ];
     }
 }

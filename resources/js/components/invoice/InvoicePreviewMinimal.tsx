@@ -1,9 +1,8 @@
-import { QRCodeSVG } from "qrcode.react";
-
 interface InvoiceData {
   id: string;
   date: string;
   dueDate: string;
+  deliveryDate?: string;
   variableSymbol?: string;
   constantSymbol?: string;
   specificSymbol?: string;
@@ -13,6 +12,7 @@ interface InvoiceData {
     ico: string;
     dic: string;
     icDph?: string;
+    iban?: string;
     registryOffice?: string;
     registryNumber?: string;
   };
@@ -38,6 +38,11 @@ interface InvoiceData {
   taxAmount?: number;
   totalAmount?: number;
   currency?: string;
+  // QR code from API
+  qrCode?: string;
+  // Legal texts
+  reverseChargeText?: string;
+  taxExemptionText?: string;
 }
 
 interface InvoicePreviewMinimalProps {
@@ -52,15 +57,6 @@ export const InvoicePreviewMinimal = ({ invoiceData }: InvoicePreviewMinimalProp
   const vat = invoiceData.taxAmount ?? subtotal * (taxRate / 100);
   const total = invoiceData.totalAmount ?? subtotal + vat;
   const currency = invoiceData.currency ?? 'EUR';
-
-  const generatePayBySquareData = () => {
-    const iban = "SK1234567890123456789012";
-    const amount = total.toFixed(2);
-    const vs = invoiceData.id.replace("INV-", "");
-    const message = `Faktura ${invoiceData.id}`;
-
-    return `PAY|${iban}|${amount}|EUR|${vs}|${message}`;
-  };
 
   return (
     <div className="bg-white text-slate-900 p-8 rounded-lg" id="invoice-content">
@@ -129,13 +125,25 @@ export const InvoicePreviewMinimal = ({ invoiceData }: InvoicePreviewMinimalProp
             <p className="text-xs text-slate-500 uppercase tracking-wider">Due Date</p>
             <p className="text-sm font-medium text-slate-900">{invoiceData.dueDate}</p>
           </div>
+          {invoiceData.deliveryDate && (
+            <div>
+              <p className="text-xs text-slate-500 uppercase tracking-wider">Delivery Date</p>
+              <p className="text-sm font-medium text-slate-900">{invoiceData.deliveryDate}</p>
+            </div>
+          )}
+          <div>
+            <p className="text-xs text-slate-500 uppercase tracking-wider">Payment Method</p>
+            <p className="text-sm font-medium text-slate-900">Bank Transfer</p>
+          </div>
         </div>
 
         <div className="space-y-2">
-          <div>
-            <p className="text-xs text-slate-500 uppercase tracking-wider">Account Number</p>
-            <p className="text-xs font-mono font-medium text-slate-900">SK12 3456 7890 1234 5678 9012</p>
-          </div>
+          {invoiceData.supplier?.iban && (
+            <div>
+              <p className="text-xs text-slate-500 uppercase tracking-wider">Account Number</p>
+              <p className="text-xs font-mono font-medium text-slate-900">{invoiceData.supplier.iban}</p>
+            </div>
+          )}
           <div>
             <p className="text-xs text-slate-500 uppercase tracking-wider">Variable Symbol</p>
             <p className="text-xs font-mono font-medium text-slate-900">{invoiceData.variableSymbol || invoiceData.id.replace("INV-", "")}</p>
@@ -155,17 +163,14 @@ export const InvoicePreviewMinimal = ({ invoiceData }: InvoicePreviewMinimalProp
         </div>
 
         {/* QR Code */}
-        <div className="flex flex-col items-center">
-          <div className="border border-slate-300 p-3 rounded">
-            <QRCodeSVG
-              value={generatePayBySquareData()}
-              size={100}
-              level="M"
-              includeMargin={false}
-            />
+        {invoiceData.qrCode && (
+          <div className="flex flex-col items-center">
+            <div className="border border-slate-300 p-3 rounded">
+              <img src={invoiceData.qrCode} alt="Pay by Square QR Code" className="w-[100px] h-[100px]" />
+            </div>
+            <p className="text-xs text-slate-500 mt-2">Pay by Square</p>
           </div>
-          <p className="text-xs text-slate-500 mt-2">Pay by Square</p>
-        </div>
+        )}
       </div>
 
       {/* Items Table - Minimal Style */}
@@ -237,6 +242,19 @@ export const InvoicePreviewMinimal = ({ invoiceData }: InvoicePreviewMinimalProp
           </div>
         </div>
       </div>
+
+      {/* Reverse Charge or Tax Exemption Text */}
+      {invoiceData.reverseChargeText && (
+        <div className="mb-4 p-3 bg-yellow-50 border border-yellow-200 rounded">
+          <p className="text-sm font-semibold text-yellow-800">{invoiceData.reverseChargeText}</p>
+        </div>
+      )}
+
+      {invoiceData.taxExemptionText && (
+        <div className="mb-4 p-3 bg-blue-50 border border-blue-200 rounded">
+          <p className="text-sm font-semibold text-blue-800">{invoiceData.taxExemptionText}</p>
+        </div>
+      )}
 
       {/* Footer */}
       <div className="mt-12 pt-6 border-t border-slate-200">

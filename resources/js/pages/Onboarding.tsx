@@ -29,6 +29,16 @@ const companySchema = z.object({
   vat_payer_status: z.enum(['not_vat_payer', 'vat_payer', 'vat_payer_paragraph_7']).optional(),
   registration_office: z.string().trim().max(255).optional(),
   registration_number: z.string().trim().max(255).optional(),
+  iban: z.string().trim().max(34).optional()
+    .refine(
+      (val) => !val || /^[A-Z]{2}[0-9]{2}[A-Z0-9]{1,30}$/i.test(val.replace(/\s/g, '')),
+      { message: "Neplatny format IBAN" }
+    ),
+  swift: z.string().trim().max(11).optional()
+    .refine(
+      (val) => !val || /^[A-Z]{4}[A-Z]{2}[A-Z0-9]{2}([A-Z0-9]{3})?$/i.test(val),
+      { message: "Neplatny format SWIFT/BIC" }
+    ),
 });
 
 type CompanyFormData = z.infer<typeof companySchema>;
@@ -62,6 +72,8 @@ const Onboarding = () => {
       vat_payer_status: undefined,
       registration_office: "",
       registration_number: "",
+      iban: "",
+      swift: "",
     },
   });
 
@@ -125,6 +137,8 @@ const Onboarding = () => {
         vat_payer_status: data.vat_payer_status || undefined,
         registration_office: data.registration_office?.trim() || undefined,
         registration_number: data.registration_number?.trim() || undefined,
+        iban: data.iban?.trim() || undefined,
+        swift: data.swift?.trim() || undefined,
       };
 
       await onboardingService.createCompany(submissionData);
@@ -358,6 +372,55 @@ const Onboarding = () => {
                       </FormItem>
                     )}
                   />
+
+                  {/* Bank Details Section */}
+                  <div className="space-y-4 p-4 bg-muted/30 rounded-lg border border-border/50">
+                    <div className="space-y-1">
+                      <h3 className="text-sm font-medium">Bankove udaje</h3>
+                      <p className="text-xs text-muted-foreground">
+                        Pre generovanie QR kodu na fakturach vyplnte bankove udaje
+                      </p>
+                    </div>
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                      <FormField
+                        control={companyForm.control}
+                        name="iban"
+                        render={({ field }) => (
+                          <FormItem>
+                            <FormLabel>IBAN</FormLabel>
+                            <FormControl>
+                              <Input
+                                placeholder="SK31 1200 0000 1987 4263 7541"
+                                {...field}
+                                autoComplete="off"
+                                maxLength={34}
+                              />
+                            </FormControl>
+                            <FormMessage />
+                          </FormItem>
+                        )}
+                      />
+
+                      <FormField
+                        control={companyForm.control}
+                        name="swift"
+                        render={({ field }) => (
+                          <FormItem>
+                            <FormLabel>SWIFT/BIC</FormLabel>
+                            <FormControl>
+                              <Input
+                                placeholder="GIBASKBX"
+                                {...field}
+                                autoComplete="off"
+                                maxLength={11}
+                              />
+                            </FormControl>
+                            <FormMessage />
+                          </FormItem>
+                        )}
+                      />
+                    </div>
+                  </div>
 
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <FormField

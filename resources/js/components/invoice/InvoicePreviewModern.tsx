@@ -1,9 +1,8 @@
-import { QRCodeSVG } from "qrcode.react";
-
 interface InvoiceData {
   id: string;
   date: string;
   dueDate: string;
+  deliveryDate?: string;
   variableSymbol?: string;
   constantSymbol?: string;
   specificSymbol?: string;
@@ -13,6 +12,7 @@ interface InvoiceData {
     ico: string;
     dic: string;
     icDph?: string;
+    iban?: string;
     registryOffice?: string;
     registryNumber?: string;
   };
@@ -38,6 +38,11 @@ interface InvoiceData {
   taxAmount?: number;
   totalAmount?: number;
   currency?: string;
+  // QR code from API
+  qrCode?: string;
+  // Legal texts
+  reverseChargeText?: string;
+  taxExemptionText?: string;
 }
 
 interface InvoicePreviewModernProps {
@@ -52,15 +57,6 @@ export const InvoicePreviewModern = ({ invoiceData }: InvoicePreviewModernProps)
   const vat = invoiceData.taxAmount ?? subtotal * (taxRate / 100);
   const total = invoiceData.totalAmount ?? subtotal + vat;
   const currency = invoiceData.currency ?? 'EUR';
-
-  const generatePayBySquareData = () => {
-    const iban = "SK1234567890123456789012";
-    const amount = total.toFixed(2);
-    const vs = invoiceData.id.replace("INV-", "");
-    const message = `Faktura ${invoiceData.id}`;
-
-    return `PAY|${iban}|${amount}|EUR|${vs}|${message}`;
-  };
 
   return (
     <div className="bg-gradient-to-br from-slate-50 to-blue-50 text-slate-900 p-8 rounded-lg" id="invoice-content">
@@ -150,23 +146,35 @@ export const InvoicePreviewModern = ({ invoiceData }: InvoicePreviewModernProps)
             </h3>
 
             {/* Dates in Pills */}
-            <div className="flex gap-2 mb-3">
-              <div className="flex-1 bg-gradient-to-br from-blue-50 to-blue-100 p-2 rounded-lg border border-blue-200">
+            <div className="grid grid-cols-2 gap-2 mb-3">
+              <div className="bg-gradient-to-br from-blue-50 to-blue-100 p-2 rounded-lg border border-blue-200">
                 <p className="text-xs text-blue-600 font-semibold mb-0.5">Vystavené</p>
                 <p className="text-xs font-bold text-slate-900">{invoiceData.date}</p>
               </div>
-              <div className="flex-1 bg-gradient-to-br from-purple-50 to-purple-100 p-2 rounded-lg border border-purple-200">
+              <div className="bg-gradient-to-br from-purple-50 to-purple-100 p-2 rounded-lg border border-purple-200">
                 <p className="text-xs text-purple-600 font-semibold mb-0.5">Splatnosť</p>
                 <p className="text-xs font-bold text-slate-900">{invoiceData.dueDate}</p>
+              </div>
+              {invoiceData.deliveryDate && (
+                <div className="bg-gradient-to-br from-green-50 to-green-100 p-2 rounded-lg border border-green-200">
+                  <p className="text-xs text-green-600 font-semibold mb-0.5">Dodanie</p>
+                  <p className="text-xs font-bold text-slate-900">{invoiceData.deliveryDate}</p>
+                </div>
+              )}
+              <div className="bg-gradient-to-br from-slate-50 to-slate-100 p-2 rounded-lg border border-slate-200">
+                <p className="text-xs text-slate-600 font-semibold mb-0.5">Spôsob úhrady</p>
+                <p className="text-xs font-bold text-slate-900">Bankový prevod</p>
               </div>
             </div>
 
             {/* Bank Details */}
             <div className="bg-gradient-to-br from-slate-50 to-slate-100 p-3 rounded-lg border border-slate-200 space-y-1 text-xs">
-              <div className="flex justify-between items-center pb-1 border-b border-slate-300">
-                <span className="text-slate-600 font-semibold">Číslo účtu</span>
-                <span className="font-mono font-bold text-slate-900">SK12 3456 7890 1234 5678 9012</span>
-              </div>
+              {invoiceData.supplier?.iban && (
+                <div className="flex justify-between items-center pb-1 border-b border-slate-300">
+                  <span className="text-slate-600 font-semibold">Číslo účtu</span>
+                  <span className="font-mono font-bold text-slate-900">{invoiceData.supplier.iban}</span>
+                </div>
+              )}
               <div className="flex justify-between items-center pb-1 border-b border-slate-300">
                 <span className="text-slate-600 font-semibold">Variabilný symbol</span>
                 <span className="font-mono font-bold text-slate-900">{invoiceData.variableSymbol || invoiceData.id.replace("INV-", "")}</span>
@@ -193,22 +201,19 @@ export const InvoicePreviewModern = ({ invoiceData }: InvoicePreviewModernProps)
           </div>
 
           {/* QR Code with Modern Styling - Smaller */}
-          <div className="flex flex-col items-center gap-1">
-            <div className="relative">
-              <div className="absolute -inset-1 bg-gradient-to-r from-blue-500 to-purple-500 rounded-xl opacity-30 blur"></div>
-              <div className="relative bg-white p-2 rounded-xl shadow-lg border border-slate-200">
-                <QRCodeSVG
-                  value={generatePayBySquareData()}
-                  size={90}
-                  level="M"
-                  includeMargin={false}
-                />
+          {invoiceData.qrCode && (
+            <div className="flex flex-col items-center gap-1">
+              <div className="relative">
+                <div className="absolute -inset-1 bg-gradient-to-r from-blue-500 to-purple-500 rounded-xl opacity-30 blur"></div>
+                <div className="relative bg-white p-2 rounded-xl shadow-lg border border-slate-200">
+                  <img src={invoiceData.qrCode} alt="Pay by Square QR Code" className="w-[90px] h-[90px]" />
+                </div>
               </div>
+              <p className="text-xs font-bold bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">
+                Pay by Square
+              </p>
             </div>
-            <p className="text-xs font-bold bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">
-              Pay by Square
-            </p>
-          </div>
+          )}
         </div>
       </div>
 
@@ -287,6 +292,19 @@ export const InvoicePreviewModern = ({ invoiceData }: InvoicePreviewModernProps)
           </div>
         </div>
       </div>
+
+      {/* Reverse Charge or Tax Exemption Text */}
+      {invoiceData.reverseChargeText && (
+        <div className="mb-4 p-3 bg-yellow-50 border border-yellow-200 rounded-xl">
+          <p className="text-sm font-semibold text-yellow-800">{invoiceData.reverseChargeText}</p>
+        </div>
+      )}
+
+      {invoiceData.taxExemptionText && (
+        <div className="mb-4 p-3 bg-blue-50 border border-blue-200 rounded-xl">
+          <p className="text-sm font-semibold text-blue-800">{invoiceData.taxExemptionText}</p>
+        </div>
+      )}
 
       {/* Footer */}
       <div className="bg-white rounded-2xl p-6 border border-slate-200">

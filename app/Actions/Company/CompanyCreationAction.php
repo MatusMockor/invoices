@@ -35,6 +35,8 @@ final class CompanyCreationAction
                 'company_type' => config('invoices.default_company_type', 's.r.o.'),
                 'registration_number' => $dto->registrationNumber ?? '',
                 'registration_office' => $dto->registrationOffice,
+                'iban' => $dto->iban,
+                'swift' => $dto->swift,
             ]);
 
             $user->current_company_id = $userCompany->id;

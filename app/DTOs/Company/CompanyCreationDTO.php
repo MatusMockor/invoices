@@ -16,6 +16,8 @@ final readonly class CompanyCreationDTO
         public ?string $icDph,
         public ?string $registrationNumber,
         public ?string $registrationOffice,
+        public ?string $iban,
+        public ?string $swift,
     ) {}
 
     public static function fromRequest(array $data): self
@@ -30,6 +32,8 @@ final readonly class CompanyCreationDTO
             icDph: $data['ic_dph'] ?? null,
             registrationNumber: $data['registration_number'] ?? null,
             registrationOffice: $data['registration_office'] ?? null,
+            iban: isset($data['iban']) ? str_replace(' ', '', strtoupper($data['iban'])) : null,
+            swift: isset($data['swift']) ? strtoupper($data['swift']) : null,
         );
     }
 }

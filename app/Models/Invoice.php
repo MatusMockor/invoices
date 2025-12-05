@@ -58,6 +58,8 @@ use Illuminate\Support\Carbon;
  * @property-read Company|null $company
  * @property-read UserCompany|null $supplierCompany
  * @property-read Collection|InvoiceItem[] $items
+ * @property-read string|null $reverse_charge_text Computed text for reverse charge
+ * @property-read string|null $tax_exemption_text Computed text for tax exemption
  */
 #[ObservedBy([InvoiceObserver::class])]
 class Invoice extends Model
@@ -145,5 +147,31 @@ class Invoice extends Model
     public function notes(): MorphMany
     {
         return $this->morphMany(Note::class, 'noteable');
+    }
+
+    /**
+     * Get the reverse charge text for VAT liability transfer.
+     * Returns appropriate text when reverse_charge is true.
+     */
+    public function getReverseChargeTextAttribute(): ?string
+    {
+        if (! $this->reverse_charge) {
+            return null;
+        }
+
+        return 'Prenesenie daňovej povinnosti podľa §69 ods. 12 zákona o DPH';
+    }
+
+    /**
+     * Get the tax exemption text.
+     * Returns the tax exemption reason formatted as a text.
+     */
+    public function getTaxExemptionTextAttribute(): ?string
+    {
+        if (! $this->tax_exemption_reason) {
+            return null;
+        }
+
+        return $this->tax_exemption_reason;
     }
 }

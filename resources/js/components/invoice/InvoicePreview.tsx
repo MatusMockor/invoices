@@ -44,13 +44,19 @@ export const InvoicePreview = ({ open, onOpenChange, invoiceId }: InvoicePreview
       id: invoice.invoice_number,
       date: new Date(invoice.issue_date).toLocaleDateString('sk-SK'),
       dueDate: new Date(invoice.due_date).toLocaleDateString('sk-SK'),
+      deliveryDate: invoice.delivery_date
+        ? new Date(invoice.delivery_date).toLocaleDateString('sk-SK')
+        : undefined,
       variableSymbol: invoice.variable_symbol,
+      constantSymbol: invoice.constant_symbol,
+      specificSymbol: invoice.specific_symbol,
       supplier: {
         name: invoice.supplier_company?.name || 'N/A',
         address: `${invoice.supplier_company?.address || ''}, ${invoice.supplier_company?.postal_code || ''} ${invoice.supplier_company?.city || ''}`,
         ico: invoice.supplier_company?.ico || '',
         dic: invoice.supplier_company?.dic || '',
         icDph: invoice.supplier_company?.ic_dph || '',
+        iban: invoice.supplier_company?.iban || '',
         registryOffice: invoice.supplier_registry_office || '',
         registryNumber: invoice.supplier_registry_number || '',
       },
@@ -76,6 +82,11 @@ export const InvoicePreview = ({ open, onOpenChange, invoiceId }: InvoicePreview
       taxAmount: Number(invoice.tax_amount || 0),
       totalAmount: Number(invoice.total_amount || 0),
       currency: invoice.currency || 'EUR',
+      // QR code from API
+      qrCode: invoice.qr_code || undefined,
+      // Legal texts
+      reverseChargeText: invoice.reverse_charge_text || undefined,
+      taxExemptionText: invoice.tax_exemption_text || undefined,
     };
   }, [invoice]);
 
@@ -228,6 +239,14 @@ export const InvoicePreview = ({ open, onOpenChange, invoiceId }: InvoicePreview
                     <p className="text-xs text-gray-500 mb-0.5 uppercase tracking-wide">Dátum splatnosti</p>
                     <p className="font-semibold text-sm text-purple-600">{new Date(invoice.due_date).toLocaleDateString('sk-SK')}</p>
                   </div>
+                  <div className="bg-white/60 p-2.5 rounded-lg border border-purple-100">
+                    <p className="text-xs text-gray-500 mb-0.5 uppercase tracking-wide">Dátum dodania</p>
+                    <p className="font-semibold text-sm text-gray-900">{new Date(invoice.delivery_date).toLocaleDateString('sk-SK')}</p>
+                  </div>
+                  <div className="bg-white/60 p-2.5 rounded-lg border border-purple-100">
+                    <p className="text-xs text-gray-500 mb-0.5 uppercase tracking-wide">Spôsob úhrady</p>
+                    <p className="font-semibold text-sm text-gray-900">Bankový prevod</p>
+                  </div>
                 </div>
 
                 {/* Bank Details */}
@@ -341,6 +360,19 @@ export const InvoicePreview = ({ open, onOpenChange, invoiceId }: InvoicePreview
               </div>
             </div>
           </div>
+
+          {/* Reverse Charge or Tax Exemption Text */}
+          {invoice.reverse_charge_text && (
+            <div className="mb-4 p-3 bg-yellow-50 border border-yellow-200 rounded">
+              <p className="text-sm font-semibold text-yellow-800">{invoice.reverse_charge_text}</p>
+            </div>
+          )}
+
+          {invoice.tax_exemption_text && (
+            <div className="mb-4 p-3 bg-blue-50 border border-blue-200 rounded">
+              <p className="text-sm font-semibold text-blue-800">{invoice.tax_exemption_text}</p>
+            </div>
+          )}
 
           {/* Footer Note */}
           <div className="border-t border-gray-200 pt-4">
