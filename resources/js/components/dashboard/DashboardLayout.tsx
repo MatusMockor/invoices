@@ -16,7 +16,7 @@ export const DashboardLayout = ({ children, disableLoading = false }: DashboardL
     <div className="flex min-h-screen w-full bg-background">
       <TopBar onMenuClick={() => setMobileMenuOpen(true)} />
       <Sidebar mobileMenuOpen={mobileMenuOpen} onMobileMenuClose={() => setMobileMenuOpen(false)} />
-      <main className="flex-1 p-6 lg:p-8 ml-0 lg:ml-64 mt-16">
+      <main className="flex-1 p-6 lg:p-8 ml-0 lg:ml-48 mt-16">
         {isLoading && !disableLoading ? (
           <div className="flex items-center justify-center min-h-[60vh]">
             <div className="text-center space-y-4">

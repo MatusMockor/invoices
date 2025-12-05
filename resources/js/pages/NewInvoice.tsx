@@ -2,11 +2,13 @@ import { useNavigate, useParams } from "react-router-dom";
 import { useForm, useFieldArray, FieldErrors } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";
-import { Save, ArrowLeft, Loader2, FileText, CreditCard, Receipt, Calculator } from "lucide-react";
+import { Save, ArrowLeft, Loader2, ChevronDown } from "lucide-react";
 import { DashboardLayout } from "@/components/dashboard/DashboardLayout";
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Card } from "@/components/ui/card";
+import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
+import { cn } from "@/lib/utils";
 import { useToast } from "@/hooks/use-toast";
 import { useState, useEffect, useCallback } from "react";
 import { useInvoice, useInvoices } from "@/hooks/useInvoices";
@@ -129,49 +131,10 @@ const invoiceSchema = z.object({
   }
 });
 
-// Type for tab values - ensures type safety when switching tabs
-type TabValue = "basic" | "payment" | "items" | "summary";
-
 // Constants for validation error handling
 const MAX_VISIBLE_ERRORS = 5;
 const ERROR_TOAST_DURATION_MS = 12000;
 const MAX_RECURSION_DEPTH = 10;
-
-// Tab order for determining which tab to show first when errors occur
-const TAB_ORDER: TabValue[] = ["basic", "payment", "items", "summary"];
-
-// Field to tab mapping - maps form field names to their corresponding tab
-const BASIC_TAB_FIELDS = [
-  "invoiceNumber",
-  "clientName", "clientIco", "clientDic", "clientIcDph", "clientStreet", "clientCity", "clientPostalCode",
-  "customCompanyIco", "customCompanyDic", "customCompanyIcDph", "customCompanyName",
-  "customCompanyAddress", "customCompanyCity", "customCompanyZip", "customCompanyCountry",
-  "issueDate", "dueDate", "deliveryDate"
-];
-
-const PAYMENT_TAB_FIELDS = [
-  "variableSymbol", "constantSymbol", "specificSymbol",
-  "reverseCharge", "taxExemptionReason", "specialText", "notes"
-];
-
-// Helper function to determine which tab a field belongs to
-const getTabForField = (fieldName: string): TabValue => {
-  // Items tab: items array
-  if (fieldName === "items" || fieldName.startsWith("items.")) {
-    return "items";
-  }
-
-  if (BASIC_TAB_FIELDS.includes(fieldName)) {
-    return "basic";
-  }
-
-  if (PAYMENT_TAB_FIELDS.includes(fieldName)) {
-    return "payment";
-  }
-
-  // Default to basic if unknown
-  return "basic";
-};
 
 const NewInvoice = () => {
   const navigate = useNavigate();
@@ -201,8 +164,8 @@ const NewInvoice = () => {
   // State for generated invoice number
   const [generatedInvoiceNumber, setGeneratedInvoiceNumber] = useState<string>("");
 
-  // State for controlled tabs
-  const [activeTab, setActiveTab] = useState<TabValue>("basic");
+  // State for collapsible advanced settings
+  const [advancedOpen, setAdvancedOpen] = useState(false);
 
   const form = useForm<InvoiceFormData>({
     resolver: zodResolver(invoiceSchema),
@@ -298,7 +261,6 @@ const NewInvoice = () => {
 
     // Collect all error messages
     const errorMessages: string[] = [];
-    const errorTabs = new Set<TabValue>();
 
     // Helper to process errors recursively with depth protection
     const processErrors = (obj: any, path: string = "", depth: number = 0): void => {
@@ -311,7 +273,6 @@ const NewInvoice = () => {
         if (error?.message) {
           // Direct error message
           errorMessages.push(error.message);
-          errorTabs.add(getTabForField(fullPath));
         } else if (Array.isArray(error)) {
           // Array errors (for items)
           error.forEach((item, index) => {
@@ -327,12 +288,6 @@ const NewInvoice = () => {
     };
 
     processErrors(errors);
-
-    // Switch to the first tab with errors
-    const firstErrorTab = TAB_ORDER.find(tab => errorTabs.has(tab));
-    if (firstErrorTab) {
-      setActiveTab(firstErrorTab);
-    }
 
     // Show toast with errors (max from constant)
     const displayErrors = errorMessages.slice(0, MAX_VISIBLE_ERRORS);
@@ -357,7 +312,7 @@ const NewInvoice = () => {
       variant: "destructive",
       duration: ERROR_TOAST_DURATION_MS,
     });
-  }, [toast, setActiveTab]);
+  }, [toast]);
 
   // Reset form and state when switching from edit to create mode
   useEffect(() => {
@@ -662,167 +617,129 @@ const NewInvoice = () => {
 
   return (
     <DashboardLayout>
-      <div className="max-w-6xl mx-auto animate-fade-in">
-        <div className="mb-6">
-          <Button
-            variant="ghost"
-            onClick={() => navigate("/app/dashboard")}
-            className="mb-4"
-          >
-            <ArrowLeft className="h-4 w-4 mr-2" />
-            Späť na dashboard
-          </Button>
-          <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+      <div className="max-w-6xl mx-auto animate-fade-in pb-8">
+        {/* Compact Header */}
+        <div className="flex items-center justify-between mb-6">
+          <div className="flex items-center gap-3">
+            <Button variant="ghost" size="icon" onClick={() => navigate("/app/invoices")}>
+              <ArrowLeft className="h-5 w-5" />
+            </Button>
             <div>
-              <h1 className="text-3xl font-bold text-foreground">{isEditMode ? "Upraviť faktúru" : "Nová faktúra"}</h1>
-              <p className="text-muted-foreground mt-1">{isEditMode ? "Upravte existujúcu faktúru" : "Vytvorte novú faktúru pre vášho klienta"}</p>
+              <h1 className="text-2xl font-bold">{isEditMode ? "Upraviť faktúru" : "Nová faktúra"}</h1>
+              <p className="text-sm text-muted-foreground">#{watch("invoiceNumber")}</p>
             </div>
+          </div>
+          <div className="flex items-center gap-3">
             {isEditMode && invoice && (
-              <div className="flex items-center gap-2">
-                <span className="text-sm text-muted-foreground">Stav:</span>
-                <InvoiceStatusDropdown
-                  invoiceId={Number(id)}
-                  currentStatus={invoice.status}
-                  onStatusChange={handleStatusChange}
-                />
-              </div>
+              <InvoiceStatusDropdown
+                invoiceId={Number(id)}
+                currentStatus={invoice.status}
+                onStatusChange={handleStatusChange}
+              />
             )}
+            <Button onClick={handleSubmit(onSubmit, onError)} className="gap-2">
+              <Save className="h-4 w-4" />
+              Uložiť
+            </Button>
           </div>
         </div>
 
         <form onSubmit={handleSubmit(onSubmit, onError)} className="space-y-6">
-          <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
-            <TabsList className="grid w-full grid-cols-4 h-auto">
-              <TabsTrigger value="basic" className="flex items-center gap-2 py-3">
-                <FileText className="h-4 w-4" />
-                <span className="hidden sm:inline">Základné</span>
-              </TabsTrigger>
-              <TabsTrigger value="payment" className="flex items-center gap-2 py-3">
-                <CreditCard className="h-4 w-4" />
-                <span className="hidden sm:inline">Platba</span>
-              </TabsTrigger>
-              <TabsTrigger value="items" className="flex items-center gap-2 py-3">
-                <Receipt className="h-4 w-4" />
-                <span className="hidden sm:inline">Položky</span>
-              </TabsTrigger>
-              <TabsTrigger value="summary" className="flex items-center gap-2 py-3">
-                <Calculator className="h-4 w-4" />
-                <span className="hidden sm:inline">Súhrn</span>
-              </TabsTrigger>
-            </TabsList>
+          {/* Klient + Základné info */}
+          <div className="grid lg:grid-cols-2 gap-6">
+            {/* Klient */}
+            <Card className="p-5">
+              <h2 className="font-semibold mb-4">Klient</h2>
 
-            {/* Tab 1: Základné údaje */}
-            <TabsContent value="basic" className="space-y-6 mt-6">
-              {/* Single card with 2-column grid layout */}
-              <div className="rounded-lg border bg-card text-card-foreground shadow-sm p-6">
-                <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-                  {/* Left column: Client Information */}
-                  <div className="space-y-4">
-                    <h3 className="text-lg font-semibold mb-4">Klient</h3>
-
-                    {/* Toggle between standard and custom company */}
-                    <div className="flex items-center space-x-2 mb-4 p-3 bg-muted/30 rounded-lg border">
-                      <input
-                        type="checkbox"
-                        id="useCustomCompany"
-                        {...register("useCustomCompany")}
-                        className="h-4 w-4 rounded border-input text-primary focus:ring-primary"
-                      />
-                      <Label htmlFor="useCustomCompany" className="cursor-pointer text-sm">
-                        Zadať vlastné údaje o spoločnosti
-                      </Label>
-                    </div>
-
-                    {!useCustomCompany ? (
-                      <ClientInformationSection
-                        form={form}
-                        isEditMode={isEditMode}
-                        useCustomCompany={useCustomCompany}
-                        icoSearch={icoSearch}
-                        setIcoSearch={setIcoSearch}
-                        isSearching={isSearching}
-                        showSuggestions={showSuggestions}
-                        setShowSuggestions={setShowSuggestions}
-                        filteredCompanies={filteredCompanies}
-                        onCompanySelect={handleCompanySelect}
-                        selectedCompany={selectedCompany}
-                        onClearSelection={handleClearSelection}
-                        searchError={searchError}
-                        isSelectingCompany={isSelectingCompany}
-                      />
-                    ) : (
-                      <CustomCompanySection
-                        form={form}
-                        isEditMode={isEditMode}
-                        useCustomCompany={useCustomCompany}
-                      />
-                    )}
-                  </div>
-
-                  {/* Right column: Invoice Details + Dates */}
-                  <div className="space-y-6">
-                    {/* Invoice Details */}
-                    <div>
-                      <h3 className="text-lg font-semibold mb-4">Detaily faktúry</h3>
-                      <InvoiceNumberSection form={form} />
-                    </div>
-
-                    {/* Dates */}
-                    <div>
-                      <h3 className="text-lg font-semibold mb-4">Dátumy</h3>
-                      <InvoiceDateSection
-                        form={form}
-                        issueDate={issueDate}
-                        setIssueDate={setIssueDate}
-                        dueDate={dueDate}
-                        setDueDate={setDueDate}
-                        deliveryDate={deliveryDate}
-                        setDeliveryDate={setDeliveryDate}
-                        dueDateDays={dueDateDays}
-                        setDueDateDays={setDueDateDays}
-                      />
-                    </div>
-                  </div>
-                </div>
+              {/* Toggle between standard and custom company */}
+              <div className="flex items-center space-x-2 mb-4 p-2 bg-muted/30 rounded-md border text-sm">
+                <input
+                  type="checkbox"
+                  id="useCustomCompany"
+                  {...register("useCustomCompany")}
+                  className="h-4 w-4 rounded border-input text-primary focus:ring-primary"
+                />
+                <Label htmlFor="useCustomCompany" className="cursor-pointer text-xs">
+                  Zadať vlastné údaje
+                </Label>
               </div>
-            </TabsContent>
 
-            {/* Tab 2: Platba & DPH */}
-            <TabsContent value="payment" className="space-y-6 mt-6">
-              <PaymentDPHSection form={form} />
-            </TabsContent>
+              {!useCustomCompany ? (
+                <ClientInformationSection
+                  form={form}
+                  isEditMode={isEditMode}
+                  useCustomCompany={useCustomCompany}
+                  icoSearch={icoSearch}
+                  setIcoSearch={setIcoSearch}
+                  isSearching={isSearching}
+                  showSuggestions={showSuggestions}
+                  setShowSuggestions={setShowSuggestions}
+                  filteredCompanies={filteredCompanies}
+                  onCompanySelect={handleCompanySelect}
+                  selectedCompany={selectedCompany}
+                  onClearSelection={handleClearSelection}
+                  searchError={searchError}
+                  isSelectingCompany={isSelectingCompany}
+                />
+              ) : (
+                <CustomCompanySection
+                  form={form}
+                  isEditMode={isEditMode}
+                  useCustomCompany={useCustomCompany}
+                />
+              )}
+            </Card>
 
-            {/* Tab 3: Položky */}
-            <TabsContent value="items" className="space-y-6 mt-6">
-              <InvoiceItemsSection
-                form={form}
-                fields={fields}
-                append={append}
-                remove={remove}
-                items={items}
-              />
-            </TabsContent>
-
-            {/* Tab 4: Súhrn */}
-            <TabsContent value="summary" className="space-y-6 mt-6">
-              <InvoiceSummarySection form={form} items={items} />
-            </TabsContent>
-          </Tabs>
-
-          {/* Actions */}
-          <div className="flex gap-3 justify-end border-t pt-6 mt-6">
-            <Button
-              type="button"
-              variant="outline"
-              onClick={() => navigate("/app/dashboard")}
-            >
-              Zrušiť
-            </Button>
-            <Button type="submit" className="bg-primary hover:bg-primary/90">
-              <Save className="h-4 w-4 mr-2" />
-              {isEditMode ? "Uložiť zmeny" : "Vytvoriť faktúru"}
-            </Button>
+            {/* Detaily faktúry */}
+            <Card className="p-5">
+              <h2 className="font-semibold mb-4">Detaily faktúry</h2>
+              <div className="space-y-4">
+                <InvoiceNumberSection form={form} />
+                <InvoiceDateSection
+                  form={form}
+                  issueDate={issueDate}
+                  setIssueDate={setIssueDate}
+                  dueDate={dueDate}
+                  setDueDate={setDueDate}
+                  deliveryDate={deliveryDate}
+                  setDeliveryDate={setDeliveryDate}
+                  dueDateDays={dueDateDays}
+                  setDueDateDays={setDueDateDays}
+                />
+              </div>
+            </Card>
           </div>
+
+          {/* Položky */}
+          <InvoiceItemsSection
+            form={form}
+            fields={fields}
+            append={append}
+            remove={remove}
+            items={items}
+          />
+
+          {/* Rozšírené nastavenia (Collapsible) */}
+          <Collapsible open={advancedOpen} onOpenChange={setAdvancedOpen}>
+            <CollapsibleTrigger asChild>
+              <Button type="button" variant="ghost" className="w-full justify-between text-muted-foreground">
+                Rozšírené nastavenia
+                <ChevronDown className={cn("h-4 w-4 transition-transform", advancedOpen && "rotate-180")} />
+              </Button>
+            </CollapsibleTrigger>
+            <CollapsibleContent className="space-y-4 pt-4">
+              <PaymentDPHSection form={form} />
+            </CollapsibleContent>
+          </Collapsible>
+
+          {/* Súhrn */}
+          <InvoiceSummarySection form={form} items={items} />
+
+          {/* Mobile save button */}
+          <Button type="submit" className="w-full lg:hidden gap-2">
+            <Save className="h-4 w-4" />
+            {isEditMode ? "Uložiť zmeny" : "Uložiť faktúru"}
+          </Button>
         </form>
       </div>
     </DashboardLayout>

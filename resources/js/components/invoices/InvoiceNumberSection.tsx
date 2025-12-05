@@ -8,24 +8,26 @@ interface InvoiceNumberSectionProps {
 }
 
 export const InvoiceNumberSection = ({ form }: InvoiceNumberSectionProps) => {
-  const { register, formState: { errors } } = form;
+  const { register, formState: { errors }, watch } = form;
 
   return (
-    <div className="space-y-4">
-      <div className="space-y-2">
-        <Label htmlFor="invoiceNumber">Číslo faktúry *</Label>
+    <div className="grid grid-cols-2 gap-3">
+      <div>
+        <Label className="text-xs">Číslo faktúry</Label>
         <Input
-          id="invoiceNumber"
           {...register("invoiceNumber")}
-          placeholder="Napr. 20250001"
-          className="font-semibold"
+          className="mt-1 font-mono"
         />
         {errors.invoiceNumber && (
-          <p className="text-sm text-destructive">{errors.invoiceNumber.message}</p>
+          <p className="text-xs text-destructive mt-1">{errors.invoiceNumber.message}</p>
         )}
-        <p className="text-xs text-muted-foreground">
-          Číslo faktúry sa automaticky synchronizuje s variabilným symbolom
-        </p>
+      </div>
+      <div>
+        <Label className="text-xs">Variabilný symbol</Label>
+        <Input
+          {...register("variableSymbol")}
+          className="mt-1 font-mono"
+        />
       </div>
     </div>
   );
