@@ -15,6 +15,7 @@ export interface Company {
   ico: string;
   dic: string | null;
   ic_dph: string | null;
+  vat_payer_status?: VatPayerStatus | null;
   street: string | null;
   address: string;
   city: string;

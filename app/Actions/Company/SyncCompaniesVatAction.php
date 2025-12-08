@@ -139,11 +139,7 @@ final class SyncCompaniesVatAction
                 unset($vatData['ico']);
 
                 // Determine VAT payer status based on ic_dph presence
-                // Note: We default to REGISTERED_PARAGRAPH_7A when ic_dph is present from sync
-                // as we don't have information about whether it's mandatory or voluntary registration
-                $vatData['vat_payer_status'] = ! empty($vatData['ic_dph'])
-                    ? VatPayerStatus::VAT_PAYER->value
-                    : VatPayerStatus::NOT_VAT_PAYER->value;
+                $vatData['vat_payer_status'] = $this->determineVatPayerStatus($vatData['ic_dph'] ?? null);
 
                 $batchData[$ico] = $vatData;
             }
@@ -161,5 +157,26 @@ final class SyncCompaniesVatAction
                 'error' => $e->getMessage(),
             ]);
         }
+    }
+
+    /**
+     * Determine VAT payer status based on ic_dph presence.
+     *
+     * If ic_dph is present (not NULL, not empty, not whitespace-only) -> VAT_PAYER
+     * If ic_dph is absent (NULL, empty, whitespace-only) -> NOT_VAT_PAYER
+     */
+    private function determineVatPayerStatus(?string $icDph): string
+    {
+        if ($icDph === null) {
+            return VatPayerStatus::NOT_VAT_PAYER->value;
+        }
+
+        $trimmedIcDph = trim($icDph);
+
+        if ($trimmedIcDph === '') {
+            return VatPayerStatus::NOT_VAT_PAYER->value;
+        }
+
+        return VatPayerStatus::VAT_PAYER->value;
     }
 }

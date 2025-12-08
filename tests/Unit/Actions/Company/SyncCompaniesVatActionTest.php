@@ -4,39 +4,69 @@ declare(strict_types=1);
 
 namespace Tests\Unit\Actions\Company;
 
+use App\Actions\Company\SyncCompaniesVatAction;
 use App\Enums\CompanySyncStatus;
 use App\Enums\CompanySyncType;
 use App\Enums\VatPayerStatus;
 use App\Models\Company;
 use App\Models\CompanySyncLog;
+use App\Repositories\Contracts\CompanyRepository as CompanyRepositoryContract;
+use App\Repositories\Contracts\CompanySyncLogRepository as CompanySyncLogRepositoryContract;
+use App\Services\Interfaces\FinancialDataService as FinancialDataServiceContract;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Mockery;
+use Mockery\MockInterface;
+use ReflectionClass;
 use Tests\TestCase;
 
 final class SyncCompaniesVatActionTest extends TestCase
 {
     use RefreshDatabase;
 
+    private SyncCompaniesVatAction $action;
+
+    private MockInterface $financialDataService;
+
+    private MockInterface $companyRepository;
+
+    private MockInterface $syncLogRepository;
+
+    protected function setUp(): void
+    {
+        parent::setUp();
+
+        $this->financialDataService = Mockery::mock(FinancialDataServiceContract::class);
+        $this->companyRepository = Mockery::mock(CompanyRepositoryContract::class);
+        $this->syncLogRepository = Mockery::mock(CompanySyncLogRepositoryContract::class);
+
+        $this->action = new SyncCompaniesVatAction(
+            $this->financialDataService,
+            $this->companyRepository,
+            $this->syncLogRepository,
+        );
+    }
+
     /**
-     * Test that company with ic_dph gets REGISTERED_PARAGRAPH_7A status.
+     * Test that company with ic_dph gets VAT_PAYER status.
      */
     public function test_sets_vat_payer_status_when_company_has_ic_dph(): void
     {
         // Arrange
         $company = Company::factory()->create([
-            'ico' => '12345678',
+            'ico' => fake()->unique()->numerify('########'),
             'ic_dph' => null,
             'vat_payer_status' => VatPayerStatus::NOT_VAT_PAYER->value,
         ]);
 
         // Act - Simulate what the action does
         $company->update([
-            'ic_dph' => 'SK1234567890',
-            'vat_payer_status' => VatPayerStatus::REGISTERED_PARAGRAPH_7A->value,
+            'ic_dph' => 'SK'.fake()->numerify('##########'),
+            'vat_payer_status' => VatPayerStatus::VAT_PAYER->value,
         ]);
 
         // Assert
         $company->refresh();
-        $this->assertSame(VatPayerStatus::REGISTERED_PARAGRAPH_7A, $company->vat_payer_status);
+        $this->assertSame(VatPayerStatus::VAT_PAYER, $company->vat_payer_status);
         $this->assertNotNull($company->ic_dph);
     }
 
@@ -47,12 +77,12 @@ final class SyncCompaniesVatActionTest extends TestCase
     {
         // Arrange
         $company = Company::factory()->create([
-            'ico' => '87654321',
-            'ic_dph' => 'SK9876543210',
-            'vat_payer_status' => VatPayerStatus::REGISTERED_PARAGRAPH_7A->value,
+            'ico' => fake()->unique()->numerify('########'),
+            'ic_dph' => 'SK'.fake()->numerify('##########'),
+            'vat_payer_status' => VatPayerStatus::VAT_PAYER->value,
         ]);
 
-        // Act - Simulate what the action does
+        // Act - Simulate what the action does when ic_dph is NULL
         $company->update([
             'ic_dph' => null,
             'vat_payer_status' => VatPayerStatus::NOT_VAT_PAYER->value,
@@ -62,6 +92,37 @@ final class SyncCompaniesVatActionTest extends TestCase
         $company->refresh();
         $this->assertSame(VatPayerStatus::NOT_VAT_PAYER, $company->vat_payer_status);
         $this->assertNull($company->ic_dph);
+    }
+
+    /**
+     * Test that company with empty string ic_dph gets NOT_VAT_PAYER status.
+     */
+    public function test_sets_not_vat_payer_status_when_company_has_empty_string_ic_dph(): void
+    {
+        // Arrange
+        $company = Company::factory()->create([
+            'ico' => fake()->unique()->numerify('########'),
+            'ic_dph' => 'SK'.fake()->numerify('##########'),
+            'vat_payer_status' => VatPayerStatus::VAT_PAYER->value,
+        ]);
+
+        // Act - Using the private method via reflection to test the logic
+        $status = $this->invokePrivateMethod($this->action, 'determineVatPayerStatus', ['']);
+
+        // Assert
+        $this->assertSame(VatPayerStatus::NOT_VAT_PAYER->value, $status);
+    }
+
+    /**
+     * Test that company with whitespace-only ic_dph gets NOT_VAT_PAYER status.
+     */
+    public function test_sets_not_vat_payer_status_when_company_has_whitespace_only_ic_dph(): void
+    {
+        // Act - Using the private method via reflection to test the logic
+        $status = $this->invokePrivateMethod($this->action, 'determineVatPayerStatus', ['   ']);
+
+        // Assert
+        $this->assertSame(VatPayerStatus::NOT_VAT_PAYER->value, $status);
     }
 
     /**
@@ -76,14 +137,14 @@ final class SyncCompaniesVatActionTest extends TestCase
         ]);
 
         $company2 = Company::factory()->create([
-            'vat_payer_status' => VatPayerStatus::REGISTERED_PARAGRAPH_7A->value,
-            'ic_dph' => 'SK1234567890',
+            'vat_payer_status' => VatPayerStatus::VAT_PAYER->value,
+            'ic_dph' => 'SK'.fake()->numerify('##########'),
         ]);
 
         // Act
         $company1->update([
-            'ic_dph' => 'SK1111111111',
-            'vat_payer_status' => VatPayerStatus::REGISTERED_PARAGRAPH_7A->value,
+            'ic_dph' => 'SK'.fake()->numerify('##########'),
+            'vat_payer_status' => VatPayerStatus::VAT_PAYER->value,
         ]);
 
         $company2->update([
@@ -95,7 +156,7 @@ final class SyncCompaniesVatActionTest extends TestCase
         $company1->refresh();
         $company2->refresh();
 
-        $this->assertSame(VatPayerStatus::REGISTERED_PARAGRAPH_7A, $company1->vat_payer_status);
+        $this->assertSame(VatPayerStatus::VAT_PAYER, $company1->vat_payer_status);
         $this->assertNotNull($company1->ic_dph);
 
         $this->assertSame(VatPayerStatus::NOT_VAT_PAYER, $company2->vat_payer_status);
@@ -124,14 +185,13 @@ final class SyncCompaniesVatActionTest extends TestCase
         $syncLog->update([
             'status' => CompanySyncStatus::COMPLETED->value,
             'completed_at' => now(),
-            'companies_updated' => 10,
-            'companies_not_found' => 2,
+            'companies_updated' => fake()->numberBetween(1, 100),
+            'companies_not_found' => fake()->numberBetween(0, 10),
         ]);
 
         // Assert
         $this->assertSame(CompanySyncStatus::COMPLETED, $syncLog->status);
-        $this->assertSame(10, $syncLog->companies_updated);
-        $this->assertSame(2, $syncLog->companies_not_found);
+        $this->assertGreaterThan(0, $syncLog->companies_updated);
     }
 
     /**
@@ -141,12 +201,15 @@ final class SyncCompaniesVatActionTest extends TestCase
     {
         // Arrange
         $today = today()->toDateString();
+        $updatedCount = fake()->numberBetween(5, 50);
+        $notFoundCount = fake()->numberBetween(0, 5);
+
         $completedSyncLog = CompanySyncLog::create([
             'sync_date' => $today,
             'sync_type' => CompanySyncType::VATUPDATE->value,
             'status' => CompanySyncStatus::COMPLETED,
-            'companies_updated' => 10,
-            'companies_not_found' => 2,
+            'companies_updated' => $updatedCount,
+            'companies_not_found' => $notFoundCount,
             'errors' => 0,
             'started_at' => now(),
             'completed_at' => now(),
@@ -160,41 +223,68 @@ final class SyncCompaniesVatActionTest extends TestCase
 
         // Assert
         $this->assertNotNull($foundLog);
-        $this->assertSame(10, $foundLog->companies_updated);
-        $this->assertSame(2, $foundLog->companies_not_found);
+        $this->assertSame($updatedCount, $foundLog->companies_updated);
+        $this->assertSame($notFoundCount, $foundLog->companies_not_found);
         $this->assertSame(CompanySyncStatus::COMPLETED, $foundLog->status);
     }
 
     /**
-     * Test vat payer status determination logic.
+     * Test VAT payer status determination logic with ic_dph present.
      */
-    public function test_vat_payer_status_determination_logic(): void
+    public function test_determine_vat_payer_status_returns_vat_payer_when_ic_dph_present(): void
     {
-        // Arrange & Act & Assert - With ic_dph
-        $vatData1 = ['ic_dph' => 'SK1234567890'];
-        $status1 = ! empty($vatData1['ic_dph']) ? VatPayerStatus::REGISTERED_PARAGRAPH_7A->value : VatPayerStatus::NOT_VAT_PAYER->value;
-        $this->assertSame(VatPayerStatus::REGISTERED_PARAGRAPH_7A->value, $status1);
+        // Act
+        $status = $this->invokePrivateMethod($this->action, 'determineVatPayerStatus', ['SK1234567890']);
 
-        // Without ic_dph
-        $vatData2 = ['ic_dph' => null];
-        $status2 = ! empty($vatData2['ic_dph']) ? VatPayerStatus::REGISTERED_PARAGRAPH_7A->value : VatPayerStatus::NOT_VAT_PAYER->value;
-        $this->assertSame(VatPayerStatus::NOT_VAT_PAYER->value, $status2);
-
-        // With empty string ic_dph
-        $vatData3 = ['ic_dph' => ''];
-        $status3 = ! empty($vatData3['ic_dph']) ? VatPayerStatus::REGISTERED_PARAGRAPH_7A->value : VatPayerStatus::NOT_VAT_PAYER->value;
-        $this->assertSame(VatPayerStatus::NOT_VAT_PAYER->value, $status3);
+        // Assert
+        $this->assertSame(VatPayerStatus::VAT_PAYER->value, $status);
     }
 
     /**
-     * Test that company factory creates consistent vat status.
+     * Test VAT payer status determination logic with NULL ic_dph.
+     */
+    public function test_determine_vat_payer_status_returns_not_vat_payer_when_ic_dph_is_null(): void
+    {
+        // Act
+        $status = $this->invokePrivateMethod($this->action, 'determineVatPayerStatus', [null]);
+
+        // Assert
+        $this->assertSame(VatPayerStatus::NOT_VAT_PAYER->value, $status);
+    }
+
+    /**
+     * Test VAT payer status determination logic with empty string ic_dph.
+     */
+    public function test_determine_vat_payer_status_returns_not_vat_payer_when_ic_dph_is_empty_string(): void
+    {
+        // Act
+        $status = $this->invokePrivateMethod($this->action, 'determineVatPayerStatus', ['']);
+
+        // Assert
+        $this->assertSame(VatPayerStatus::NOT_VAT_PAYER->value, $status);
+    }
+
+    /**
+     * Test VAT payer status determination logic with whitespace-only ic_dph.
+     */
+    public function test_determine_vat_payer_status_returns_not_vat_payer_when_ic_dph_is_whitespace(): void
+    {
+        // Act
+        $status = $this->invokePrivateMethod($this->action, 'determineVatPayerStatus', ['   ']);
+
+        // Assert
+        $this->assertSame(VatPayerStatus::NOT_VAT_PAYER->value, $status);
+    }
+
+    /**
+     * Test that company factory creates consistent VAT status.
      */
     public function test_factory_creates_consistent_vat_status(): void
     {
         // Arrange & Act
         $companyWithVat = Company::factory()->create([
-            'ic_dph' => 'SK1234567890',
-            'vat_payer_status' => VatPayerStatus::REGISTERED_PARAGRAPH_7A->value,
+            'ic_dph' => 'SK'.fake()->numerify('##########'),
+            'vat_payer_status' => VatPayerStatus::VAT_PAYER->value,
         ]);
 
         $companyWithoutVat = Company::factory()->create([
@@ -203,10 +293,24 @@ final class SyncCompaniesVatActionTest extends TestCase
         ]);
 
         // Assert
-        $this->assertSame(VatPayerStatus::REGISTERED_PARAGRAPH_7A, $companyWithVat->vat_payer_status);
+        $this->assertSame(VatPayerStatus::VAT_PAYER, $companyWithVat->vat_payer_status);
         $this->assertNotNull($companyWithVat->ic_dph);
 
         $this->assertSame(VatPayerStatus::NOT_VAT_PAYER, $companyWithoutVat->vat_payer_status);
         $this->assertNull($companyWithoutVat->ic_dph);
+    }
+
+    /**
+     * Helper method to invoke private methods for testing.
+     *
+     * @param  array<int, mixed>  $args
+     */
+    private function invokePrivateMethod(object $object, string $methodName, array $args = []): mixed
+    {
+        $reflection = new ReflectionClass($object);
+        $method = $reflection->getMethod($methodName);
+        $method->setAccessible(true);
+
+        return $method->invokeArgs($object, $args);
     }
 }

@@ -16,7 +16,7 @@ import { businessEntityService } from "@/services/businessEntityService";
 import { companyService } from "@/services/companyService";
 import { useAuthContext } from "@/contexts/AuthContext";
 import { VAT_PAYER_STATUS_OPTIONS } from "@/constants/vatPayerStatus";
-import { Company } from "@/types/company";
+import { Company } from "@/types";
 
 const companySchema = z.object({
   ico: z.string().trim().min(1, "IČO je povinné").max(20),
@@ -106,18 +106,18 @@ const Onboarding = () => {
   }, [icoSearch, showSuggestions]);
 
   const onCompanySelect = (company: Company) => {
-    companyForm.setValue("ico", company.ico || "");
-    companyForm.setValue("name", company.name || "");
-    companyForm.setValue("street", company.address || "");
-    companyForm.setValue("city", company.city || "");
-    companyForm.setValue("postal_code", company.postal_code || "");
-    companyForm.setValue("dic", company.dic || "");
-    companyForm.setValue("ic_dph", company.ic_dph || "");
-    companyForm.setValue("registration_office", company.registration_office || "");
-    companyForm.setValue("registration_number", company.registration_number || "");
-    if (company.vat_payer_status) {
-      companyForm.setValue("vat_payer_status", company.vat_payer_status);
-    }
+    const setValueOptions = { shouldDirty: true, shouldTouch: true };
+
+    companyForm.setValue("ico", company.ico || "", setValueOptions);
+    companyForm.setValue("name", company.name || "", setValueOptions);
+    companyForm.setValue("street", company.address || "", setValueOptions);
+    companyForm.setValue("city", company.city || "", setValueOptions);
+    companyForm.setValue("postal_code", company.postal_code || "", setValueOptions);
+    companyForm.setValue("dic", company.dic || "", setValueOptions);
+    companyForm.setValue("ic_dph", company.ic_dph || "", setValueOptions);
+    companyForm.setValue("registration_office", company.registration_office || "", setValueOptions);
+    companyForm.setValue("registration_number", company.registration_number || "", setValueOptions);
+    companyForm.setValue("vat_payer_status", company.vat_payer_status ?? 'not_vat_payer', setValueOptions);
 
     setIcoSearch(company.ico || "");
     setShowSuggestions(false);
@@ -354,7 +354,10 @@ const Onboarding = () => {
                     render={({ field }) => (
                       <FormItem>
                         <FormLabel>Status platcu DPH</FormLabel>
-                        <Select onValueChange={field.onChange} value={field.value}>
+                        <Select
+                          onValueChange={field.onChange}
+                          value={field.value ?? ""}
+                        >
                           <FormControl>
                             <SelectTrigger>
                               <SelectValue placeholder="Vyberte status platcu DPH" />
