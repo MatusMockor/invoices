@@ -1,10 +1,21 @@
 import { UseFormReturn, UseFieldArrayReturn } from "react-hook-form";
-import { Plus, Trash2 } from "lucide-react";
+import { Plus, Trash2, Info } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Card } from "@/components/ui/card";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { InvoiceFormData } from "./ClientInformationSection";
+import type { VatRate } from "@/types";
+
+/**
+ * Slovak VAT rates according to § 27 of VAT Act (zákon o DPH)
+ */
+const VAT_RATE_OPTIONS: { value: VatRate; label: string }[] = [
+  { value: 23, label: '23%' },
+  { value: 19, label: '19%' },
+  { value: 5, label: '5%' },
+  { value: 0, label: '0%' },
+];
 
 interface InvoiceItemsSectionProps {
   form: UseFormReturn<InvoiceFormData>;
@@ -12,6 +23,14 @@ interface InvoiceItemsSectionProps {
   append: UseFieldArrayReturn<InvoiceFormData, "items", "id">["append"];
   remove: UseFieldArrayReturn<InvoiceFormData, "items", "id">["remove"];
   items: InvoiceFormData["items"];
+  /** Whether to show VAT rate column (hidden for non-VAT payers) */
+  showVatFields?: boolean;
+  /** Whether VAT rate can be changed (false for §7a EU reverse charge) */
+  isVatRateEditable?: boolean;
+  /** Default VAT rate to use for new items */
+  defaultVatRate?: VatRate | null;
+  /** Informational message about VAT (e.g., for §7a) */
+  vatInfoMessage?: string | null;
 }
 
 export const InvoiceItemsSection = ({
@@ -19,9 +38,16 @@ export const InvoiceItemsSection = ({
   fields,
   append,
   remove,
+  showVatFields = true,
+  isVatRateEditable = true,
+  defaultVatRate = 23,
+  vatInfoMessage,
 }: InvoiceItemsSectionProps) => {
   const { register, formState: { errors }, watch, setValue } = form;
   const reverseCharge = watch("reverseCharge");
+
+  // Determine the default tax rate for new items
+  const newItemTaxRate = showVatFields ? (defaultVatRate ?? 23) : 0;
 
   return (
     <Card className="p-5">
@@ -31,19 +57,27 @@ export const InvoiceItemsSection = ({
           type="button"
           variant="outline"
           size="sm"
-          onClick={() => append({ description: "", quantity: 1, price: 0, tax_rate: 20 })}
+          onClick={() => append({ description: "", quantity: 1, price: 0, tax_rate: newItemTaxRate })}
         >
           <Plus className="h-4 w-4 mr-1" />
           Pridať
         </Button>
       </div>
 
+      {/* VAT info message (e.g., for §7a) */}
+      {vatInfoMessage && (
+        <div className="flex items-center gap-2 p-3 mb-4 bg-blue-50 border border-blue-200 rounded-lg text-sm text-blue-700">
+          <Info className="h-4 w-4 flex-shrink-0" />
+          <span>{vatInfoMessage}</span>
+        </div>
+      )}
+
       {/* Header row - aligned with item rows */}
       <div className="hidden sm:flex gap-3 items-center text-xs font-medium text-muted-foreground border-b pb-2 mb-3 ml-3 mr-3">
         <div className="flex-1 min-w-0">Popis</div>
         <div className="w-20 text-center">Množstvo</div>
         <div className="w-24 text-center">Cena €</div>
-        <div className="w-20 text-center">DPH %</div>
+        {showVatFields && <div className="w-20 text-center">DPH %</div>}
         <div className="w-24 text-right pr-2">Celkom</div>
         <div className="w-9"></div>
       </div>
@@ -82,28 +116,36 @@ export const InvoiceItemsSection = ({
                 className="bg-background"
               />
             </div>
-            <div className="w-20">
-              <Select
-                value={watch(`items.${index}.tax_rate`)?.toString() || "20"}
-                onValueChange={(value) => setValue(`items.${index}.tax_rate`, Number(value))}
-              >
-                <SelectTrigger className="bg-background">
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent className="bg-popover">
-                  <SelectItem value="0">0%</SelectItem>
-                  <SelectItem value="10">10%</SelectItem>
-                  <SelectItem value="20">20%</SelectItem>
-                </SelectContent>
-              </Select>
-            </div>
+            {showVatFields && (
+              <div className="w-20">
+                <Select
+                  value={watch(`items.${index}.tax_rate`)?.toString() || defaultVatRate?.toString() || "23"}
+                  onValueChange={(value) => setValue(`items.${index}.tax_rate`, Number(value))}
+                  disabled={!isVatRateEditable}
+                >
+                  <SelectTrigger className={`bg-background ${!isVatRateEditable ? 'opacity-60 cursor-not-allowed' : ''}`}>
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent className="bg-popover">
+                    {VAT_RATE_OPTIONS.map((option) => (
+                      <SelectItem key={option.value} value={option.value.toString()}>
+                        {option.label}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+                {!isVatRateEditable && (
+                  <p className="text-xs text-muted-foreground mt-1">Zamknuté</p>
+                )}
+              </div>
+            )}
             <div className="w-24 text-right font-semibold flex items-center justify-end">
               {(() => {
                 const qty = watch(`items.${index}.quantity`) || 0;
                 const price = watch(`items.${index}.price`) || 0;
-                const taxRate = watch(`items.${index}.tax_rate`) ?? 20;
+                const taxRate = showVatFields ? (watch(`items.${index}.tax_rate`) ?? defaultVatRate ?? 23) : 0;
                 const subtotal = qty * price;
-                const total = reverseCharge ? subtotal : subtotal + (subtotal * (taxRate / 100));
+                const total = reverseCharge || !showVatFields ? subtotal : subtotal + (subtotal * (taxRate / 100));
                 return total.toFixed(2);
               })()} €
             </div>

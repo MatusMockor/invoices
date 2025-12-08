@@ -953,10 +953,10 @@ class InvoiceControllerTest extends TestCase
         $response->assertJsonPath('data.supplier_is_vat_payer', false);
     }
 
-    public function test_show_includes_supplier_vat_payer_status_for_vat_payer_paragraph_7(): void
+    public function test_show_includes_supplier_vat_payer_status_for_registered_paragraph_7a(): void
     {
         $supplierCompany = UserCompany::factory()->create([
-            'vat_payer_status' => \App\Enums\VatPayerStatus::VAT_PAYER_PARAGRAPH_7,
+            'vat_payer_status' => \App\Enums\VatPayerStatus::REGISTERED_PARAGRAPH_7A,
         ]);
 
         $this->user->update(['current_company_id' => $supplierCompany->id]);
@@ -972,8 +972,9 @@ class InvoiceControllerTest extends TestCase
         $response = $this->getJson(route('api.invoices.show', $invoice));
 
         $response->assertOk();
-        $response->assertJsonPath('data.supplier_vat_payer_status', 'vat_payer_paragraph_7');
-        $response->assertJsonPath('data.supplier_is_vat_payer', true);
+        $response->assertJsonPath('data.supplier_vat_payer_status', 'registered_paragraph_7a');
+        // §7a is NOT a full VAT payer - they're only registered for receiving EU services
+        $response->assertJsonPath('data.supplier_is_vat_payer', false);
     }
 
     public function test_index_includes_supplier_is_vat_payer_in_list(): void
@@ -1029,8 +1030,10 @@ class InvoiceControllerTest extends TestCase
 
         $vatStatuses = [
             \App\Enums\VatPayerStatus::VAT_PAYER->value => true,
-            \App\Enums\VatPayerStatus::NOT_VAT_PAYER->value => false,
             \App\Enums\VatPayerStatus::VAT_PAYER_PARAGRAPH_7->value => true,
+            \App\Enums\VatPayerStatus::NOT_VAT_PAYER->value => false,
+            // §7a is NOT a full VAT payer - they're only registered for receiving EU services
+            \App\Enums\VatPayerStatus::REGISTERED_PARAGRAPH_7A->value => false,
         ];
 
         foreach ($vatStatuses as $status => $expectedIsVatPayer) {

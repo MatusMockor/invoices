@@ -26,7 +26,7 @@ const companySchema = z.object({
   postal_code: z.string().trim().min(1, "PSČ je povinné").max(10),
   dic: z.string().trim().max(20).optional(),
   ic_dph: z.string().trim().max(20).optional(),
-  vat_payer_status: z.enum(['not_vat_payer', 'vat_payer', 'vat_payer_paragraph_7']).optional(),
+  vat_payer_status: z.enum(['not_vat_payer', 'vat_payer', 'vat_payer_paragraph_7', 'registered_paragraph_7a']).optional(),
   registration_office: z.string().trim().max(255).optional(),
   registration_number: z.string().trim().max(255).optional(),
   iban: z.string().trim().max(34).optional()

@@ -186,7 +186,8 @@ final class InvoicePdfVatDisplayTest extends TestCase
         ])->render();
 
         $this->assertStringContainsString('Základ dane (bez DPH)', $html);
-        $this->assertStringContainsString('DPH 20%', $html);
+        // Changed from "DPH 20%:" to just "DPH:" to support multiple VAT rates
+        $this->assertStringContainsString('DPH:', $html);
         $this->assertStringContainsString('Celkom k úhrade', $html);
     }
 
@@ -228,10 +229,10 @@ final class InvoicePdfVatDisplayTest extends TestCase
         $this->assertStringContainsString('(s DPH)', $html);
     }
 
-    public function test_pdf_for_vat_payer_paragraph_7_contains_vat_columns(): void
+    public function test_pdf_for_registered_paragraph_7a_contains_vat_columns(): void
     {
         $supplierCompany = UserCompany::factory()->create([
-            'vat_payer_status' => VatPayerStatus::VAT_PAYER_PARAGRAPH_7,
+            'vat_payer_status' => VatPayerStatus::REGISTERED_PARAGRAPH_7A,
             'iban' => fake()->iban('SK'),
             'swift' => fake()->swiftBicNumber(),
         ]);
@@ -259,10 +260,10 @@ final class InvoicePdfVatDisplayTest extends TestCase
         $this->assertStringContainsString('Výška', $html);
     }
 
-    public function test_pdf_for_vat_payer_paragraph_7_contains_vat_totals(): void
+    public function test_pdf_for_registered_paragraph_7a_contains_vat_totals(): void
     {
         $supplierCompany = UserCompany::factory()->create([
-            'vat_payer_status' => VatPayerStatus::VAT_PAYER_PARAGRAPH_7,
+            'vat_payer_status' => VatPayerStatus::REGISTERED_PARAGRAPH_7A,
             'iban' => fake()->iban('SK'),
             'swift' => fake()->swiftBicNumber(),
         ]);
@@ -287,7 +288,8 @@ final class InvoicePdfVatDisplayTest extends TestCase
         ])->render();
 
         $this->assertStringContainsString('Základ dane (bez DPH)', $html);
-        $this->assertStringContainsString('DPH 20%', $html);
+        // Changed from "DPH 20%:" to just "DPH:" to support multiple VAT rates
+        $this->assertStringContainsString('DPH:', $html);
         $this->assertStringContainsString('Celkom k úhrade', $html);
     }
 

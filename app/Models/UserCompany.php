@@ -5,11 +5,13 @@ declare(strict_types=1);
 namespace App\Models;
 
 use App\Enums\VatPayerStatus;
+use App\Enums\VatPeriod;
 use Illuminate\Database\Eloquent\Casts\Attribute;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Database\Eloquent\Relations\HasOne;
 
 /**
  * Company model representing the user's company for invoicing
@@ -24,7 +26,8 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
  * @property string $ico Company identification number
  * @property string|null $dic Tax identification number
  * @property string|null $ic_dph VAT identification number
- * @property string|null $vat_payer_status VAT payer status
+ * @property VatPayerStatus|null $vat_payer_status VAT payer status
+ * @property VatPeriod|null $vat_period VAT period (monthly/quarterly)
  * @property string|null $iban Bank account number in IBAN format
  * @property string|null $swift Bank identifier code
  * @property string|null $phone Contact phone number
@@ -59,6 +62,7 @@ class UserCompany extends Model
         'dic',
         'ic_dph',
         'vat_payer_status',
+        'vat_period',
         'iban',
         'swift',
         'phone',
@@ -84,6 +88,22 @@ class UserCompany extends Model
     public function invoices(): HasMany
     {
         return $this->hasMany(Invoice::class, 'supplier_company_id');
+    }
+
+    /**
+     * Get all VAT status history records for this company
+     */
+    public function vatStatusHistory(): HasMany
+    {
+        return $this->hasMany(VatStatusHistory::class)->orderByDesc('valid_from');
+    }
+
+    /**
+     * Get the current VAT status history record
+     */
+    public function currentVatStatusHistory(): HasOne
+    {
+        return $this->hasOne(VatStatusHistory::class)->whereNull('valid_to');
     }
 
     /**
@@ -115,6 +135,7 @@ class UserCompany extends Model
     {
         return [
             'vat_payer_status' => VatPayerStatus::class,
+            'vat_period' => VatPeriod::class,
         ];
     }
 }

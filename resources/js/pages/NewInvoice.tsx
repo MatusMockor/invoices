@@ -10,8 +10,10 @@ import { Card } from "@/components/ui/card";
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
 import { cn } from "@/lib/utils";
 import { useToast } from "@/hooks/use-toast";
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect, useCallback, useMemo } from "react";
 import { useInvoice, useInvoices } from "@/hooks/useInvoices";
+import { useCurrentCompany } from "@/hooks/useCurrentCompany";
+import { useVatVisibility } from "@/hooks/useVatVisibility";
 import { companyService } from "@/services/companyService";
 import { invoiceService } from "@/services/invoiceService";
 import { ClientInformationSection } from "@/components/invoices/ClientInformationSection";
@@ -160,6 +162,29 @@ const NewInvoice = () => {
   const isEditMode = !!id;
   const { invoice, isLoading: isLoadingInvoice } = useInvoice(id ? Number(id) : 0);
   const { createInvoice, updateInvoice, isCreating, isUpdating } = useInvoices();
+
+  // Get current company (supplier) for VAT status
+  const { currentCompany, vatPayerStatus } = useCurrentCompany();
+
+  // Determine customer country from selected company or custom company
+  const customerCountry = useMemo(() => {
+    if (selectedCompany) {
+      // For now, assume Slovak companies for domestic customers
+      return 'SK';
+    }
+    return null;
+  }, [selectedCompany]);
+
+  // VAT visibility based on supplier status and customer country
+  const {
+    showVatFields,
+    isVatRateEditable,
+    defaultVatRate,
+    section7aMessage,
+  } = useVatVisibility({
+    vatPayerStatus,
+    customerCountry,
+  });
 
   // State for generated invoice number
   const [generatedInvoiceNumber, setGeneratedInvoiceNumber] = useState<string>("");
@@ -717,6 +742,10 @@ const NewInvoice = () => {
             append={append}
             remove={remove}
             items={items}
+            showVatFields={showVatFields}
+            isVatRateEditable={isVatRateEditable}
+            defaultVatRate={defaultVatRate}
+            vatInfoMessage={section7aMessage}
           />
 
           {/* Rozšírené nastavenia (Collapsible) */}

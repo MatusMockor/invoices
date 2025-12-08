@@ -14,6 +14,7 @@ use App\Http\Controllers\Api\ProfileController;
 use App\Http\Controllers\Api\ReportsApiController;
 use App\Http\Controllers\Api\UserCompanyController;
 use App\Http\Controllers\Api\UserSettingController;
+use App\Http\Controllers\Api\VatStatusController;
 use Illuminate\Support\Facades\Route;
 
 /*
@@ -56,6 +57,11 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::put('/user/companies/{userCompany}', [UserCompanyController::class, 'update'])->name('api.user.companies.update');
     Route::delete('/user/companies/{userCompany}', [UserCompanyController::class, 'destroy'])->name('api.user.companies.destroy');
     Route::post('/user/companies/{userCompany}/switch', [UserCompanyController::class, 'switch'])->name('api.user.companies.switch');
+
+    // VAT Status
+    Route::get('/user/companies/{userCompany}/vat-status', [VatStatusController::class, 'show'])->name('api.user.companies.vat-status.show');
+    Route::put('/user/companies/{userCompany}/vat-status', [VatStatusController::class, 'update'])->name('api.user.companies.vat-status.update');
+    Route::get('/user/companies/{userCompany}/vat-status-history', [VatStatusController::class, 'history'])->name('api.user.companies.vat-status-history');
 
     // Business Entities
     Route::get('/business-entities', [BusinessEntityController::class, 'index'])->name('api.business-entities.index');

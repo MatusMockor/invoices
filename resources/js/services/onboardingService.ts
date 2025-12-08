@@ -9,7 +9,7 @@ export interface CompanyData {
   postal_code: string;
   dic?: string;
   ic_dph?: string;
-  vat_payer_status?: 'not_vat_payer' | 'vat_payer' | 'vat_payer_paragraph_7';
+  vat_payer_status?: 'not_vat_payer' | 'vat_payer' | 'vat_payer_paragraph_7' | 'registered_paragraph_7a';
   registration_office?: string;
   registration_number?: string;
   iban?: string;

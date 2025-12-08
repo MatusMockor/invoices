@@ -58,7 +58,7 @@ final class CompanyTest extends TestCase
     {
         // Arrange
         $company = Company::factory()->create([
-            'vat_payer_status' => VatPayerStatus::VAT_PAYER_PARAGRAPH_7->value,
+            'vat_payer_status' => VatPayerStatus::REGISTERED_PARAGRAPH_7A->value,
         ]);
 
         // Act
@@ -66,8 +66,8 @@ final class CompanyTest extends TestCase
 
         // Assert
         $this->assertInstanceOf(VatPayerStatus::class, $vatPayerStatus);
-        $this->assertSame(VatPayerStatus::VAT_PAYER_PARAGRAPH_7, $vatPayerStatus);
-        $this->assertSame('vat_payer_paragraph_7', $vatPayerStatus->value);
+        $this->assertSame(VatPayerStatus::REGISTERED_PARAGRAPH_7A, $vatPayerStatus);
+        $this->assertSame('registered_paragraph_7a', $vatPayerStatus->value);
     }
 
     /**
@@ -114,7 +114,7 @@ final class CompanyTest extends TestCase
         $testCases = [
             VatPayerStatus::NOT_VAT_PAYER,
             VatPayerStatus::VAT_PAYER,
-            VatPayerStatus::VAT_PAYER_PARAGRAPH_7,
+            VatPayerStatus::REGISTERED_PARAGRAPH_7A,
         ];
 
         // Act & Assert
@@ -182,18 +182,18 @@ final class CompanyTest extends TestCase
 
         // Act
         $company->update([
-            'vat_payer_status' => VatPayerStatus::VAT_PAYER_PARAGRAPH_7->value,
+            'vat_payer_status' => VatPayerStatus::REGISTERED_PARAGRAPH_7A->value,
         ]);
 
         // Assert
         $this->assertDatabaseHas(Company::class, [
             'id' => $company->id,
-            'vat_payer_status' => VatPayerStatus::VAT_PAYER_PARAGRAPH_7->value,
+            'vat_payer_status' => VatPayerStatus::REGISTERED_PARAGRAPH_7A->value,
         ]);
 
         $company->refresh();
         $this->assertInstanceOf(VatPayerStatus::class, $company->vat_payer_status);
-        $this->assertSame(VatPayerStatus::VAT_PAYER_PARAGRAPH_7, $company->vat_payer_status);
+        $this->assertSame(VatPayerStatus::REGISTERED_PARAGRAPH_7A, $company->vat_payer_status);
     }
 
     /**

@@ -1,3 +1,5 @@
+import type { VatPayerStatus } from './index';
+
 /**
  * Company search result type returned by company search API endpoints.
  * Used for autocomplete in forms (invoices, onboarding, etc.)
@@ -12,5 +14,5 @@ export interface Company {
   ic_dph?: string;
   registration_office?: string;
   registration_number?: string;
-  vat_payer_status?: 'not_vat_payer' | 'vat_payer' | 'vat_payer_paragraph_7';
+  vat_payer_status?: VatPayerStatus;
 }

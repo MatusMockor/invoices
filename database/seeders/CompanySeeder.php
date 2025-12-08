@@ -92,6 +92,7 @@ class CompanySeeder extends Seeder
             'vat_payer_status' => $icDph ? fake()->randomElement([
                 VatPayerStatus::VAT_PAYER->value,
                 VatPayerStatus::VAT_PAYER_PARAGRAPH_7->value,
+                VatPayerStatus::REGISTERED_PARAGRAPH_7A->value,
             ]) : VatPayerStatus::NOT_VAT_PAYER->value,
             'iban' => fake()->iban('SK'),
             'swift' => fake()->swiftBicNumber(),

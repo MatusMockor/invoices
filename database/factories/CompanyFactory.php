@@ -42,6 +42,7 @@ class CompanyFactory extends Factory
             'vat_payer_status' => $icDph ? fake()->randomElement([
                 VatPayerStatus::VAT_PAYER->value,
                 VatPayerStatus::VAT_PAYER_PARAGRAPH_7->value,
+                VatPayerStatus::REGISTERED_PARAGRAPH_7A->value,
             ]) : VatPayerStatus::NOT_VAT_PAYER->value,
             'iban' => fake()->iban('SK'),
             'swift' => fake()->swiftBicNumber(),
@@ -88,14 +89,14 @@ class CompanyFactory extends Factory
     }
 
     /**
-     * Create an s.r.o. (limited liability company) that is a VAT payer according to paragraph 7.
+     * Create an s.r.o. (limited liability company) that is registered for VAT under §7a.
      */
-    public function sroVatPayerParagraph7(): Factory
+    public function sroRegisteredParagraph7a(): Factory
     {
         return $this->state(fn (array $attributes): array => [
             'company_type' => 's.r.o.',
             'ic_dph' => 'SK'.fake()->numerify('##########'),
-            'vat_payer_status' => VatPayerStatus::VAT_PAYER_PARAGRAPH_7,
+            'vat_payer_status' => VatPayerStatus::REGISTERED_PARAGRAPH_7A,
             'registration_office' => fake()->randomElement([
                 'Okresný súd Bratislava I',
                 'Okresný súd Košice I',

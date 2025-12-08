@@ -1,4 +1,12 @@
 <div class="bg-gradient-to-br from-slate-50 to-blue-50 text-slate-900 p-4 min-h-[297mm] flex flex-col" id="invoice-content">
+    @php
+        use App\Enums\VatPayerStatus;
+        // Use snapshot field from invoice, fallback to company status for backwards compatibility
+        $vatStatus = $invoice->supplier_vat_payer_status ?? $invoice->supplierCompany->vat_payer_status ?? null;
+        $isVatPayer = $vatStatus !== null && $vatStatus !== VatPayerStatus::NOT_VAT_PAYER;
+        $showIcDph = $isVatPayer;
+    @endphp
+
     <!-- Modern Header with Gradient - Compact -->
     <div class="mb-3 relative overflow-hidden">
         <div class="relative bg-white p-3 rounded-xl border border-blue-200 shadow-lg">
@@ -35,6 +43,9 @@
                         <div class="border-t border-slate-200 pt-1.5 mt-1.5 space-y-0.5">
                             <p class="text-[10px] text-slate-500"><span class="font-semibold">IČO:</span> {{ $invoice->supplierCompany->ico ?? 'N/A' }}</p>
                             <p class="text-[10px] text-slate-500"><span class="font-semibold">DIČ:</span> {{ $invoice->supplierCompany->dic ?? 'N/A' }}</p>
+                            @if($showIcDph && ($invoice->supplierCompany->ic_dph ?? false))
+                                <p class="text-[10px] text-slate-500"><span class="font-semibold">IČ DPH:</span> {{ $invoice->supplierCompany->ic_dph }}</p>
+                            @endif
                             @if($invoice->supplier_registry_office || $invoice->supplier_registry_number)
                                 <p class="text-[10px] text-slate-500 mt-1.5">
                                     {{ $invoice->supplier_registry_office }}{{ $invoice->supplier_registry_office && $invoice->supplier_registry_number ? ', ' : '' }}{{ $invoice->supplier_registry_number ? 'registrácia č. ' . $invoice->supplier_registry_number : '' }}
@@ -60,6 +71,9 @@
                         <div class="border-t border-slate-200 pt-1.5 mt-1.5 space-y-0.5">
                             <p class="text-[10px] text-slate-500"><span class="font-semibold">IČO:</span> {{ $invoice->company_ico ?? 'N/A' }}</p>
                             <p class="text-[10px] text-slate-500"><span class="font-semibold">DIČ:</span> {{ $invoice->company_dic ?? 'N/A' }}</p>
+                            @if($showIcDph && ($invoice->company_ic_dph ?? false))
+                                <p class="text-[10px] text-slate-500"><span class="font-semibold">IČ DPH:</span> {{ $invoice->company_ic_dph }}</p>
+                            @endif
                         </div>
                     </div>
                 </div>
@@ -134,6 +148,9 @@
         </div>
     </div>
 
+    <!-- Legal Texts -->
+    @include('invoices.partials.legal-texts')
+
     <!-- Modern Items Table -->
     <div class="bg-white rounded-xl p-3 mb-3 shadow-lg border border-slate-200">
         <h3 class="text-base font-bold mb-2.5 text-slate-900">Položky</h3>
@@ -143,8 +160,14 @@
                     <tr class="bg-gradient-to-r from-blue-600 to-purple-600 text-white">
                         <th class="text-left py-2 px-2.5 font-semibold text-xs uppercase tracking-wide">Popis</th>
                         <th class="text-right py-2 px-2.5 w-20 font-semibold text-xs uppercase tracking-wide">Počet</th>
-                        <th class="text-right py-2 px-2.5 w-28 font-semibold text-xs uppercase tracking-wide">Cena/ks</th>
-                        <th class="text-right py-2 px-2.5 w-28 font-semibold text-xs uppercase tracking-wide">Celkom</th>
+                        @if($isVatPayer)
+                            <th class="text-right py-2 px-2.5 w-24 font-semibold text-xs uppercase tracking-wide">Cena/ks</th>
+                            <th class="text-right py-2 px-2.5 w-16 font-semibold text-xs uppercase tracking-wide">DPH</th>
+                            <th class="text-right py-2 px-2.5 w-28 font-semibold text-xs uppercase tracking-wide">Celkom</th>
+                        @else
+                            <th class="text-right py-2 px-2.5 w-28 font-semibold text-xs uppercase tracking-wide">Cena/ks</th>
+                            <th class="text-right py-2 px-2.5 w-28 font-semibold text-xs uppercase tracking-wide">Celkom</th>
+                        @endif
                     </tr>
                 </thead>
                 <tbody>
@@ -152,10 +175,18 @@
                         <tr class="border-b border-slate-200 {{ $index % 2 === 0 ? 'bg-slate-50' : 'bg-white' }}">
                             <td class="py-2 px-2.5 text-slate-900 text-sm">{{ $item->description }}</td>
                             <td class="text-right py-2 px-2.5 text-slate-700 text-sm">{{ $item->quantity }}</td>
-                            <td class="text-right py-2 px-2.5 text-slate-700 text-sm">{{ number_format($item->unit_price, 2, ',', ' ') }} {{ $invoice->currency }}</td>
-                            <td class="text-right py-2 px-2.5 font-bold text-slate-900 text-sm">
-                                {{ number_format($item->total_price, 2, ',', ' ') }} {{ $invoice->currency }}
-                            </td>
+                            @if($isVatPayer)
+                                <td class="text-right py-2 px-2.5 text-slate-700 text-sm">{{ number_format($item->unit_price_without_tax ?? $item->unit_price, 2, ',', ' ') }} {{ $invoice->currency }}</td>
+                                <td class="text-right py-2 px-2.5 text-slate-700 text-sm">{{ number_format($item->tax_rate ?? 0, 0) }}%</td>
+                                <td class="text-right py-2 px-2.5 font-bold text-slate-900 text-sm">
+                                    {{ number_format($item->total_price, 2, ',', ' ') }} {{ $invoice->currency }}
+                                </td>
+                            @else
+                                <td class="text-right py-2 px-2.5 text-slate-700 text-sm">{{ number_format($item->unit_price, 2, ',', ' ') }} {{ $invoice->currency }}</td>
+                                <td class="text-right py-2 px-2.5 font-bold text-slate-900 text-sm">
+                                    {{ number_format($item->total_price, 2, ',', ' ') }} {{ $invoice->currency }}
+                                </td>
+                            @endif
                         </tr>
                     @endforeach
                 </tbody>
@@ -163,10 +194,29 @@
         </div>
     </div>
 
+    <!-- VAT Summary (only for VAT payers) -->
+    @if($isVatPayer)
+        <div class="bg-white rounded-xl p-3 mb-3 shadow-lg border border-slate-200">
+            @include('invoices.partials.vat-summary', ['vatSummary' => $vatSummary ?? []])
+        </div>
+    @endif
+
     <!-- Totals with Modern Styling -->
     <div class="flex justify-end mb-3">
         <div class="w-80">
             <div class="bg-white rounded-xl p-3 shadow-lg border border-slate-200">
+                @if($isVatPayer)
+                    <div class="space-y-1.5 mb-2 pb-2 border-b border-slate-200">
+                        <div class="flex justify-between text-sm">
+                            <span class="text-slate-600">Základ dane:</span>
+                            <span class="font-semibold text-slate-900">{{ number_format($invoice->subtotal ?? 0, 2, ',', ' ') }} {{ $invoice->currency }}</span>
+                        </div>
+                        <div class="flex justify-between text-sm">
+                            <span class="text-slate-600">DPH:</span>
+                            <span class="font-semibold text-slate-900">{{ number_format($invoice->tax_amount ?? 0, 2, ',', ' ') }} {{ $invoice->currency }}</span>
+                        </div>
+                    </div>
+                @endif
                 <div class="flex justify-between py-2 mt-1.5 bg-gradient-to-r from-blue-600 to-purple-600 px-3 rounded-lg">
                     <span class="font-bold text-sm text-white">Celkom k úhrade:</span>
                     <span class="font-black text-lg text-white">{{ number_format($invoice->total_amount, 2, ',', ' ') }} {{ $invoice->currency }}</span>
@@ -184,7 +234,7 @@
         </div>
 
         <div class="mt-2 text-center text-xs text-slate-500">
-            <p class="font-medium">Ďakujeme za vašu dôveru! ✨</p>
+            <p class="font-medium">Ďakujeme za vašu dôveru!</p>
         </div>
     </div>
 </div>

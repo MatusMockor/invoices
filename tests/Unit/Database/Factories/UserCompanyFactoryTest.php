@@ -32,6 +32,7 @@ final class UserCompanyFactoryTest extends TestCase
                         VatPayerStatus::NOT_VAT_PAYER,
                         VatPayerStatus::VAT_PAYER,
                         VatPayerStatus::VAT_PAYER_PARAGRAPH_7,
+                        VatPayerStatus::REGISTERED_PARAGRAPH_7A,
                     ]
                 );
             }
@@ -39,7 +40,7 @@ final class UserCompanyFactoryTest extends TestCase
     }
 
     /**
-     * Test that when ic_dph is present, status is either VAT_PAYER or VAT_PAYER_PARAGRAPH_7.
+     * Test that when ic_dph is present, status is either VAT_PAYER or REGISTERED_PARAGRAPH_7A.
      */
     public function test_when_ic_dph_present_status_is_vat_payer_or_paragraph_7(): void
     {
@@ -52,8 +53,9 @@ final class UserCompanyFactoryTest extends TestCase
                 $this->assertInstanceOf(VatPayerStatus::class, $userCompany->vat_payer_status);
                 $this->assertTrue(
                     $userCompany->vat_payer_status === VatPayerStatus::VAT_PAYER
-                    || $userCompany->vat_payer_status === VatPayerStatus::VAT_PAYER_PARAGRAPH_7,
-                    'When ic_dph is present, status must be VAT_PAYER or VAT_PAYER_PARAGRAPH_7'
+                    || $userCompany->vat_payer_status === VatPayerStatus::VAT_PAYER_PARAGRAPH_7
+                    || $userCompany->vat_payer_status === VatPayerStatus::REGISTERED_PARAGRAPH_7A,
+                    'When ic_dph is present, status must be VAT_PAYER, VAT_PAYER_PARAGRAPH_7 or REGISTERED_PARAGRAPH_7A'
                 );
             }
         }
@@ -128,13 +130,13 @@ final class UserCompanyFactoryTest extends TestCase
 
         $vatPayerParagraph7 = UserCompany::factory()->create([
             'ic_dph' => 'SK'.fake()->numerify('##########'),
-            'vat_payer_status' => VatPayerStatus::VAT_PAYER_PARAGRAPH_7->value,
+            'vat_payer_status' => VatPayerStatus::REGISTERED_PARAGRAPH_7A->value,
         ]);
 
         // Assert
         $this->assertSame(VatPayerStatus::NOT_VAT_PAYER, $notVatPayer->vat_payer_status);
         $this->assertSame(VatPayerStatus::VAT_PAYER, $vatPayer->vat_payer_status);
-        $this->assertSame(VatPayerStatus::VAT_PAYER_PARAGRAPH_7, $vatPayerParagraph7->vat_payer_status);
+        $this->assertSame(VatPayerStatus::REGISTERED_PARAGRAPH_7A, $vatPayerParagraph7->vat_payer_status);
     }
 
     /**

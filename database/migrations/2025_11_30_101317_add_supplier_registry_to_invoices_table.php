@@ -23,6 +23,16 @@ return new class extends Migration
                 ->nullable()
                 ->after('supplier_registry_office')
                 ->comment('Snapshot of supplier registration number at invoice creation');
+
+            $table->string('supplier_vat_payer_status')
+                ->nullable()
+                ->after('supplier_registry_number')
+                ->comment('Snapshot of supplier VAT payer status at invoice creation');
+
+            $table->string('supplier_vat_period')
+                ->nullable()
+                ->after('supplier_vat_payer_status')
+                ->comment('Snapshot of supplier VAT period at invoice creation');
         });
     }
 
@@ -32,7 +42,12 @@ return new class extends Migration
     public function down(): void
     {
         Schema::table('invoices', static function (Blueprint $table): void {
-            $table->dropColumn(['supplier_registry_office', 'supplier_registry_number']);
+            $table->dropColumn([
+                'supplier_registry_office',
+                'supplier_registry_number',
+                'supplier_vat_payer_status',
+                'supplier_vat_period',
+            ]);
         });
     }
 };

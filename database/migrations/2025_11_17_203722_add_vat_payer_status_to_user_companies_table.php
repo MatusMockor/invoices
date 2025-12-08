@@ -15,6 +15,7 @@ return new class extends Migration
     {
         Schema::table('user_companies', function (Blueprint $table) {
             $table->string('vat_payer_status')->nullable()->after('ic_dph');
+            $table->string('vat_period')->nullable()->after('vat_payer_status');
         });
     }
 
@@ -24,7 +25,7 @@ return new class extends Migration
     public function down(): void
     {
         Schema::table('user_companies', function (Blueprint $table) {
-            $table->dropColumn('vat_payer_status');
+            $table->dropColumn(['vat_payer_status', 'vat_period']);
         });
     }
 };

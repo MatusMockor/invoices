@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Services;
 
 use App\Enums\InvoiceTemplate;
+use App\Enums\VatPayerStatus;
 use App\Models\Invoice;
 use App\Services\Interfaces\InvoicePdfService as InvoicePdfServiceContract;
 use App\Services\Interfaces\PayBySquare as PayBySquareContract;
@@ -53,11 +54,19 @@ final class InvoicePdfService implements InvoicePdfServiceContract
             );
         }
 
+        // Calculate VAT summary for VAT payers
+        $vatSummary = $this->calculateVatSummary($invoice);
+
+        // Pre-calculate VAT payer status for templates
+        $isVatPayer = $this->isVatPayer($invoice);
+
         // Render the HTML view based on template
         $html = view('invoices.pdf-render', [
             'invoice' => $invoice,
             'qrCode' => $qrCode,
             'template' => $template,
+            'vatSummary' => $vatSummary,
+            'isVatPayer' => $isVatPayer,
         ])->render();
 
         // Generate PDF using Browsershot
@@ -108,5 +117,51 @@ final class InvoicePdfService implements InvoicePdfServiceContract
             'Content-Type' => 'application/pdf',
             'Content-Disposition' => 'inline; filename="faktura-'.$invoice->invoice_number.'.pdf"',
         ]);
+    }
+
+    /**
+     * Calculate VAT summary grouped by rate
+     *
+     * @return array<int, array{rate: float, base: float, vat_amount: float}>
+     */
+    private function calculateVatSummary(Invoice $invoice): array
+    {
+        // Only calculate for VAT payers
+        if ($invoice->supplier_vat_payer_status === null
+            || $invoice->supplier_vat_payer_status === VatPayerStatus::NOT_VAT_PAYER) {
+            return [];
+        }
+
+        // Ensure items are loaded and not empty
+        if (! $invoice->relationLoaded('items') || $invoice->items->isEmpty()) {
+            return [];
+        }
+
+        $grouped = $invoice->items
+            ->filter(fn ($item) => $item->tax_rate !== null)
+            ->groupBy('tax_rate');
+
+        return $grouped->map(function ($items, $rate) use ($invoice) {
+            $base = $items->sum('subtotal');
+            $vatAmount = $invoice->reverse_charge ? 0 : $items->sum('tax_amount');
+
+            return [
+                'rate' => (float) $rate,
+                'base' => round($base, 2),
+                'vat_amount' => round($vatAmount, 2),
+            ];
+        })->sortByDesc('rate')->values()->toArray();
+    }
+
+    /**
+     * Determine if invoice supplier is a VAT payer based on snapshot or fallback
+     */
+    private function isVatPayer(Invoice $invoice): bool
+    {
+        $vatStatus = $invoice->supplier_vat_payer_status
+            ?? $invoice->supplierCompany?->vat_payer_status;
+
+        return $vatStatus !== null
+            && $vatStatus !== VatPayerStatus::NOT_VAT_PAYER;
     }
 }

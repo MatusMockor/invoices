@@ -11,8 +11,10 @@ use App\Models\Invoice;
 use App\Models\UserCompany;
 use App\Repositories\Contracts\InvoiceItemRepository;
 use App\Repositories\Contracts\InvoiceRepository;
+use App\Services\Interfaces\VatService;
 use App\Services\Invoice\InvoiceTotalCalculatorService;
 use App\Services\Invoice\VatCalculatorService;
+use Carbon\Carbon;
 use Illuminate\Support\Facades\DB;
 use Throwable;
 
@@ -23,7 +25,8 @@ final class InvoiceCreateAction
         private readonly InvoiceItemRepository $invoiceItemRepository,
         private readonly CompanyFetchOrCreateAction $companyFetchOrCreate,
         private readonly InvoiceTotalCalculatorService $totalCalculator,
-        private readonly VatCalculatorService $vatCalculator
+        private readonly VatCalculatorService $vatCalculator,
+        private readonly VatService $vatService
     ) {}
 
     /**
@@ -34,6 +37,12 @@ final class InvoiceCreateAction
         return DB::transaction(function () use ($dto, $userId, $supplierCompanyId) {
             // Fetch supplier company for registry data snapshot
             $supplierCompany = UserCompany::find($supplierCompanyId);
+
+            // Get VAT status at invoice issue date for historical accuracy (REQ-06)
+            $issueDate = Carbon::parse($dto->issueDate);
+            $vatStatus = $supplierCompany
+                ? $this->vatService->getVatStatusAtDate($supplierCompany, $issueDate)
+                : null;
 
             // Calculate invoice totals with VAT (respecting reverse charge)
             $totals = $this->totalCalculator->calculateTotals($dto->items, $dto->discountAmount ?? null, $dto->reverseCharge);
@@ -48,6 +57,9 @@ final class InvoiceCreateAction
                 // Supplier registry snapshot - immutable after creation
                 'supplier_registry_office' => $supplierCompany?->registration_office,
                 'supplier_registry_number' => $supplierCompany?->registration_number,
+                // VAT status snapshot - immutable after creation (REQ-06)
+                'supplier_vat_payer_status' => $vatStatus?->status->value,
+                'supplier_vat_period' => $vatStatus?->period?->value,
                 'subtotal' => $totals['subtotal'],
                 'tax_amount' => $totals['tax_amount'],
                 'tax_rate' => $dto->taxRate ?? 20.0,

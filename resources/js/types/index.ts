@@ -43,14 +43,26 @@ export interface Company {
   updated_at: string;
 }
 
+// VAT-related types (Slovak invoice compliance)
+export type VatPayerStatus = 'not_vat_payer' | 'vat_payer' | 'vat_payer_paragraph_7' | 'registered_paragraph_7a';
+export type VatPeriod = 'monthly' | 'quarterly';
+export type VatRate = 0 | 5 | 19 | 23;
+
 export interface UserCompany {
   id: number;
   name: string;
   ico: string;
   dic: string | null;
   ic_dph: string | null;
-  vat_payer_status: 'not_vat_payer' | 'vat_payer' | 'vat_payer_paragraph_7' | null;
+  vat_payer_status: VatPayerStatus | null;
   vat_payer_status_label?: string;
+  vat_period?: VatPeriod | null;
+  vat_period_label?: string | null;
+  // VAT helper flags from API
+  is_vat_payer?: boolean;
+  requires_vat_fields?: boolean;
+  allows_vat_fields?: boolean;
+  is_registered_paragraph_7a?: boolean;
   street: string;
   address: string; // Formatted: "street, postal_code city"
   city: string;
@@ -143,9 +155,13 @@ export interface Invoice {
   items?: InvoiceItem[];
   qr_code?: string;
 
-  // Supplier VAT payer status for conditional display
-  supplier_vat_payer_status?: 'not_vat_payer' | 'vat_payer' | 'vat_payer_paragraph_7' | null;
+  // Supplier VAT snapshot fields (immutable after invoice creation)
+  supplier_vat_payer_status?: VatPayerStatus | null;
+  supplier_vat_period?: VatPeriod | null;
+  // Supplier VAT helper flags
   supplier_is_vat_payer?: boolean;
+  supplier_is_registered_paragraph_7a?: boolean;
+  should_show_vat_fields?: boolean;
 
   // Supplier registry snapshot fields (immutable after invoice creation)
   supplier_registry_office?: string | null;

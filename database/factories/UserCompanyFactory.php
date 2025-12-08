@@ -43,6 +43,7 @@ class UserCompanyFactory extends Factory
             'vat_payer_status' => $icDph ? fake()->randomElement([
                 VatPayerStatus::VAT_PAYER->value,
                 VatPayerStatus::VAT_PAYER_PARAGRAPH_7->value,
+                VatPayerStatus::REGISTERED_PARAGRAPH_7A->value,
             ]) : VatPayerStatus::NOT_VAT_PAYER->value,
             'iban' => fake()->iban('SK'),
             'swift' => fake()->swiftBicNumber(),
@@ -116,6 +117,50 @@ class UserCompanyFactory extends Factory
                 'Okresny sud Zilina',
             ]),
             'registration_number' => 'Oddiel: Sro, Vlozka c. '.fake()->numerify('######/B'),
+        ]);
+    }
+
+    /**
+     * Create a company with VAT payer status.
+     */
+    public function vatPayer(): Factory
+    {
+        return $this->state(fn (array $attributes): array => [
+            'vat_payer_status' => VatPayerStatus::VAT_PAYER,
+            'ic_dph' => 'SK'.fake()->numerify('##########'),
+        ]);
+    }
+
+    /**
+     * Create a company with non-VAT payer status.
+     */
+    public function notVatPayer(): Factory
+    {
+        return $this->state(fn (array $attributes): array => [
+            'vat_payer_status' => VatPayerStatus::NOT_VAT_PAYER,
+            'ic_dph' => null,
+        ]);
+    }
+
+    /**
+     * Create a company with §7a registration status.
+     */
+    public function registeredParagraph7a(): Factory
+    {
+        return $this->state(fn (array $attributes): array => [
+            'vat_payer_status' => VatPayerStatus::REGISTERED_PARAGRAPH_7A,
+            'ic_dph' => 'SK'.fake()->numerify('##########'),
+        ]);
+    }
+
+    /**
+     * Create a company with §7 VAT payer status.
+     */
+    public function vatPayerParagraph7(): Factory
+    {
+        return $this->state(fn (array $attributes): array => [
+            'vat_payer_status' => VatPayerStatus::VAT_PAYER_PARAGRAPH_7,
+            'ic_dph' => 'SK'.fake()->numerify('##########'),
         ]);
     }
 }

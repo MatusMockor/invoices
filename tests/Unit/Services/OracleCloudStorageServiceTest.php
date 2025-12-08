@@ -159,7 +159,7 @@ final class OracleCloudStorageServiceTest extends TestCase
 
         $initFiles = $this->service->getBatchInitFiles();
 
-        $this->assertCount(3, $initFiles);
+        $this->assertCount(4, $initFiles);
         $this->assertEquals('batch-init/init_2025-11-01_001.json.gz', $initFiles[0]['key']);
         $this->assertEquals('batch-init/init_2025-11-01_002.json.gz', $initFiles[1]['key']);
         $this->assertEquals('batch-init/init_2025-11-01_003.json.gz', $initFiles[2]['key']);

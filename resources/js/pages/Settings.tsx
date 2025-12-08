@@ -15,8 +15,11 @@ import { useTheme } from "next-themes";
 import { useAuth } from "@/hooks/useAuth";
 import api from "@/lib/axios";
 import { userCompanyService } from "@/services/userCompanyService";
+import { vatStatusService } from "@/services/vatStatusService";
 import { useCompanyContext } from "@/contexts/CompanyContext";
-import { VAT_PAYER_STATUS_OPTIONS } from "@/constants/vatPayerStatus";
+import { VAT_PAYER_STATUS_OPTIONS, VAT_PERIOD_OPTIONS, statusRequiresPeriod } from "@/constants/vatPayerStatus";
+import { VatStatusHistory, type VatStatusHistoryRef } from "@/components/company/VatStatusHistory";
+import { VatStatusChangeDialog } from "@/components/company/VatStatusChangeDialog";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -39,7 +42,9 @@ import {
   Eye,
   Palette,
   Loader2,
+  Info,
 } from "lucide-react";
+import { useRef } from "react";
 
 const Settings = () => {
   const { toast } = useToast();
@@ -84,6 +89,7 @@ const Settings = () => {
     dic: '',
     ic_dph: '',
     vat_payer_status: '',
+    vat_period: '',
     street: '',
     city: '',
     postal_code: '',
@@ -94,6 +100,17 @@ const Settings = () => {
     swift: '',
   });
   const [isSavingCompany, setIsSavingCompany] = useState(false);
+
+  // VAT status change state
+  const [vatChangeDialogOpen, setVatChangeDialogOpen] = useState(false);
+  const [pendingVatChange, setPendingVatChange] = useState<{
+    status: string;
+    period: string | null;
+    validFrom: string;
+  } | null>(null);
+  const [isChangingVatStatus, setIsChangingVatStatus] = useState(false);
+  const vatStatusHistoryRef = useRef<VatStatusHistoryRef>(null);
+  const [vatValidFrom, setVatValidFrom] = useState(() => new Date().toISOString().split('T')[0]);
 
   // Load user profile data
   useEffect(() => {
@@ -119,6 +136,7 @@ const Settings = () => {
           dic: settings.company.dic || '',
           ic_dph: settings.company.ic_dph || '',
           vat_payer_status: settings.company.vat_payer_status || '',
+          vat_period: settings.company.vat_period || '',
           street: settings.company.address || '',
           city: settings.company.city || '',
           postal_code: settings.company.postal_code || '',
@@ -131,6 +149,72 @@ const Settings = () => {
       }
     }
   }, [settings, selectedCompanyId]); // Added selectedCompanyId to ensure form resets on company change
+
+  // Handler for VAT status change with confirmation dialog
+  const handleVatStatusChange = (newStatus: string) => {
+    setCompanyData({ ...companyData, vat_payer_status: newStatus });
+    // Clear period if new status doesn't require it
+    if (!statusRequiresPeriod(newStatus)) {
+      setCompanyData(prev => ({ ...prev, vat_payer_status: newStatus, vat_period: '' }));
+    }
+  };
+
+  // Show confirmation dialog before saving VAT status change
+  const handleSaveVatStatus = () => {
+    if (!settings?.company?.id) return;
+
+    // Validate period is set if required
+    if (statusRequiresPeriod(companyData.vat_payer_status) && !companyData.vat_period) {
+      toast({
+        title: "Chyba",
+        description: "Pre platcu DPH je potrebné vybrať periodicitu.",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    setPendingVatChange({
+      status: companyData.vat_payer_status,
+      period: companyData.vat_period || null,
+      validFrom: vatValidFrom,
+    });
+    setVatChangeDialogOpen(true);
+  };
+
+  // Confirm VAT status change
+  const confirmVatStatusChange = async () => {
+    if (!settings?.company?.id || !pendingVatChange) return;
+
+    setIsChangingVatStatus(true);
+
+    try {
+      await vatStatusService.updateStatus(settings.company.id, {
+        vat_status: pendingVatChange.status as any,
+        vat_period: pendingVatChange.period as any,
+        valid_from: pendingVatChange.validFrom,
+      });
+
+      toast({
+        title: "Status DPH aktualizovaný",
+        description: "Zmena DPH statusu bola úspešne uložená.",
+      });
+
+      setVatChangeDialogOpen(false);
+      setPendingVatChange(null);
+
+      // Refresh history
+      vatStatusHistoryRef.current?.refetch();
+    } catch (error: any) {
+      const message = error?.response?.data?.message || "Nepodarilo sa zmeniť DPH status.";
+      toast({
+        title: "Chyba",
+        description: message,
+        variant: "destructive",
+      });
+    } finally {
+      setIsChangingVatStatus(false);
+    }
+  };
 
   const handlePreview = (template: 'classic' | 'modern' | 'minimal' | 'bold') => {
     // Temporarily set template for preview only
@@ -624,24 +708,98 @@ const Settings = () => {
                       autoComplete="off"
                     />
                   </div>
+                </div>
+
+                <Separator />
+
+                {/* DPH / VAT Section */}
+                <div className="space-y-6">
+                  <h4 className="text-lg font-semibold text-foreground">
+                    DPH / VAT
+                  </h4>
+
+                  {/* VAT Status Radio Group */}
+                  <div className="space-y-3">
+                    <Label>Status platcu DPH</Label>
+                    <div className="grid gap-3">
+                      {VAT_PAYER_STATUS_OPTIONS.map((option) => (
+                        <label
+                          key={option.value}
+                          className={`flex items-start gap-3 p-4 rounded-lg border cursor-pointer transition-colors ${
+                            companyData.vat_payer_status === option.value
+                              ? 'border-primary bg-primary/5'
+                              : 'border-border hover:border-primary/50'
+                          } ${isSavingCompany ? 'opacity-50 cursor-not-allowed' : ''}`}
+                        >
+                          <input
+                            type="radio"
+                            name="vat_payer_status"
+                            value={option.value}
+                            checked={companyData.vat_payer_status === option.value}
+                            onChange={(e) => handleVatStatusChange(e.target.value)}
+                            disabled={isSavingCompany}
+                            className="mt-1"
+                          />
+                          <div>
+                            <p className="font-medium text-foreground">{option.label}</p>
+                            <p className="text-sm text-muted-foreground">{option.description}</p>
+                          </div>
+                        </label>
+                      ))}
+                    </div>
+                  </div>
+
+                  {/* Conditional VAT Period Selector */}
+                  {statusRequiresPeriod(companyData.vat_payer_status) && (
+                    <div className="space-y-2">
+                      <Label htmlFor="vatPeriod">Periodicita DPH *</Label>
+                      <Select
+                        value={companyData.vat_period}
+                        onValueChange={(value) => setCompanyData({ ...companyData, vat_period: value })}
+                        disabled={isSavingCompany}
+                      >
+                        <SelectTrigger id="vatPeriod">
+                          <SelectValue placeholder="Vyberte periodicitu" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          {VAT_PERIOD_OPTIONS.map((option) => (
+                            <SelectItem key={option.value} value={option.value}>
+                              {option.label}
+                            </SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                    </div>
+                  )}
+
+                  {/* Valid From Date Picker */}
                   <div className="space-y-2">
-                    <Label htmlFor="vatPayerStatus">Status platcu DPH</Label>
-                    <Select
-                      value={companyData.vat_payer_status}
-                      onValueChange={(value) => setCompanyData({ ...companyData, vat_payer_status: value })}
+                    <Label htmlFor="vatValidFrom">Platnosť od</Label>
+                    <Input
+                      id="vatValidFrom"
+                      type="date"
+                      value={vatValidFrom}
+                      onChange={(e) => setVatValidFrom(e.target.value)}
+                      min={new Date().toISOString().split('T')[0]}
                       disabled={isSavingCompany}
+                    />
+                    {vatValidFrom > new Date().toISOString().split('T')[0] && (
+                      <p className="text-sm text-blue-600 flex items-center gap-1">
+                        <Info className="h-3 w-3" />
+                        Zmena sa prejaví od {new Date(vatValidFrom).toLocaleDateString('sk-SK')}
+                      </p>
+                    )}
+                  </div>
+
+                  {/* Save VAT Status Button */}
+                  <div className="flex justify-end">
+                    <Button
+                      type="button"
+                      onClick={handleSaveVatStatus}
+                      disabled={isSavingCompany || !companyData.vat_payer_status}
                     >
-                      <SelectTrigger id="vatPayerStatus">
-                        <SelectValue placeholder="Vyberte status" />
-                      </SelectTrigger>
-                      <SelectContent>
-                        {VAT_PAYER_STATUS_OPTIONS.map((option) => (
-                          <SelectItem key={option.value} value={option.value}>
-                            {option.label}
-                          </SelectItem>
-                        ))}
-                      </SelectContent>
-                    </Select>
+                      Uložiť DPH status
+                    </Button>
                   </div>
                 </div>
 
@@ -780,6 +938,14 @@ const Settings = () => {
                 </div>
               </form>
             </Card>
+
+            {/* VAT Status History */}
+            {settings?.company?.id && (
+              <VatStatusHistory
+                ref={vatStatusHistoryRef}
+                companyId={settings.company.id}
+              />
+            )}
           </TabsContent>
 
           {/* Invoice Design Tab */}
@@ -1205,6 +1371,21 @@ const Settings = () => {
         open={previewOpen}
         onOpenChange={setPreviewOpen}
         invoiceId={previewInvoiceId}
+      />
+
+      {/* VAT Status Change Confirmation Dialog */}
+      <VatStatusChangeDialog
+        isOpen={vatChangeDialogOpen}
+        onClose={() => {
+          setVatChangeDialogOpen(false);
+          setPendingVatChange(null);
+        }}
+        onConfirm={confirmVatStatusChange}
+        isSubmitting={isChangingVatStatus}
+        newStatusLabel={
+          VAT_PAYER_STATUS_OPTIONS.find(opt => opt.value === pendingVatChange?.status)?.label || ''
+        }
+        validFrom={pendingVatChange?.validFrom || vatValidFrom}
       />
 
       {/* Account Deletion Confirmation Dialog */}

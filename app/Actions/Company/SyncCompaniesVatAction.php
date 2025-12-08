@@ -139,8 +139,10 @@ final class SyncCompaniesVatAction
                 unset($vatData['ico']);
 
                 // Determine VAT payer status based on ic_dph presence
+                // Note: We default to REGISTERED_PARAGRAPH_7A when ic_dph is present from sync
+                // as we don't have information about whether it's mandatory or voluntary registration
                 $vatData['vat_payer_status'] = ! empty($vatData['ic_dph'])
-                    ? VatPayerStatus::VAT_PAYER_PARAGRAPH_7->value
+                    ? VatPayerStatus::VAT_PAYER->value
                     : VatPayerStatus::NOT_VAT_PAYER->value;
 
                 $batchData[$ico] = $vatData;

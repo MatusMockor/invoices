@@ -1,5 +1,5 @@
 import axios from "@/lib/axios";
-import { UserCompany } from "@/types";
+import { UserCompany, VatPayerStatus, VatPeriod } from "@/types";
 
 /**
  * Form data structure for creating/updating user companies
@@ -9,7 +9,8 @@ export interface UserCompanyFormData {
   ico: string;
   dic: string;
   ic_dph?: string;
-  vat_payer_status?: 'not_vat_payer' | 'vat_payer' | 'vat_payer_paragraph_7' | null;
+  vat_payer_status?: VatPayerStatus | null;
+  vat_period?: VatPeriod | null;
   email: string;
   phone?: string;
   street: string;

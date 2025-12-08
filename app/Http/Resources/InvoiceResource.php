@@ -60,9 +60,13 @@ class InvoiceResource extends JsonResource
             'items' => InvoiceItemResource::collection($this->whenLoaded('items')),
             'qr_code' => $this->qr_code ?? null,
 
-            // Supplier VAT payer status for conditional display
-            'supplier_vat_payer_status' => $this->supplierCompany?->vat_payer_status?->value,
-            'supplier_is_vat_payer' => $this->supplierCompany?->vat_payer_status !== \App\Enums\VatPayerStatus::NOT_VAT_PAYER,
+            // Supplier VAT status (snapshot if available, fallback to supplier company)
+            'supplier_vat_payer_status' => $this->getEffectiveVatStatus()?->value,
+            'supplier_vat_period' => $this->supplier_vat_period,
+            // Helper flags based on effective VAT status
+            'supplier_is_vat_payer' => $this->supplierIsVatPayer(),
+            'supplier_is_registered_paragraph_7a' => $this->supplierIsRegisteredParagraph7a(),
+            'should_show_vat_fields' => $this->shouldShowVatFields(),
 
             // Computed text fields for display
             'reverse_charge_text' => $this->reverse_charge_text,

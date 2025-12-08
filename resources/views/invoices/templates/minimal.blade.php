@@ -1,4 +1,12 @@
 <div class="bg-white text-black p-12 min-h-screen font-sans">
+    @php
+        use App\Enums\VatPayerStatus;
+        // Use snapshot field from invoice, fallback to company status for backwards compatibility
+        $vatStatus = $invoice->supplier_vat_payer_status ?? $invoice->supplierCompany->vat_payer_status ?? null;
+        $isVatPayer = $vatStatus !== null && $vatStatus !== VatPayerStatus::NOT_VAT_PAYER;
+        $showIcDph = $isVatPayer;
+    @endphp
+
     <!-- Header -->
     <div class="mb-12 pb-8 border-b border-gray-300">
         <div class="flex justify-between items-baseline">
@@ -18,7 +26,7 @@
             <div class="mt-3 text-sm text-gray-600 space-y-0.5">
                 <p>IČO: {{ $invoice->supplierCompany->ico ?? 'N/A' }}</p>
                 <p>DIČ: {{ $invoice->supplierCompany->dic ?? 'N/A' }}</p>
-                @if($invoice->supplierCompany->ic_dph ?? false)
+                @if($showIcDph && ($invoice->supplierCompany->ic_dph ?? false))
                     <p>IČ DPH: {{ $invoice->supplierCompany->ic_dph }}</p>
                 @endif
                 @if($invoice->supplier_registry_office || $invoice->supplier_registry_number)
@@ -38,7 +46,7 @@
             <div class="mt-3 text-sm text-gray-600 space-y-0.5">
                 <p>IČO: {{ $invoice->company_ico ?? 'N/A' }}</p>
                 <p>DIČ: {{ $invoice->company_dic ?? 'N/A' }}</p>
-                @if($invoice->company_ic_dph ?? false)
+                @if($showIcDph && ($invoice->company_ic_dph ?? false))
                     <p>IČ DPH: {{ $invoice->company_ic_dph }}</p>
                 @endif
             </div>
@@ -63,14 +71,23 @@
         @endif
     </div>
 
+    <!-- Legal Texts -->
+    @include('invoices.partials.legal-texts')
+
     <!-- Items Table -->
     <table class="w-full mb-12">
         <thead>
             <tr class="border-b-2 border-gray-900">
                 <th class="text-left py-3 font-semibold text-sm uppercase tracking-wide">Popis</th>
                 <th class="text-right py-3 font-semibold text-sm uppercase tracking-wide w-20">Počet</th>
-                <th class="text-right py-3 font-semibold text-sm uppercase tracking-wide w-32">Cena/ks</th>
-                <th class="text-right py-3 font-semibold text-sm uppercase tracking-wide w-32">Celkom</th>
+                @if($isVatPayer)
+                    <th class="text-right py-3 font-semibold text-sm uppercase tracking-wide w-28">Cena/ks</th>
+                    <th class="text-right py-3 font-semibold text-sm uppercase tracking-wide w-20">DPH</th>
+                    <th class="text-right py-3 font-semibold text-sm uppercase tracking-wide w-32">Celkom</th>
+                @else
+                    <th class="text-right py-3 font-semibold text-sm uppercase tracking-wide w-32">Cena/ks</th>
+                    <th class="text-right py-3 font-semibold text-sm uppercase tracking-wide w-32">Celkom</th>
+                @endif
             </tr>
         </thead>
         <tbody>
@@ -78,18 +95,43 @@
                 <tr class="border-b border-gray-200">
                     <td class="py-4">{{ $item->description }}</td>
                     <td class="text-right py-4">{{ number_format($item->quantity, 0, ',', ' ') }}</td>
-                    <td class="text-right py-4">{{ number_format($item->unit_price, 2, ',', ' ') }} {{ $invoice->currency }}</td>
-                    <td class="text-right py-4 font-semibold">
-                        {{ number_format($item->total_price, 2, ',', ' ') }} {{ $invoice->currency }}
-                    </td>
+                    @if($isVatPayer)
+                        <td class="text-right py-4">{{ number_format($item->unit_price_without_tax ?? $item->unit_price, 2, ',', ' ') }} {{ $invoice->currency }}</td>
+                        <td class="text-right py-4">{{ number_format($item->tax_rate ?? 0, 0) }}%</td>
+                        <td class="text-right py-4 font-semibold">
+                            {{ number_format($item->total_price, 2, ',', ' ') }} {{ $invoice->currency }}
+                        </td>
+                    @else
+                        <td class="text-right py-4">{{ number_format($item->unit_price, 2, ',', ' ') }} {{ $invoice->currency }}</td>
+                        <td class="text-right py-4 font-semibold">
+                            {{ number_format($item->total_price, 2, ',', ' ') }} {{ $invoice->currency }}
+                        </td>
+                    @endif
                 </tr>
             @endforeach
         </tbody>
     </table>
 
+    <!-- VAT Summary (only for VAT payers) -->
+    @if($isVatPayer)
+        @include('invoices.partials.vat-summary', ['vatSummary' => $vatSummary ?? []])
+    @endif
+
     <!-- Total -->
     <div class="flex justify-end mb-12">
         <div class="w-80">
+            @if($isVatPayer)
+                <div class="space-y-2 mb-4">
+                    <div class="flex justify-between py-2 border-b border-gray-200">
+                        <span class="text-gray-600">Základ dane:</span>
+                        <span class="font-semibold">{{ number_format($invoice->subtotal ?? 0, 2, ',', ' ') }} {{ $invoice->currency }}</span>
+                    </div>
+                    <div class="flex justify-between py-2 border-b border-gray-200">
+                        <span class="text-gray-600">DPH:</span>
+                        <span class="font-semibold">{{ number_format($invoice->tax_amount ?? 0, 2, ',', ' ') }} {{ $invoice->currency }}</span>
+                    </div>
+                </div>
+            @endif
             <div class="flex justify-between items-baseline py-4 border-t-2 border-gray-900">
                 <span class="text-xl font-semibold">Celkom k úhrade</span>
                 <span class="text-3xl font-bold">{{ number_format($invoice->total_amount, 2, ',', ' ') }} {{ $invoice->currency }}</span>

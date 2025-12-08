@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Database\Factories;
 
 use App\Enums\InvoiceStatus;
+use App\Enums\VatPayerStatus;
 use App\Models\Company;
 use App\Models\Invoice;
 use App\Models\User;
@@ -54,9 +55,11 @@ class InvoiceFactory extends Factory
             'delivery_date' => fake()->dateTimeBetween('-15 days', '+15 days'),
             'company_id' => Company::factory(),
             'supplier_company_id' => UserCompany::factory(),
-            // Supplier registry snapshot fields - will be set in configure()
+            // Supplier snapshot fields - will be set in configure()
             'supplier_registry_office' => null,
             'supplier_registry_number' => null,
+            'supplier_vat_payer_status' => null,
+            'supplier_vat_period' => null,
             'company_ico' => null,
             'company_dic' => null,
             'company_ic_dph' => null,
@@ -111,15 +114,27 @@ class InvoiceFactory extends Factory
                 }
             }
 
-            // Copy supplier registry data
-            if ($invoice->supplier_company_id && ! $invoice->supplier_registry_office) {
+            // Copy supplier snapshot data (registry, VAT status) only if not explicitly set
+            if ($invoice->supplier_company_id) {
                 $supplierCompany = UserCompany::find($invoice->supplier_company_id);
 
                 if ($supplierCompany) {
-                    $invoice->update([
-                        'supplier_registry_office' => $supplierCompany->registration_office,
-                        'supplier_registry_number' => $supplierCompany->registration_number,
-                    ]);
+                    $updateData = [];
+
+                    // Only copy if not explicitly set
+                    if (! $invoice->supplier_registry_office) {
+                        $updateData['supplier_registry_office'] = $supplierCompany->registration_office;
+                        $updateData['supplier_registry_number'] = $supplierCompany->registration_number;
+                    }
+
+                    if ($invoice->supplier_vat_payer_status === null) {
+                        $updateData['supplier_vat_payer_status'] = $supplierCompany->vat_payer_status;
+                        $updateData['supplier_vat_period'] = $supplierCompany->vat_period;
+                    }
+
+                    if (! empty($updateData)) {
+                        $invoice->update($updateData);
+                    }
                 }
             }
         });
@@ -206,6 +221,69 @@ class InvoiceFactory extends Factory
         return $this->state(fn (array $attributes): array => [
             'supplier_registry_office' => null,
             'supplier_registry_number' => null,
+        ]);
+    }
+
+    /**
+     * Create an invoice with VAT payer status.
+     */
+    public function vatPayer(): Factory
+    {
+        return $this->state(fn (array $attributes): array => [
+            'supplier_vat_payer_status' => VatPayerStatus::VAT_PAYER,
+        ]);
+    }
+
+    /**
+     * Create an invoice with non-VAT payer status.
+     */
+    public function notVatPayer(): Factory
+    {
+        return $this->state(fn (array $attributes): array => [
+            'supplier_vat_payer_status' => VatPayerStatus::NOT_VAT_PAYER,
+            'tax_amount' => 0,
+            'tax_rate' => 0,
+        ]);
+    }
+
+    /**
+     * Create an invoice with §7a registration status.
+     */
+    public function registeredParagraph7a(): Factory
+    {
+        return $this->state(fn (array $attributes): array => [
+            'supplier_vat_payer_status' => VatPayerStatus::REGISTERED_PARAGRAPH_7A,
+        ]);
+    }
+
+    /**
+     * Create an invoice with §7 VAT payer status.
+     */
+    public function vatPayerParagraph7(): Factory
+    {
+        return $this->state(fn (array $attributes): array => [
+            'supplier_vat_payer_status' => VatPayerStatus::VAT_PAYER_PARAGRAPH_7,
+        ]);
+    }
+
+    /**
+     * Create an invoice with reverse charge.
+     */
+    public function withReverseCharge(): Factory
+    {
+        return $this->state(fn (array $attributes): array => [
+            'reverse_charge' => true,
+            'tax_amount' => 0,
+        ]);
+    }
+
+    /**
+     * Create an invoice with special text.
+     */
+    public function withSpecialText(string $text = 'Špeciálna poznámka'): Factory
+    {
+        return $this->state(fn (array $attributes): array => [
+            'special_text' => $text,
         ]);
     }
 }

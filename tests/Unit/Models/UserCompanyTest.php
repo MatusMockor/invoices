@@ -58,7 +58,7 @@ final class UserCompanyTest extends TestCase
     {
         // Arrange
         $userCompany = UserCompany::factory()->create([
-            'vat_payer_status' => VatPayerStatus::VAT_PAYER_PARAGRAPH_7->value,
+            'vat_payer_status' => VatPayerStatus::REGISTERED_PARAGRAPH_7A->value,
         ]);
 
         // Act
@@ -66,8 +66,8 @@ final class UserCompanyTest extends TestCase
 
         // Assert
         $this->assertInstanceOf(VatPayerStatus::class, $vatPayerStatus);
-        $this->assertSame(VatPayerStatus::VAT_PAYER_PARAGRAPH_7, $vatPayerStatus);
-        $this->assertSame('vat_payer_paragraph_7', $vatPayerStatus->value);
+        $this->assertSame(VatPayerStatus::REGISTERED_PARAGRAPH_7A, $vatPayerStatus);
+        $this->assertSame('registered_paragraph_7a', $vatPayerStatus->value);
     }
 
     /**
@@ -114,7 +114,7 @@ final class UserCompanyTest extends TestCase
         $testCases = [
             VatPayerStatus::NOT_VAT_PAYER,
             VatPayerStatus::VAT_PAYER,
-            VatPayerStatus::VAT_PAYER_PARAGRAPH_7,
+            VatPayerStatus::REGISTERED_PARAGRAPH_7A,
         ];
 
         // Act & Assert
@@ -174,18 +174,18 @@ final class UserCompanyTest extends TestCase
 
         // Act
         $userCompany->update([
-            'vat_payer_status' => VatPayerStatus::VAT_PAYER_PARAGRAPH_7->value,
+            'vat_payer_status' => VatPayerStatus::REGISTERED_PARAGRAPH_7A->value,
         ]);
 
         // Assert
         $this->assertDatabaseHas(UserCompany::class, [
             'id' => $userCompany->id,
-            'vat_payer_status' => VatPayerStatus::VAT_PAYER_PARAGRAPH_7->value,
+            'vat_payer_status' => VatPayerStatus::REGISTERED_PARAGRAPH_7A->value,
         ]);
 
         $userCompany->refresh();
         $this->assertInstanceOf(VatPayerStatus::class, $userCompany->vat_payer_status);
-        $this->assertSame(VatPayerStatus::VAT_PAYER_PARAGRAPH_7, $userCompany->vat_payer_status);
+        $this->assertSame(VatPayerStatus::REGISTERED_PARAGRAPH_7A, $userCompany->vat_payer_status);
     }
 
     /**

@@ -52,6 +52,27 @@ final class InvoiceResourceTest extends TestCase
         $this->assertTrue($response['supplier_is_vat_payer']);
     }
 
+    public function test_supplier_is_vat_payer_returns_false_when_registered_paragraph_7a(): void
+    {
+        $supplierCompany = UserCompany::factory()->create([
+            'vat_payer_status' => VatPayerStatus::REGISTERED_PARAGRAPH_7A,
+        ]);
+
+        $invoice = Invoice::factory()->create([
+            'supplier_company_id' => $supplierCompany->id,
+        ]);
+
+        $invoice->load('supplierCompany');
+
+        $resource = new InvoiceResource($invoice);
+        $response = $resource->toArray(Request::create('/'));
+
+        // §7a registration is NOT full VAT payer status
+        $this->assertFalse($response['supplier_is_vat_payer']);
+        // But should still show VAT fields (has IČ DPH)
+        $this->assertTrue($response['should_show_vat_fields']);
+    }
+
     public function test_supplier_is_vat_payer_returns_false_when_not_vat_payer(): void
     {
         $supplierCompany = UserCompany::factory()->create([
@@ -108,10 +129,10 @@ final class InvoiceResourceTest extends TestCase
         $this->assertEquals('not_vat_payer', $response['supplier_vat_payer_status']);
     }
 
-    public function test_supplier_vat_payer_status_field_contains_vat_payer_paragraph_7_value(): void
+    public function test_supplier_vat_payer_status_field_contains_registered_paragraph_7a_value(): void
     {
         $supplierCompany = UserCompany::factory()->create([
-            'vat_payer_status' => VatPayerStatus::VAT_PAYER_PARAGRAPH_7,
+            'vat_payer_status' => VatPayerStatus::REGISTERED_PARAGRAPH_7A,
         ]);
 
         $invoice = Invoice::factory()->create([
@@ -124,18 +145,34 @@ final class InvoiceResourceTest extends TestCase
         $response = $resource->toArray(Request::create('/'));
 
         $this->assertArrayHasKey('supplier_vat_payer_status', $response);
-        $this->assertEquals('vat_payer_paragraph_7', $response['supplier_vat_payer_status']);
+        $this->assertEquals('registered_paragraph_7a', $response['supplier_vat_payer_status']);
     }
 
-    public function test_supplier_is_vat_payer_returns_true_when_supplier_company_is_null(): void
+    public function test_supplier_is_vat_payer_returns_false_when_supplier_company_is_null_and_no_snapshot(): void
     {
         $invoice = Invoice::factory()->create([
             'supplier_company_id' => null,
+            'supplier_vat_payer_status' => null,
         ]);
 
         $resource = new InvoiceResource($invoice);
         $response = $resource->toArray(Request::create('/'));
 
+        // Without any VAT status, supplier_is_vat_payer defaults to false
+        $this->assertFalse($response['supplier_is_vat_payer']);
+    }
+
+    public function test_supplier_is_vat_payer_uses_snapshot_when_supplier_company_is_null(): void
+    {
+        $invoice = Invoice::factory()->create([
+            'supplier_company_id' => null,
+            'supplier_vat_payer_status' => VatPayerStatus::VAT_PAYER,
+        ]);
+
+        $resource = new InvoiceResource($invoice);
+        $response = $resource->toArray(Request::create('/'));
+
+        // Uses snapshot field even without supplier company
         $this->assertTrue($response['supplier_is_vat_payer']);
     }
 

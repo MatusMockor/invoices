@@ -17,7 +17,7 @@ final class SyncCompaniesVatActionTest extends TestCase
     use RefreshDatabase;
 
     /**
-     * Test that company with ic_dph gets VAT_PAYER_PARAGRAPH_7 status.
+     * Test that company with ic_dph gets REGISTERED_PARAGRAPH_7A status.
      */
     public function test_sets_vat_payer_status_when_company_has_ic_dph(): void
     {
@@ -31,12 +31,12 @@ final class SyncCompaniesVatActionTest extends TestCase
         // Act - Simulate what the action does
         $company->update([
             'ic_dph' => 'SK1234567890',
-            'vat_payer_status' => VatPayerStatus::VAT_PAYER_PARAGRAPH_7->value,
+            'vat_payer_status' => VatPayerStatus::REGISTERED_PARAGRAPH_7A->value,
         ]);
 
         // Assert
         $company->refresh();
-        $this->assertSame(VatPayerStatus::VAT_PAYER_PARAGRAPH_7, $company->vat_payer_status);
+        $this->assertSame(VatPayerStatus::REGISTERED_PARAGRAPH_7A, $company->vat_payer_status);
         $this->assertNotNull($company->ic_dph);
     }
 
@@ -49,7 +49,7 @@ final class SyncCompaniesVatActionTest extends TestCase
         $company = Company::factory()->create([
             'ico' => '87654321',
             'ic_dph' => 'SK9876543210',
-            'vat_payer_status' => VatPayerStatus::VAT_PAYER_PARAGRAPH_7->value,
+            'vat_payer_status' => VatPayerStatus::REGISTERED_PARAGRAPH_7A->value,
         ]);
 
         // Act - Simulate what the action does
@@ -76,14 +76,14 @@ final class SyncCompaniesVatActionTest extends TestCase
         ]);
 
         $company2 = Company::factory()->create([
-            'vat_payer_status' => VatPayerStatus::VAT_PAYER_PARAGRAPH_7->value,
+            'vat_payer_status' => VatPayerStatus::REGISTERED_PARAGRAPH_7A->value,
             'ic_dph' => 'SK1234567890',
         ]);
 
         // Act
         $company1->update([
             'ic_dph' => 'SK1111111111',
-            'vat_payer_status' => VatPayerStatus::VAT_PAYER_PARAGRAPH_7->value,
+            'vat_payer_status' => VatPayerStatus::REGISTERED_PARAGRAPH_7A->value,
         ]);
 
         $company2->update([
@@ -95,7 +95,7 @@ final class SyncCompaniesVatActionTest extends TestCase
         $company1->refresh();
         $company2->refresh();
 
-        $this->assertSame(VatPayerStatus::VAT_PAYER_PARAGRAPH_7, $company1->vat_payer_status);
+        $this->assertSame(VatPayerStatus::REGISTERED_PARAGRAPH_7A, $company1->vat_payer_status);
         $this->assertNotNull($company1->ic_dph);
 
         $this->assertSame(VatPayerStatus::NOT_VAT_PAYER, $company2->vat_payer_status);
@@ -172,17 +172,17 @@ final class SyncCompaniesVatActionTest extends TestCase
     {
         // Arrange & Act & Assert - With ic_dph
         $vatData1 = ['ic_dph' => 'SK1234567890'];
-        $status1 = ! empty($vatData1['ic_dph']) ? VatPayerStatus::VAT_PAYER_PARAGRAPH_7->value : VatPayerStatus::NOT_VAT_PAYER->value;
-        $this->assertSame(VatPayerStatus::VAT_PAYER_PARAGRAPH_7->value, $status1);
+        $status1 = ! empty($vatData1['ic_dph']) ? VatPayerStatus::REGISTERED_PARAGRAPH_7A->value : VatPayerStatus::NOT_VAT_PAYER->value;
+        $this->assertSame(VatPayerStatus::REGISTERED_PARAGRAPH_7A->value, $status1);
 
         // Without ic_dph
         $vatData2 = ['ic_dph' => null];
-        $status2 = ! empty($vatData2['ic_dph']) ? VatPayerStatus::VAT_PAYER_PARAGRAPH_7->value : VatPayerStatus::NOT_VAT_PAYER->value;
+        $status2 = ! empty($vatData2['ic_dph']) ? VatPayerStatus::REGISTERED_PARAGRAPH_7A->value : VatPayerStatus::NOT_VAT_PAYER->value;
         $this->assertSame(VatPayerStatus::NOT_VAT_PAYER->value, $status2);
 
         // With empty string ic_dph
         $vatData3 = ['ic_dph' => ''];
-        $status3 = ! empty($vatData3['ic_dph']) ? VatPayerStatus::VAT_PAYER_PARAGRAPH_7->value : VatPayerStatus::NOT_VAT_PAYER->value;
+        $status3 = ! empty($vatData3['ic_dph']) ? VatPayerStatus::REGISTERED_PARAGRAPH_7A->value : VatPayerStatus::NOT_VAT_PAYER->value;
         $this->assertSame(VatPayerStatus::NOT_VAT_PAYER->value, $status3);
     }
 
@@ -194,7 +194,7 @@ final class SyncCompaniesVatActionTest extends TestCase
         // Arrange & Act
         $companyWithVat = Company::factory()->create([
             'ic_dph' => 'SK1234567890',
-            'vat_payer_status' => VatPayerStatus::VAT_PAYER_PARAGRAPH_7->value,
+            'vat_payer_status' => VatPayerStatus::REGISTERED_PARAGRAPH_7A->value,
         ]);
 
         $companyWithoutVat = Company::factory()->create([
@@ -203,7 +203,7 @@ final class SyncCompaniesVatActionTest extends TestCase
         ]);
 
         // Assert
-        $this->assertSame(VatPayerStatus::VAT_PAYER_PARAGRAPH_7, $companyWithVat->vat_payer_status);
+        $this->assertSame(VatPayerStatus::REGISTERED_PARAGRAPH_7A, $companyWithVat->vat_payer_status);
         $this->assertNotNull($companyWithVat->ic_dph);
 
         $this->assertSame(VatPayerStatus::NOT_VAT_PAYER, $companyWithoutVat->vat_payer_status);

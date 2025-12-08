@@ -31,6 +31,7 @@ final class CompanyFactoryTest extends TestCase
                         VatPayerStatus::NOT_VAT_PAYER,
                         VatPayerStatus::VAT_PAYER,
                         VatPayerStatus::VAT_PAYER_PARAGRAPH_7,
+                        VatPayerStatus::REGISTERED_PARAGRAPH_7A,
                     ]
                 );
             }
@@ -38,7 +39,7 @@ final class CompanyFactoryTest extends TestCase
     }
 
     /**
-     * Test that when ic_dph is present, status is either VAT_PAYER or VAT_PAYER_PARAGRAPH_7.
+     * Test that when ic_dph is present, status is either VAT_PAYER or REGISTERED_PARAGRAPH_7A.
      */
     public function test_when_ic_dph_present_status_is_vat_payer_or_paragraph_7(): void
     {
@@ -51,8 +52,9 @@ final class CompanyFactoryTest extends TestCase
                 $this->assertInstanceOf(VatPayerStatus::class, $company->vat_payer_status);
                 $this->assertTrue(
                     $company->vat_payer_status === VatPayerStatus::VAT_PAYER
-                    || $company->vat_payer_status === VatPayerStatus::VAT_PAYER_PARAGRAPH_7,
-                    'When ic_dph is present, status must be VAT_PAYER or VAT_PAYER_PARAGRAPH_7'
+                    || $company->vat_payer_status === VatPayerStatus::VAT_PAYER_PARAGRAPH_7
+                    || $company->vat_payer_status === VatPayerStatus::REGISTERED_PARAGRAPH_7A,
+                    'When ic_dph is present, status must be VAT_PAYER, VAT_PAYER_PARAGRAPH_7 or REGISTERED_PARAGRAPH_7A'
                 );
             }
         }
@@ -126,13 +128,13 @@ final class CompanyFactoryTest extends TestCase
 
         $vatPayerParagraph7 = Company::factory()->create([
             'ic_dph' => 'SK'.fake()->numerify('##########'),
-            'vat_payer_status' => VatPayerStatus::VAT_PAYER_PARAGRAPH_7->value,
+            'vat_payer_status' => VatPayerStatus::REGISTERED_PARAGRAPH_7A->value,
         ]);
 
         // Assert
         $this->assertSame(VatPayerStatus::NOT_VAT_PAYER, $notVatPayer->vat_payer_status);
         $this->assertSame(VatPayerStatus::VAT_PAYER, $vatPayer->vat_payer_status);
-        $this->assertSame(VatPayerStatus::VAT_PAYER_PARAGRAPH_7, $vatPayerParagraph7->vat_payer_status);
+        $this->assertSame(VatPayerStatus::REGISTERED_PARAGRAPH_7A, $vatPayerParagraph7->vat_payer_status);
     }
 
     /**
@@ -229,19 +231,19 @@ final class CompanyFactoryTest extends TestCase
     }
 
     /**
-     * Test that sroVatPayerParagraph7() creates s.r.o. with IC DPH and correct status.
+     * Test that sroRegisteredParagraph7a() creates s.r.o. with IC DPH and correct status.
      */
-    public function test_sro_vat_payer_paragraph_7_creates_valid_company(): void
+    public function test_sro_registered_paragraph_7a_creates_valid_company(): void
     {
         // Arrange & Act
-        $company = Company::factory()->sroVatPayerParagraph7()->create();
+        $company = Company::factory()->sroRegisteredParagraph7a()->create();
 
         // Assert
         $this->assertSame('s.r.o.', $company->company_type);
         $this->assertNotNull($company->ic_dph, 'S.r.o. VAT payer must have IC DPH');
         $this->assertStringStartsWith('SK', $company->ic_dph);
         $this->assertMatchesRegularExpression('/^SK\d{10}$/', $company->ic_dph);
-        $this->assertSame(VatPayerStatus::VAT_PAYER_PARAGRAPH_7, $company->vat_payer_status);
+        $this->assertSame(VatPayerStatus::REGISTERED_PARAGRAPH_7A, $company->vat_payer_status);
         $this->assertStringContainsString('Okresný súd', $company->registration_office);
         $this->assertStringContainsString('Oddiel: Sro', $company->registration_number);
         $this->assertStringContainsString('Vložka č.', $company->registration_number);
@@ -250,17 +252,17 @@ final class CompanyFactoryTest extends TestCase
     /**
      * Test that multiple s.r.o. VAT payer paragraph 7 companies have valid IC DPH.
      */
-    public function test_multiple_sro_vat_payer_paragraph_7_have_valid_ic_dph(): void
+    public function test_multiple_sro_registered_paragraph_7a_have_valid_ic_dph(): void
     {
         // Arrange & Act
-        $companies = Company::factory()->sroVatPayerParagraph7()->count(20)->create();
+        $companies = Company::factory()->sroRegisteredParagraph7a()->count(20)->create();
 
         // Assert
         foreach ($companies as $company) {
             $this->assertSame('s.r.o.', $company->company_type);
             $this->assertNotNull($company->ic_dph);
             $this->assertMatchesRegularExpression('/^SK\d{10}$/', $company->ic_dph);
-            $this->assertSame(VatPayerStatus::VAT_PAYER_PARAGRAPH_7, $company->vat_payer_status);
+            $this->assertSame(VatPayerStatus::REGISTERED_PARAGRAPH_7A, $company->vat_payer_status);
         }
     }
 
@@ -304,7 +306,7 @@ final class CompanyFactoryTest extends TestCase
     {
         // Arrange & Act
         $zivnost = Company::factory()->soleProprietorship()->create();
-        $sroVat = Company::factory()->sroVatPayerParagraph7()->create();
+        $sroVat = Company::factory()->sroRegisteredParagraph7a()->create();
         $sroNonVat = Company::factory()->sroNotVatPayer()->create();
 
         // Assert - Živnosť uses Okresný úrad
@@ -322,7 +324,7 @@ final class CompanyFactoryTest extends TestCase
     {
         // Arrange & Act
         $zivnost = Company::factory()->soleProprietorship()->create();
-        $sroVat = Company::factory()->sroVatPayerParagraph7()->create();
+        $sroVat = Company::factory()->sroRegisteredParagraph7a()->create();
         $sroNonVat = Company::factory()->sroNotVatPayer()->create();
 
         // Assert - Živnosť uses format: 123456-1234
