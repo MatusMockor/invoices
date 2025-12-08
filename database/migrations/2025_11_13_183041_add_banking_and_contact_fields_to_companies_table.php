@@ -23,9 +23,6 @@ return new class extends Migration
             $table->string('phone')->nullable()->after('bank_name');
             $table->string('email')->nullable()->after('phone');
             $table->string('website')->nullable()->after('email');
-
-            // Company type (s.r.o., a.s., živnosť, etc.) - rename from 'type'
-            $table->string('company_type')->nullable()->after('website');
         });
     }
 
@@ -42,7 +39,6 @@ return new class extends Migration
                 'phone',
                 'email',
                 'website',
-                'company_type',
             ]);
         });
     }
