@@ -29,10 +29,9 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
  * @property string|null $phone Contact phone
  * @property string|null $email Contact email
  * @property string|null $website Company website
- * @property string|null $company_type Legal form (s.r.o., a.s., živnosť, etc.)
  * @property string|null $registration_office Registration office
  * @property string|null $registration_number Registration number
- * @property string|null $type Company type
+ * @property CompanyType|null $type Company type enum
  * @property \Illuminate\Support\Carbon|null $created_at
  * @property \Illuminate\Support\Carbon|null $updated_at
  * @property-read \Illuminate\Database\Eloquent\Collection|\App\Models\Invoice[] $invoices
@@ -57,7 +56,6 @@ class Company extends Model
         'phone',
         'email',
         'website',
-        'company_type',
         'registration_office',
         'registration_number',
         'type',

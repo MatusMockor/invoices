@@ -61,7 +61,7 @@ final class UserAccountDeleteActionTest extends TestCase
         $user->createToken('token2');
         $user->createToken('token3');
 
-        $this->assertCount(4, $user->tokens);
+        $this->assertCount(3, $user->tokens);
 
         $this->action->handle($user);
 

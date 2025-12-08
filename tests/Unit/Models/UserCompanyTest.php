@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Tests\Unit\Models;
 
+use App\Enums\CompanyType;
 use App\Enums\VatPayerStatus;
 use App\Models\User;
 use App\Models\UserCompany;
@@ -89,20 +90,19 @@ final class UserCompanyTest extends TestCase
     }
 
     /**
-     * Test that vat_payer_status can be null.
+     * Test that vat_payer_status defaults to NOT_VAT_PAYER.
      */
-    public function test_vat_payer_status_can_be_null(): void
+    public function test_vat_payer_status_defaults_to_not_vat_payer(): void
     {
-        // Arrange
-        $userCompany = UserCompany::factory()->create([
-            'vat_payer_status' => null,
-        ]);
+        // Arrange - Create company without specifying vat_payer_status
+        $userCompany = UserCompany::factory()->create();
 
         // Act
         $vatPayerStatus = $userCompany->vat_payer_status;
 
-        // Assert
-        $this->assertNull($vatPayerStatus);
+        // Assert - vat_payer_status should always have a value (never null)
+        $this->assertNotNull($vatPayerStatus);
+        $this->assertInstanceOf(VatPayerStatus::class, $vatPayerStatus);
     }
 
     /**
@@ -147,7 +147,7 @@ final class UserCompanyTest extends TestCase
             'city' => fake()->city(),
             'postal_code' => fake()->numerify('#####'),
             'country' => 'Slovakia',
-            'company_type' => 's.r.o.',
+            'type' => CompanyType::LIMITED_LIABILITY_COMPANY,
             'registration_number' => 'OR Bratislava I',
             'vat_payer_status' => VatPayerStatus::VAT_PAYER->value,
         ]);

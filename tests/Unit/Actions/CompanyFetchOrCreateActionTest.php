@@ -81,7 +81,7 @@ class CompanyFetchOrCreateActionTest extends TestCase
             'country' => 'SK',
             'dic' => $dic,
             'ic_dph' => null,
-            'company_type' => 's.r.o.',
+            'type' => 'limited_liability_company',
             'registration_number' => 'OR Bratislava I',
         ];
 

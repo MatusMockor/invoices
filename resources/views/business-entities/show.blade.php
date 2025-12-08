@@ -106,7 +106,7 @@
                         <div>
                             <h4 class="font-semibold text-base mb-3 text-gray-700 dark:text-gray-300">{{ __('Company Type') }}</h4>
                             <div class="bg-gray-50 dark:bg-gray-700 p-4 rounded-lg">
-                                <p class="text-gray-900 dark:text-gray-100">{{ $businessEntity->company_type }}</p>
+                                <p class="text-gray-900 dark:text-gray-100">{{ $businessEntity->type?->label() ?? '-' }}</p>
                             </div>
                         </div>
                         <div>

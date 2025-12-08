@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Tests\Unit\Http\Resources;
 
+use App\Enums\CompanyType;
 use App\Enums\VatPayerStatus;
 use App\Http\Resources\UserCompanyResource;
 use App\Models\UserCompany;
@@ -84,7 +85,7 @@ final class UserCompanyResourceTest extends TestCase
     public function test_resource_includes_sro_registry_data(): void
     {
         $company = UserCompany::factory()->create([
-            'company_type' => 's.r.o.',
+            'type' => CompanyType::LIMITED_LIABILITY_COMPANY,
             'registration_office' => 'Okresny sud Bratislava I',
             'registration_number' => 'Oddiel: Sro, Vlozka c. 123456/B',
         ]);
@@ -102,7 +103,7 @@ final class UserCompanyResourceTest extends TestCase
         $registrationNumber = 'Cislo zivnostenskeho registra: 820-12345';
 
         $company = UserCompany::factory()->create([
-            'company_type' => 'zivnost',
+            'type' => CompanyType::SOLE_PROPRIETOR,
             'registration_office' => $registrationOffice,
             'registration_number' => $registrationNumber,
         ]);
@@ -222,16 +223,15 @@ final class UserCompanyResourceTest extends TestCase
         $this->assertEquals('vat_payer', $response['vat_payer_status']);
     }
 
-    public function test_resource_handles_null_vat_payer_status(): void
+    public function test_resource_includes_default_vat_payer_status(): void
     {
-        $company = UserCompany::factory()->create([
-            'vat_payer_status' => null,
-        ]);
+        $company = UserCompany::factory()->create();
 
         $resource = new UserCompanyResource($company);
         $response = $resource->toArray(Request::create('/'));
 
+        // vat_payer_status should always have a value (NOT NULL in DB)
         $this->assertArrayHasKey('vat_payer_status', $response);
-        $this->assertNull($response['vat_payer_status']);
+        $this->assertNotNull($response['vat_payer_status']);
     }
 }

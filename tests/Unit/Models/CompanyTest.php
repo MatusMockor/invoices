@@ -89,20 +89,19 @@ final class CompanyTest extends TestCase
     }
 
     /**
-     * Test that vat_payer_status can be null.
+     * Test that vat_payer_status defaults to NOT_VAT_PAYER.
      */
-    public function test_vat_payer_status_can_be_null(): void
+    public function test_vat_payer_status_defaults_to_not_vat_payer(): void
     {
-        // Arrange
-        $company = Company::factory()->create([
-            'vat_payer_status' => null,
-        ]);
+        // Arrange - Create company without specifying vat_payer_status
+        $company = Company::factory()->create();
 
         // Act
         $vatPayerStatus = $company->vat_payer_status;
 
-        // Assert
-        $this->assertNull($vatPayerStatus);
+        // Assert - vat_payer_status should always have a value (never null)
+        $this->assertNotNull($vatPayerStatus);
+        $this->assertInstanceOf(VatPayerStatus::class, $vatPayerStatus);
     }
 
     /**

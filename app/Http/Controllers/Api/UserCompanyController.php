@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Http\Controllers\Api;
 
 use App\Actions\Company\UpdateCompanyAction;
+use App\Enums\CompanyType;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\StoreCompanyRequest;
 use App\Http\Requests\UpdateCompanyRequest;
@@ -57,7 +58,7 @@ class UserCompanyController extends Controller
     {
         $data = $request->getData();
         $data['user_id'] = auth()->id();
-        $data['company_type'] = 'SRO';
+        $data['type'] = CompanyType::LIMITED_LIABILITY_COMPANY;
         $data['registration_number'] = $data['ico'];
 
         $company = $this->companyRepository->create($data);

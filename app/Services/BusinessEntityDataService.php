@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Services;
 
+use App\Enums\CompanyType;
 use App\Models\UserCompany;
 use App\Repositories\Contracts\BusinessEntityRepository as BusinessEntityRepositoryContract;
 use App\Services\Interfaces\BusinessEntityDataService as BusinessEntityDataServiceContract;
@@ -52,7 +53,7 @@ class BusinessEntityDataService implements BusinessEntityDataServiceContract
             'country' => $businessEntityData['data']['country'],
             'dic' => $businessEntityData['data']['dic'],
             'ic_dph' => $businessEntityData['data']['ic_dph'],
-            'company_type' => $businessEntityData['data']['company_type'] ?? null,
+            'type' => $businessEntityData['data']['type'] ?? CompanyType::SOLE_PROPRIETOR->value,
             'registration_number' => $businessEntityData['data']['registration_number'] ?? null,
         ]);
     }
@@ -79,7 +80,7 @@ class BusinessEntityDataService implements BusinessEntityDataServiceContract
                 'country' => 'Slovensko',
                 'dic' => $data['dic'] ?? null,
                 'ic_dph' => $data['icDph'] ?? null,
-                'company_type' => $data['zdroj'],
+                'type' => $data['zdroj'] ?? CompanyType::SOLE_PROPRIETOR->value,
                 'registration_number' => $data['registration_number'],
             ],
         ];

@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Tests\Feature\Http;
 
+use App\Enums\CompanyType;
 use App\Models\Company;
 use App\Models\Invoice;
 use App\Models\User;
@@ -27,7 +28,7 @@ final class InvoiceRegistrySnapshotTest extends TestCase
         $this->user = User::factory()->create();
         $this->supplierCompany = UserCompany::factory()->create([
             'user_id' => $this->user->id,
-            'company_type' => 's.r.o.',
+            'type' => CompanyType::LIMITED_LIABILITY_COMPANY,
             'registration_office' => 'Okresny sud Bratislava I',
             'registration_number' => 'Oddiel: Sro, Vlozka c. 123456/B',
         ]);
@@ -154,7 +155,7 @@ final class InvoiceRegistrySnapshotTest extends TestCase
     {
         $soleProprietorship = UserCompany::factory()->create([
             'user_id' => $this->user->id,
-            'company_type' => 'zivnost',
+            'type' => CompanyType::SOLE_PROPRIETOR,
             'registration_office' => 'Okresny urad Bratislava, odbor zivnostenskeho podnikania',
             'registration_number' => 'Cislo zivnostenskeho registra: 820-12345',
         ]);

@@ -32,7 +32,7 @@ final class CompanyCreationAction
                 'country' => config('invoices.default_country', 'SK'),
                 'dic' => $dto->dic,
                 'ic_dph' => $dto->icDph,
-                'company_type' => config('invoices.default_company_type', 's.r.o.'),
+                'type' => config('invoices.default_company_type'),
                 'registration_number' => $dto->registrationNumber ?? '',
                 'registration_office' => $dto->registrationOffice,
                 'iban' => $dto->iban,
