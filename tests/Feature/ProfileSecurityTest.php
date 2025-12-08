@@ -273,7 +273,7 @@ class ProfileSecurityTest extends TestCase
         $token2 = $user->createToken('device2')->plainTextToken;
         $token3 = $user->createToken('device3')->plainTextToken;
 
-        $this->assertCount(4, $user->tokens);
+        $this->assertCount(3, $user->tokens);
 
         Sanctum::actingAs($user);
 

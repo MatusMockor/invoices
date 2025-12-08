@@ -185,7 +185,7 @@ final class UserCompanyFactoryTest extends TestCase
         $this->assertNotNull($userCompany->country);
         $this->assertNotNull($userCompany->dic);
         $this->assertNotNull($userCompany->vat_payer_status);
-        $this->assertNotNull($userCompany->company_type);
+        $this->assertNotNull($userCompany->type);
         $this->assertNotNull($userCompany->registration_number);
     }
 

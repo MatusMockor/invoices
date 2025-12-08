@@ -9,6 +9,23 @@ export interface User {
   updated_at: string;
 }
 
+// Company type enum values matching backend CompanyType enum
+export type CompanyType =
+  | 'joint_stock_company'
+  | 'limited_liability_company'
+  | 'cooperative'
+  | 'agricultural_cooperative'
+  | 'foundation'
+  | 'municipality'
+  | 'general_partnership'
+  | 'limited_partnership'
+  | 'european_economic_interest_grouping'
+  | 'condominium_association'
+  | 'sports_organization'
+  | 'political_party'
+  | 'civic_association'
+  | 'sole_proprietor';
+
 export interface Company {
   id: number;
   name: string;
@@ -22,7 +39,7 @@ export interface Company {
   postal_code: string;
   country: string;
 
-  // Banking information (§ 74 ods. 1)
+  // Banking information
   iban: string | null;
   swift: string | null;
   bank_name: string | null;
@@ -33,7 +50,8 @@ export interface Company {
   website: string | null;
 
   // Company details
-  company_type: string | null; // s.r.o., a.s., živnosť, etc.
+  type: CompanyType | null;
+  type_label?: string | null;
   registration_office: string | null;
   registration_number: string | null;
 
@@ -70,7 +88,7 @@ export interface UserCompany {
   postal_code: string;
   country: string;
 
-  // Banking information (§ 74 ods. 1)
+  // Banking information
   iban: string | null;
   swift: string | null;
 
@@ -80,9 +98,10 @@ export interface UserCompany {
   website: string | null;
 
   // Company details
-  company_type: string; // živnosť or s.r.o.
+  type: CompanyType; // Company type enum value
+  type_label?: string; // Human-readable label (e.g., "s.r.o.", "Zivnost")
   registration_number: string; // Registration number in business or trade register
-  registration_office: string | null; // Registry office (e.g., "Okresný súd Bratislava I")
+  registration_office: string | null; // Registry office (e.g., "Okresny sud Bratislava I")
 
   status: 'active' | 'inactive';
   vehicles: number;

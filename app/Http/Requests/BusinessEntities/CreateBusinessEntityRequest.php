@@ -4,7 +4,9 @@ declare(strict_types=1);
 
 namespace App\Http\Requests\BusinessEntities;
 
+use App\Enums\CompanyType;
 use Illuminate\Foundation\Http\FormRequest;
+use Illuminate\Validation\Rules\Enum;
 
 final class CreateBusinessEntityRequest extends FormRequest
 {
@@ -33,7 +35,7 @@ final class CreateBusinessEntityRequest extends FormRequest
             'country' => ['required', 'string', 'max:255'],
             'ic_dph' => ['nullable', 'string', 'max:255'],
             'registration_number' => ['required', 'string', 'max:255'],
-            'company_type' => ['required', 'string', 'max:255'],
+            'type' => ['required', 'string', new Enum(CompanyType::class)],
         ];
     }
 
@@ -51,8 +53,8 @@ final class CreateBusinessEntityRequest extends FormRequest
             'city.required' => 'Mesto je povinné',
             'postal_code.required' => 'PSČ je povinné',
             'country.required' => 'Krajina je povinná',
-            'registration_number.required' => 'Registračné číslo je povinné',
-            'company_type.required' => 'Právna forma je povinná',
+            'registration_number.required' => 'Registracne cislo je povinne',
+            'type.required' => 'Pravna forma je povinna',
         ];
     }
 
@@ -101,8 +103,8 @@ final class CreateBusinessEntityRequest extends FormRequest
         return $this->validated('registration_number');
     }
 
-    public function getCompanyType(): string
+    public function getType(): CompanyType
     {
-        return $this->validated('company_type');
+        return CompanyType::from($this->validated('type'));
     }
 }

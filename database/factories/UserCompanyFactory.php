@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Database\Factories;
 
+use App\Enums\CompanyType;
 use App\Enums\VatPayerStatus;
 use App\Models\UserCompany;
 use Illuminate\Database\Eloquent\Factories\Factory;
@@ -27,7 +28,6 @@ class UserCompanyFactory extends Factory
      */
     public function definition(): array
     {
-        $companyTypes = ['zivnost', 's.r.o.'];
         $icDph = fake()->optional(0.7)->passthrough('SK'.fake()->numerify('##########'));
 
         return [
@@ -50,7 +50,7 @@ class UserCompanyFactory extends Factory
             'phone' => fake()->phoneNumber(),
             'email' => fake()->companyEmail(),
             'website' => fake()->url(),
-            'company_type' => fake()->randomElement($companyTypes),
+            'type' => fake()->randomElement([CompanyType::SOLE_PROPRIETOR, CompanyType::LIMITED_LIABILITY_COMPANY]),
             'registration_number' => 'Oddiel: '.fake()->randomElement(['Sro', 'Sa']).', Vlozka c. '.fake()->numerify('######/B'),
             'registration_office' => fake()->randomElement([
                 'Okresny sud Bratislava I',
@@ -92,7 +92,7 @@ class UserCompanyFactory extends Factory
     public function soleProprietorship(): Factory
     {
         return $this->state(fn (array $attributes): array => [
-            'company_type' => 'zivnost',
+            'type' => CompanyType::SOLE_PROPRIETOR,
             'ic_dph' => null,
             'vat_payer_status' => VatPayerStatus::NOT_VAT_PAYER->value,
             'registration_office' => fake()->randomElement([
@@ -110,7 +110,7 @@ class UserCompanyFactory extends Factory
     public function sro(): Factory
     {
         return $this->state(fn (array $attributes): array => [
-            'company_type' => 's.r.o.',
+            'type' => CompanyType::LIMITED_LIABILITY_COMPANY,
             'registration_office' => fake()->randomElement([
                 'Okresny sud Bratislava I',
                 'Okresny sud Kosice I',

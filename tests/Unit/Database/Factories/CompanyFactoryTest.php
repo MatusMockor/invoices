@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Tests\Unit\Database\Factories;
 
+use App\Enums\CompanyType;
 use App\Enums\VatPayerStatus;
 use App\Models\Company;
 use Illuminate\Foundation\Testing\RefreshDatabase;
@@ -198,8 +199,8 @@ final class CompanyFactoryTest extends TestCase
     }
 
     /**
-     * Test that soleProprietorship() creates živnosť without IC DPH.
-     * IMPORTANT: Živnosť CANNOT have IC DPH!
+     * Test that soleProprietorship() creates zivnost without IC DPH.
+     * IMPORTANT: Zivnost CANNOT have IC DPH!
      */
     public function test_sole_proprietorship_creates_zivnost_without_ic_dph(): void
     {
@@ -207,10 +208,10 @@ final class CompanyFactoryTest extends TestCase
         $company = Company::factory()->soleProprietorship()->create();
 
         // Assert
-        $this->assertSame('živnosť', $company->company_type);
-        $this->assertNull($company->ic_dph, 'Živnosť CANNOT have IC DPH!');
+        $this->assertSame(CompanyType::SOLE_PROPRIETOR, $company->type);
+        $this->assertNull($company->ic_dph, 'Zivnost CANNOT have IC DPH!');
         $this->assertSame(VatPayerStatus::NOT_VAT_PAYER, $company->vat_payer_status);
-        $this->assertStringContainsString('Okresný úrad', $company->registration_office);
+        $this->assertStringContainsString('Okresny urad', $company->registration_office);
         $this->assertMatchesRegularExpression('/^\d{6}-\d{4}$/', $company->registration_number);
     }
 
@@ -224,8 +225,8 @@ final class CompanyFactoryTest extends TestCase
 
         // Assert
         foreach ($companies as $company) {
-            $this->assertSame('živnosť', $company->company_type);
-            $this->assertNull($company->ic_dph, 'Živnosť CANNOT have IC DPH!');
+            $this->assertSame(CompanyType::SOLE_PROPRIETOR, $company->type);
+            $this->assertNull($company->ic_dph, 'Zivnost CANNOT have IC DPH!');
             $this->assertSame(VatPayerStatus::NOT_VAT_PAYER, $company->vat_payer_status);
         }
     }
@@ -239,14 +240,14 @@ final class CompanyFactoryTest extends TestCase
         $company = Company::factory()->sroRegisteredParagraph7a()->create();
 
         // Assert
-        $this->assertSame('s.r.o.', $company->company_type);
+        $this->assertSame(CompanyType::LIMITED_LIABILITY_COMPANY, $company->type);
         $this->assertNotNull($company->ic_dph, 'S.r.o. VAT payer must have IC DPH');
         $this->assertStringStartsWith('SK', $company->ic_dph);
         $this->assertMatchesRegularExpression('/^SK\d{10}$/', $company->ic_dph);
         $this->assertSame(VatPayerStatus::REGISTERED_PARAGRAPH_7A, $company->vat_payer_status);
-        $this->assertStringContainsString('Okresný súd', $company->registration_office);
+        $this->assertStringContainsString('Okresny sud', $company->registration_office);
         $this->assertStringContainsString('Oddiel: Sro', $company->registration_number);
-        $this->assertStringContainsString('Vložka č.', $company->registration_number);
+        $this->assertStringContainsString('Vlozka c.', $company->registration_number);
     }
 
     /**
@@ -259,7 +260,7 @@ final class CompanyFactoryTest extends TestCase
 
         // Assert
         foreach ($companies as $company) {
-            $this->assertSame('s.r.o.', $company->company_type);
+            $this->assertSame(CompanyType::LIMITED_LIABILITY_COMPANY, $company->type);
             $this->assertNotNull($company->ic_dph);
             $this->assertMatchesRegularExpression('/^SK\d{10}$/', $company->ic_dph);
             $this->assertSame(VatPayerStatus::REGISTERED_PARAGRAPH_7A, $company->vat_payer_status);
@@ -275,12 +276,12 @@ final class CompanyFactoryTest extends TestCase
         $company = Company::factory()->sroNotVatPayer()->create();
 
         // Assert
-        $this->assertSame('s.r.o.', $company->company_type);
+        $this->assertSame(CompanyType::LIMITED_LIABILITY_COMPANY, $company->type);
         $this->assertNull($company->ic_dph, 'S.r.o. non-VAT payer must not have IC DPH');
         $this->assertSame(VatPayerStatus::NOT_VAT_PAYER, $company->vat_payer_status);
-        $this->assertStringContainsString('Okresný súd', $company->registration_office);
+        $this->assertStringContainsString('Okresny sud', $company->registration_office);
         $this->assertStringContainsString('Oddiel: Sro', $company->registration_number);
-        $this->assertStringContainsString('Vložka č.', $company->registration_number);
+        $this->assertStringContainsString('Vlozka c.', $company->registration_number);
     }
 
     /**
@@ -293,7 +294,7 @@ final class CompanyFactoryTest extends TestCase
 
         // Assert
         foreach ($companies as $company) {
-            $this->assertSame('s.r.o.', $company->company_type);
+            $this->assertSame(CompanyType::LIMITED_LIABILITY_COMPANY, $company->type);
             $this->assertNull($company->ic_dph);
             $this->assertSame(VatPayerStatus::NOT_VAT_PAYER, $company->vat_payer_status);
         }
@@ -302,41 +303,41 @@ final class CompanyFactoryTest extends TestCase
     /**
      * Test registration office formats for different company types.
      */
-    public function test_registration_office_formats_match_company_type(): void
+    public function test_registration_office_formats_match_type(): void
     {
         // Arrange & Act
         $zivnost = Company::factory()->soleProprietorship()->create();
         $sroVat = Company::factory()->sroRegisteredParagraph7a()->create();
         $sroNonVat = Company::factory()->sroNotVatPayer()->create();
 
-        // Assert - Živnosť uses Okresný úrad
-        $this->assertStringContainsString('Okresný úrad', $zivnost->registration_office);
+        // Assert - Zivnost uses Okresny urad
+        $this->assertStringContainsString('Okresny urad', $zivnost->registration_office);
 
-        // Assert - S.r.o. uses Okresný súd
-        $this->assertStringContainsString('Okresný súd', $sroVat->registration_office);
-        $this->assertStringContainsString('Okresný súd', $sroNonVat->registration_office);
+        // Assert - S.r.o. uses Okresny sud
+        $this->assertStringContainsString('Okresny sud', $sroVat->registration_office);
+        $this->assertStringContainsString('Okresny sud', $sroNonVat->registration_office);
     }
 
     /**
      * Test registration number formats for different company types.
      */
-    public function test_registration_number_formats_match_company_type(): void
+    public function test_registration_number_formats_match_type(): void
     {
         // Arrange & Act
         $zivnost = Company::factory()->soleProprietorship()->create();
         $sroVat = Company::factory()->sroRegisteredParagraph7a()->create();
         $sroNonVat = Company::factory()->sroNotVatPayer()->create();
 
-        // Assert - Živnosť uses format: 123456-1234
+        // Assert - Zivnost uses format: 123456-1234
         $this->assertMatchesRegularExpression('/^\d{6}-\d{4}$/', $zivnost->registration_number);
 
-        // Assert - S.r.o. uses format: Oddiel: Sro, Vložka č. 123456/B
+        // Assert - S.r.o. uses format: Oddiel: Sro, Vlozka c. 123456/B
         $this->assertStringContainsString('Oddiel:', $sroVat->registration_number);
         $this->assertStringContainsString('Sro', $sroVat->registration_number);
-        $this->assertStringContainsString('Vložka č.', $sroVat->registration_number);
+        $this->assertStringContainsString('Vlozka c.', $sroVat->registration_number);
 
         $this->assertStringContainsString('Oddiel:', $sroNonVat->registration_number);
         $this->assertStringContainsString('Sro', $sroNonVat->registration_number);
-        $this->assertStringContainsString('Vložka č.', $sroNonVat->registration_number);
+        $this->assertStringContainsString('Vlozka c.', $sroNonVat->registration_number);
     }
 }

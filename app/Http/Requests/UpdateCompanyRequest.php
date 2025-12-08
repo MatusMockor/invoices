@@ -103,12 +103,11 @@ final class UpdateCompanyRequest extends FormRequest
 
     public function getData(): array
     {
-        return [
+        $data = [
             'name' => $this->getName(),
             'ico' => $this->getIco(),
             'dic' => $this->getDic(),
             'ic_dph' => $this->getIcDph(),
-            'vat_payer_status' => $this->getVatPayerStatus(),
             'street' => $this->getStreet(),
             'city' => $this->getCity(),
             'postal_code' => $this->getPostalCode(),
@@ -118,5 +117,13 @@ final class UpdateCompanyRequest extends FormRequest
             'iban' => $this->getIban(),
             'swift' => $this->getSwift(),
         ];
+
+        // Only include vat_payer_status if explicitly provided (not nullable in DB)
+        $vatPayerStatus = $this->getVatPayerStatus();
+        if ($vatPayerStatus !== null) {
+            $data['vat_payer_status'] = $vatPayerStatus;
+        }
+
+        return $data;
     }
 }

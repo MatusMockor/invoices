@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Tests\Feature\Http;
 
+use App\Enums\CompanyType;
 use App\Models\Company;
 use App\Models\Invoice;
 use App\Models\User;
@@ -198,7 +199,7 @@ final class CompanyRegistryTest extends TestCase
     {
         $company = UserCompany::factory()->create([
             'user_id' => $this->user->id,
-            'company_type' => 's.r.o.',
+            'type' => CompanyType::LIMITED_LIABILITY_COMPANY,
             'registration_office' => 'Okresny sud Bratislava I',
             'registration_number' => 'Oddiel: Sro, Vlozka c. 123456/B',
         ]);
@@ -217,7 +218,7 @@ final class CompanyRegistryTest extends TestCase
 
         $company = UserCompany::factory()->create([
             'user_id' => $this->user->id,
-            'company_type' => 'zivnost',
+            'type' => CompanyType::SOLE_PROPRIETOR,
             'registration_office' => $registrationOffice,
             'registration_number' => $registrationNumber,
         ]);

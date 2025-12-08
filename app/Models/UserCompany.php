@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Models;
 
+use App\Enums\CompanyType;
 use App\Enums\VatPayerStatus;
 use App\Enums\VatPeriod;
 use Illuminate\Database\Eloquent\Casts\Attribute;
@@ -33,7 +34,7 @@ use Illuminate\Database\Eloquent\Relations\HasOne;
  * @property string|null $phone Contact phone number
  * @property string|null $email Contact email address
  * @property string|null $website Company website
- * @property string $company_type Legal form of the company
+ * @property CompanyType $type Company type enum
  * @property string $registration_number Registration number in business register
  * @property string|null $registration_office Registration office (e.g., Okresny sud Bratislava I)
  * @property \Illuminate\Support\Carbon|null $created_at
@@ -69,7 +70,7 @@ class UserCompany extends Model
         'email',
         'website',
         'user_id',
-        'company_type',
+        'type',
         'registration_number',
         'registration_office',
     ];
@@ -134,6 +135,7 @@ class UserCompany extends Model
     protected function casts(): array
     {
         return [
+            'type' => CompanyType::class,
             'vat_payer_status' => VatPayerStatus::class,
             'vat_period' => VatPeriod::class,
         ];

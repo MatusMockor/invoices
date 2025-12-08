@@ -116,14 +116,15 @@
                     <div class="p-6 bg-white dark:bg-gray-800 space-y-6">
                         <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
                             <div>
-                                <x-input-label for="company_type" :value="__('Právna forma *')" class="font-semibold" />
-                                <select id="company_type" name="company_type" class="border-gray-300 dark:border-gray-700 dark:bg-gray-900 dark:text-gray-300 focus:border-indigo-500 dark:focus:border-indigo-600 focus:ring-indigo-500 dark:focus:ring-indigo-600 rounded-md shadow-sm block mt-1 w-full" required>
-                                    <option value="">-- Vyberte právnu formu --</option>
-                                    <option value="živnosť" {{ old('company_type', $businessEntity->company_type) == 'živnosť' ? 'selected' : '' }}>Živnosť</option>
-                                    <option value="s.r.o." {{ old('company_type', $businessEntity->company_type) == 's.r.o.' ? 'selected' : '' }}>s.r.o.</option>
+                                <x-input-label for="type" :value="__('Pravna forma *')" class="font-semibold" />
+                                <select id="type" name="type" class="border-gray-300 dark:border-gray-700 dark:bg-gray-900 dark:text-gray-300 focus:border-indigo-500 dark:focus:border-indigo-600 focus:ring-indigo-500 dark:focus:ring-indigo-600 rounded-md shadow-sm block mt-1 w-full" required>
+                                    <option value="">-- Vyberte pravnu formu --</option>
+                                    @foreach(\App\Enums\CompanyType::cases() as $companyType)
+                                        <option value="{{ $companyType->value }}" {{ old('type', $businessEntity->type?->value) == $companyType->value ? 'selected' : '' }}>{{ $companyType->label() }}</option>
+                                    @endforeach
                                 </select>
                                 <p class="mt-1 text-xs text-gray-500 dark:text-gray-400">{{ __('Legal form of the company') }}</p>
-                                <x-input-error :messages="$errors->get('company_type')" class="mt-2" />
+                                <x-input-error :messages="$errors->get('type')" class="mt-2" />
                             </div>
 
                             <div>

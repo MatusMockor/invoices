@@ -2,6 +2,7 @@
 
 declare(strict_types=1);
 
+use App\Enums\CompanyType;
 use App\Enums\Currency;
 use App\Enums\InvoiceStatus;
 use App\Enums\InvoiceTemplate;
@@ -74,7 +75,8 @@ return [
     |--------------------------------------------------------------------------
     |
     | The default legal form for newly registered companies.
+    | Uses CompanyType enum value.
     |
     */
-    'default_company_type' => env('INVOICE_DEFAULT_COMPANY_TYPE', 's.r.o.'),
+    'default_company_type' => CompanyType::LIMITED_LIABILITY_COMPANY,
 ];

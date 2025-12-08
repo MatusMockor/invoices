@@ -14,7 +14,7 @@ return new class extends Migration
     public function up(): void
     {
         Schema::table('user_companies', function (Blueprint $table) {
-            $table->string('vat_payer_status')->nullable()->after('ic_dph');
+            $table->string('vat_payer_status')->default(\App\Enums\VatPayerStatus::NOT_VAT_PAYER->value)->after('ic_dph');
             $table->string('vat_period')->nullable()->after('vat_payer_status');
         });
     }

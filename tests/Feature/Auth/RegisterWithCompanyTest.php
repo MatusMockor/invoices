@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Tests\Feature\Auth;
 
+use App\Enums\CompanyType;
 use App\Models\User;
 use App\Models\UserCompany;
 use Illuminate\Foundation\Testing\RefreshDatabase;
@@ -23,11 +24,11 @@ final class RegisterWithCompanyTest extends TestCase
             'password_confirmation' => 'password123',
             'company_ico' => '12345678',
             'company_name' => 'Test Company s.r.o.',
-            'company_street' => 'Hlavná 123',
+            'company_street' => 'Hlavna 123',
             'company_city' => 'Bratislava',
             'company_postal_code' => '811 01',
             'company_country' => 'SK',
-            'company_type' => 's.r.o.',
+            'company_type' => CompanyType::LIMITED_LIABILITY_COMPANY->value,
             'company_dic' => '2023456789',
             'company_ic_dph' => 'SK2023456789',
         ]);
@@ -54,11 +55,11 @@ final class RegisterWithCompanyTest extends TestCase
             'user_id' => $user->id,
             'ico' => '12345678',
             'name' => 'Test Company s.r.o.',
-            'street' => 'Hlavná 123',
+            'street' => 'Hlavna 123',
             'city' => 'Bratislava',
             'postal_code' => '811 01',
             'country' => 'SK',
-            'company_type' => 's.r.o.',
+            'type' => CompanyType::LIMITED_LIABILITY_COMPANY->value,
             'dic' => '2023456789',
             'ic_dph' => 'SK2023456789',
         ]);
@@ -100,7 +101,7 @@ final class RegisterWithCompanyTest extends TestCase
             'company_city' => 'Bratislava',
             'company_postal_code' => '811 01',
             'company_country' => 'SK',
-            'company_type' => 's.r.o.',
+            'company_type' => CompanyType::LIMITED_LIABILITY_COMPANY->value,
             'company_dic' => '2023456789',
             'company_ic_dph' => 'SK2023456789',
         ]);
@@ -127,7 +128,7 @@ final class RegisterWithCompanyTest extends TestCase
             'company_city' => 'Bratislava',
             'company_postal_code' => '811 01',
             'company_country' => 'SK',
-            'company_type' => 's.r.o.',
+            'company_type' => CompanyType::LIMITED_LIABILITY_COMPANY->value,
             'company_dic' => '2023456789',
             'company_ic_dph' => 'SK2023456789',
         ]);
@@ -150,7 +151,7 @@ final class RegisterWithCompanyTest extends TestCase
             'company_city' => 'Bratislava',
             'company_postal_code' => '811 01',
             'company_country' => 'SK',
-            'company_type' => 's.r.o.',
+            'company_type' => CompanyType::LIMITED_LIABILITY_COMPANY->value,
             'company_dic' => '2023456789',
             'company_ic_dph' => 'SK2023456789',
         ]);
@@ -173,7 +174,7 @@ final class RegisterWithCompanyTest extends TestCase
             'company_city' => 'Bratislava',
             'company_postal_code' => '811 01',
             'company_country' => 'SK',
-            'company_type' => 's.r.o.',
+            'company_type' => CompanyType::LIMITED_LIABILITY_COMPANY->value,
             'company_dic' => '2023456789',
             'company_ic_dph' => 'SK2023456789',
         ]);
@@ -196,7 +197,7 @@ final class RegisterWithCompanyTest extends TestCase
             'company_city' => 'Bratislava',
             'company_postal_code' => '811 01',
             'company_country' => 'SK',
-            'company_type' => 's.r.o.',
+            'company_type' => CompanyType::LIMITED_LIABILITY_COMPANY->value,
             'company_dic' => '2023456789',
             'company_ic_dph' => 'SK2023456789',
         ];
@@ -223,11 +224,11 @@ final class RegisterWithCompanyTest extends TestCase
             'password_confirmation' => 'password123',
             'company_ico' => '12345678',
             'company_name' => 'Test Company s.r.o.',
-            'company_street' => 'Hlavná 123',
+            'company_street' => 'Hlavna 123',
             'company_city' => 'Bratislava',
             'company_postal_code' => '811 01',
             'company_country' => 'SK',
-            'company_type' => 's.r.o.',
+            'company_type' => CompanyType::LIMITED_LIABILITY_COMPANY->value,
         ]);
 
         $response->assertStatus(201);
@@ -248,11 +249,11 @@ final class RegisterWithCompanyTest extends TestCase
             'user_id' => $user->id,
             'ico' => '12345678',
             'name' => 'Test Company s.r.o.',
-            'street' => 'Hlavná 123',
+            'street' => 'Hlavna 123',
             'city' => 'Bratislava',
             'postal_code' => '811 01',
             'country' => 'SK',
-            'company_type' => 's.r.o.',
+            'type' => CompanyType::LIMITED_LIABILITY_COMPANY->value,
             'dic' => null,
             'ic_dph' => null,
             'phone' => null,

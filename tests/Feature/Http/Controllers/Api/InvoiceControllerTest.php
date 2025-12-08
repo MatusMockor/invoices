@@ -467,7 +467,7 @@ class InvoiceControllerTest extends TestCase
                     'country' => 'Slovensko',
                     'dic' => $scraperDic,
                     'ic_dph' => $scraperIcDph,
-                    'company_type' => 's.r.o.',
+                    'type' => 'limited_liability_company',
                     'registration_number' => 'OR Bratislava I',
                 ],
             ], 200),

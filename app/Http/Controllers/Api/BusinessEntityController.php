@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Http\Controllers\Api;
 
+use App\Enums\CompanyType;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\FetchByIcoRequest;
 use App\Http\Requests\StoreBusinessEntityRequest;
@@ -58,7 +59,7 @@ class BusinessEntityController extends Controller
             'country' => $validated['country'],
             'phone' => $validated['phone'] ?? null,
             'email' => $validated['email'] ?? null,
-            'company_type' => 'SRO',
+            'type' => CompanyType::LIMITED_LIABILITY_COMPANY,
             'registration_number' => $validated['ico'],
         ]);
 

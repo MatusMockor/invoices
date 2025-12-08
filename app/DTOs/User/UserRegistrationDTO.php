@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\DTOs\User;
 
+use App\Enums\CompanyType;
 use App\Http\Requests\RegisterWithCompanyRequest;
 
 final readonly class UserRegistrationDTO
@@ -19,7 +20,7 @@ final readonly class UserRegistrationDTO
         public string $companyCity,
         public string $companyPostalCode,
         public string $companyCountry,
-        public string $companyType,
+        public CompanyType $companyType,
         public ?string $companyDic,
         public ?string $companyIcDph,
         public ?string $companyPhone,
@@ -58,6 +59,11 @@ final readonly class UserRegistrationDTO
      */
     public static function fromRequest(array $data): self
     {
+        $companyType = $data['company_type'] ?? CompanyType::SOLE_PROPRIETOR->value;
+        if (is_string($companyType)) {
+            $companyType = CompanyType::tryFrom($companyType) ?? CompanyType::SOLE_PROPRIETOR;
+        }
+
         return new self(
             firstName: $data['first_name'],
             lastName: $data['last_name'],
@@ -69,7 +75,7 @@ final readonly class UserRegistrationDTO
             companyCity: $data['company_city'],
             companyPostalCode: $data['company_postal_code'],
             companyCountry: $data['company_country'],
-            companyType: $data['company_type'],
+            companyType: $companyType,
             companyDic: $data['company_dic'] ?? null,
             companyIcDph: $data['company_ic_dph'] ?? null,
             companyPhone: $data['company_phone'] ?? null,

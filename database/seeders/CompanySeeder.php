@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Database\Seeders;
 
+use App\Enums\CompanyType;
 use App\Enums\VatPayerStatus;
 use App\Models\Company;
 use Carbon\Carbon;
@@ -76,8 +77,7 @@ class CompanySeeder extends Seeder
     private function generateCompanyData(string $ico): array
     {
         $now = Carbon::now();
-        $companyTypes = ['s.r.o.', 'a.s.', 'k.s.', 'v.o.s.', 'živnosť'];
-        $banks = ['Slovenská sporiteľňa', 'VÚB banka', 'Tatra banka', 'ČSOB', 'Poštová banka', 'UniCredit Bank'];
+        $banks = ['Slovenska sporitelna', 'VUB banka', 'Tatra banka', 'CSOB', 'Postova banka', 'UniCredit Bank'];
         $icDph = fake()->optional(0.7)->passthrough('SK'.fake()->numerify('##########'));
 
         return [
@@ -100,16 +100,15 @@ class CompanySeeder extends Seeder
             'phone' => fake()->phoneNumber(),
             'email' => fake()->companyEmail(),
             'website' => fake()->optional(0.7)->url(),
-            'company_type' => fake()->randomElement($companyTypes),
+            'type' => fake()->randomElement(CompanyType::cases())->value,
             'registration_office' => fake()->randomElement([
-                'Okresný súd Bratislava I',
-                'Okresný súd Košice I',
-                'Okresný súd Žilina',
-                'Okresný súd Prešov',
-                'Okresný súd Banská Bystrica',
+                'Okresny sud Bratislava I',
+                'Okresny sud Kosice I',
+                'Okresny sud Zilina',
+                'Okresny sud Presov',
+                'Okresny sud Banska Bystrica',
             ]),
             'registration_number' => fake()->numerify('######/B'),
-            'type' => fake()->randomElement(['s.r.o.', 'a.s.', 'k.s.']),
             'created_at' => $now,
             'updated_at' => $now,
         ];

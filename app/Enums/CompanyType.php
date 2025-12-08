@@ -65,4 +65,27 @@ enum CompanyType: string
             default => null,
         };
     }
+
+    /**
+     * Get human-readable Slovak label for the company type.
+     */
+    public function label(): string
+    {
+        return match ($this) {
+            self::SOLE_PROPRIETOR => 'Zivnost',
+            self::LIMITED_LIABILITY_COMPANY => 's.r.o.',
+            self::JOINT_STOCK_COMPANY => 'a.s.',
+            self::COOPERATIVE => 'Druzstvo',
+            self::AGRICULTURAL_COOPERATIVE => 'Polnohospodarske druzstvo',
+            self::GENERAL_PARTNERSHIP => 'v.o.s.',
+            self::LIMITED_PARTNERSHIP => 'k.s.',
+            self::FOUNDATION => 'Nadacia',
+            self::MUNICIPALITY => 'Obec',
+            self::EUROPEAN_ECONOMIC_INTEREST_GROUPING => 'EZHZ',
+            self::CONDOMINIUM_ASSOCIATION => 'Spolocenstvo vlastnikov',
+            self::SPORTS_ORGANIZATION => 'Sportova organizacia',
+            self::POLITICAL_PARTY => 'Politicka strana',
+            self::CIVIC_ASSOCIATION => 'Obcianske zdruzenie',
+        };
+    }
 }

@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Tests\Unit\Http\Resources;
 
+use App\Enums\CompanyType;
 use App\Enums\VatPayerStatus;
 use App\Http\Resources\InvoiceResource;
 use App\Models\Invoice;
@@ -298,7 +299,7 @@ final class InvoiceResourceTest extends TestCase
         $registryNumber = 'Cislo zivnostenskeho registra: 820-12345';
 
         $supplierCompany = UserCompany::factory()->create([
-            'company_type' => 'zivnost',
+            'type' => CompanyType::SOLE_PROPRIETOR,
             'registration_office' => $registryOffice,
             'registration_number' => $registryNumber,
         ]);

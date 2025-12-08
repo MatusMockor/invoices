@@ -38,7 +38,7 @@ class ScraperServiceTest extends TestCase
                     'country' => 'Slovensko',
                     'dic' => fake()->numerify('##########'),
                     'ic_dph' => 'SK'.fake()->numerify('##########'),
-                    'company_type' => 's.r.o.',
+                    'type' => 'limited_liability_company',
                     'registration_number' => 'OR Bratislava I, Oddiel: Sro',
                 ],
             ], 200),

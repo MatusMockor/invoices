@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Services;
 
+use App\Enums\CompanyType;
 use App\Facades\JwtFacade;
 use App\Services\Interfaces\ScraperService as ScraperServiceContract;
 use Illuminate\Support\Facades\Http;
@@ -86,7 +87,7 @@ class ScraperService implements ScraperServiceContract
                 'country' => $data['country'] ?? config('invoices.default_country'),
                 'dic' => $data['dic'] ?? null,
                 'ic_dph' => $data['ic_dph'] ?? null,
-                'company_type' => $data['company_type'] ?? null,
+                'type' => $data['type'] ?? CompanyType::SOLE_PROPRIETOR->value,
                 'registration_number' => $data['registration_number'] ?? null,
             ],
         ];

@@ -44,7 +44,7 @@ final class UserRegistrationAction
                 'phone' => $dto->companyPhone,
                 'email' => $dto->companyEmail,
                 'website' => $dto->companyWebsite,
-                'company_type' => $dto->companyType,
+                'type' => $dto->companyType,
                 'registration_number' => $dto->companyRegistrationNumber ?? '',
                 'registration_office' => $dto->companyRegistrationOffice,
             ]);

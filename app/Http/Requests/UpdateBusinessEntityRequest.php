@@ -4,7 +4,9 @@ declare(strict_types=1);
 
 namespace App\Http\Requests;
 
+use App\Enums\CompanyType;
 use Illuminate\Foundation\Http\FormRequest;
+use Illuminate\Validation\Rules\Enum;
 
 final class UpdateBusinessEntityRequest extends FormRequest
 {
@@ -26,7 +28,7 @@ final class UpdateBusinessEntityRequest extends FormRequest
             'country' => 'sometimes|required|string|max:100',
             'phone' => 'nullable|string|max:50',
             'email' => 'nullable|email|max:255',
-            'company_type' => 'sometimes|required|string|max:50',
+            'type' => ['sometimes', 'required', 'string', new Enum(CompanyType::class)],
             'registration_number' => 'sometimes|required|string|max:50',
         ];
     }
@@ -81,9 +83,11 @@ final class UpdateBusinessEntityRequest extends FormRequest
         return $this->validated('email');
     }
 
-    public function getCompanyType(): ?string
+    public function getType(): ?CompanyType
     {
-        return $this->validated('company_type');
+        $type = $this->validated('type');
+
+        return $type ? CompanyType::from($type) : null;
     }
 
     public function getRegistrationNumber(): ?string

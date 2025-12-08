@@ -6,6 +6,7 @@ namespace Tests\Unit\Actions\User;
 
 use App\Actions\User\UserRegistrationAction;
 use App\DTOs\User\UserRegistrationDTO;
+use App\Enums\CompanyType;
 use App\Models\User;
 use App\Models\UserCompany;
 use Illuminate\Foundation\Testing\RefreshDatabase;
@@ -34,18 +35,18 @@ final class UserRegistrationActionTest extends TestCase
             password: 'password123',
             companyIco: '12345678',
             companyName: 'Test Company s.r.o.',
-            companyStreet: 'Hlavná 123',
+            companyStreet: 'Hlavna 123',
             companyCity: 'Bratislava',
             companyPostalCode: '811 01',
             companyCountry: 'SK',
-            companyType: 's.r.o.',
+            companyType: CompanyType::LIMITED_LIABILITY_COMPANY,
             companyDic: '2023456789',
             companyIcDph: 'SK2023456789',
             companyPhone: '+421912345678',
             companyEmail: 'info@testcompany.sk',
             companyWebsite: 'https://testcompany.sk',
             companyRegistrationNumber: 'Sro/12345/B',
-            companyRegistrationOffice: 'Okresný súd Bratislava I',
+            companyRegistrationOffice: 'Okresny sud Bratislava I',
         );
 
         $user = $this->action->handle($dto);
@@ -65,7 +66,7 @@ final class UserRegistrationActionTest extends TestCase
             'city' => $dto->companyCity,
             'postal_code' => $dto->companyPostalCode,
             'country' => $dto->companyCountry,
-            'company_type' => $dto->companyType,
+            'type' => $dto->companyType->value,
             'dic' => $dto->companyDic,
             'ic_dph' => $dto->companyIcDph,
             'phone' => $dto->companyPhone,
@@ -94,11 +95,11 @@ final class UserRegistrationActionTest extends TestCase
             password: 'password123',
             companyIco: '12345678',
             companyName: 'Test Company s.r.o.',
-            companyStreet: 'Hlavná 123',
+            companyStreet: 'Hlavna 123',
             companyCity: 'Bratislava',
             companyPostalCode: '811 01',
             companyCountry: 'SK',
-            companyType: 's.r.o.',
+            companyType: CompanyType::LIMITED_LIABILITY_COMPANY,
             companyDic: '2023456789',
             companyIcDph: 'SK2023456789',
             companyPhone: null,
@@ -111,7 +112,7 @@ final class UserRegistrationActionTest extends TestCase
         app(UserRegistrationAction::class)->handle($dto);
     }
 
-    public function test_stores_country_and_company_type_from_dto(): void
+    public function test_stores_country_and_type_from_dto(): void
     {
         $dto = new UserRegistrationDTO(
             firstName: fake()->firstName(),
@@ -120,11 +121,11 @@ final class UserRegistrationActionTest extends TestCase
             password: 'password123',
             companyIco: '12345678',
             companyName: 'Test Company a.s.',
-            companyStreet: 'Hlavná 123',
+            companyStreet: 'Hlavna 123',
             companyCity: 'Praha',
             companyPostalCode: '110 00',
             companyCountry: 'CZ',
-            companyType: 'a.s.',
+            companyType: CompanyType::JOINT_STOCK_COMPANY,
             companyDic: '2023456789',
             companyIcDph: 'CZ2023456789',
             companyPhone: null,
@@ -139,6 +140,6 @@ final class UserRegistrationActionTest extends TestCase
         $company = $user->companies()->first();
 
         $this->assertEquals('CZ', $company->country);
-        $this->assertEquals('a.s.', $company->company_type);
+        $this->assertEquals(CompanyType::JOINT_STOCK_COMPANY, $company->type);
     }
 }
