@@ -34,7 +34,8 @@ final class InvoiceTransactionTest extends TestCase
         parent::setUp();
 
         $this->user = User::factory()->create();
-        $this->userCompany = UserCompany::factory()->create();
+        // Create a VAT payer company to ensure 20% VAT is applied in tests
+        $this->userCompany = UserCompany::factory()->vatPayer()->create();
         $this->user->update(['current_company_id' => $this->userCompany->id]);
 
         // Fake HTTP responses for scraper service
@@ -417,5 +418,130 @@ final class InvoiceTransactionTest extends TestCase
         ]);
 
         $this->assertCount(3, $invoice->items);
+    }
+
+    public function test_invoice_create_for_non_vat_payer_forces_zero_tax_rate(): void
+    {
+        // Create a non-VAT payer company
+        $nonVatPayerCompany = UserCompany::factory()->notVatPayer()->create();
+        $this->user->update(['current_company_id' => $nonVatPayerCompany->id]);
+
+        $action = app(InvoiceCreateAction::class);
+
+        $dto = new InvoiceCreateDTO(
+            clientName: fake()->company(),
+            clientIco: fake()->numerify('########'),
+            clientDic: fake()->numerify('20########'),
+            clientIcDph: null,
+            clientStreet: fake()->streetAddress(),
+            clientCity: fake()->city(),
+            clientPostalCode: fake()->postcode(),
+            clientCountry: fake()->countryCode(),
+            invoiceNumber: fake()->unique()->numerify('INV-####-####'),
+            issueDate: now()->format('Y-m-d'),
+            dueDate: now()->addDays(14)->format('Y-m-d'),
+            deliveryDate: now()->format('Y-m-d'),
+            variableSymbol: null,
+            constantSymbol: null,
+            specificSymbol: null,
+            currency: 'EUR',
+            notes: null,
+            status: InvoiceStatus::DRAFT,
+            taxRate: 20.0, // Frontend sends 20% VAT even though company is NOT_VAT_PAYER
+            items: [
+                [
+                    'description' => fake()->words(2, true),
+                    'quantity' => 1,
+                    'price' => 3500.00,
+                    'tax_rate' => 20, // Frontend sends 20% VAT
+                ],
+            ]
+        );
+
+        $invoice = $action->handle($dto, $this->user->id, $nonVatPayerCompany->id);
+
+        // BUG FIX TEST: Non-VAT payer should NOT have VAT applied
+        // Expected: 3500.00 (no VAT), NOT 4200.00 (with 20% VAT)
+        $this->assertDatabaseHas(Invoice::class, [
+            'id' => $invoice->id,
+            'total_amount' => 3500.00,
+            'tax_amount' => 0.00,
+            'tax_rate' => 0.0,
+        ]);
+
+        // Verify item also has 0% tax rate
+        $item = $invoice->items->first();
+        $this->assertEquals(0.0, $item->tax_rate);
+        $this->assertEquals(0.0, $item->tax_amount);
+        $this->assertEquals(3500.00, $item->total_price);
+    }
+
+    public function test_invoice_update_for_non_vat_payer_forces_zero_tax_rate(): void
+    {
+        // Create a non-VAT payer company
+        $nonVatPayerCompany = UserCompany::factory()->notVatPayer()->create();
+        $this->user->update(['current_company_id' => $nonVatPayerCompany->id]);
+
+        $company = Company::factory()->create();
+
+        $invoice = Invoice::factory()->create([
+            'supplier_company_id' => $nonVatPayerCompany->id,
+            'company_id' => $company->id,
+            'user_id' => $this->user->id,
+            'invoice_number' => fake()->unique()->numerify('INV-####'),
+            'total_amount' => 100.00,
+        ]);
+
+        $item = InvoiceItem::factory()->create([
+            'invoice_id' => $invoice->id,
+            'quantity' => 1,
+            'unit_price_without_tax' => 100.00,
+        ]);
+
+        $action = app(InvoiceUpdateAction::class);
+
+        $dto = new InvoiceUpdateDTO(
+            clientName: null,
+            clientIco: null,
+            clientDic: null,
+            clientIcDph: null,
+            clientStreet: null,
+            clientCity: null,
+            clientPostalCode: null,
+            clientCountry: null,
+            invoiceNumber: null,
+            issueDate: null,
+            dueDate: null,
+            deliveryDate: null,
+            variableSymbol: null,
+            constantSymbol: null,
+            specificSymbol: null,
+            currency: null,
+            notes: null,
+            status: null,
+            taxRate: 20.0, // Frontend sends 20% VAT even though company is NOT_VAT_PAYER
+            items: [
+                [
+                    'id' => $item->id,
+                    'description' => fake()->words(2, true),
+                    'quantity' => 1,
+                    'price' => 3500.00,
+                    'tax_rate' => 20, // Frontend sends 20% VAT
+                ],
+            ]
+        );
+
+        $updatedInvoice = $action->handle($invoice, $dto, $nonVatPayerCompany->id);
+
+        // BUG FIX TEST: Non-VAT payer should NOT have VAT applied
+        // Expected: 3500.00 (no VAT), NOT 4200.00 (with 20% VAT)
+        $this->assertEquals(3500.00, $updatedInvoice->total_amount);
+        $this->assertEquals(0.00, $updatedInvoice->tax_amount);
+
+        // Verify item also has 0% tax rate
+        $item->refresh();
+        $this->assertEquals(0.0, $item->tax_rate);
+        $this->assertEquals(0.0, $item->tax_amount);
+        $this->assertEquals(3500.00, $item->total_price);
     }
 }

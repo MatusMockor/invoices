@@ -8,12 +8,16 @@ use App\Actions\Company\CompanyFetchOrCreateAction;
 use App\DTOs\Invoice\InvoiceUpdateDTO;
 use App\Models\Company;
 use App\Models\Invoice;
+use App\Models\UserCompany;
 use App\Repositories\Contracts\InvoiceItemRepository;
 use App\Repositories\Contracts\InvoiceRepository;
+use App\Services\Interfaces\VatService;
 use App\Services\Invoice\InvoiceTotalCalculatorService;
 use App\Services\Invoice\VatCalculatorService;
+use Carbon\Carbon;
 use Illuminate\Support\Arr;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Log;
 
 final class InvoiceUpdateAction
 {
@@ -22,19 +26,38 @@ final class InvoiceUpdateAction
         private readonly InvoiceItemRepository $invoiceItemRepository,
         private readonly CompanyFetchOrCreateAction $companyFetchOrCreate,
         private readonly InvoiceTotalCalculatorService $totalCalculator,
-        private readonly VatCalculatorService $vatCalculator
+        private readonly VatCalculatorService $vatCalculator,
+        private readonly VatService $vatService
     ) {}
 
     public function handle(Invoice $invoice, InvoiceUpdateDTO $dto, int $supplierCompanyId): Invoice
     {
         return DB::transaction(function () use ($invoice, $dto, $supplierCompanyId) {
+            // Fetch supplier company to check VAT payer status
+            $supplierCompany = UserCompany::find($supplierCompanyId);
+
+            // Get VAT status at invoice issue date for historical accuracy
+            $issueDate = Carbon::parse($dto->issueDate ?? $invoice->issue_date);
+            $vatStatus = $supplierCompany
+                ? $this->vatService->getVatStatusAtDate($supplierCompany, $issueDate)
+                : null;
+
+            // Determine if supplier is a VAT payer - force tax_rate to 0 if not
+            $isVatPayer = $vatStatus?->status->isVatPayer() ?? false;
+
+            // Force tax_rate to 0 for non-VAT payers (always update if not VAT payer)
+            // This handles the edge case when company changes from VAT payer to non-VAT payer
+            $taxRate = $isVatPayer
+                ? $dto->taxRate  // Keep as null if not provided (won't update existing value)
+                : 0.0;          // Always force to 0 for non-VAT payers
+
             $updateData = array_filter([
                 'supplier_company_id' => $supplierCompanyId,
                 'invoice_number' => $dto->invoiceNumber,
                 'issue_date' => $dto->issueDate,
                 'due_date' => $dto->dueDate,
                 'delivery_date' => $dto->deliveryDate,
-                'tax_rate' => $dto->taxRate,
+                'tax_rate' => $taxRate,
                 'discount_amount' => $dto->discountAmount,
                 'discount_percentage' => $dto->discountPercentage,
                 'reverse_charge' => $dto->reverseCharge,
@@ -64,11 +87,17 @@ final class InvoiceUpdateAction
 
                 if ($dto->items !== null) {
                     $reverseCharge = $dto->reverseCharge ?? $invoice->reverse_charge ?? false;
-                    $totals = $this->totalCalculator->calculateTotals($dto->items, $dto->discountAmount, $reverseCharge);
+                    $itemsForCalculation = $this->prepareItemsWithTaxRate($dto->items, $isVatPayer, [
+                        'invoice_id' => $invoice->id,
+                        'invoice_number' => $dto->invoiceNumber ?? $invoice->invoice_number,
+                        'supplier_id' => $supplierCompanyId,
+                        'user_id' => $invoice->user_id,
+                    ]);
+                    $totals = $this->totalCalculator->calculateTotals($itemsForCalculation, $dto->discountAmount, $reverseCharge);
                     $updateData['subtotal'] = $totals['subtotal'];
                     $updateData['tax_amount'] = $totals['tax_amount'];
                     $updateData['total_amount'] = $totals['total_amount'];
-                    $this->updateInvoiceItems($invoice, $dto->items);
+                    $this->updateInvoiceItems($invoice, $itemsForCalculation);
                 }
 
                 $this->invoiceRepository->update($invoice, $updateData);
@@ -98,11 +127,17 @@ final class InvoiceUpdateAction
             // Handle items update regardless of company field changes
             if ($dto->items !== null) {
                 $reverseCharge = $dto->reverseCharge ?? $invoice->reverse_charge ?? false;
-                $totals = $this->totalCalculator->calculateTotals($dto->items, $dto->discountAmount, $reverseCharge);
+                $itemsForCalculation = $this->prepareItemsWithTaxRate($dto->items, $isVatPayer, [
+                    'invoice_id' => $invoice->id,
+                    'invoice_number' => $dto->invoiceNumber ?? $invoice->invoice_number,
+                    'supplier_id' => $supplierCompanyId,
+                    'user_id' => $invoice->user_id,
+                ]);
+                $totals = $this->totalCalculator->calculateTotals($itemsForCalculation, $dto->discountAmount, $reverseCharge);
                 $updateData['subtotal'] = $totals['subtotal'];
                 $updateData['tax_amount'] = $totals['tax_amount'];
                 $updateData['total_amount'] = $totals['total_amount'];
-                $this->updateInvoiceItems($invoice, $dto->items);
+                $this->updateInvoiceItems($invoice, $itemsForCalculation);
             }
 
             $this->invoiceRepository->update($invoice, $updateData);
@@ -122,6 +157,38 @@ final class InvoiceUpdateAction
             'postal_code' => $dto->clientPostalCode,
             'country' => $dto->clientCountry ?? config('invoices.default_country'),
         ]);
+    }
+
+    /**
+     * Prepare items with corrected tax_rate for non-VAT payers.
+     *
+     * @param  array  $items  Original items from DTO
+     * @param  bool  $isVatPayer  Whether the supplier is a VAT payer
+     * @param  array  $context  Context for logging (invoice_id, invoice_number, supplier_id, user_id)
+     * @return array Items with corrected tax_rate
+     */
+    private function prepareItemsWithTaxRate(array $items, bool $isVatPayer, array $context = []): array
+    {
+        return array_map(static function (array $item) use ($isVatPayer, $context): array {
+            $originalTaxRate = $item['tax_rate'] ?? null;
+
+            // Force tax_rate to 0 for non-VAT payers regardless of frontend value
+            $item['tax_rate'] = $isVatPayer ? ($originalTaxRate ?? 20.0) : 0.0;
+
+            // Log warning when overriding non-zero tax_rate for non-VAT payer
+            if (! $isVatPayer && $originalTaxRate !== null && $originalTaxRate > 0) {
+                Log::warning('VAT override: Forcing tax_rate to 0 for non-VAT payer', [
+                    'invoice_id' => $context['invoice_id'] ?? null,
+                    'invoice_number' => $context['invoice_number'] ?? null,
+                    'supplier_id' => $context['supplier_id'] ?? null,
+                    'user_id' => $context['user_id'] ?? null,
+                    'original_tax_rate' => $originalTaxRate,
+                    'item_description' => $item['description'] ?? 'N/A',
+                ]);
+            }
+
+            return $item;
+        }, $items);
     }
 
     private function updateInvoiceItems(Invoice $invoice, array $items): void
