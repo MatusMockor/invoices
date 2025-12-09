@@ -120,14 +120,24 @@ final class CompanyTypeTest extends TestCase
     }
 
     /**
-     * Test all 14 company types exist.
+     * Test all 15 company types exist.
      */
-    public function test_has_all_fourteen_company_types(): void
+    public function test_has_all_fifteen_company_types(): void
     {
         // Arrange & Act
         $allCases = CompanyType::cases();
 
         // Assert
-        $this->assertCount(14, $allCases);
+        $this->assertCount(15, $allCases);
+    }
+
+    /**
+     * Test that OTHER type exists and has correct value and label.
+     */
+    public function test_other_type_exists(): void
+    {
+        // Arrange & Act & Assert
+        $this->assertEquals('other', CompanyType::OTHER->value);
+        $this->assertEquals('Iny typ', CompanyType::OTHER->label());
     }
 }
