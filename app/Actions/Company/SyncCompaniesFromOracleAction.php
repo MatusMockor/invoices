@@ -278,13 +278,29 @@ final class SyncCompaniesFromOracleAction
         // Determine company type:
         // 1. If sourceRegister.value.value is "Živnostenský register", it's a sole proprietor
         // 2. Otherwise, extract type from registration number prefix (Sa/, Sro/, etc.)
+        // 3. If still not determined, try to extract type from company name
+        $type = null;
+
         if ($registerType === 'Živnostenský register') {
             $type = CompanyType::SOLE_PROPRIETOR;
-        } else {
+        }
+
+        if ($type === null) {
             // Extract company type from registration number prefix BEFORE filtering.
             // Important: This must happen before removeTypePrefix() which removes all prefixes.
             // We need the original prefix to determine the company type correctly.
             $type = $this->extractCompanyType($rawRegistrationNumber);
+        }
+
+        if ($type === null) {
+            // Fallback: Extract company type from company name
+            // This handles cases where registration number has no prefix (e.g., v.o.s., k.s.)
+            $type = $this->extractCompanyTypeFromName($name);
+        }
+
+        if ($type === null) {
+            // Ultimate fallback: Use OTHER type for unrecognized company types
+            $type = CompanyType::OTHER;
         }
 
         // Filter registration number: Remove type prefix (Sa/, Sro/, Dr/, Po/, etc.).
@@ -416,10 +432,11 @@ final class SyncCompaniesFromOracleAction
 
     /**
      * Remove type prefix from registration number if present.
-     * Removes all prefixes (Sa/, Sro/, Dr/, Po/, etc.) - only actual number is stored.
+     * Only removes recognized prefixes (Sa/, Sro/, Dr/, Po/, etc.) - only actual number is stored.
+     * If the prefix is not a recognized company type prefix, the registration number is returned unchanged.
      *
-     * @param  string  $registrationNumber  The registration number (e.g., 'Sa/6266/B', 'Sro/81134/B')
-     * @return string The registration number without prefix (e.g., '6266/B', '81134/B')
+     * @param  string  $registrationNumber  The registration number (e.g., 'Sa/6266/B', 'Sro/81134/B', '2112/B')
+     * @return string The registration number without prefix (e.g., '6266/B', '81134/B', '2112/B')
      */
     private function removeTypePrefix(string $registrationNumber): string
     {
@@ -427,6 +444,14 @@ final class SyncCompaniesFromOracleAction
         $slashPosition = strpos($registrationNumber, '/');
 
         if ($slashPosition === false) {
+            return $registrationNumber;
+        }
+
+        // Extract prefix (including the slash)
+        $prefix = substr($registrationNumber, 0, $slashPosition + 1);
+
+        // Only remove if it's a recognized company type prefix
+        if (CompanyType::fromPrefix($prefix) === null) {
             return $registrationNumber;
         }
 
@@ -458,6 +483,60 @@ final class SyncCompaniesFromOracleAction
         $prefix = substr($registrationNumber, 0, $slashPosition + 1);
 
         return CompanyType::fromPrefix($prefix);
+    }
+
+    /**
+     * Extract company type from company name.
+     * Case-insensitive matching of company type indicators in the name.
+     * This is a fallback when the type cannot be determined from registration number prefix.
+     *
+     * @param  string|null  $name  The company name to analyze
+     * @return CompanyType|null The matching CompanyType or null if not found
+     */
+    private function extractCompanyTypeFromName(?string $name): ?CompanyType
+    {
+        if ($name === null || $name === '') {
+            return null;
+        }
+
+        $lowerName = mb_strtolower($name, 'UTF-8');
+
+        // Check for v.o.s. (General Partnership)
+        if (str_contains($lowerName, 'v.o.s.') || str_contains($lowerName, 'verejná obchodná spoločnosť')) {
+            return CompanyType::GENERAL_PARTNERSHIP;
+        }
+
+        // Check for k.s. (Limited Partnership)
+        if (str_contains($lowerName, 'k.s.') || str_contains($lowerName, 'komanditná spoločnosť')) {
+            return CompanyType::LIMITED_PARTNERSHIP;
+        }
+
+        // Check for s.r.o. (Limited Liability Company)
+        if (str_contains($lowerName, 's.r.o.') || str_contains($lowerName, 'spol. s r.o.') || str_contains($lowerName, 'spoločnosť s ručením obmedzeným')) {
+            return CompanyType::LIMITED_LIABILITY_COMPANY;
+        }
+
+        // Check for a.s. (Joint Stock Company)
+        if (str_contains($lowerName, 'a.s.') || str_contains($lowerName, 'akciová spoločnosť')) {
+            return CompanyType::JOINT_STOCK_COMPANY;
+        }
+
+        // Check for družstvo (Cooperative)
+        if (str_contains($lowerName, 'družstvo')) {
+            return CompanyType::COOPERATIVE;
+        }
+
+        // Check for nadácia (Foundation)
+        if (str_contains($lowerName, 'nadácia')) {
+            return CompanyType::FOUNDATION;
+        }
+
+        // Check for občianske združenie (Civic Association)
+        if (str_contains($lowerName, 'občianske združenie') || str_contains($lowerName, 'o.z.')) {
+            return CompanyType::CIVIC_ASSOCIATION;
+        }
+
+        return null;
     }
 
     /**

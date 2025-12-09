@@ -24,6 +24,7 @@ enum CompanyType: string
     case POLITICAL_PARTY = 'political_party';
     case CIVIC_ASSOCIATION = 'civic_association';
     case SOLE_PROPRIETOR = 'sole_proprietor';
+    case OTHER = 'other';
 
     /**
      * Get company type from registration number prefix.
@@ -86,6 +87,7 @@ enum CompanyType: string
             self::SPORTS_ORGANIZATION => 'Sportova organizacia',
             self::POLITICAL_PARTY => 'Politicka strana',
             self::CIVIC_ASSOCIATION => 'Obcianske zdruzenie',
+            self::OTHER => 'Iny typ',
         };
     }
 }

@@ -22,7 +22,7 @@ return new class extends Migration
             $table->string('ic_dph')->nullable();
             $table->string('registration_office', 255)->nullable();
             $table->string('registration_number', 100)->nullable();
-            $table->string('type')->default(CompanyType::SOLE_PROPRIETOR->value);
+            $table->string('type')->default(CompanyType::OTHER->value);
             $table->string('vat_payer_status')->default(VatPayerStatus::NOT_VAT_PAYER->value);
             $table->string('name');
             $table->string('city')->nullable();
