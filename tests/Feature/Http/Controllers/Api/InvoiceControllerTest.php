@@ -27,7 +27,8 @@ class InvoiceControllerTest extends TestCase
         parent::setUp();
 
         $this->user = User::factory()->create();
-        $this->userCompany = UserCompany::factory()->create();
+        // Create a VAT payer company to ensure 20% VAT is applied in tests
+        $this->userCompany = UserCompany::factory()->vatPayer()->create();
         $this->user->update(['current_company_id' => $this->userCompany->id]);
 
         Sanctum::actingAs($this->user);

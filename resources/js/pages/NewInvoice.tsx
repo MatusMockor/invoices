@@ -186,6 +186,16 @@ const NewInvoice = () => {
     customerCountry,
   });
 
+  // Determine the tax rate to send based on VAT payer status
+  const getEffectiveTaxRate = useCallback((itemTaxRate: number | undefined): number => {
+    // Non-VAT payers MUST always have 0% tax rate
+    if (!showVatFields) {
+      return 0;
+    }
+    // VAT payers use the item's tax rate or default to defaultVatRate or 20%
+    return itemTaxRate ?? defaultVatRate ?? 20;
+  }, [showVatFields, defaultVatRate]);
+
   // State for generated invoice number
   const [generatedInvoiceNumber, setGeneratedInvoiceNumber] = useState<string>("");
 
@@ -553,7 +563,7 @@ const NewInvoice = () => {
           description: item.description,
           quantity: item.quantity,
           price: item.price, // Backend expects this as unit_price_without_tax
-          tax_rate: item.tax_rate ?? 20,
+          tax_rate: getEffectiveTaxRate(item.tax_rate),
         })),
       };
 

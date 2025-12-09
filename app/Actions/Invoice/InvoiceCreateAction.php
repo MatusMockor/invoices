@@ -16,6 +16,7 @@ use App\Services\Invoice\InvoiceTotalCalculatorService;
 use App\Services\Invoice\VatCalculatorService;
 use Carbon\Carbon;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Log;
 use Throwable;
 
 final class InvoiceCreateAction
@@ -44,8 +45,21 @@ final class InvoiceCreateAction
                 ? $this->vatService->getVatStatusAtDate($supplierCompany, $issueDate)
                 : null;
 
+            // Determine if supplier is a VAT payer - force tax_rate to 0 if not
+            $isVatPayer = $vatStatus?->status->isVatPayer() ?? false;
+
+            // Prepare items with corrected tax_rate for non-VAT payers
+            $itemsForCalculation = $this->prepareItemsWithTaxRate($dto->items, $isVatPayer, [
+                'user_id' => $userId,
+                'supplier_id' => $supplierCompanyId,
+                'invoice_number' => $dto->invoiceNumber,
+            ]);
+
             // Calculate invoice totals with VAT (respecting reverse charge)
-            $totals = $this->totalCalculator->calculateTotals($dto->items, $dto->discountAmount ?? null, $dto->reverseCharge);
+            $totals = $this->totalCalculator->calculateTotals($itemsForCalculation, $dto->discountAmount ?? null, $dto->reverseCharge);
+
+            // Force tax_rate to 0 for non-VAT payers
+            $taxRate = $isVatPayer ? ($dto->taxRate ?? 20.0) : 0.0;
 
             $invoiceData = [
                 'invoice_number' => $dto->invoiceNumber,
@@ -62,7 +76,7 @@ final class InvoiceCreateAction
                 'supplier_vat_period' => $vatStatus?->period?->value,
                 'subtotal' => $totals['subtotal'],
                 'tax_amount' => $totals['tax_amount'],
-                'tax_rate' => $dto->taxRate ?? 20.0,
+                'tax_rate' => $taxRate,
                 'total_amount' => $totals['total_amount'],
                 'discount_amount' => $dto->discountAmount,
                 'discount_percentage' => $dto->discountPercentage,
@@ -90,7 +104,7 @@ final class InvoiceCreateAction
                 $invoiceData['company_country'] = $dto->customCompanyCountry;
 
                 $invoice = $this->invoiceRepository->create($invoiceData);
-                $this->createInvoiceItems($invoice, $dto->items, $dto->reverseCharge);
+                $this->createInvoiceItems($invoice, $itemsForCalculation, $dto->reverseCharge);
 
                 return $invoice->load(['company', 'items']);
             }
@@ -108,7 +122,7 @@ final class InvoiceCreateAction
             $invoiceData['company_country'] = $customerCompany->country;
 
             $invoice = $this->invoiceRepository->create($invoiceData);
-            $this->createInvoiceItems($invoice, $dto->items, $dto->reverseCharge);
+            $this->createInvoiceItems($invoice, $itemsForCalculation, $dto->reverseCharge);
 
             return $invoice->load(['company', 'items']);
         });
@@ -125,6 +139,37 @@ final class InvoiceCreateAction
             'postal_code' => $dto->clientPostalCode,
             'country' => $dto->clientCountry ?? config('invoices.default_country'),
         ]);
+    }
+
+    /**
+     * Prepare items with corrected tax_rate for non-VAT payers.
+     *
+     * @param  array  $items  Original items from DTO
+     * @param  bool  $isVatPayer  Whether the supplier is a VAT payer
+     * @param  array  $context  Context for logging (user_id, supplier_id, invoice_number)
+     * @return array Items with corrected tax_rate
+     */
+    private function prepareItemsWithTaxRate(array $items, bool $isVatPayer, array $context = []): array
+    {
+        return array_map(static function (array $item) use ($isVatPayer, $context): array {
+            $originalTaxRate = $item['tax_rate'] ?? null;
+
+            // Force tax_rate to 0 for non-VAT payers regardless of frontend value
+            $item['tax_rate'] = $isVatPayer ? ($originalTaxRate ?? 20.0) : 0.0;
+
+            // Log warning when overriding non-zero tax_rate for non-VAT payer
+            if (! $isVatPayer && $originalTaxRate !== null && $originalTaxRate > 0) {
+                Log::warning('VAT override: Forcing tax_rate to 0 for non-VAT payer', [
+                    'invoice_number' => $context['invoice_number'] ?? null,
+                    'supplier_id' => $context['supplier_id'] ?? null,
+                    'user_id' => $context['user_id'] ?? null,
+                    'original_tax_rate' => $originalTaxRate,
+                    'item_description' => $item['description'] ?? 'N/A',
+                ]);
+            }
+
+            return $item;
+        }, $items);
     }
 
     private function createInvoiceItems(Invoice $invoice, array $items, bool $reverseCharge): void
