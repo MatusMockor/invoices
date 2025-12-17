@@ -11,8 +11,8 @@ parameters:
         - bootstrap/cache
         - storage
         - vendor
-        - node_modules
-        - public/build
+        - node_modules (?)
+        - public/build (?)
         - _ide_helper*.php
 
     # Laravel-specific settings
