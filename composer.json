@@ -66,12 +66,10 @@
             "@php artisan test"
         ],
         "analyse": "phpstan analyse --memory-limit=2G",
-        "analyse:baseline": "phpstan analyse --memory-limit=2G --generate-baseline",
         "analyse:clear": "phpstan clear-result-cache && composer analyse",
-        "phpmd": "phpmd app text phpmd.xml --baseline-file phpmd.baseline.xml",
-        "phpmd:html": "phpmd app html phpmd.xml --baseline-file phpmd.baseline.xml --reportfile phpmd-report.html",
-        "phpmd:baseline": "phpmd app text phpmd.xml --generate-baseline",
-        "phpmd:ci": "phpmd app github phpmd.xml --baseline-file phpmd.baseline.xml"
+        "phpmd": "phpmd app text phpmd.xml",
+        "phpmd:html": "phpmd app html phpmd.xml --reportfile phpmd-report.html",
+        "phpmd:ci": "phpmd app github phpmd.xml"
     },
     "extra": {
         "laravel": {
