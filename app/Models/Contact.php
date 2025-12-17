@@ -8,7 +8,26 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\MorphMany;
+use Illuminate\Support\Carbon;
 
+/**
+ * Contact model representing a contact person.
+ *
+ * @property int $id
+ * @property int $user_id
+ * @property int $company_id
+ * @property string|null $first_name
+ * @property string|null $last_name
+ * @property string|null $email
+ * @property string|null $phone
+ * @property string|null $position
+ * @property string|null $notes
+ * @property Carbon|null $created_at
+ * @property Carbon|null $updated_at
+ * @property-read string $full_name
+ * @property-read UserCompany|null $company
+ * @property-read User|null $user
+ */
 class Contact extends Model
 {
     use HasFactory;

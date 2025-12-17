@@ -8,7 +8,23 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\MorphTo;
+use Illuminate\Support\Carbon;
 
+/**
+ * Note model representing notes attached to various entities.
+ *
+ * @property int $id
+ * @property int $user_id
+ * @property int $company_id
+ * @property string $noteable_type
+ * @property int $noteable_id
+ * @property string $body
+ * @property Carbon|null $created_at
+ * @property Carbon|null $updated_at
+ * @property-read User|null $user
+ * @property-read UserCompany|null $company
+ * @property-read Model $noteable
+ */
 class Note extends Model
 {
     use HasFactory;

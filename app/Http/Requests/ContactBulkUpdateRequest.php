@@ -55,7 +55,7 @@ final class ContactBulkUpdateRequest extends FormRequest
         return $this->validated('data.job_title');
     }
 
-    public function getIsActive(): ?bool
+    public function isActive(): ?bool
     {
         return $this->validated('data.is_active');
     }

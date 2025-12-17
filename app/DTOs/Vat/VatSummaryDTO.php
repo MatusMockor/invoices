@@ -21,13 +21,26 @@ final readonly class VatSummaryDTO
     /**
      * Create from invoice items grouped by VAT rate
      */
-    public static function fromItems(array $items, bool $reverseCharge = false): self
+    public static function fromItems(array $items): self
+    {
+        return self::createFromItems($items, includeVat: true);
+    }
+
+    /**
+     * Create from invoice items with reverse charge (VAT = 0)
+     */
+    public static function fromItemsWithReverseCharge(array $items): self
+    {
+        return self::createFromItems($items, includeVat: false);
+    }
+
+    private static function createFromItems(array $items, bool $includeVat): self
     {
         $grouped = collect($items)->groupBy('tax_rate');
 
-        $summaryItems = $grouped->map(function ($groupedItems, $rate) use ($reverseCharge) {
+        $summaryItems = $grouped->map(function ($groupedItems, $rate) use ($includeVat) {
             $base = $groupedItems->sum('subtotal');
-            $vatAmount = $reverseCharge ? 0.0 : $groupedItems->sum('tax_amount');
+            $vatAmount = $includeVat ? $groupedItems->sum('tax_amount') : 0.0;
 
             return new VatSummaryItemDTO(
                 rate: (float) $rate,

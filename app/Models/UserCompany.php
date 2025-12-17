@@ -37,6 +37,7 @@ use Illuminate\Database\Eloquent\Relations\HasOne;
  * @property CompanyType $type Company type enum
  * @property string $registration_number Registration number in business register
  * @property string|null $registration_office Registration office (e.g., Okresny sud Bratislava I)
+ * @property string|null $status Company status
  * @property \Illuminate\Support\Carbon|null $created_at
  * @property \Illuminate\Support\Carbon|null $updated_at
  * @property-read int $clients_count Number of unique clients
@@ -51,7 +52,7 @@ class UserCompany extends Model
     /**
      * The attributes that are mass assignable.
      *
-     * @var array<int, string>
+     * @var list<string>
      */
     protected $fillable = [
         'name',

@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Services;
 
 use App\DTOs\Vat\VatCalculationDTO;
+use App\DTOs\Vat\VatStatusChangeDTO;
 use App\DTOs\Vat\VatStatusDTO;
 use App\DTOs\Vat\VatSummaryDTO;
 use App\Enums\VatPayerStatus;
@@ -20,19 +21,21 @@ use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 
+/**
+ * Service for VAT status management and calculations.
+ *
+ * @SuppressWarnings(PHPMD.CouplingBetweenObjects)
+ */
 final class VatService implements VatServiceInterface
 {
-    /**
-     * Get current VAT status for a company
-     */
     public function getCurrentVatStatus(UserCompany $company): VatStatusDTO
     {
+        /** @var VatStatusHistory|null $history */
         $history = $company->vatStatusHistory()
             ->whereNull('valid_to')
             ->first();
 
         if ($history === null) {
-            // Fallback to company's current status if no history exists
             return new VatStatusDTO(
                 status: $company->vat_payer_status ?? VatPayerStatus::NOT_VAT_PAYER,
                 period: $company->vat_period,
@@ -44,14 +47,12 @@ final class VatService implements VatServiceInterface
         return VatStatusDTO::fromModel($history);
     }
 
-    /**
-     * Get VAT status at a specific date
-     */
     public function getVatStatusAtDate(UserCompany $company, Carbon $date): VatStatusDTO
     {
+        /** @var VatStatusHistory|null $history */
         $history = $company->vatStatusHistory()
             ->where('valid_from', '<=', $date->toDateString())
-            ->where(function ($query) use ($date) {
+            ->where(function ($query) use ($date): void {
                 $query->whereNull('valid_to')
                     ->orWhere('valid_to', '>=', $date->toDateString());
             })
@@ -59,7 +60,6 @@ final class VatService implements VatServiceInterface
             ->first();
 
         if ($history === null) {
-            // Fallback to current status with warning log
             Log::warning('No VAT status found for date, using current status', [
                 'company_id' => $company->id,
                 'date' => $date->toDateString(),
@@ -71,78 +71,21 @@ final class VatService implements VatServiceInterface
         return VatStatusDTO::fromModel($history);
     }
 
-    /**
-     * Change VAT status for a company
-     *
-     * @throws VatStatusOverlapException
-     * @throws VatPeriodRequiredException
-     */
-    public function changeVatStatus(
-        UserCompany $company,
-        VatPayerStatus $newStatus,
-        ?VatPeriod $period,
-        Carbon $validFrom,
-        ?string $notes = null
-    ): void {
-        // Validate: VAT_PAYER or VAT_PAYER_PARAGRAPH_7 requires vat_period
-        if ($newStatus->requiresVatPeriod() && $period === null) {
-            throw new VatPeriodRequiredException(
-                'VAT period (monthly/quarterly) is required when status is VAT_PAYER or VAT_PAYER_PARAGRAPH_7'
-            );
-        }
+    public function changeVatStatus(UserCompany $company, VatStatusChangeDTO $change): void
+    {
+        $this->validateVatPeriodRequired($change);
+        $period = $change->getPeriodForStatus();
 
-        // Clear period if not a full VAT payer
-        if (! $newStatus->requiresVatPeriod()) {
-            $period = null;
-        }
+        DB::transaction(function () use ($company, $change, $period) {
+            $this->ensureNoOverlappingRecord($company, $change->validFrom);
+            $this->closePreviousActiveRecord($company, $change->validFrom);
+            $this->createVatStatusHistory($company, $change, $period);
+            $this->updateCompanyVatStatus($company, $change->status, $period);
 
-        DB::transaction(function () use ($company, $newStatus, $period, $validFrom, $notes) {
-            // Check for overlapping date range
-            $existingRecord = VatStatusHistory::where('user_company_id', $company->id)
-                ->where('valid_from', $validFrom->toDateString())
-                ->first();
-
-            if ($existingRecord !== null) {
-                throw new VatStatusOverlapException(
-                    "A VAT status record already exists for date {$validFrom->toDateString()}"
-                );
-            }
-
-            // Close the previous active record
-            $previousRecord = VatStatusHistory::where('user_company_id', $company->id)
-                ->whereNull('valid_to')
-                ->first();
-
-            if ($previousRecord !== null) {
-                $previousRecord->update([
-                    'valid_to' => $validFrom->copy()->subDay()->toDateString(),
-                ]);
-            }
-
-            // Create new history record
-            VatStatusHistory::create([
-                'user_company_id' => $company->id,
-                'vat_status' => $newStatus->value,
-                'vat_period' => $period?->value,
-                'valid_from' => $validFrom->toDateString(),
-                'valid_to' => null,
-                'notes' => $notes,
-            ]);
-
-            // Update company's current status
-            $company->update([
-                'vat_payer_status' => $newStatus,
-                'vat_period' => $period,
-            ]);
-
-            // Dispatch event
-            event(new VatStatusChanged($company, $newStatus, $period, $validFrom));
+            event(new VatStatusChanged($company, $change->status, $period, $change->validFrom));
         });
     }
 
-    /**
-     * Calculate VAT from base amount
-     */
     public function calculateVat(float $amountWithoutVat, float $vatRate): VatCalculationDTO
     {
         $base = round($amountWithoutVat, 2);
@@ -157,23 +100,79 @@ final class VatService implements VatServiceInterface
         );
     }
 
-    /**
-     * Calculate VAT summary from invoice items
-     */
-    public function calculateVatSummary(array $items, bool $reverseCharge = false): VatSummaryDTO
+    public function calculateVatSummary(array $items): VatSummaryDTO
     {
-        return VatSummaryDTO::fromItems($items, $reverseCharge);
+        return VatSummaryDTO::fromItems($items);
+    }
+
+    public function calculateVatSummaryForReverseCharge(array $items): VatSummaryDTO
+    {
+        return VatSummaryDTO::fromItemsWithReverseCharge($items);
     }
 
     /**
-     * Get all VAT status history for a company
-     *
      * @return Collection<int, VatStatusHistory>
      */
     public function getVatStatusHistory(UserCompany $company): Collection
     {
+        /** @var Collection<int, VatStatusHistory> */
         return $company->vatStatusHistory()
             ->orderByDesc('valid_from')
             ->get();
+    }
+
+    private function validateVatPeriodRequired(VatStatusChangeDTO $change): void
+    {
+        if ($change->status->requiresVatPeriod() && $change->period === null) {
+            throw new VatPeriodRequiredException(
+                'VAT period (monthly/quarterly) is required when status is VAT_PAYER or VAT_PAYER_PARAGRAPH_7'
+            );
+        }
+    }
+
+    private function ensureNoOverlappingRecord(UserCompany $company, Carbon $validFrom): void
+    {
+        $existingRecord = VatStatusHistory::where('user_company_id', $company->id)
+            ->where('valid_from', $validFrom->toDateString())
+            ->first();
+
+        if ($existingRecord !== null) {
+            throw new VatStatusOverlapException(
+                "A VAT status record already exists for date {$validFrom->toDateString()}"
+            );
+        }
+    }
+
+    private function closePreviousActiveRecord(UserCompany $company, Carbon $validFrom): void
+    {
+        VatStatusHistory::where('user_company_id', $company->id)
+            ->whereNull('valid_to')
+            ->update(['valid_to' => $validFrom->copy()->subDay()->toDateString()]);
+    }
+
+    private function createVatStatusHistory(
+        UserCompany $company,
+        VatStatusChangeDTO $change,
+        ?VatPeriod $period
+    ): void {
+        VatStatusHistory::create([
+            'user_company_id' => $company->id,
+            'vat_status' => $change->status->value,
+            'vat_period' => $period?->value,
+            'valid_from' => $change->validFrom->toDateString(),
+            'valid_to' => null,
+            'notes' => $change->notes,
+        ]);
+    }
+
+    private function updateCompanyVatStatus(
+        UserCompany $company,
+        VatPayerStatus $status,
+        ?VatPeriod $period
+    ): void {
+        $company->update([
+            'vat_payer_status' => $status,
+            'vat_period' => $period,
+        ]);
     }
 }

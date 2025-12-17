@@ -9,6 +9,11 @@ use App\Enums\VatPeriod;
 use App\Models\VatStatusHistory;
 use Carbon\Carbon;
 
+/**
+ * Data transfer object for VAT status information.
+ *
+ * @SuppressWarnings(PHPMD.ExcessiveParameterList)
+ */
 final readonly class VatStatusDTO
 {
     public function __construct(

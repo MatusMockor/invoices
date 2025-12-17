@@ -19,6 +19,12 @@ use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 use Throwable;
 
+/**
+ * Action for creating new invoices with all related data.
+ *
+ * @SuppressWarnings(PHPMD.CouplingBetweenObjects)
+ * @SuppressWarnings(PHPMD.ExcessiveParameterList)
+ */
 final class InvoiceCreateAction
 {
     public function __construct(
@@ -35,97 +41,134 @@ final class InvoiceCreateAction
      */
     public function handle(InvoiceCreateDTO $dto, int $userId, int $supplierCompanyId): Invoice
     {
-        return DB::transaction(function () use ($dto, $userId, $supplierCompanyId) {
-            // Fetch supplier company for registry data snapshot
+        return DB::transaction(function () use ($dto, $userId, $supplierCompanyId): Invoice {
             $supplierCompany = UserCompany::find($supplierCompanyId);
-
-            // Get VAT status at invoice issue date for historical accuracy (REQ-06)
-            $issueDate = Carbon::parse($dto->issueDate);
-            $vatStatus = $supplierCompany
-                ? $this->vatService->getVatStatusAtDate($supplierCompany, $issueDate)
-                : null;
-
-            // Determine if supplier is a VAT payer - force tax_rate to 0 if not
+            $vatStatus = $this->getVatStatusForSupplier($supplierCompany, $dto->issueDate);
             $isVatPayer = $vatStatus?->status->isVatPayer() ?? false;
 
-            // Prepare items with corrected tax_rate for non-VAT payers
             $itemsForCalculation = $this->prepareItemsWithTaxRate($dto->items, $isVatPayer, [
                 'user_id' => $userId,
                 'supplier_id' => $supplierCompanyId,
                 'invoice_number' => $dto->invoiceNumber,
             ]);
 
-            // Calculate invoice totals with VAT (respecting reverse charge)
-            $totals = $this->totalCalculator->calculateTotals($itemsForCalculation, $dto->discountAmount ?? null, $dto->reverseCharge);
-
-            // Force tax_rate to 0 for non-VAT payers
-            $taxRate = $isVatPayer ? ($dto->taxRate ?? 20.0) : 0.0;
-
-            $invoiceData = [
-                'invoice_number' => $dto->invoiceNumber,
-                'user_id' => $userId,
-                'issue_date' => $dto->issueDate,
-                'due_date' => $dto->dueDate,
-                'delivery_date' => $dto->deliveryDate,
-                'supplier_company_id' => $supplierCompanyId,
-                // Supplier registry snapshot - immutable after creation
-                'supplier_registry_office' => $supplierCompany?->registration_office,
-                'supplier_registry_number' => $supplierCompany?->registration_number,
-                // VAT status snapshot - immutable after creation (REQ-06)
-                'supplier_vat_payer_status' => $vatStatus?->status->value,
-                'supplier_vat_period' => $vatStatus?->period?->value,
-                'subtotal' => $totals['subtotal'],
-                'tax_amount' => $totals['tax_amount'],
-                'tax_rate' => $taxRate,
-                'total_amount' => $totals['total_amount'],
-                'discount_amount' => $dto->discountAmount,
-                'discount_percentage' => $dto->discountPercentage,
-                'reverse_charge' => $dto->reverseCharge,
-                'tax_exemption_reason' => $dto->taxExemptionReason,
-                'special_text' => $dto->specialText,
-                'notes' => $dto->notes,
-                'currency' => $dto->currency ?? config('invoices.default_currency'),
-                'variable_symbol' => $dto->variableSymbol,
-                'constant_symbol' => $dto->constantSymbol,
-                'specific_symbol' => $dto->specificSymbol,
-                'status' => $dto->status,
-            ];
-
-            // Handle custom company case with early return
-            if ($dto->useCustomCompany) {
-                $invoiceData['company_id'] = null;
-                $invoiceData['company_ico'] = $dto->customCompanyIco;
-                $invoiceData['company_dic'] = $dto->customCompanyDic;
-                $invoiceData['company_ic_dph'] = $dto->customCompanyIcDph;
-                $invoiceData['company_name'] = $dto->customCompanyName;
-                $invoiceData['company_address'] = $dto->customCompanyAddress;
-                $invoiceData['company_city'] = $dto->customCompanyCity;
-                $invoiceData['company_zip'] = $dto->customCompanyZip;
-                $invoiceData['company_country'] = $dto->customCompanyCountry;
-
-                $invoice = $this->invoiceRepository->create($invoiceData);
-                $this->createInvoiceItems($invoice, $itemsForCalculation, $dto->reverseCharge);
-
-                return $invoice->load(['company', 'items']);
-            }
-
-            // Standard company case - copy all company data to invoice
-            $customerCompany = $this->findOrCreateCompany($dto);
-            $invoiceData['company_id'] = $customerCompany->id;
-            $invoiceData['company_ico'] = $customerCompany->ico;
-            $invoiceData['company_dic'] = $customerCompany->dic;
-            $invoiceData['company_ic_dph'] = $customerCompany->ic_dph;
-            $invoiceData['company_name'] = $customerCompany->name;
-            $invoiceData['company_address'] = $customerCompany->street;
-            $invoiceData['company_city'] = $customerCompany->city;
-            $invoiceData['company_zip'] = $customerCompany->postal_code;
-            $invoiceData['company_country'] = $customerCompany->country;
+            $totals = $dto->reverseCharge
+                ? $this->totalCalculator->calculateTotalsWithReverseCharge($itemsForCalculation, $dto->discountAmount ?? null)
+                : $this->totalCalculator->calculateTotals($itemsForCalculation, $dto->discountAmount ?? null);
+            $invoiceData = $this->buildInvoiceData($dto, $userId, $supplierCompanyId, $supplierCompany, $vatStatus, $totals, $isVatPayer);
+            $invoiceData = $this->applyCompanyDataToInvoice($invoiceData, $dto);
 
             $invoice = $this->invoiceRepository->create($invoiceData);
             $this->createInvoiceItems($invoice, $itemsForCalculation, $dto->reverseCharge);
 
             return $invoice->load(['company', 'items']);
         });
+    }
+
+    private function getVatStatusForSupplier(?UserCompany $supplierCompany, string $issueDate): ?object
+    {
+        if (! $supplierCompany) {
+            return null;
+        }
+
+        return $this->vatService->getVatStatusAtDate($supplierCompany, Carbon::parse($issueDate));
+    }
+
+    /**
+     * @param  array{subtotal: float, tax_amount: float, total_amount: float}  $totals
+     * @return array<string, mixed>
+     */
+    private function buildInvoiceData(
+        InvoiceCreateDTO $dto,
+        int $userId,
+        int $supplierCompanyId,
+        ?UserCompany $supplierCompany,
+        ?object $vatStatus,
+        array $totals,
+        bool $isVatPayer
+    ): array {
+        $taxRate = $isVatPayer ? ($dto->taxRate ?? 20.0) : 0.0;
+
+        return [
+            'invoice_number' => $dto->invoiceNumber,
+            'user_id' => $userId,
+            'issue_date' => $dto->issueDate,
+            'due_date' => $dto->dueDate,
+            'delivery_date' => $dto->deliveryDate,
+            'supplier_company_id' => $supplierCompanyId,
+            'supplier_registry_office' => $supplierCompany?->registration_office,
+            'supplier_registry_number' => $supplierCompany?->registration_number,
+            'supplier_vat_payer_status' => $vatStatus?->status->value,
+            'supplier_vat_period' => $vatStatus?->period?->value,
+            'subtotal' => $totals['subtotal'],
+            'tax_amount' => $totals['tax_amount'],
+            'tax_rate' => $taxRate,
+            'total_amount' => $totals['total_amount'],
+            'discount_amount' => $dto->discountAmount,
+            'discount_percentage' => $dto->discountPercentage,
+            'reverse_charge' => $dto->reverseCharge,
+            'tax_exemption_reason' => $dto->taxExemptionReason,
+            'special_text' => $dto->specialText,
+            'notes' => $dto->notes,
+            'currency' => $dto->currency ?? config('invoices.default_currency'),
+            'variable_symbol' => $dto->variableSymbol,
+            'constant_symbol' => $dto->constantSymbol,
+            'specific_symbol' => $dto->specificSymbol,
+            'status' => $dto->status,
+        ];
+    }
+
+    /**
+     * @param  array<string, mixed>  $invoiceData
+     * @return array<string, mixed>
+     */
+    private function applyCompanyDataToInvoice(array $invoiceData, InvoiceCreateDTO $dto): array
+    {
+        if ($dto->useCustomCompany) {
+            return $this->applyCustomCompanyData($invoiceData, $dto);
+        }
+
+        return $this->applyStandardCompanyData($invoiceData, $dto);
+    }
+
+    /**
+     * @param  array<string, mixed>  $invoiceData
+     * @return array<string, mixed>
+     */
+    private function applyCustomCompanyData(array $invoiceData, InvoiceCreateDTO $dto): array
+    {
+        $invoiceData['company_id'] = null;
+        $invoiceData['company_ico'] = $dto->customCompanyIco;
+        $invoiceData['company_dic'] = $dto->customCompanyDic;
+        $invoiceData['company_ic_dph'] = $dto->customCompanyIcDph;
+        $invoiceData['company_name'] = $dto->customCompanyName;
+        $invoiceData['company_address'] = $dto->customCompanyAddress;
+        $invoiceData['company_city'] = $dto->customCompanyCity;
+        $invoiceData['company_zip'] = $dto->customCompanyZip;
+        $invoiceData['company_country'] = $dto->customCompanyCountry;
+
+        return $invoiceData;
+    }
+
+    /**
+     * @param  array<string, mixed>  $invoiceData
+     * @return array<string, mixed>
+     */
+    private function applyStandardCompanyData(array $invoiceData, InvoiceCreateDTO $dto): array
+    {
+        $customerCompany = $this->findOrCreateCompany($dto);
+
+        $invoiceData['company_id'] = $customerCompany->id;
+        $invoiceData['company_ico'] = $customerCompany->ico;
+        $invoiceData['company_dic'] = $customerCompany->dic;
+        $invoiceData['company_ic_dph'] = $customerCompany->ic_dph;
+        $invoiceData['company_name'] = $customerCompany->name;
+        $invoiceData['company_address'] = $customerCompany->street;
+        $invoiceData['company_city'] = $customerCompany->city;
+        $invoiceData['company_zip'] = $customerCompany->postal_code;
+        $invoiceData['company_country'] = $customerCompany->country;
+
+        return $invoiceData;
     }
 
     private function findOrCreateCompany(InvoiceCreateDTO $dto): Company
@@ -176,19 +219,28 @@ final class InvoiceCreateAction
     {
         $vatCalculator = $this->vatCalculator;
 
-        $preparedItems = array_map(static function (array $item) use ($invoice, $reverseCharge, $vatCalculator): array {
+        $preparedItems = $reverseCharge
+            ? $this->prepareItemsWithReverseCharge($invoice, $items, $vatCalculator)
+            : $this->prepareItemsWithVat($invoice, $items, $vatCalculator);
+
+        foreach ($preparedItems as $itemData) {
+            $this->invoiceItemRepository->create($itemData);
+        }
+    }
+
+    /**
+     * @return array<int, array<string, mixed>>
+     */
+    private function prepareItemsWithVat(Invoice $invoice, array $items, VatCalculatorService $vatCalculator): array
+    {
+        return array_map(static function (array $item) use ($invoice, $vatCalculator): array {
             $quantity = $item['quantity'];
             $unitPriceWithoutTax = $item['price'] ?? $item['unit_price_without_tax'] ?? 0;
             $taxRate = $item['tax_rate'] ?? 20.0;
             $discountAmount = $item['discount_amount'] ?? null;
 
-            // Calculate item subtotal (without VAT)
             $subtotal = $vatCalculator->calculateItemSubtotal($quantity, $unitPriceWithoutTax, $discountAmount);
-
-            // Calculate VAT amount (respect reverse charge)
-            $taxAmount = $vatCalculator->calculateVatAmount($subtotal, $taxRate, $reverseCharge);
-
-            // Calculate total price (with or without VAT based on reverse charge)
+            $taxAmount = $vatCalculator->calculateVatAmount($subtotal, $taxRate);
             $totalPrice = $subtotal + $taxAmount;
 
             return [
@@ -203,9 +255,34 @@ final class InvoiceCreateAction
                 'total_price' => $totalPrice,
             ];
         }, $items);
+    }
 
-        foreach ($preparedItems as $itemData) {
-            $this->invoiceItemRepository->create($itemData);
-        }
+    /**
+     * @return array<int, array<string, mixed>>
+     */
+    private function prepareItemsWithReverseCharge(Invoice $invoice, array $items, VatCalculatorService $vatCalculator): array
+    {
+        return array_map(static function (array $item) use ($invoice, $vatCalculator): array {
+            $quantity = $item['quantity'];
+            $unitPriceWithoutTax = $item['price'] ?? $item['unit_price_without_tax'] ?? 0;
+            $taxRate = $item['tax_rate'] ?? 20.0;
+            $discountAmount = $item['discount_amount'] ?? null;
+
+            $subtotal = $vatCalculator->calculateItemSubtotal($quantity, $unitPriceWithoutTax, $discountAmount);
+            $taxAmount = $vatCalculator->calculateVatAmountWithReverseCharge($subtotal, $taxRate);
+            $totalPrice = $subtotal + $taxAmount;
+
+            return [
+                'invoice_id' => $invoice->id,
+                'description' => $item['description'],
+                'quantity' => $quantity,
+                'unit_price_without_tax' => $unitPriceWithoutTax,
+                'tax_rate' => $taxRate,
+                'tax_amount' => $taxAmount,
+                'subtotal' => $subtotal,
+                'discount_amount' => $discountAmount,
+                'total_price' => $totalPrice,
+            ];
+        }, $items);
     }
 }

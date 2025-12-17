@@ -7,6 +7,7 @@ namespace App\Http\Controllers;
 use App\Http\Requests\Companies\CreateCompanyRequest;
 use App\Http\Requests\Companies\UpdateCompanyRequest;
 use App\Models\Company;
+use App\Models\UserCompany;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\View\View;
@@ -85,8 +86,10 @@ class CompanyController extends Controller
 
     /**
      * Switch the user's current company.
+     *
+     * @SuppressWarnings(PHPMD.UnusedFormalParameter)
      */
-    public function switchCompany(Request $request, Company $company): RedirectResponse
+    public function switchCompany(Request $request, UserCompany $company): RedirectResponse
     {
         $user = auth()->user();
 

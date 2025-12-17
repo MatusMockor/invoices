@@ -8,28 +8,38 @@ final class VatCalculatorService
 {
     /**
      * Calculate VAT amount from subtotal and tax rate.
-     *
-     * @param  bool  $reverseCharge  If true, VAT is not calculated (reverse charge mechanism)
      */
-    public function calculateVatAmount(float $subtotal, float $taxRate, bool $reverseCharge = false): float
+    public function calculateVatAmount(float $subtotal, float $taxRate): float
     {
-        if ($reverseCharge) {
-            return 0.0;
-        }
-
         return round($subtotal * ($taxRate / 100), 2);
     }
 
     /**
-     * Calculate total amount including VAT.
+     * Calculate VAT amount with reverse charge mechanism (always returns 0).
      *
-     * @param  bool  $reverseCharge  If true, total equals subtotal (no VAT)
+     * @SuppressWarnings(PHPMD.UnusedFormalParameter)
      */
-    public function calculateTotalWithVat(float $subtotal, float $taxRate, bool $reverseCharge = false): float
+    public function calculateVatAmountWithReverseCharge(float $subtotal, float $taxRate): float
     {
-        $vatAmount = $this->calculateVatAmount($subtotal, $taxRate, $reverseCharge);
+        return 0.0;
+    }
+
+    /**
+     * Calculate total amount including VAT.
+     */
+    public function calculateTotalWithVat(float $subtotal, float $taxRate): float
+    {
+        $vatAmount = $this->calculateVatAmount($subtotal, $taxRate);
 
         return round($subtotal + $vatAmount, 2);
+    }
+
+    /**
+     * Calculate total amount with reverse charge (no VAT added).
+     */
+    public function calculateTotalWithReverseCharge(float $subtotal): float
+    {
+        return round($subtotal, 2);
     }
 
     /**
@@ -60,10 +70,30 @@ final class VatCalculatorService
      * Calculate invoice totals from items.
      *
      * @param  array  $items  Array of items with quantity, unit_price_without_tax, tax_rate, discount_amount
-     * @param  bool  $reverseCharge  If true, VAT is not calculated
      * @return array{subtotal: float, tax_amount: float, total_amount: float}
      */
-    public function calculateInvoiceTotals(array $items, ?float $invoiceDiscountAmount = null, bool $reverseCharge = false): array
+    public function calculateInvoiceTotals(array $items, ?float $invoiceDiscountAmount = null): array
+    {
+        return $this->buildInvoiceTotals($items, $invoiceDiscountAmount, reverseCharge: false);
+    }
+
+    /**
+     * Calculate invoice totals with reverse charge (no VAT).
+     *
+     * @param  array  $items  Array of items with quantity, unit_price_without_tax, tax_rate, discount_amount
+     * @return array{subtotal: float, tax_amount: float, total_amount: float}
+     */
+    public function calculateInvoiceTotalsWithReverseCharge(array $items, ?float $invoiceDiscountAmount = null): array
+    {
+        return $this->buildInvoiceTotals($items, $invoiceDiscountAmount, reverseCharge: true);
+    }
+
+    /**
+     * Build invoice totals calculation.
+     *
+     * @return array{subtotal: float, tax_amount: float, total_amount: float}
+     */
+    private function buildInvoiceTotals(array $items, ?float $invoiceDiscountAmount, bool $reverseCharge): array
     {
         $invoiceSubtotal = 0.0;
         $invoiceTaxAmount = 0.0;
@@ -76,7 +106,9 @@ final class VatCalculatorService
             $itemDiscount = $item['discount_amount'] ?? null;
 
             $itemSubtotal = $this->calculateItemSubtotal($quantity, $unitPrice, $itemDiscount);
-            $itemTaxAmount = $this->calculateVatAmount($itemSubtotal, $taxRate, $reverseCharge);
+            $itemTaxAmount = $reverseCharge
+                ? $this->calculateVatAmountWithReverseCharge($itemSubtotal, $taxRate)
+                : $this->calculateVatAmount($itemSubtotal, $taxRate);
 
             $invoiceSubtotal += $itemSubtotal;
             $invoiceTaxAmount += $itemTaxAmount;

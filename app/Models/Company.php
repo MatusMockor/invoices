@@ -18,7 +18,7 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
  * @property string $ico Company identification number
  * @property string|null $dic Tax identification number
  * @property string|null $ic_dph VAT identification number
- * @property string|null $vat_payer_status VAT payer status
+ * @property VatPayerStatus|null $vat_payer_status VAT payer status
  * @property string|null $street Street address
  * @property string|null $city City
  * @property string|null $postal_code Postal code

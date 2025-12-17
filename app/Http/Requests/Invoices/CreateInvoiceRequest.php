@@ -172,7 +172,7 @@ final class CreateInvoiceRequest extends FormRequest
         return $this->validated('items');
     }
 
-    public function getUseCustomCompany(): bool
+    public function usesCustomCompany(): bool
     {
         return $this->boolean('useCustomCompany', false);
     }

@@ -28,13 +28,13 @@ final class StoreInvoiceRequest extends FormRequest
     public function rules(): array
     {
         return array_merge(
-            $this->getClientValidationRules(required: true),
-            $this->getInvoiceDetailsValidationRules(required: true),
-            $this->getInvoiceItemsValidationRules(required: true)
+            $this->getRequiredClientValidationRules(),
+            $this->getRequiredInvoiceDetailsValidationRules(),
+            $this->getRequiredInvoiceItemsValidationRules()
         );
     }
 
-    public function getUseCustomCompany(): bool
+    public function usesCustomCompany(): bool
     {
         return $this->boolean('useCustomCompany', false);
     }
@@ -168,7 +168,11 @@ final class StoreInvoiceRequest extends FormRequest
     {
         $status = $this->validated('status');
 
-        return $status ? InvoiceStatus::from($status) : InvoiceStatus::from(config('invoices.default_status'));
+        if (! $status) {
+            return InvoiceStatus::from(config('invoices.default_status'));
+        }
+
+        return InvoiceStatus::from($status);
     }
 
     public function getItems(): array

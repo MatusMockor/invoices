@@ -58,6 +58,7 @@ use Illuminate\Support\Carbon;
  * @property InvoiceStatus $status
  * @property Carbon $created_at
  * @property Carbon $updated_at
+ * @property string|null $qr_code Dynamic property for QR code (not persisted)
  * @property-read User $user
  * @property-read Company|null $company
  * @property-read UserCompany|null $supplierCompany

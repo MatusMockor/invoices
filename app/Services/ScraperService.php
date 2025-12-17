@@ -40,7 +40,9 @@ class ScraperService implements ScraperServiceContract
     }
 
     /**
-     * Fetch company data by ICO using the scraper service
+     * Fetch company data by ICO using the scraper service.
+     *
+     * @SuppressWarnings(PHPMD.ExcessiveMethodLength)
      */
     public function fetchCompanyDataByIco(string $ico): array
     {

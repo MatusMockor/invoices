@@ -30,9 +30,9 @@ final class UpdateInvoiceRequest extends FormRequest
         $invoiceId = $this->route('invoice')?->id;
 
         return array_merge(
-            $this->getClientValidationRules(required: false),
-            $this->getInvoiceDetailsValidationRules(required: false, invoiceId: $invoiceId),
-            $this->getInvoiceItemsValidationRules(required: false, invoiceId: $invoiceId)
+            $this->getOptionalClientValidationRules(),
+            $this->getOptionalInvoiceDetailsValidationRules(invoiceId: $invoiceId),
+            $this->getOptionalInvoiceItemsValidationRules(invoiceId: $invoiceId)
         );
     }
 
@@ -48,7 +48,7 @@ final class UpdateInvoiceRequest extends FormRequest
         ];
     }
 
-    public function getUseCustomCompany(): bool
+    public function usesCustomCompany(): bool
     {
         return $this->boolean('useCustomCompany', false);
     }
@@ -182,7 +182,11 @@ final class UpdateInvoiceRequest extends FormRequest
     {
         $status = $this->validated('status');
 
-        return $status ? InvoiceStatus::from($status) : null;
+        if (! $status) {
+            return null;
+        }
+
+        return InvoiceStatus::from($status);
     }
 
     public function getItems(): ?array

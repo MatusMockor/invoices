@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Http\Controllers\Api;
 
 use App\Actions\Company\ChangeVatStatusAction;
+use App\DTOs\Vat\VatStatusChangeDTO;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\UpdateVatStatusRequest;
 use App\Http\Resources\UserCompanyResource;
@@ -39,13 +40,14 @@ class VatStatusController extends Controller
     {
         $this->authorize('update', $userCompany);
 
-        $this->changeVatStatusAction->handle(
-            $userCompany,
-            $request->getVatStatus(),
-            $request->getVatPeriod(),
-            $request->getValidFrom(),
-            $request->getNotes()
+        $change = new VatStatusChangeDTO(
+            status: $request->getVatStatus(),
+            period: $request->getVatPeriod(),
+            validFrom: $request->getValidFrom(),
+            notes: $request->getNotes(),
         );
+
+        $this->changeVatStatusAction->handle($userCompany, $change);
 
         // Refresh the company to get updated status
         $userCompany->refresh();

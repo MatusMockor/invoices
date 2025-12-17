@@ -27,11 +27,22 @@ final class InvoiceTotalCalculatorService
      *
      * @param  array  $items  Array of items with quantity, price/unit_price_without_tax, tax_rate
      * @param  float|null  $discountAmount  Invoice-level discount
-     * @param  bool  $reverseCharge  If true, VAT is not calculated (reverse charge mechanism)
      * @return array{subtotal: float, tax_amount: float, total_amount: float}
      */
-    public function calculateTotals(array $items, ?float $discountAmount = null, bool $reverseCharge = false): array
+    public function calculateTotals(array $items, ?float $discountAmount = null): array
     {
-        return $this->vatCalculator->calculateInvoiceTotals($items, $discountAmount, $reverseCharge);
+        return $this->vatCalculator->calculateInvoiceTotals($items, $discountAmount);
+    }
+
+    /**
+     * Calculate invoice totals with reverse charge (no VAT).
+     *
+     * @param  array  $items  Array of items with quantity, price/unit_price_without_tax, tax_rate
+     * @param  float|null  $discountAmount  Invoice-level discount
+     * @return array{subtotal: float, tax_amount: float, total_amount: float}
+     */
+    public function calculateTotalsWithReverseCharge(array $items, ?float $discountAmount = null): array
+    {
+        return $this->vatCalculator->calculateInvoiceTotalsWithReverseCharge($items, $discountAmount);
     }
 }

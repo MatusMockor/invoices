@@ -9,6 +9,8 @@ use Illuminate\Http\Resources\Json\JsonResource;
 
 /**
  * @mixin \App\Models\UserCompany
+ *
+ * @SuppressWarnings(PHPMD.UnusedFormalParameter)
  */
 class UserCompanyResource extends JsonResource
 {
@@ -38,8 +40,8 @@ class UserCompanyResource extends JsonResource
             'bank_account' => null,
             'iban' => $this->iban,
             'swift' => $this->swift,
-            'type' => $this->type?->value,
-            'type_label' => $this->type?->label(),
+            'type' => $this->type->value,
+            'type_label' => $this->type->label(),
             'registration_number' => $this->registration_number,
             'registration_office' => $this->registration_office,
             'status' => $this->status,

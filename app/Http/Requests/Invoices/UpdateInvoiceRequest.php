@@ -172,7 +172,11 @@ final class UpdateInvoiceRequest extends FormRequest
     {
         $status = $this->validated('status');
 
-        return $status ? InvoiceStatus::from($status) : null;
+        if (! $status) {
+            return null;
+        }
+
+        return InvoiceStatus::from($status);
     }
 
     public function getItems(): array
@@ -180,7 +184,7 @@ final class UpdateInvoiceRequest extends FormRequest
         return $this->validated('items');
     }
 
-    public function getUseCustomCompany(): bool
+    public function usesCustomCompany(): bool
     {
         return $this->boolean('useCustomCompany', false);
     }

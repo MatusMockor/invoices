@@ -18,6 +18,11 @@ use Illuminate\Support\Arr;
 use Illuminate\View\View;
 use Throwable;
 
+/**
+ * Controller for managing invoices.
+ *
+ * @SuppressWarnings(PHPMD.ExcessiveParameterList)
+ */
 class InvoiceController extends Controller
 {
     public function __construct(
@@ -36,14 +41,20 @@ class InvoiceController extends Controller
             auth()->user()->current_company_id
         );
 
-        return view('invoices.index', ['invoices' => $invoices]);
+        /** @var view-string $viewName */
+        $viewName = 'invoices.index';
+
+        return view($viewName, ['invoices' => $invoices]);
     }
 
     public function create(): View
     {
         $companies = $this->businessEntityRepository->getAllOrderedByName();
 
-        return view('invoices.create', ['companies' => $companies]);
+        /** @var view-string $viewName */
+        $viewName = 'invoices.create';
+
+        return view($viewName, ['companies' => $companies]);
     }
 
     public function store(CreateInvoiceRequest $request): RedirectResponse
@@ -85,14 +96,20 @@ class InvoiceController extends Controller
     {
         $invoice->load(['company', 'items']);
 
-        return view('invoices.show', ['invoice' => $invoice]);
+        /** @var view-string $viewName */
+        $viewName = 'invoices.show';
+
+        return view($viewName, ['invoice' => $invoice]);
     }
 
     public function edit(Invoice $invoice): View
     {
         $invoice->load(['company', 'items']);
 
-        return view('invoices.edit', [
+        /** @var view-string $viewName */
+        $viewName = 'invoices.edit';
+
+        return view($viewName, [
             'invoice' => $invoice,
         ]);
     }

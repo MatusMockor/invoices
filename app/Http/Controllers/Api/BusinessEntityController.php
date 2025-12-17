@@ -79,9 +79,11 @@ class BusinessEntityController extends Controller
         foreach ($validated as $key => $value) {
             if ($key === 'address') {
                 $updateData['street'] = $value;
-            } else {
-                $updateData[$key] = $value;
+
+                continue;
             }
+
+            $updateData[$key] = $value;
         }
 
         $this->businessEntityRepository->update($businessEntity, $updateData);

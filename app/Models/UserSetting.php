@@ -13,7 +13,7 @@ use Illuminate\Support\Carbon;
  *
  * @property int $id
  * @property int $user_id
- * @property string $invoice_template
+ * @property \App\Enums\InvoiceTemplate $invoice_template
  * @property Carbon $created_at
  * @property Carbon $updated_at
  * @property-read User $user

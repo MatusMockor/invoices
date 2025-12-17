@@ -8,6 +8,9 @@ use App\Models\UserCompany;
 use Closure;
 use Illuminate\Contracts\Validation\ValidationRule;
 
+/**
+ * @SuppressWarnings(PHPMD.UnusedFormalParameter)
+ */
 class VatRateRequiredForVatPayer implements ValidationRule
 {
     public function __construct(

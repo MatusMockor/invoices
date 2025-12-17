@@ -8,6 +8,9 @@ use App\DTOs\CompanyAnalyticsDTO;
 use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\JsonResource;
 
+/**
+ * @SuppressWarnings(PHPMD.UnusedFormalParameter)
+ */
 class CompanyAnalyticsResource extends JsonResource
 {
     /**

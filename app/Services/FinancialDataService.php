@@ -6,7 +6,9 @@ namespace App\Services;
 
 use App\DataTransferObjects\FinancialDataState;
 use App\Services\Interfaces\FinancialDataService as FinancialDataServiceContract;
+use Closure;
 use Generator;
+use Illuminate\Contracts\Filesystem\Filesystem;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Storage;
@@ -15,8 +17,25 @@ use SimpleXMLElement;
 use XMLReader;
 use ZipArchive;
 
+/**
+ * Service for downloading and processing financial data from external sources.
+ *
+ * @SuppressWarnings(PHPMD.ExcessiveClassLength)
+ * @SuppressWarnings(PHPMD.TooManyMethods)
+ * @SuppressWarnings(PHPMD.CyclomaticComplexity)
+ * @SuppressWarnings(PHPMD.NPathComplexity)
+ * @SuppressWarnings(PHPMD.ExcessiveMethodLength)
+ */
 class FinancialDataService implements FinancialDataServiceContract
 {
+    private const int MEMORY_CLEANUP_INTERVAL = 5000;
+
+    private const int DOWNLOAD_TIMEOUT_SECONDS = 600;
+
+    private const int LOG_PROGRESS_BYTES = 10485760; // 10MB
+
+    private const int BYTES_PER_MB = 1048576;
+
     private string $diskName = 'local';
 
     private string $tempDir;
@@ -229,52 +248,11 @@ class FinancialDataService implements FinancialDataServiceContract
      */
     private function downloadZipFile(): void
     {
-        $url = config('financial_data.source_url');
-
-        Log::info('Downloading financial data from: '.$url);
-
-        $disk = Storage::disk($this->diskName);
-        $zipPath = $this->tempDir.'/'.$this->zipFileName;
-
-        // Get the full path for sink option
-        $fullPath = $disk->path($zipPath);
-
-        // Use sink option to stream directly to file - more reliable for large files
-        $response = Http::timeout(600) // Increase timeout to 10 minutes for 50MB download
-            ->withOptions([
-                'sink' => $fullPath,
-                'progress' => static function (int $downloadTotal, int $downloadedBytes): void {
-                    if ($downloadTotal > 0 && $downloadedBytes > 0 && $downloadedBytes % 10485760 === 0) {
-                        // Log every 10MB
-                        Log::debug('Download progress', [
-                            'downloaded_mb' => round($downloadedBytes / 1048576, 2),
-                            'total_mb' => round($downloadTotal / 1048576, 2),
-                            'progress' => round(($downloadedBytes / $downloadTotal) * 100, 2).'%',
-                        ]);
-                    }
-                },
-            ])
-            ->get($url);
-
-        if (! $response->successful()) {
-            // Clean up partial download
-            if ($disk->exists($zipPath)) {
-                $disk->delete($zipPath);
-            }
-
-            throw new RuntimeException('Failed to download financial data: HTTP '.$response->status());
-        }
-
-        if (! $disk->exists($zipPath)) {
-            throw new RuntimeException('Download completed but file does not exist: '.$zipPath);
-        }
-
-        $fileSize = $disk->size($zipPath);
-
-        Log::info('Financial data downloaded successfully', [
-            'size' => $fileSize.' bytes',
-            'size_mb' => round($fileSize / 1048576, 2).' MB',
-        ]);
+        $this->downloadFile(
+            configKey: 'financial_data.source_url',
+            fileName: $this->zipFileName,
+            logPrefix: 'financial data'
+        );
     }
 
     /**
@@ -282,63 +260,7 @@ class FinancialDataService implements FinancialDataServiceContract
      */
     private function extractZipFile(): FinancialDataState
     {
-        $disk = Storage::disk($this->diskName);
-        $zipPath = $this->tempDir.'/'.$this->zipFileName;
-        $zipFullPath = $disk->path($zipPath);
-
-        $zip = new ZipArchive;
-
-        if ($zip->open($zipFullPath) !== true) {
-            throw new RuntimeException('Failed to open ZIP file: '.$zipFullPath);
-        }
-
-        // Log all files in ZIP for debugging
-        $filesInZip = [];
-        for ($i = 0; $i < $zip->numFiles; $i++) {
-            $stat = $zip->statIndex($i);
-            if ($stat !== false) {
-                $filesInZip[] = $stat['name'];
-            }
-        }
-        Log::info('Files found in ZIP archive', ['count' => count($filesInZip), 'files' => $filesInZip]);
-
-        // Find XML file (case-insensitive, handle directories)
-        $fileName = null;
-        foreach ($filesInZip as $name) {
-            // Skip directories
-            if (str_ends_with($name, '/')) {
-                continue;
-            }
-
-            $extension = strtolower(pathinfo($name, PATHINFO_EXTENSION));
-
-            if ($extension === 'xml') {
-                $fileName = $name;
-                Log::info('Found XML data file in ZIP', ['file' => $fileName]);
-                break;
-            }
-        }
-
-        if (! $fileName) {
-            $zip->close();
-            throw new RuntimeException('No XML file found in ZIP archive. Files: '.implode(', ', $filesInZip));
-        }
-
-        // Extract to temp directory
-        $extractPath = $disk->path($this->tempDir);
-
-        if (! $zip->extractTo($extractPath, $fileName)) {
-            $zip->close();
-            throw new RuntimeException('Failed to extract file from ZIP: '.$fileName);
-        }
-
-        $zip->close();
-
-        $extractedFileName = basename($fileName);
-
-        Log::info('Extracted file successfully', ['file' => $extractedFileName]);
-
-        return new FinancialDataState($extractedFileName);
+        return $this->extractZip($this->zipFileName, 'ZIP');
     }
 
     /**
@@ -348,71 +270,11 @@ class FinancialDataService implements FinancialDataServiceContract
      */
     private function processCompanyData(FinancialDataState $state): Generator
     {
-        $disk = Storage::disk($this->diskName);
-        $extractedPath = $this->tempDir.'/'.$state->extractedFileName;
-        $extractedFullPath = $disk->path($extractedPath);
-
-        if (! $disk->exists($extractedPath)) {
-            throw new RuntimeException('Extracted file does not exist: '.$extractedPath);
-        }
-
-        Log::info('Streaming XML file with XMLReader for efficient processing...');
-
-        $reader = new XMLReader;
-
-        if (! $reader->open($extractedFullPath)) {
-            throw new RuntimeException('Failed to open XML file: '.$extractedFullPath);
-        }
-
-        $processedCount = 0;
-        $skippedCount = 0;
-
-        // Stream through XML and process ITEM elements one by one
-        while ($reader->read()) {
-            if ($reader->nodeType !== XMLReader::ELEMENT || $reader->name !== 'ITEM') {
-                continue;
-            }
-
-            // Read ITEM element as SimpleXMLElement for easier parsing
-            $itemXml = $reader->readOuterXml();
-
-            if ($itemXml === false) {
-                continue;
-            }
-
-            $item = new SimpleXMLElement($itemXml);
-
-            // Convert to array
-            $itemArray = [];
-            foreach ($item->children() as $child) {
-                $itemArray[(string) $child->getName()] = (string) $child;
-            }
-
-            $companyData = $this->parseCompanyData($itemArray);
-
-            if (! $companyData) {
-                $skippedCount++;
-
-                continue;
-            }
-
-            $processedCount++;
-            yield $companyData;
-
-            // Memory cleanup every 5000 records
-            if ($processedCount % 5000 === 0) {
-                gc_collect_cycles();
-            }
-        }
-
-        $reader->close();
-        unset($reader);
-
-        Log::info('Processed company data from XML', [
-            'processed' => $processedCount,
-            'skipped' => $skippedCount,
-            'total' => $processedCount + $skippedCount,
-        ]);
+        yield from $this->processXmlData(
+            state: $state,
+            parser: fn (array $item): ?array => $this->parseCompanyData($item),
+            logPrefix: 'company'
+        );
     }
 
     /**
@@ -422,71 +284,11 @@ class FinancialDataService implements FinancialDataServiceContract
      */
     private function processDicData(FinancialDataState $state): Generator
     {
-        $disk = Storage::disk($this->diskName);
-        $extractedPath = $this->tempDir.'/'.$state->extractedFileName;
-        $extractedFullPath = $disk->path($extractedPath);
-
-        if (! $disk->exists($extractedPath)) {
-            throw new RuntimeException('Extracted file does not exist: '.$extractedPath);
-        }
-
-        Log::info('Streaming XML file for DIC data with XMLReader...');
-
-        $reader = new XMLReader;
-
-        if (! $reader->open($extractedFullPath)) {
-            throw new RuntimeException('Failed to open XML file: '.$extractedFullPath);
-        }
-
-        $processedCount = 0;
-        $skippedCount = 0;
-
-        // Stream through XML and process ITEM elements one by one
-        while ($reader->read()) {
-            if ($reader->nodeType !== XMLReader::ELEMENT || $reader->name !== 'ITEM') {
-                continue;
-            }
-
-            // Read ITEM element as SimpleXMLElement for easier parsing
-            $itemXml = $reader->readOuterXml();
-
-            if ($itemXml === false) {
-                continue;
-            }
-
-            $item = new SimpleXMLElement($itemXml);
-
-            // Convert to array
-            $itemArray = [];
-            foreach ($item->children() as $child) {
-                $itemArray[(string) $child->getName()] = (string) $child;
-            }
-
-            $dicData = $this->parseDicData($itemArray);
-
-            if (! $dicData) {
-                $skippedCount++;
-
-                continue;
-            }
-
-            $processedCount++;
-            yield $dicData;
-
-            // Memory cleanup every 5000 records
-            if ($processedCount % 5000 === 0) {
-                gc_collect_cycles();
-            }
-        }
-
-        $reader->close();
-        unset($reader);
-
-        Log::info('Processed DIC data from XML', [
-            'processed' => $processedCount,
-            'skipped' => $skippedCount,
-            'total' => $processedCount + $skippedCount,
-        ]);
+        yield from $this->processXmlData(
+            state: $state,
+            parser: fn (array $item): ?array => $this->parseDicData($item),
+            logPrefix: 'DIC'
+        );
     }
 
     /**
@@ -494,47 +296,88 @@ class FinancialDataService implements FinancialDataServiceContract
      */
     private function downloadVatZipFile(): void
     {
-        $url = config('financial_data.vat_source_url');
+        $this->downloadFile(
+            configKey: 'financial_data.vat_source_url',
+            fileName: $this->vatZipFileName,
+            logPrefix: 'VAT data'
+        );
+    }
 
-        Log::info('Downloading VAT data from: '.$url);
+    /**
+     * Download a file from a configured URL to the temp directory.
+     */
+    private function downloadFile(string $configKey, string $fileName, string $logPrefix): void
+    {
+        $url = config($configKey);
+
+        Log::info("Downloading {$logPrefix} from: ".$url);
 
         $disk = Storage::disk($this->diskName);
-        $zipPath = $this->tempDir.'/'.$this->vatZipFileName;
-
+        $zipPath = $this->tempDir.'/'.$fileName;
         $fullPath = $disk->path($zipPath);
 
-        $response = Http::timeout(600)
+        $response = Http::timeout(self::DOWNLOAD_TIMEOUT_SECONDS)
             ->withOptions([
                 'sink' => $fullPath,
-                'progress' => static function (int $downloadTotal, int $downloadedBytes): void {
-                    if ($downloadTotal > 0 && $downloadedBytes > 0 && $downloadedBytes % 10485760 === 0) {
-                        Log::debug('VAT download progress', [
-                            'downloaded_mb' => round($downloadedBytes / 1048576, 2),
-                            'total_mb' => round($downloadTotal / 1048576, 2),
-                            'progress' => round(($downloadedBytes / $downloadTotal) * 100, 2).'%',
-                        ]);
-                    }
-                },
+                'progress' => $this->createProgressCallback($logPrefix),
             ])
             ->get($url);
 
         if (! $response->successful()) {
-            if ($disk->exists($zipPath)) {
-                $disk->delete($zipPath);
-            }
+            $this->deleteFileIfExists($disk, $zipPath);
 
-            throw new RuntimeException('Failed to download VAT data: HTTP '.$response->status());
+            throw new RuntimeException("Failed to download {$logPrefix}: HTTP ".$response->status());
         }
 
         if (! $disk->exists($zipPath)) {
-            throw new RuntimeException('VAT download completed but file does not exist: '.$zipPath);
+            throw new RuntimeException("{$logPrefix} download completed but file does not exist: ".$zipPath);
         }
 
-        $fileSize = $disk->size($zipPath);
+        $this->logDownloadSuccess($disk, $zipPath, $logPrefix);
+    }
 
-        Log::info('VAT data downloaded successfully', [
+    /**
+     * Create a progress callback for download logging.
+     */
+    private function createProgressCallback(string $logPrefix): Closure
+    {
+        return static function (int $downloadTotal, int $downloadedBytes) use ($logPrefix): void {
+            if ($downloadTotal <= 0 || $downloadedBytes <= 0) {
+                return;
+            }
+
+            if ($downloadedBytes % self::LOG_PROGRESS_BYTES !== 0) {
+                return;
+            }
+
+            Log::debug("{$logPrefix} download progress", [
+                'downloaded_mb' => round($downloadedBytes / self::BYTES_PER_MB, 2),
+                'total_mb' => round($downloadTotal / self::BYTES_PER_MB, 2),
+                'progress' => round(($downloadedBytes / $downloadTotal) * 100, 2).'%',
+            ]);
+        };
+    }
+
+    /**
+     * Delete a file if it exists.
+     */
+    private function deleteFileIfExists(Filesystem $disk, string $path): void
+    {
+        if ($disk->exists($path)) {
+            $disk->delete($path);
+        }
+    }
+
+    /**
+     * Log successful download information.
+     */
+    private function logDownloadSuccess(Filesystem $disk, string $path, string $logPrefix): void
+    {
+        $fileSize = $disk->size($path);
+
+        Log::info("{$logPrefix} downloaded successfully", [
             'size' => $fileSize.' bytes',
-            'size_mb' => round($fileSize / 1048576, 2).' MB',
+            'size_mb' => round($fileSize / self::BYTES_PER_MB, 2).' MB',
         ]);
     }
 
@@ -543,16 +386,59 @@ class FinancialDataService implements FinancialDataServiceContract
      */
     private function extractVatZipFile(): FinancialDataState
     {
+        return $this->extractZip($this->vatZipFileName, 'VAT ZIP');
+    }
+
+    /**
+     * Extract a ZIP file and find the XML file inside.
+     */
+    private function extractZip(string $zipFileName, string $logPrefix): FinancialDataState
+    {
         $disk = Storage::disk($this->diskName);
-        $zipPath = $this->tempDir.'/'.$this->vatZipFileName;
+        $zipPath = $this->tempDir.'/'.$zipFileName;
         $zipFullPath = $disk->path($zipPath);
 
         $zip = new ZipArchive;
 
         if ($zip->open($zipFullPath) !== true) {
-            throw new RuntimeException('Failed to open VAT ZIP file: '.$zipFullPath);
+            throw new RuntimeException("Failed to open {$logPrefix} file: ".$zipFullPath);
         }
 
+        $filesInZip = $this->getFilesInZip($zip);
+        Log::info("Files found in {$logPrefix} archive", ['count' => count($filesInZip), 'files' => $filesInZip]);
+
+        $fileName = $this->findXmlFile($filesInZip);
+
+        if (! $fileName) {
+            $zip->close();
+            throw new RuntimeException("No XML file found in {$logPrefix} archive. Files: ".implode(', ', $filesInZip));
+        }
+
+        Log::info("Found XML data file in {$logPrefix}", ['file' => $fileName]);
+
+        $extractPath = $disk->path($this->tempDir);
+
+        if (! $zip->extractTo($extractPath, $fileName)) {
+            $zip->close();
+            throw new RuntimeException("Failed to extract file from {$logPrefix}: ".$fileName);
+        }
+
+        $zip->close();
+
+        $extractedFileName = basename($fileName);
+
+        Log::info("Extracted {$logPrefix} file successfully", ['file' => $extractedFileName]);
+
+        return new FinancialDataState($extractedFileName);
+    }
+
+    /**
+     * Get list of files in ZIP archive.
+     *
+     * @return array<string>
+     */
+    private function getFilesInZip(ZipArchive $zip): array
+    {
         $filesInZip = [];
         for ($i = 0; $i < $zip->numFiles; $i++) {
             $stat = $zip->statIndex($i);
@@ -560,10 +446,18 @@ class FinancialDataService implements FinancialDataServiceContract
                 $filesInZip[] = $stat['name'];
             }
         }
-        Log::info('Files found in VAT ZIP archive', ['count' => count($filesInZip), 'files' => $filesInZip]);
 
-        $fileName = null;
-        foreach ($filesInZip as $name) {
+        return $filesInZip;
+    }
+
+    /**
+     * Find XML file in list of files.
+     *
+     * @param  array<string>  $files
+     */
+    private function findXmlFile(array $files): ?string
+    {
+        foreach ($files as $name) {
             if (str_ends_with($name, '/')) {
                 continue;
             }
@@ -571,31 +465,11 @@ class FinancialDataService implements FinancialDataServiceContract
             $extension = strtolower(pathinfo($name, PATHINFO_EXTENSION));
 
             if ($extension === 'xml') {
-                $fileName = $name;
-                Log::info('Found XML VAT data file in ZIP', ['file' => $fileName]);
-                break;
+                return $name;
             }
         }
 
-        if (! $fileName) {
-            $zip->close();
-            throw new RuntimeException('No XML file found in VAT ZIP archive. Files: '.implode(', ', $filesInZip));
-        }
-
-        $extractPath = $disk->path($this->tempDir);
-
-        if (! $zip->extractTo($extractPath, $fileName)) {
-            $zip->close();
-            throw new RuntimeException('Failed to extract file from VAT ZIP: '.$fileName);
-        }
-
-        $zip->close();
-
-        $extractedFileName = basename($fileName);
-
-        Log::info('Extracted VAT file successfully', ['file' => $extractedFileName]);
-
-        return new FinancialDataState($extractedFileName);
+        return null;
     }
 
     /**
@@ -605,59 +479,59 @@ class FinancialDataService implements FinancialDataServiceContract
      */
     private function processVatData(FinancialDataState $state): Generator
     {
+        yield from $this->processXmlData(
+            state: $state,
+            parser: fn (array $item): ?array => $this->parseVatData($item),
+            logPrefix: 'VAT'
+        );
+    }
+
+    /**
+     * Generic XML data processor using XMLReader for streaming.
+     *
+     * @param  Closure(array<string, string>): ?array<string, mixed>  $parser
+     * @return Generator<array<string, mixed>>
+     */
+    private function processXmlData(FinancialDataState $state, Closure $parser, string $logPrefix): Generator
+    {
         $disk = Storage::disk($this->diskName);
         $extractedPath = $this->tempDir.'/'.$state->extractedFileName;
         $extractedFullPath = $disk->path($extractedPath);
 
         if (! $disk->exists($extractedPath)) {
-            throw new RuntimeException('Extracted VAT file does not exist: '.$extractedPath);
+            throw new RuntimeException("Extracted {$logPrefix} file does not exist: ".$extractedPath);
         }
 
-        Log::info('Streaming VAT XML file with XMLReader for efficient processing...');
+        Log::info("Streaming {$logPrefix} XML file with XMLReader for efficient processing...");
 
-        $reader = new XMLReader;
-
-        if (! $reader->open($extractedFullPath)) {
-            throw new RuntimeException('Failed to open VAT XML file: '.$extractedFullPath);
-        }
+        $reader = $this->openXmlReader($extractedFullPath, $logPrefix);
 
         $processedCount = 0;
         $skippedCount = 0;
 
-        // Stream through XML and process ITEM elements one by one
         while ($reader->read()) {
             if ($reader->nodeType !== XMLReader::ELEMENT || $reader->name !== 'ITEM') {
                 continue;
             }
 
-            // Read ITEM element as SimpleXMLElement for easier parsing
-            $itemXml = $reader->readOuterXml();
+            $itemArray = $this->readXmlItemAsArray($reader);
 
-            if ($itemXml === false) {
+            if ($itemArray === null) {
                 continue;
             }
 
-            $item = new SimpleXMLElement($itemXml);
+            $parsedData = $parser($itemArray);
 
-            // Convert to array
-            $itemArray = [];
-            foreach ($item->children() as $child) {
-                $itemArray[(string) $child->getName()] = (string) $child;
-            }
-
-            $vatData = $this->parseVatData($itemArray);
-
-            if (! $vatData) {
+            if (! $parsedData) {
                 $skippedCount++;
 
                 continue;
             }
 
             $processedCount++;
-            yield $vatData;
+            yield $parsedData;
 
-            // Memory cleanup every 5000 records
-            if ($processedCount % 5000 === 0) {
+            if ($processedCount % self::MEMORY_CLEANUP_INTERVAL === 0) {
                 gc_collect_cycles();
             }
         }
@@ -665,11 +539,49 @@ class FinancialDataService implements FinancialDataServiceContract
         $reader->close();
         unset($reader);
 
-        Log::info('Processed VAT data from XML', [
+        Log::info("Processed {$logPrefix} data from XML", [
             'processed' => $processedCount,
             'skipped' => $skippedCount,
             'total' => $processedCount + $skippedCount,
         ]);
+    }
+
+    /**
+     * Open XMLReader for a file.
+     */
+    private function openXmlReader(string $fullPath, string $logPrefix): XMLReader
+    {
+        $reader = new XMLReader;
+
+        if (! $reader->open($fullPath)) {
+            throw new RuntimeException("Failed to open {$logPrefix} XML file: ".$fullPath);
+        }
+
+        return $reader;
+    }
+
+    /**
+     * Read current XML ITEM element as array.
+     *
+     * @return array<string, string>|null
+     */
+    private function readXmlItemAsArray(XMLReader $reader): ?array
+    {
+        /** @var string|false $itemXml */
+        $itemXml = $reader->readOuterXml();
+
+        if ($itemXml === false || $itemXml === '') {
+            return null;
+        }
+
+        $item = new SimpleXMLElement($itemXml);
+
+        $itemArray = [];
+        foreach ($item->children() as $child) {
+            $itemArray[(string) $child->getName()] = (string) $child;
+        }
+
+        return $itemArray;
     }
 
     /**

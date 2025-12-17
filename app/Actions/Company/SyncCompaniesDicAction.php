@@ -33,26 +33,44 @@ final class SyncCompaniesDicAction
         Log::info('Starting DIC data sync from financial data source');
 
         $today = today()->toDateString();
-
-        // Check if DIC sync already completed for today
         $existingSync = $this->syncLogRepository->findByDateAndType($today, CompanySyncType::DICUPDATE->value);
 
-        if ($existingSync?->status === CompanySyncStatus::COMPLETED) {
-            Log::info('DIC sync already completed for today', ['date' => $today]);
-
-            return [
-                'updated' => $existingSync->companies_updated ?? 0,
-                'not_found' => $existingSync->companies_not_found ?? 0,
-                'errors' => $existingSync->errors,
-            ];
+        if ($this->isSyncAlreadyCompleted($existingSync)) {
+            return $this->statsFromExistingSync($existingSync);
         }
 
-        // Create or update sync log
-        $syncLog = $this->syncLogRepository->updateOrCreate(
-            [
-                'sync_date' => $today,
-                'sync_type' => CompanySyncType::DICUPDATE->value,
-            ],
+        $syncLog = $this->createSyncLog($today);
+
+        return $this->processSync($syncLog);
+    }
+
+    private function isSyncAlreadyCompleted(?object $existingSync): bool
+    {
+        if ($existingSync?->status !== CompanySyncStatus::COMPLETED) {
+            return false;
+        }
+
+        Log::info('DIC sync already completed for today', ['date' => today()->toDateString()]);
+
+        return true;
+    }
+
+    /**
+     * @return array{updated: int, not_found: int, errors: int}
+     */
+    private function statsFromExistingSync(object $existingSync): array
+    {
+        return [
+            'updated' => $existingSync->companies_updated ?? 0,
+            'not_found' => $existingSync->companies_not_found ?? 0,
+            'errors' => $existingSync->errors,
+        ];
+    }
+
+    private function createSyncLog(string $today): object
+    {
+        return $this->syncLogRepository->updateOrCreate(
+            ['sync_date' => $today, 'sync_type' => CompanySyncType::DICUPDATE->value],
             [
                 'status' => CompanySyncStatus::PROCESSING->value,
                 'started_at' => now(),
@@ -61,13 +79,14 @@ final class SyncCompaniesDicAction
                 'errors' => 0,
             ]
         );
+    }
 
-        $stats = [
-            'updated' => 0,
-            'not_found' => 0,
-            'errors' => 0,
-        ];
-
+    /**
+     * @return array{updated: int, not_found: int, errors: int}
+     */
+    private function processSync(object $syncLog): array
+    {
+        $stats = ['updated' => 0, 'not_found' => 0, 'errors' => 0];
         $batchSize = config('financial_data.batch_size', 1000);
         $batch = [];
         $totalProcessed = 0;
@@ -80,7 +99,6 @@ final class SyncCompaniesDicAction
                     $this->processBatch($batch, $stats);
                     $totalProcessed += count($batch);
                     $batch = [];
-
                     Log::info("Processed {$totalProcessed} DIC records so far");
                 }
             }
@@ -90,37 +108,47 @@ final class SyncCompaniesDicAction
                 $totalProcessed += count($batch);
             }
 
-            Log::info('DIC data sync completed', [
-                'total_processed' => $totalProcessed,
-                'updated' => $stats['updated'],
-                'not_found' => $stats['not_found'],
-                'errors' => $stats['errors'],
-            ]);
-
-            // Mark sync as completed
-            $this->syncLogRepository->update($syncLog, [
-                'status' => CompanySyncStatus::COMPLETED->value,
-                'completed_at' => now(),
-                'companies_updated' => $stats['updated'],
-                'companies_not_found' => $stats['not_found'],
-                'errors' => $stats['errors'],
-            ]);
+            $this->markSyncCompleted($syncLog, $stats, $totalProcessed);
 
             return $stats;
         } catch (Throwable $e) {
-            // Mark sync as failed
-            $this->syncLogRepository->update($syncLog, [
-                'status' => CompanySyncStatus::FAILED->value,
-                'completed_at' => now(),
-            ]);
-
-            Log::error('DIC data sync failed', [
-                'error' => $e->getMessage(),
-                'trace' => $e->getTraceAsString(),
-            ]);
-
+            $this->markSyncFailed($syncLog, $e);
             throw $e;
         }
+    }
+
+    /**
+     * @param  array{updated: int, not_found: int, errors: int}  $stats
+     */
+    private function markSyncCompleted(object $syncLog, array $stats, int $totalProcessed): void
+    {
+        Log::info('DIC data sync completed', [
+            'total_processed' => $totalProcessed,
+            'updated' => $stats['updated'],
+            'not_found' => $stats['not_found'],
+            'errors' => $stats['errors'],
+        ]);
+
+        $this->syncLogRepository->update($syncLog, [
+            'status' => CompanySyncStatus::COMPLETED->value,
+            'completed_at' => now(),
+            'companies_updated' => $stats['updated'],
+            'companies_not_found' => $stats['not_found'],
+            'errors' => $stats['errors'],
+        ]);
+    }
+
+    private function markSyncFailed(object $syncLog, Throwable $e): void
+    {
+        $this->syncLogRepository->update($syncLog, [
+            'status' => CompanySyncStatus::FAILED->value,
+            'completed_at' => now(),
+        ]);
+
+        Log::error('DIC data sync failed', [
+            'error' => $e->getMessage(),
+            'trace' => $e->getTraceAsString(),
+        ]);
     }
 
     /**
@@ -141,12 +169,14 @@ final class SyncCompaniesDicAction
 
                     $updated = $companyRepository->updateDicData($ico, $dicData);
 
-                    if ($updated) {
-                        $stats['updated']++;
-                    } else {
+                    if (! $updated) {
                         $stats['not_found']++;
                         Log::debug('Company not found for DIC update', ['ico' => $ico]);
+
+                        continue;
                     }
+
+                    $stats['updated']++;
                 }
             });
         } catch (Throwable $e) {

@@ -13,6 +13,12 @@ use App\Services\Interfaces\OracleCloudStorageService as OracleCloudStorageServi
 use Illuminate\Support\Facades\DB;
 use Throwable;
 
+/**
+ * Sync companies from Oracle Cloud Storage.
+ *
+ * @SuppressWarnings(PHPMD.ExcessiveClassLength)
+ * @SuppressWarnings(PHPMD.TooManyMethods)
+ */
 final class SyncCompaniesFromOracleAction
 {
     public function __construct(
@@ -25,67 +31,77 @@ final class SyncCompaniesFromOracleAction
      * Sync companies from Oracle Cloud Storage.
      * Supports both batch-init (full import) and batch-daily (incremental updates).
      *
-     * Priority logic:
-     * 1. Check for batch-init for today
-     * 2. If not found, check for latest available batch-init date
-     * 3. If still not found, check for batch-daily for today
-     * 4. If no files at all, return empty stats
-     *
      * @return array{created: int, errors: int, files_processed: int}
      */
     public function handle(): array
     {
+        $syncData = $this->determineSyncSource();
+
+        if ($syncData === null) {
+            return $this->emptyStats();
+        }
+
+        $existingSync = $this->companySyncLogRepository->findByDate($syncData['date']);
+        if ($existingSync && $existingSync->status === CompanySyncStatus::COMPLETED) {
+            return $this->statsFromExistingSync($existingSync);
+        }
+
+        $syncLog = $this->createSyncLog($syncData['date'], $syncData['type']);
+
+        return $this->processSync($syncLog, $syncData['files']);
+    }
+
+    /**
+     * @return array{date: string, type: CompanySyncType, files: array<string>}|null
+     */
+    private function determineSyncSource(): ?array
+    {
         $today = today()->toDateString();
 
-        // Step 1: Try to find batch-init for today first (highest priority)
         $fileKeys = $this->oracleCloudStorageService->getBatchInitFileList($today);
-        $syncDate = $today;
-        $syncType = CompanySyncType::BATCHINIT;
+        if (! empty($fileKeys)) {
+            return ['date' => $today, 'type' => CompanySyncType::BATCHINIT, 'files' => $fileKeys];
+        }
 
-        // Step 2: If no batch-init for today, find the latest available batch-init date
-        if (empty($fileKeys)) {
-            $latestDate = $this->oracleCloudStorageService->getLatestBatchInitDate();
-
-            if ($latestDate) {
-                $syncDate = $latestDate;
-                $fileKeys = $this->oracleCloudStorageService->getBatchInitFileList($syncDate);
+        $latestDate = $this->oracleCloudStorageService->getLatestBatchInitDate();
+        if ($latestDate) {
+            $fileKeys = $this->oracleCloudStorageService->getBatchInitFileList($latestDate);
+            if (! empty($fileKeys)) {
+                return ['date' => $latestDate, 'type' => CompanySyncType::BATCHINIT, 'files' => $fileKeys];
             }
         }
 
-        // Step 3: If still no files, try batch-daily for today (fallback)
-        if (empty($fileKeys)) {
-            $dailyFile = $this->oracleCloudStorageService->getLatestDailyFile();
-
-            if ($dailyFile) {
-                $fileKeys = [$dailyFile['key']];
-                $syncDate = $today;
-                $syncType = CompanySyncType::BATCHDAILY;
-            }
+        $dailyFile = $this->oracleCloudStorageService->getLatestDailyFile();
+        if ($dailyFile) {
+            return ['date' => $today, 'type' => CompanySyncType::BATCHDAILY, 'files' => [$dailyFile['key']]];
         }
 
-        // Step 4: If no files at all, return empty stats
-        if (empty($fileKeys)) {
-            return [
-                'created' => 0,
-                'errors' => 0,
-                'files_processed' => 0,
-            ];
-        }
+        return null;
+    }
 
-        // Check if sync already exists for this date
-        $existingSync = $this->companySyncLogRepository->findByDate($syncDate);
+    /**
+     * @return array{created: int, errors: int, files_processed: int}
+     */
+    private function emptyStats(): array
+    {
+        return ['created' => 0, 'errors' => 0, 'files_processed' => 0];
+    }
 
-        if ($existingSync && $existingSync->status === CompanySyncStatus::COMPLETED) {
+    /**
+     * @return array{created: int, errors: int, files_processed: int}
+     */
+    private function statsFromExistingSync(object $existingSync): array
+    {
+        return [
+            'created' => $existingSync->companies_created,
+            'errors' => $existingSync->errors,
+            'files_processed' => $existingSync->files_processed,
+        ];
+    }
 
-            return [
-                'created' => $existingSync->companies_created,
-                'errors' => $existingSync->errors,
-                'files_processed' => $existingSync->files_processed,
-            ];
-        }
-
-        // Create or update sync log with determined sync type
-        $syncLog = $this->companySyncLogRepository->updateOrCreate(
+    private function createSyncLog(string $syncDate, CompanySyncType $syncType): object
+    {
+        return $this->companySyncLogRepository->updateOrCreate(
             ['sync_date' => $syncDate],
             [
                 'sync_type' => $syncType->value,
@@ -96,57 +112,30 @@ final class SyncCompaniesFromOracleAction
                 'errors' => 0,
             ]
         );
+    }
 
-        $stats = [
-            'created' => 0,
-            'errors' => 0,
-            'files_processed' => 0,
-        ];
+    /**
+     * @param  array<string>  $fileKeys
+     * @return array{created: int, errors: int, files_processed: int}
+     */
+    private function processSync(object $syncLog, array $fileKeys): array
+    {
+        $stats = $this->emptyStats();
 
         try {
-            // File keys are already determined above
-            if (empty($fileKeys)) {
-                $this->companySyncLogRepository->update($syncLog, [
-                    'status' => CompanySyncStatus::COMPLETED->value,
-                    'completed_at' => now(),
-                ]);
-
-                return $stats;
-            }
-
-            // Process each file from the list
             foreach ($fileKeys as $fileKey) {
                 $this->processFile($fileKey, $stats);
                 $stats['files_processed']++;
 
-                // Clean up the file immediately to free memory
                 $this->oracleCloudStorageService->cleanupFile($fileKey);
-
-                // Update progress in database
-                $this->companySyncLogRepository->update($syncLog, [
-                    'files_processed' => $stats['files_processed'],
-                    'companies_created' => $stats['created'],
-                    'errors' => $stats['errors'],
-                ]);
+                $this->updateSyncProgress($syncLog, $stats);
             }
 
-            // Mark sync as completed
-            $this->companySyncLogRepository->update($syncLog, [
-                'status' => CompanySyncStatus::COMPLETED->value,
-                'completed_at' => now(),
-                'files_processed' => $stats['files_processed'],
-                'companies_created' => $stats['created'],
-                'errors' => $stats['errors'],
-            ]);
+            $this->markSyncCompleted($syncLog, $stats);
 
             return $stats;
         } catch (Throwable $e) {
-            // Mark sync as failed
-            $this->companySyncLogRepository->update($syncLog, [
-                'status' => CompanySyncStatus::FAILED->value,
-                'completed_at' => now(),
-            ]);
-
+            $this->markSyncFailed($syncLog);
             throw $e;
         } finally {
             $this->oracleCloudStorageService->cleanup();
@@ -154,9 +143,43 @@ final class SyncCompaniesFromOracleAction
     }
 
     /**
+     * @param  array{created: int, errors: int, files_processed: int}  $stats
+     */
+    private function updateSyncProgress(object $syncLog, array $stats): void
+    {
+        $this->companySyncLogRepository->update($syncLog, [
+            'files_processed' => $stats['files_processed'],
+            'companies_created' => $stats['created'],
+            'errors' => $stats['errors'],
+        ]);
+    }
+
+    /**
+     * @param  array{created: int, errors: int, files_processed: int}  $stats
+     */
+    private function markSyncCompleted(object $syncLog, array $stats): void
+    {
+        $this->companySyncLogRepository->update($syncLog, [
+            'status' => CompanySyncStatus::COMPLETED->value,
+            'completed_at' => now(),
+            'files_processed' => $stats['files_processed'],
+            'companies_created' => $stats['created'],
+            'errors' => $stats['errors'],
+        ]);
+    }
+
+    private function markSyncFailed(object $syncLog): void
+    {
+        $this->companySyncLogRepository->update($syncLog, [
+            'status' => CompanySyncStatus::FAILED->value,
+            'completed_at' => now(),
+        ]);
+    }
+
+    /**
      * Process a single file.
      *
-     * @param  array{created: int, errors: int}  $stats
+     * @param  array{created: int, errors: int, files_processed: int}  $stats
      */
     private function processFile(string $fileKey, array &$stats): void
     {
@@ -188,7 +211,7 @@ final class SyncCompaniesFromOracleAction
      * Process a batch of companies.
      *
      * @param  array<int, array<string, mixed>>  $batch
-     * @param  array{created: int, errors: int}  $stats
+     * @param  array{created: int, errors: int, files_processed: int}  $stats
      */
     private function processBatch(array $batch, array &$stats): void
     {
@@ -224,12 +247,40 @@ final class SyncCompaniesFromOracleAction
      */
     private function parseCompanyData(array $data): ?array
     {
-        // Skip terminated companies (those that no longer exist)
         if (! empty($data['termination'])) {
             return null;
         }
 
-        // Extract ICO from identifiers array (use currently valid entry)
+        $ico = $this->extractIco($data);
+        if ($ico === null) {
+            return null;
+        }
+
+        $name = $this->extractCompanyName($data);
+        $addressData = $this->extractAddressData($data);
+        $registrationData = $this->extractRegistrationData($data);
+        $type = $this->determineCompanyType($data, $registrationData['raw_number'], $name);
+
+        return [
+            'ico' => $ico,
+            'name' => $name,
+            'street' => $addressData['street'],
+            'city' => $addressData['city'],
+            'postal_code' => $addressData['postal_code'],
+            'country' => $addressData['country'],
+            'dic' => null,
+            'ic_dph' => null,
+            'registration_office' => $registrationData['office'],
+            'registration_number' => $registrationData['number'],
+            'type' => $type->value,
+        ];
+    }
+
+    /**
+     * @param  array<string, mixed>  $data
+     */
+    private function extractIco(array $data): ?string
+    {
         $identifiers = $data['identifiers'] ?? [];
         $currentIdentifier = $this->findCurrentlyValidEntry($identifiers);
 
@@ -238,18 +289,29 @@ final class SyncCompaniesFromOracleAction
         }
 
         $ico = trim($currentIdentifier['value']);
-        if ($ico === '') {
-            return null;
-        }
 
-        // Extract company name from fullNames array (use currently valid entry)
+        return $ico !== '' ? $ico : null;
+    }
+
+    /**
+     * @param  array<string, mixed>  $data
+     */
+    private function extractCompanyName(array $data): string
+    {
         $fullNames = $data['fullNames'] ?? [];
         $currentName = $this->findCurrentlyValidEntry($fullNames);
-        $name = $currentName !== null && isset($currentName['value'])
+
+        return $currentName !== null && isset($currentName['value'])
             ? trim($currentName['value'])
             : '';
+    }
 
-        // Extract address from addresses array (use currently valid entry)
+    /**
+     * @param  array<string, mixed>  $data
+     * @return array{street: string|null, city: string|null, postal_code: string|null, country: string|null}
+     */
+    private function extractAddressData(array $data): array
+    {
         $addresses = $data['addresses'] ?? [];
         $address = $this->findCurrentlyValidEntry($addresses) ?? [];
 
@@ -258,70 +320,67 @@ final class SyncCompaniesFromOracleAction
         $postalCode = ! empty($address['postalCodes']) ? $address['postalCodes'][0] : null;
         $country = $address['country']['value'] ?? null;
 
-        // Extract registration office from sourceRegister (use currently valid entry)
+        return [
+            'street' => $street ? trim($street) : null,
+            'city' => $city ? trim($city) : null,
+            'postal_code' => $postalCode ? trim($postalCode) : null,
+            'country' => $country ? trim($country) : null,
+        ];
+    }
+
+    /**
+     * @param  array<string, mixed>  $data
+     * @return array{office: string|null, number: string|null, raw_number: string|null}
+     */
+    private function extractRegistrationData(array $data): array
+    {
         $registrationOffices = $data['sourceRegister']['registrationOffices'] ?? [];
         $currentRegistrationOffice = $this->findCurrentlyValidEntry($registrationOffices);
         $registrationOffice = $currentRegistrationOffice !== null && isset($currentRegistrationOffice['value'])
             ? trim($currentRegistrationOffice['value'])
             : null;
 
-        // Extract registration number from sourceRegister (use currently valid entry)
         $registrationNumbers = $data['sourceRegister']['registrationNumbers'] ?? [];
         $currentRegistrationNumber = $this->findCurrentlyValidEntry($registrationNumbers);
         $rawRegistrationNumber = $currentRegistrationNumber !== null && isset($currentRegistrationNumber['value'])
             ? trim($currentRegistrationNumber['value'])
             : null;
 
-        // Extract register type to determine if this is a sole proprietor
-        $registerType = $data['sourceRegister']['value']['value'] ?? null;
-
-        // Determine company type:
-        // 1. If sourceRegister.value.value is "Živnostenský register", it's a sole proprietor
-        // 2. Otherwise, extract type from registration number prefix (Sa/, Sro/, etc.)
-        // 3. If still not determined, try to extract type from company name
-        $type = null;
-
-        if ($registerType === 'Živnostenský register') {
-            $type = CompanyType::SOLE_PROPRIETOR;
-        }
-
-        if ($type === null) {
-            // Extract company type from registration number prefix BEFORE filtering.
-            // Important: This must happen before removeTypePrefix() which removes all prefixes.
-            // We need the original prefix to determine the company type correctly.
-            $type = $this->extractCompanyType($rawRegistrationNumber);
-        }
-
-        if ($type === null) {
-            // Fallback: Extract company type from company name
-            // This handles cases where registration number has no prefix (e.g., v.o.s., k.s.)
-            $type = $this->extractCompanyTypeFromName($name);
-        }
-
-        if ($type === null) {
-            // Ultimate fallback: Use OTHER type for unrecognized company types
-            $type = CompanyType::OTHER;
-        }
-
-        // Filter registration number: Remove type prefix (Sa/, Sro/, Dr/, Po/, etc.).
-        // All prefixes are removed - only the actual registration number is stored.
         $registrationNumber = $rawRegistrationNumber !== null
             ? $this->removeTypePrefix($rawRegistrationNumber)
             : null;
 
         return [
-            'ico' => $ico,
-            'name' => $name,
-            'street' => $street ? trim($street) : null,
-            'city' => $city ? trim($city) : null,
-            'postal_code' => $postalCode ? trim($postalCode) : null,
-            'country' => $country ? trim($country) : null,
-            'dic' => null, // DIC is not in Oracle data, will be filled from Phase 2
-            'ic_dph' => null, // IC DPH is not in Oracle data, will be filled from Phase 2
-            'registration_office' => $registrationOffice,
-            'registration_number' => $registrationNumber,
-            'type' => $type?->value,
+            'office' => $registrationOffice,
+            'number' => $registrationNumber,
+            'raw_number' => $rawRegistrationNumber,
         ];
+    }
+
+    /**
+     * @param  array<string, mixed>  $data
+     */
+    private function determineCompanyType(array $data, ?string $rawRegistrationNumber, string $name): CompanyType
+    {
+        $registerType = $data['sourceRegister']['value']['value'] ?? null;
+
+        if ($registerType === 'Živnostenský register') {
+            return CompanyType::SOLE_PROPRIETOR;
+        }
+
+        $type = $this->extractCompanyType($rawRegistrationNumber);
+
+        if ($type !== null) {
+            return $type;
+        }
+
+        $type = $this->extractCompanyTypeFromName($name);
+
+        if ($type !== null) {
+            return $type;
+        }
+
+        return CompanyType::OTHER;
     }
 
     /**
@@ -336,35 +395,99 @@ final class SyncCompaniesFromOracleAction
             return null;
         }
 
-        $streetAddress = null;
-
         // Format 1: street with optional regNumber/buildingNumber
-        if (isset($address['street']) && trim($address['street']) !== '') {
-            $streetAddress = trim($address['street']);
-
-            // Add house numbers in format: regNumber/buildingNumber
-            $numbers = [];
-            if (isset($address['regNumber']) && $address['regNumber'] !== 0) {
-                $numbers[] = (string) $address['regNumber'];
-            }
-            if (isset($address['buildingNumber']) && $address['buildingNumber'] !== 0) {
-                $numbers[] = (string) $address['buildingNumber'];
-            }
-
-            if (! empty($numbers)) {
-                $streetAddress .= ' '.implode('/', $numbers);
-            }
+        if ($this->hasStreet($address)) {
+            return $this->buildStreetWithNumbers($address);
         }
-        // Format 2: district + regNumber (for živnostníci)
-        elseif (isset($address['district']['value']) && trim($address['district']['value']) !== '') {
-            $streetAddress = trim($address['district']['value']);
-            if (isset($address['regNumber']) && $address['regNumber'] !== 0) {
-                $streetAddress .= ' '.$address['regNumber'];
-            }
+
+        // Format 2: district + regNumber (for zivnostnici)
+        if ($this->hasDistrict($address)) {
+            return $this->buildDistrictWithNumber($address);
         }
+
         // Format 3: only house number available
-        elseif (isset($address['regNumber']) && $address['regNumber'] !== 0) {
-            $streetAddress = (string) $address['regNumber'];
+        if ($this->hasRegNumber($address)) {
+            return (string) $address['regNumber'];
+        }
+
+        return null;
+    }
+
+    /**
+     * @param  array<string, mixed>  $address
+     */
+    private function hasStreet(array $address): bool
+    {
+        return isset($address['street']) && trim($address['street']) !== '';
+    }
+
+    /**
+     * @param  array<string, mixed>  $address
+     */
+    private function hasDistrict(array $address): bool
+    {
+        return isset($address['district']['value']) && trim($address['district']['value']) !== '';
+    }
+
+    /**
+     * @param  array<string, mixed>  $address
+     */
+    private function hasRegNumber(array $address): bool
+    {
+        return isset($address['regNumber']) && $address['regNumber'] !== 0;
+    }
+
+    /**
+     * @param  array<string, mixed>  $address
+     */
+    private function hasBuildingNumber(array $address): bool
+    {
+        return isset($address['buildingNumber']) && $address['buildingNumber'] !== 0;
+    }
+
+    /**
+     * @param  array<string, mixed>  $address
+     */
+    private function buildStreetWithNumbers(array $address): string
+    {
+        $streetAddress = trim($address['street']);
+        $numbers = $this->collectHouseNumbers($address);
+
+        if (empty($numbers)) {
+            return $streetAddress;
+        }
+
+        return $streetAddress.' '.implode('/', $numbers);
+    }
+
+    /**
+     * @param  array<string, mixed>  $address
+     * @return array<int, string>
+     */
+    private function collectHouseNumbers(array $address): array
+    {
+        $numbers = [];
+
+        if ($this->hasRegNumber($address)) {
+            $numbers[] = (string) $address['regNumber'];
+        }
+
+        if ($this->hasBuildingNumber($address)) {
+            $numbers[] = (string) $address['buildingNumber'];
+        }
+
+        return $numbers;
+    }
+
+    /**
+     * @param  array<string, mixed>  $address
+     */
+    private function buildDistrictWithNumber(array $address): string
+    {
+        $streetAddress = trim($address['district']['value']);
+
+        if ($this->hasRegNumber($address)) {
+            return $streetAddress.' '.$address['regNumber'];
         }
 
         return $streetAddress;
@@ -373,9 +496,9 @@ final class SyncCompaniesFromOracleAction
     /**
      * Find the currently valid entry from an array of temporal entries.
      * Returns entry that is currently valid based on validTo date:
-     * - If validTo is null → valid (no expiration)
-     * - If validTo >= today → still valid
-     * - If validTo < today → expired (skip)
+     * - If validTo is null - valid (no expiration)
+     * - If validTo >= today - still valid
+     * - If validTo < today - expired (skip)
      * If multiple valid entries exist, returns the one with latest validFrom.
      *
      * @param  array<int, array<string, mixed>>  $entries
@@ -387,30 +510,45 @@ final class SyncCompaniesFromOracleAction
             return null;
         }
 
-        $today = today()->toDateString();
-        $validEntries = [];
+        $validEntries = $this->filterValidEntries($entries);
 
-        // Filter entries to find currently valid ones
-        foreach ($entries as $entry) {
-            $validTo = $entry['validTo'] ?? null;
-
-            // Entry is valid if validTo is null OR validTo >= today
-            if ($validTo === null || $validTo >= $today) {
-                $validEntries[] = $entry;
-            }
-        }
-
-        // If no valid entries found, return null
         if (empty($validEntries)) {
             return null;
         }
 
-        // If only one valid entry, return it
         if (count($validEntries) === 1) {
-            return $validEntries[0];
+            return reset($validEntries);
         }
 
-        // Multiple valid entries: return the one with latest validFrom
+        return $this->findLatestValidEntry($validEntries);
+    }
+
+    /**
+     * Filter entries to find currently valid ones.
+     *
+     * @param  array<int, array<string, mixed>>  $entries
+     * @return array<int, array<string, mixed>>
+     */
+    private function filterValidEntries(array $entries): array
+    {
+        $today = today()->toDateString();
+
+        return array_filter($entries, static function (array $entry) use ($today): bool {
+            $validTo = $entry['validTo'] ?? null;
+
+            // Entry is valid if validTo is null OR validTo >= today
+            return $validTo === null || $validTo >= $today;
+        });
+    }
+
+    /**
+     * Find the entry with the latest validFrom date.
+     *
+     * @param  array<int, array<string, mixed>>  $validEntries
+     * @return array<string, mixed>|null
+     */
+    private function findLatestValidEntry(array $validEntries): ?array
+    {
         $latestEntry = null;
         $latestDate = null;
 
@@ -501,42 +639,45 @@ final class SyncCompaniesFromOracleAction
 
         $lowerName = mb_strtolower($name, 'UTF-8');
 
-        // Check for v.o.s. (General Partnership)
-        if (str_contains($lowerName, 'v.o.s.') || str_contains($lowerName, 'verejná obchodná spoločnosť')) {
-            return CompanyType::GENERAL_PARTNERSHIP;
-        }
-
-        // Check for k.s. (Limited Partnership)
-        if (str_contains($lowerName, 'k.s.') || str_contains($lowerName, 'komanditná spoločnosť')) {
-            return CompanyType::LIMITED_PARTNERSHIP;
-        }
-
-        // Check for s.r.o. (Limited Liability Company)
-        if (str_contains($lowerName, 's.r.o.') || str_contains($lowerName, 'spol. s r.o.') || str_contains($lowerName, 'spoločnosť s ručením obmedzeným')) {
-            return CompanyType::LIMITED_LIABILITY_COMPANY;
-        }
-
-        // Check for a.s. (Joint Stock Company)
-        if (str_contains($lowerName, 'a.s.') || str_contains($lowerName, 'akciová spoločnosť')) {
-            return CompanyType::JOINT_STOCK_COMPANY;
-        }
-
-        // Check for družstvo (Cooperative)
-        if (str_contains($lowerName, 'družstvo')) {
-            return CompanyType::COOPERATIVE;
-        }
-
-        // Check for nadácia (Foundation)
-        if (str_contains($lowerName, 'nadácia')) {
-            return CompanyType::FOUNDATION;
-        }
-
-        // Check for občianske združenie (Civic Association)
-        if (str_contains($lowerName, 'občianske združenie') || str_contains($lowerName, 'o.z.')) {
-            return CompanyType::CIVIC_ASSOCIATION;
+        foreach ($this->getCompanyTypePatterns() as $pattern => $type) {
+            if (str_contains($lowerName, $pattern)) {
+                return $type;
+            }
         }
 
         return null;
+    }
+
+    /**
+     * Get company type patterns mapping.
+     * Order matters: more specific patterns should come first.
+     *
+     * @return array<string, CompanyType>
+     */
+    private function getCompanyTypePatterns(): array
+    {
+        return [
+            // General Partnership (v.o.s.)
+            'v.o.s.' => CompanyType::GENERAL_PARTNERSHIP,
+            'verejná obchodná spoločnosť' => CompanyType::GENERAL_PARTNERSHIP,
+            // Limited Partnership (k.s.)
+            'k.s.' => CompanyType::LIMITED_PARTNERSHIP,
+            'komanditná spoločnosť' => CompanyType::LIMITED_PARTNERSHIP,
+            // Limited Liability Company (s.r.o.) - check full forms first
+            'spoločnosť s ručením obmedzeným' => CompanyType::LIMITED_LIABILITY_COMPANY,
+            'spol. s r.o.' => CompanyType::LIMITED_LIABILITY_COMPANY,
+            's.r.o.' => CompanyType::LIMITED_LIABILITY_COMPANY,
+            // Joint Stock Company (a.s.)
+            'akciová spoločnosť' => CompanyType::JOINT_STOCK_COMPANY,
+            'a.s.' => CompanyType::JOINT_STOCK_COMPANY,
+            // Cooperative
+            'družstvo' => CompanyType::COOPERATIVE,
+            // Foundation
+            'nadácia' => CompanyType::FOUNDATION,
+            // Civic Association
+            'občianske združenie' => CompanyType::CIVIC_ASSOCIATION,
+            'o.z.' => CompanyType::CIVIC_ASSOCIATION,
+        ];
     }
 
     /**

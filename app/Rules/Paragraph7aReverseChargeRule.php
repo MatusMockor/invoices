@@ -9,6 +9,9 @@ use App\Models\UserCompany;
 use Closure;
 use Illuminate\Contracts\Validation\ValidationRule;
 
+/**
+ * @SuppressWarnings(PHPMD.UnusedFormalParameter)
+ */
 class Paragraph7aReverseChargeRule implements ValidationRule
 {
     private const EU_COUNTRIES = [

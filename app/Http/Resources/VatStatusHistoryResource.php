@@ -9,6 +9,8 @@ use Illuminate\Http\Resources\Json\JsonResource;
 
 /**
  * @mixin \App\Models\VatStatusHistory
+ *
+ * @SuppressWarnings(PHPMD.UnusedFormalParameter)
  */
 class VatStatusHistoryResource extends JsonResource
 {

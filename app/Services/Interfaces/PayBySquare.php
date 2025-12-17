@@ -4,6 +4,11 @@ declare(strict_types=1);
 
 namespace App\Services\Interfaces;
 
+/**
+ * Interface for Pay by Square QR code generation.
+ *
+ * @SuppressWarnings(PHPMD.ExcessiveParameterList)
+ */
 interface PayBySquare
 {
     /**
