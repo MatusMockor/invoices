@@ -4,9 +4,11 @@ declare(strict_types=1);
 
 namespace App\Actions\Company;
 
+use App\Actions\Company\Concerns\BuildsStreetAddress;
+use App\Actions\Company\Concerns\DeterminesCompanyType;
+use App\Actions\Company\Concerns\ValidatesTemporalEntries;
 use App\Enums\CompanySyncStatus;
 use App\Enums\CompanySyncType;
-use App\Enums\CompanyType;
 use App\Repositories\Contracts\CompanyRepository as CompanyRepositoryContract;
 use App\Repositories\Contracts\CompanySyncLogRepository as CompanySyncLogRepositoryContract;
 use App\Services\Interfaces\OracleCloudStorageService as OracleCloudStorageServiceContract;
@@ -15,12 +17,13 @@ use Throwable;
 
 /**
  * Sync companies from Oracle Cloud Storage.
- *
- * @SuppressWarnings(PHPMD.ExcessiveClassLength)
- * @SuppressWarnings(PHPMD.TooManyMethods)
  */
 final class SyncCompaniesFromOracleAction
 {
+    use BuildsStreetAddress;
+    use DeterminesCompanyType;
+    use ValidatesTemporalEntries;
+
     public function __construct(
         private readonly OracleCloudStorageServiceContract $oracleCloudStorageService,
         private readonly CompanyRepositoryContract $companyRepository,
@@ -29,7 +32,6 @@ final class SyncCompaniesFromOracleAction
 
     /**
      * Sync companies from Oracle Cloud Storage.
-     * Supports both batch-init (full import) and batch-daily (incremental updates).
      *
      * @return array{created: int, errors: int, files_processed: int}
      */
@@ -177,8 +179,6 @@ final class SyncCompaniesFromOracleAction
     }
 
     /**
-     * Process a single file.
-     *
      * @param  array{created: int, errors: int, files_processed: int}  $stats
      */
     private function processFile(string $fileKey, array &$stats): void
@@ -198,7 +198,6 @@ final class SyncCompaniesFromOracleAction
             if (count($batch) >= $batchSize) {
                 $this->processBatch($batch, $stats);
                 $batch = [];
-                // Removed progress logging for better performance
             }
         }
 
@@ -208,8 +207,6 @@ final class SyncCompaniesFromOracleAction
     }
 
     /**
-     * Process a batch of companies.
-     *
      * @param  array<int, array<string, mixed>>  $batch
      * @param  array{created: int, errors: int, files_processed: int}  $stats
      */
@@ -354,329 +351,6 @@ final class SyncCompaniesFromOracleAction
             'office' => $registrationOffice,
             'number' => $registrationNumber,
             'raw_number' => $rawRegistrationNumber,
-        ];
-    }
-
-    /**
-     * @param  array<string, mixed>  $data
-     */
-    private function determineCompanyType(array $data, ?string $rawRegistrationNumber, string $name): CompanyType
-    {
-        $registerType = $data['sourceRegister']['value']['value'] ?? null;
-
-        if ($registerType === 'Živnostenský register') {
-            return CompanyType::SOLE_PROPRIETOR;
-        }
-
-        $type = $this->extractCompanyType($rawRegistrationNumber);
-
-        if ($type !== null) {
-            return $type;
-        }
-
-        $type = $this->extractCompanyTypeFromName($name);
-
-        if ($type !== null) {
-            return $type;
-        }
-
-        return CompanyType::OTHER;
-    }
-
-    /**
-     * Build street address from Oracle address components.
-     * Matches the logic from the scraper.
-     *
-     * @param  array<string, mixed>  $address
-     */
-    private function buildStreetAddress(array $address): ?string
-    {
-        if (empty($address)) {
-            return null;
-        }
-
-        // Format 1: street with optional regNumber/buildingNumber
-        if ($this->hasStreet($address)) {
-            return $this->buildStreetWithNumbers($address);
-        }
-
-        // Format 2: district + regNumber (for zivnostnici)
-        if ($this->hasDistrict($address)) {
-            return $this->buildDistrictWithNumber($address);
-        }
-
-        // Format 3: only house number available
-        if ($this->hasRegNumber($address)) {
-            return (string) $address['regNumber'];
-        }
-
-        return null;
-    }
-
-    /**
-     * @param  array<string, mixed>  $address
-     */
-    private function hasStreet(array $address): bool
-    {
-        return isset($address['street']) && trim($address['street']) !== '';
-    }
-
-    /**
-     * @param  array<string, mixed>  $address
-     */
-    private function hasDistrict(array $address): bool
-    {
-        return isset($address['district']['value']) && trim($address['district']['value']) !== '';
-    }
-
-    /**
-     * @param  array<string, mixed>  $address
-     */
-    private function hasRegNumber(array $address): bool
-    {
-        return isset($address['regNumber']) && $address['regNumber'] !== 0;
-    }
-
-    /**
-     * @param  array<string, mixed>  $address
-     */
-    private function hasBuildingNumber(array $address): bool
-    {
-        return isset($address['buildingNumber']) && $address['buildingNumber'] !== 0;
-    }
-
-    /**
-     * @param  array<string, mixed>  $address
-     */
-    private function buildStreetWithNumbers(array $address): string
-    {
-        $streetAddress = trim($address['street']);
-        $numbers = $this->collectHouseNumbers($address);
-
-        if (empty($numbers)) {
-            return $streetAddress;
-        }
-
-        return $streetAddress.' '.implode('/', $numbers);
-    }
-
-    /**
-     * @param  array<string, mixed>  $address
-     * @return array<int, string>
-     */
-    private function collectHouseNumbers(array $address): array
-    {
-        $numbers = [];
-
-        if ($this->hasRegNumber($address)) {
-            $numbers[] = (string) $address['regNumber'];
-        }
-
-        if ($this->hasBuildingNumber($address)) {
-            $numbers[] = (string) $address['buildingNumber'];
-        }
-
-        return $numbers;
-    }
-
-    /**
-     * @param  array<string, mixed>  $address
-     */
-    private function buildDistrictWithNumber(array $address): string
-    {
-        $streetAddress = trim($address['district']['value']);
-
-        if ($this->hasRegNumber($address)) {
-            return $streetAddress.' '.$address['regNumber'];
-        }
-
-        return $streetAddress;
-    }
-
-    /**
-     * Find the currently valid entry from an array of temporal entries.
-     * Returns entry that is currently valid based on validTo date:
-     * - If validTo is null - valid (no expiration)
-     * - If validTo >= today - still valid
-     * - If validTo < today - expired (skip)
-     * If multiple valid entries exist, returns the one with latest validFrom.
-     *
-     * @param  array<int, array<string, mixed>>  $entries
-     * @return array<string, mixed>|null
-     */
-    private function findCurrentlyValidEntry(array $entries): ?array
-    {
-        if (empty($entries)) {
-            return null;
-        }
-
-        $validEntries = $this->filterValidEntries($entries);
-
-        if (empty($validEntries)) {
-            return null;
-        }
-
-        if (count($validEntries) === 1) {
-            return reset($validEntries);
-        }
-
-        return $this->findLatestValidEntry($validEntries);
-    }
-
-    /**
-     * Filter entries to find currently valid ones.
-     *
-     * @param  array<int, array<string, mixed>>  $entries
-     * @return array<int, array<string, mixed>>
-     */
-    private function filterValidEntries(array $entries): array
-    {
-        $today = today()->toDateString();
-
-        return array_filter($entries, static function (array $entry) use ($today): bool {
-            $validTo = $entry['validTo'] ?? null;
-
-            // Entry is valid if validTo is null OR validTo >= today
-            return $validTo === null || $validTo >= $today;
-        });
-    }
-
-    /**
-     * Find the entry with the latest validFrom date.
-     *
-     * @param  array<int, array<string, mixed>>  $validEntries
-     * @return array<string, mixed>|null
-     */
-    private function findLatestValidEntry(array $validEntries): ?array
-    {
-        $latestEntry = null;
-        $latestDate = null;
-
-        foreach ($validEntries as $entry) {
-            $validFrom = $entry['validFrom'] ?? null;
-
-            if (! $validFrom) {
-                continue;
-            }
-
-            if ($latestDate === null || $validFrom > $latestDate) {
-                $latestDate = $validFrom;
-                $latestEntry = $entry;
-            }
-        }
-
-        return $latestEntry;
-    }
-
-    /**
-     * Remove type prefix from registration number if present.
-     * Only removes recognized prefixes (Sa/, Sro/, Dr/, Po/, etc.) - only actual number is stored.
-     * If the prefix is not a recognized company type prefix, the registration number is returned unchanged.
-     *
-     * @param  string  $registrationNumber  The registration number (e.g., 'Sa/6266/B', 'Sro/81134/B', '2112/B')
-     * @return string The registration number without prefix (e.g., '6266/B', '81134/B', '2112/B')
-     */
-    private function removeTypePrefix(string $registrationNumber): string
-    {
-        // Find the position of the first slash
-        $slashPosition = strpos($registrationNumber, '/');
-
-        if ($slashPosition === false) {
-            return $registrationNumber;
-        }
-
-        // Extract prefix (including the slash)
-        $prefix = substr($registrationNumber, 0, $slashPosition + 1);
-
-        // Only remove if it's a recognized company type prefix
-        if (CompanyType::fromPrefix($prefix) === null) {
-            return $registrationNumber;
-        }
-
-        // Return everything after the first slash
-        return substr($registrationNumber, $slashPosition + 1);
-    }
-
-    /**
-     * Extract company type from registration number prefix.
-     * Returns the CompanyType enum based on the prefix before the first slash.
-     *
-     * @param  string|null  $registrationNumber  The registration number (e.g., "Sa/6266/B", "Sro/81134/B")
-     * @return CompanyType|null The matching CompanyType or null if not found
-     */
-    private function extractCompanyType(?string $registrationNumber): ?CompanyType
-    {
-        if (! $registrationNumber) {
-            return null;
-        }
-
-        // Find the position of the first slash
-        $slashPosition = strpos($registrationNumber, '/');
-
-        if ($slashPosition === false) {
-            return null;
-        }
-
-        // Extract prefix (including the slash)
-        $prefix = substr($registrationNumber, 0, $slashPosition + 1);
-
-        return CompanyType::fromPrefix($prefix);
-    }
-
-    /**
-     * Extract company type from company name.
-     * Case-insensitive matching of company type indicators in the name.
-     * This is a fallback when the type cannot be determined from registration number prefix.
-     *
-     * @param  string|null  $name  The company name to analyze
-     * @return CompanyType|null The matching CompanyType or null if not found
-     */
-    private function extractCompanyTypeFromName(?string $name): ?CompanyType
-    {
-        if ($name === null || $name === '') {
-            return null;
-        }
-
-        $lowerName = mb_strtolower($name, 'UTF-8');
-
-        foreach ($this->getCompanyTypePatterns() as $pattern => $type) {
-            if (str_contains($lowerName, $pattern)) {
-                return $type;
-            }
-        }
-
-        return null;
-    }
-
-    /**
-     * Get company type patterns mapping.
-     * Order matters: more specific patterns should come first.
-     *
-     * @return array<string, CompanyType>
-     */
-    private function getCompanyTypePatterns(): array
-    {
-        return [
-            // General Partnership (v.o.s.)
-            'v.o.s.' => CompanyType::GENERAL_PARTNERSHIP,
-            'verejná obchodná spoločnosť' => CompanyType::GENERAL_PARTNERSHIP,
-            // Limited Partnership (k.s.)
-            'k.s.' => CompanyType::LIMITED_PARTNERSHIP,
-            'komanditná spoločnosť' => CompanyType::LIMITED_PARTNERSHIP,
-            // Limited Liability Company (s.r.o.) - check full forms first
-            'spoločnosť s ručením obmedzeným' => CompanyType::LIMITED_LIABILITY_COMPANY,
-            'spol. s r.o.' => CompanyType::LIMITED_LIABILITY_COMPANY,
-            's.r.o.' => CompanyType::LIMITED_LIABILITY_COMPANY,
-            // Joint Stock Company (a.s.)
-            'akciová spoločnosť' => CompanyType::JOINT_STOCK_COMPANY,
-            'a.s.' => CompanyType::JOINT_STOCK_COMPANY,
-            // Cooperative
-            'družstvo' => CompanyType::COOPERATIVE,
-            // Foundation
-            'nadácia' => CompanyType::FOUNDATION,
-            // Civic Association
-            'občianske združenie' => CompanyType::CIVIC_ASSOCIATION,
-            'o.z.' => CompanyType::CIVIC_ASSOCIATION,
         ];
     }
 
