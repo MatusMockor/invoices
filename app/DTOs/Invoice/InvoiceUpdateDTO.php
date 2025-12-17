@@ -6,6 +6,11 @@ namespace App\DTOs\Invoice;
 
 use App\Enums\InvoiceStatus;
 
+/**
+ * DTO for invoice update data.
+ *
+ * @SuppressWarnings(PHPMD.ExcessiveParameterList)
+ */
 final readonly class InvoiceUpdateDTO
 {
     public function __construct(

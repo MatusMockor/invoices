@@ -11,11 +11,71 @@ use Illuminate\Validation\Rules\Enum;
 trait HasInvoiceValidationRules
 {
     /**
-     * Get client information validation rules.
+     * Get required client information validation rules.
      *
      * @return array<string, string>
      */
-    protected function getClientValidationRules(bool $required = true): array
+    protected function getRequiredClientValidationRules(): array
+    {
+        return $this->buildClientValidationRules(required: true);
+    }
+
+    /**
+     * Get optional client information validation rules.
+     *
+     * @return array<string, string>
+     */
+    protected function getOptionalClientValidationRules(): array
+    {
+        return $this->buildClientValidationRules(required: false);
+    }
+
+    /**
+     * Get required invoice details validation rules.
+     *
+     * @return array<string, string|array<int, mixed>>
+     */
+    protected function getRequiredInvoiceDetailsValidationRules(?int $invoiceId = null): array
+    {
+        return $this->buildInvoiceDetailsValidationRules(required: true, invoiceId: $invoiceId);
+    }
+
+    /**
+     * Get optional invoice details validation rules.
+     *
+     * @return array<string, string|array<int, mixed>>
+     */
+    protected function getOptionalInvoiceDetailsValidationRules(?int $invoiceId = null): array
+    {
+        return $this->buildInvoiceDetailsValidationRules(required: false, invoiceId: $invoiceId);
+    }
+
+    /**
+     * Get required invoice items validation rules.
+     *
+     * @return array<string, string|array<int, mixed>>
+     */
+    protected function getRequiredInvoiceItemsValidationRules(?int $invoiceId = null): array
+    {
+        return $this->buildInvoiceItemsValidationRules(required: true, invoiceId: $invoiceId);
+    }
+
+    /**
+     * Get optional invoice items validation rules.
+     *
+     * @return array<string, string|array<int, mixed>>
+     */
+    protected function getOptionalInvoiceItemsValidationRules(?int $invoiceId = null): array
+    {
+        return $this->buildInvoiceItemsValidationRules(required: false, invoiceId: $invoiceId);
+    }
+
+    /**
+     * Build client information validation rules.
+     *
+     * @return array<string, string>
+     */
+    private function buildClientValidationRules(bool $required): array
     {
         $useCustomCompany = $this->boolean('useCustomCompany', false);
 
@@ -44,17 +104,17 @@ trait HasInvoiceValidationRules
     }
 
     /**
-     * Get invoice details validation rules.
+     * Build invoice details validation rules.
      *
      * @return array<string, string|array<int, mixed>>
      */
-    protected function getInvoiceDetailsValidationRules(bool $required = true, ?int $invoiceId = null): array
+    private function buildInvoiceDetailsValidationRules(bool $required, ?int $invoiceId = null): array
     {
         // Get the current user's supplier company ID
         $supplierCompanyId = auth()->user()?->currentCompany?->id;
 
         // Build unique rule that checks uniqueness per supplier_company_id
-        $uniqueRule = \Illuminate\Validation\Rule::unique('invoices', 'invoice_number')
+        $uniqueRule = Rule::unique('invoices', 'invoice_number')
             ->where('supplier_company_id', $supplierCompanyId);
 
         if ($invoiceId) {
@@ -83,11 +143,11 @@ trait HasInvoiceValidationRules
     }
 
     /**
-     * Get invoice items validation rules.
+     * Build invoice items validation rules.
      *
      * @return array<string, string|array<int, mixed>>
      */
-    protected function getInvoiceItemsValidationRules(bool $required = true, ?int $invoiceId = null): array
+    private function buildInvoiceItemsValidationRules(bool $required, ?int $invoiceId = null): array
     {
         $requiredRule = $required ? 'required' : 'sometimes|required';
 
@@ -98,16 +158,18 @@ trait HasInvoiceValidationRules
             'items.*.price' => 'required|numeric|min:0',
         ];
 
-        if ($invoiceId !== null) {
-            $rules['items.*.id'] = [
-                'nullable',
-                'integer',
-                \Illuminate\Validation\Rule::exists('invoice_items', 'id')
-                    ->where('invoice_id', $invoiceId),
-            ];
-        } else {
+        if ($invoiceId === null) {
             $rules['items.*.id'] = 'nullable|integer|exists:invoice_items,id';
+
+            return $rules;
         }
+
+        $rules['items.*.id'] = [
+            'nullable',
+            'integer',
+            Rule::exists('invoice_items', 'id')
+                ->where('invoice_id', $invoiceId),
+        ];
 
         return $rules;
     }

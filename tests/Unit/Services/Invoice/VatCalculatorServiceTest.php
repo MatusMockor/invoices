@@ -33,7 +33,7 @@ final class VatCalculatorServiceTest extends TestCase
 
     public function test_calculates_vat_amount_with_reverse_charge(): void
     {
-        $vatAmount = $this->service->calculateVatAmount(100.0, 20.0, true);
+        $vatAmount = $this->service->calculateVatAmountWithReverseCharge(100.0, 20.0);
 
         $this->assertEquals(0.0, $vatAmount);
     }
@@ -273,7 +273,7 @@ final class VatCalculatorServiceTest extends TestCase
             ],
         ];
 
-        $totals = $this->service->calculateInvoiceTotals($items, null, true);
+        $totals = $this->service->calculateInvoiceTotalsWithReverseCharge($items);
 
         $this->assertEquals(100.00, $totals['subtotal']);
         $this->assertEquals(0.00, $totals['tax_amount']);

@@ -15,6 +15,13 @@ use RuntimeException;
 use SimpleXMLElement;
 use Throwable;
 
+/**
+ * Oracle Cloud Storage service for downloading and processing company data.
+ *
+ * @SuppressWarnings(PHPMD.ExcessiveClassLength)
+ * @SuppressWarnings(PHPMD.TooManyMethods)
+ * @SuppressWarnings(PHPMD.ExcessiveParameterList)
+ */
 final class OracleCloudStorageService implements OracleCloudStorageServiceContract
 {
     private const DISK_NAME = 'local';
@@ -141,8 +148,8 @@ final class OracleCloudStorageService implements OracleCloudStorageServiceContra
         }
 
         // Sort by last_modified descending to get the latest
-        usort($dailyFiles, static function (array $a, array $b): int {
-            return $b['last_modified'] <=> $a['last_modified'];
+        usort($dailyFiles, static function (array $firstFile, array $secondFile): int {
+            return $secondFile['last_modified'] <=> $firstFile['last_modified'];
         });
 
         return $dailyFiles[0];
@@ -162,11 +169,11 @@ final class OracleCloudStorageService implements OracleCloudStorageServiceContra
         });
 
         // Sort by key (filename) to ensure correct order (_001, _002, etc.)
-        usort($initFiles, static function (array $a, array $b): int {
-            return $a['key'] <=> $b['key'];
+        usort($initFiles, static function (array $firstFile, array $secondFile): int {
+            return $firstFile['key'] <=> $secondFile['key'];
         });
 
-        return array_values($initFiles);
+        return $initFiles;
     }
 
     /**
@@ -369,36 +376,58 @@ final class OracleCloudStorageService implements OracleCloudStorageServiceContra
     private function streamJsonFromGzip(string $localPath): Generator
     {
         $disk = Storage::disk($this->diskName);
-        $gzipPath = $disk->path($localPath);
 
         if (! $disk->exists($localPath)) {
             throw new RuntimeException('File does not exist: '.$localPath);
         }
 
-        // Create path for decompressed JSON file
+        $gzipPath = $disk->path($localPath);
+        $jsonFullPath = $this->prepareJsonOutputPath($disk, $localPath);
+
+        $this->decompressGzipFile($gzipPath, $jsonFullPath);
+
+        try {
+            yield from $this->streamJsonRecords($jsonFullPath);
+        } catch (JsonException $e) {
+            throw new RuntimeException('Failed to parse JSON file: '.$e->getMessage(), 0, $e);
+        }
+    }
+
+    /**
+     * @param  \Illuminate\Contracts\Filesystem\Filesystem  $disk
+     */
+    private function prepareJsonOutputPath($disk, string $localPath): string
+    {
         [, $jsonPath] = $this->getLocalFilePaths(basename($localPath));
         $jsonFullPath = $disk->path($jsonPath);
-
-        // Ensure directory exists using full filesystem path
         $jsonDir = dirname($jsonFullPath);
 
-        // Debug: Log path information
         Log::debug('Decompression paths', [
-            'gzipPath' => $gzipPath,
             'jsonPath_relative' => $jsonPath,
             'jsonFullPath' => $jsonFullPath,
             'jsonDir' => $jsonDir,
             'dir_exists' => is_dir($jsonDir),
-            'dir_writable' => is_dir($jsonDir) ? is_writable($jsonDir) : false,
         ]);
 
-        if (! is_dir($jsonDir)) {
-            if (! mkdir($jsonDir, 0755, true) && ! is_dir($jsonDir)) {
-                throw new RuntimeException('Failed to create directory: '.$jsonDir);
-            }
+        $this->ensureDirectoryExists($jsonDir);
+        $this->downloadedFiles[] = $jsonPath;
+
+        return $jsonFullPath;
+    }
+
+    private function ensureDirectoryExists(string $directory): void
+    {
+        if (is_dir($directory)) {
+            return;
         }
 
-        // Decompress .gz file to disk
+        if (! mkdir($directory, 0755, true) && ! is_dir($directory)) {
+            throw new RuntimeException('Failed to create directory: '.$directory);
+        }
+    }
+
+    private function decompressGzipFile(string $gzipPath, string $jsonFullPath): void
+    {
         $gzHandle = gzopen($gzipPath, 'rb');
         if ($gzHandle === false) {
             throw new RuntimeException('Failed to open gzip file: '.$gzipPath);
@@ -412,7 +441,6 @@ final class OracleCloudStorageService implements OracleCloudStorageServiceContra
         }
 
         try {
-            // Decompress in chunks
             while (! gzeof($gzHandle)) {
                 $chunk = gzread($gzHandle, self::GZIP_CHUNK_SIZE);
                 if ($chunk === false) {
@@ -420,17 +448,9 @@ final class OracleCloudStorageService implements OracleCloudStorageServiceContra
                 }
                 fwrite($jsonHandle, $chunk);
             }
-
+        } finally {
             gzclose($gzHandle);
             fclose($jsonHandle);
-
-            // Track decompressed file for cleanup
-            $this->downloadedFiles[] = $jsonPath;
-
-            // Stream and parse JSON from decompressed file
-            yield from $this->streamJsonRecords($jsonFullPath);
-        } catch (JsonException $e) {
-            throw new RuntimeException('Failed to parse JSON file: '.$e->getMessage(), 0, $e);
         }
     }
 
@@ -448,83 +468,115 @@ final class OracleCloudStorageService implements OracleCloudStorageServiceContra
         }
 
         try {
-            $buffer = '';
-            $inResultsArray = false;
-            $recordCount = 0;
-            $chunkSize = self::JSON_STREAM_CHUNK_SIZE; // 4MB chunks for better performance
-
-            // Read file in chunks
-            while (! feof($handle)) {
-                $chunk = fread($handle, $chunkSize);
-                if ($chunk === false) {
-                    break;
-                }
-
-                $buffer .= $chunk;
-
-                // Look for the start of "results" array if not found yet
-                if (! $inResultsArray) {
-                    $pos = strpos($buffer, self::RESULTS_ARRAY_MARKER);
-                    if ($pos !== false) {
-                        $inResultsArray = true;
-                        // Move buffer to start of results array content
-                        $buffer = substr($buffer, $pos + self::RESULTS_ARRAY_MARKER_LENGTH);
-                    } else {
-                        // Keep last chars in case marker is split across chunks
-                        if (strlen($buffer) > self::BUFFER_KEEP_SIZE) {
-                            $buffer = substr($buffer, -self::BUFFER_KEEP_SIZE);
-                        }
-
-                        continue;
-                    }
-                }
-
-                // Extract complete JSON objects using optimized brace matching
-                $processed = 0;
-                $bufferLen = strlen($buffer);
-                $depth = 0;
-                $start = -1;
-                $inString = false;
-                $escapeNext = false;
-
-                // Use byte array for faster access
-                for ($i = 0; $i < $bufferLen; $i++) {
-                    $char = $buffer[$i];
-
-                    $result = $this->processJsonCharacter(
-                        $char,
-                        $depth,
-                        $inString,
-                        $escapeNext,
-                        $start,
-                        $i,
-                        $buffer,
-                        $recordCount
-                    );
-
-                    if ($result !== null) {
-                        if ($result['break']) {
-                            break 2;
-                        }
-
-                        if (isset($result['record'])) {
-                            yield $result['record'];
-                        }
-
-                        if (isset($result['processed'])) {
-                            $processed = $result['processed'];
-                        }
-                    }
-                }
-
-                // Keep only unprocessed part in buffer
-                if ($processed > 0) {
-                    $buffer = substr($buffer, $processed);
-                }
-            }
+            yield from $this->processJsonStream($handle);
         } finally {
             fclose($handle);
         }
+    }
+
+    /**
+     * @param  resource  $handle
+     * @return Generator<array<string, mixed>>
+     */
+    private function processJsonStream($handle): Generator
+    {
+        $buffer = '';
+        $inResultsArray = false;
+        $recordCount = 0;
+
+        while (! feof($handle)) {
+            $chunk = fread($handle, self::JSON_STREAM_CHUNK_SIZE);
+            if ($chunk === false) {
+                break;
+            }
+
+            $buffer .= $chunk;
+
+            if (! $inResultsArray) {
+                $buffer = $this->findResultsArrayStart($buffer, $inResultsArray);
+                if (! $inResultsArray) {
+                    continue;
+                }
+            }
+
+            $result = $this->extractJsonObjects($buffer, $recordCount);
+
+            foreach ($result['records'] as $record) {
+                yield $record;
+            }
+
+            if ($result['finished']) {
+                break;
+            }
+
+            $buffer = $result['remaining_buffer'];
+        }
+    }
+
+    private function findResultsArrayStart(string $buffer, bool &$inResultsArray): string
+    {
+        $pos = strpos($buffer, self::RESULTS_ARRAY_MARKER);
+
+        if ($pos === false) {
+            if (strlen($buffer) > self::BUFFER_KEEP_SIZE) {
+                return substr($buffer, -self::BUFFER_KEEP_SIZE);
+            }
+
+            return $buffer;
+        }
+
+        $inResultsArray = true;
+
+        return substr($buffer, $pos + self::RESULTS_ARRAY_MARKER_LENGTH);
+    }
+
+    /**
+     * @return array{records: array<array<string, mixed>>, remaining_buffer: string, finished: bool}
+     */
+    private function extractJsonObjects(string $buffer, int &$recordCount): array
+    {
+        $records = [];
+        $processed = 0;
+        $bufferLen = strlen($buffer);
+        $depth = 0;
+        $start = -1;
+        $inString = false;
+        $escapeNext = false;
+        $finished = false;
+
+        for ($i = 0; $i < $bufferLen; $i++) {
+            $result = $this->processJsonCharacter(
+                $buffer[$i],
+                $depth,
+                $inString,
+                $escapeNext,
+                $start,
+                $i,
+                $buffer,
+                $recordCount
+            );
+
+            if ($result === null) {
+                continue;
+            }
+
+            if ($result['break']) {
+                $finished = true;
+                break;
+            }
+
+            if (isset($result['record'])) {
+                $records[] = $result['record'];
+            }
+
+            if (isset($result['processed'])) {
+                $processed = $result['processed'];
+            }
+        }
+
+        $remainingBuffer = $processed > 0 ? substr($buffer, $processed) : $buffer;
+
+        return ['records' => $records, 'remaining_buffer' => $remainingBuffer, 'finished' => $finished];
     }
 
     /**
@@ -565,81 +617,109 @@ final class OracleCloudStorageService implements OracleCloudStorageServiceContra
         string $buffer,
         int &$recordCount
     ): ?array {
-        // Handle string escaping to properly track braces inside strings
+        if ($this->handleStringEscaping($char, $inString, $escapeNext)) {
+            return null;
+        }
+
+        if ($inString) {
+            return null;
+        }
+
+        return $this->processStructuralCharacter($char, $depth, $start, $i, $buffer, $recordCount);
+    }
+
+    private function handleStringEscaping(string $char, bool &$inString, bool &$escapeNext): bool
+    {
         if ($escapeNext) {
             $escapeNext = false;
 
-            return null;
+            return true;
         }
 
         if ($char === '\\') {
             $escapeNext = true;
 
-            return null;
+            return true;
         }
 
         if ($char === '"') {
             $inString = ! $inString;
 
-            return null;
+            return true;
         }
 
-        // Only process structural characters outside of strings
-        if ($inString) {
-            return null;
-        }
+        return false;
+    }
 
+    /**
+     * @return array<string, mixed>|null
+     */
+    private function processStructuralCharacter(
+        string $char,
+        int &$depth,
+        int &$start,
+        int $i,
+        string $buffer,
+        int &$recordCount
+    ): ?array {
         if ($char === '{') {
-            if ($depth === 0) {
-                $start = $i;
-            }
-            $depth++;
+            $this->handleOpenBrace($depth, $start, $i);
 
             return null;
         }
 
         if ($char === '}') {
-            $depth--;
-
-            // Complete object found
-            if ($depth === 0 && $start !== -1) {
-                $objectJson = substr($buffer, $start, $i - $start + 1);
-
-                try {
-                    $record = json_decode($objectJson, true, self::JSON_DECODE_DEPTH, JSON_THROW_ON_ERROR);
-                    $recordCount++;
-
-                    // Garbage collection every N records (reduced logging)
-                    if ($recordCount % self::GC_INTERVAL === 0) {
-                        gc_collect_cycles();
-                    }
-
-                    $start = -1;
-
-                    return [
-                        'break' => false,
-                        'record' => $record,
-                        'processed' => $i + 1,
-                    ];
-                } catch (JsonException $e) {
-                    // Skip invalid records silently for better performance
-                    $start = -1;
-
-                    return [
-                        'break' => false,
-                        'processed' => $i + 1,
-                    ];
-                }
-            }
-
-            return null;
+            return $this->handleCloseBrace($depth, $start, $i, $buffer, $recordCount);
         }
 
         if ($char === ']' && $depth === 0) {
-            // End of results array reached
             return ['break' => true];
         }
 
         return null;
+    }
+
+    private function handleOpenBrace(int &$depth, int &$start, int $i): void
+    {
+        if ($depth === 0) {
+            $start = $i;
+        }
+        $depth++;
+    }
+
+    /**
+     * @return array<string, mixed>|null
+     */
+    private function handleCloseBrace(int &$depth, int &$start, int $i, string $buffer, int &$recordCount): ?array
+    {
+        $depth--;
+
+        if ($depth !== 0 || $start === -1) {
+            return null;
+        }
+
+        $objectJson = substr($buffer, $start, $i - $start + 1);
+        $start = -1;
+
+        return $this->parseJsonObject($objectJson, $recordCount, $i);
+    }
+
+    /**
+     * @return array<string, mixed>
+     */
+    private function parseJsonObject(string $objectJson, int &$recordCount, int $i): array
+    {
+        try {
+            $record = json_decode($objectJson, true, self::JSON_DECODE_DEPTH, JSON_THROW_ON_ERROR);
+            $recordCount++;
+
+            if ($recordCount % self::GC_INTERVAL === 0) {
+                gc_collect_cycles();
+            }
+
+            return ['break' => false, 'record' => $record, 'processed' => $i + 1];
+        } catch (JsonException) {
+            return ['break' => false, 'processed' => $i + 1];
+        }
     }
 }

@@ -8,6 +8,9 @@ use App\Repositories\Contracts\EmailWhitelistRepository as EmailWhitelistReposit
 use Closure;
 use Illuminate\Contracts\Validation\ValidationRule;
 
+/**
+ * @SuppressWarnings(PHPMD.UnusedFormalParameter)
+ */
 final class EmailWhitelisted implements ValidationRule
 {
     public function __construct(

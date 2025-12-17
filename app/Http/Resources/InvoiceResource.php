@@ -10,18 +10,33 @@ use Illuminate\Http\Resources\Json\JsonResource;
 
 /**
  * @mixin Invoice
+ *
+ * @SuppressWarnings(PHPMD.UnusedFormalParameter)
+ * @SuppressWarnings(PHPMD.ExcessiveMethodLength)
  */
 class InvoiceResource extends JsonResource
 {
     public function toArray(Request $request): array
     {
+        return array_merge(
+            $this->getInvoiceMetadata(),
+            $this->getSupplierData(),
+            $this->getClientData(),
+            $this->getRelationshipsData(),
+            $this->getVatStatusData(),
+            $this->getComputedTextFields(),
+        );
+    }
+
+    /**
+     * Get core invoice metadata (dates, amounts, status).
+     *
+     * @return array<string, mixed>
+     */
+    private function getInvoiceMetadata(): array
+    {
         return [
             'id' => $this->id,
-            'supplier_company_id' => $this->supplier_company_id,
-            // Supplier registry data snapshot
-            'supplier_registry_office' => $this->supplier_registry_office,
-            'supplier_registry_number' => $this->supplier_registry_number,
-            'business_entity_id' => $this->business_entity_id,
             'invoice_number' => $this->invoice_number,
             'issue_date' => $this->issue_date->format('Y-m-d'),
             'due_date' => $this->due_date->format('Y-m-d'),
@@ -41,10 +56,34 @@ class InvoiceResource extends JsonResource
             'currency' => $this->currency,
             'notes' => $this->notes ?? $this->note,
             'status' => $this->status,
-            'created_at' => $this->created_at?->toISOString(),
-            'updated_at' => $this->updated_at?->toISOString(),
+            'created_at' => $this->created_at->toISOString(),
+            'updated_at' => $this->updated_at->toISOString(),
+        ];
+    }
 
-            // Company data stored directly on invoice (snapshot at creation time)
+    /**
+     * Get supplier (seller) related data.
+     *
+     * @return array<string, mixed>
+     */
+    private function getSupplierData(): array
+    {
+        return [
+            'supplier_company_id' => $this->supplier_company_id,
+            'supplier_registry_office' => $this->supplier_registry_office,
+            'supplier_registry_number' => $this->supplier_registry_number,
+        ];
+    }
+
+    /**
+     * Get client (buyer) company data snapshot.
+     *
+     * @return array<string, mixed>
+     */
+    private function getClientData(): array
+    {
+        return [
+            'business_entity_id' => $this->company_id,
             'company_id' => $this->company_id,
             'company_ico' => $this->company_ico,
             'company_dic' => $this->company_dic,
@@ -54,21 +93,48 @@ class InvoiceResource extends JsonResource
             'company_city' => $this->company_city,
             'company_zip' => $this->company_zip,
             'company_country' => $this->company_country,
+        ];
+    }
 
+    /**
+     * Get loaded relationships data.
+     *
+     * @return array<string, mixed>
+     */
+    private function getRelationshipsData(): array
+    {
+        return [
             'business_entity' => new CompanyResource($this->whenLoaded('company')),
             'supplier_company' => new UserCompanyResource($this->whenLoaded('supplierCompany')),
             'items' => InvoiceItemResource::collection($this->whenLoaded('items')),
             'qr_code' => $this->qr_code ?? null,
+        ];
+    }
 
-            // Supplier VAT status (snapshot if available, fallback to supplier company)
+    /**
+     * Get VAT status related data.
+     *
+     * @return array<string, mixed>
+     */
+    private function getVatStatusData(): array
+    {
+        return [
             'supplier_vat_payer_status' => $this->getEffectiveVatStatus()?->value,
             'supplier_vat_period' => $this->supplier_vat_period,
-            // Helper flags based on effective VAT status
             'supplier_is_vat_payer' => $this->supplierIsVatPayer(),
             'supplier_is_registered_paragraph_7a' => $this->supplierIsRegisteredParagraph7a(),
             'should_show_vat_fields' => $this->shouldShowVatFields(),
+        ];
+    }
 
-            // Computed text fields for display
+    /**
+     * Get computed text fields for display.
+     *
+     * @return array<string, mixed>
+     */
+    private function getComputedTextFields(): array
+    {
+        return [
             'reverse_charge_text' => $this->reverse_charge_text,
             'tax_exemption_text' => $this->tax_exemption_text,
         ];

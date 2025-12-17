@@ -5,10 +5,9 @@ declare(strict_types=1);
 namespace App\Services\Interfaces;
 
 use App\DTOs\Vat\VatCalculationDTO;
+use App\DTOs\Vat\VatStatusChangeDTO;
 use App\DTOs\Vat\VatStatusDTO;
 use App\DTOs\Vat\VatSummaryDTO;
-use App\Enums\VatPayerStatus;
-use App\Enums\VatPeriod;
 use App\Exceptions\VatPeriodRequiredException;
 use App\Exceptions\VatStatusOverlapException;
 use App\Models\UserCompany;
@@ -34,13 +33,7 @@ interface VatService
      * @throws VatStatusOverlapException
      * @throws VatPeriodRequiredException
      */
-    public function changeVatStatus(
-        UserCompany $company,
-        VatPayerStatus $newStatus,
-        ?VatPeriod $period,
-        Carbon $validFrom,
-        ?string $notes = null
-    ): void;
+    public function changeVatStatus(UserCompany $company, VatStatusChangeDTO $change): void;
 
     /**
      * Calculate VAT from base amount
@@ -50,7 +43,12 @@ interface VatService
     /**
      * Calculate VAT summary from invoice items
      */
-    public function calculateVatSummary(array $items, bool $reverseCharge = false): VatSummaryDTO;
+    public function calculateVatSummary(array $items): VatSummaryDTO;
+
+    /**
+     * Calculate VAT summary for reverse charge (VAT = 0)
+     */
+    public function calculateVatSummaryForReverseCharge(array $items): VatSummaryDTO;
 
     /**
      * Get all VAT status history for a company

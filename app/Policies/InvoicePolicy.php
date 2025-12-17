@@ -8,6 +8,9 @@ use App\Models\Invoice;
 use App\Models\User;
 use Illuminate\Auth\Access\HandlesAuthorization;
 
+/**
+ * @SuppressWarnings(PHPMD.UnusedFormalParameter)
+ */
 class InvoicePolicy
 {
     use HandlesAuthorization;
@@ -36,7 +39,7 @@ class InvoicePolicy
     public function view(User $user, Invoice $invoice): bool
     {
         // Check if the invoice belongs to the user's current company
-        return $invoice->supplier_company_id === $user?->current_company_id;
+        return $invoice->supplier_company_id === $user->current_company_id;
     }
 
     /**
@@ -45,7 +48,7 @@ class InvoicePolicy
     public function update(User $user, Invoice $invoice): bool
     {
         // Check if the invoice belongs to the user's current company
-        return $invoice->supplier_company_id === $user?->current_company_id;
+        return $invoice->supplier_company_id === $user->current_company_id;
     }
 
     /**
@@ -54,6 +57,6 @@ class InvoicePolicy
     public function delete(User $user, Invoice $invoice): bool
     {
         // Check if the invoice belongs to the user's current company
-        return $invoice->supplier_company_id === $user?->current_company_id;
+        return $invoice->supplier_company_id === $user->current_company_id;
     }
 }

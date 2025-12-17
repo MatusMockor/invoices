@@ -10,6 +10,8 @@ use Illuminate\Http\Resources\Json\JsonResource;
 
 /**
  * @mixin InvoiceItem
+ *
+ * @SuppressWarnings(PHPMD.UnusedFormalParameter)
  */
 class InvoiceItemResource extends JsonResource
 {
@@ -27,8 +29,8 @@ class InvoiceItemResource extends JsonResource
             'subtotal' => $this->subtotal,
             'discount_amount' => $this->discount_amount,
             'total_price' => $this->total_price,
-            'created_at' => $this->created_at?->toISOString(),
-            'updated_at' => $this->updated_at?->toISOString(),
+            'created_at' => $this->created_at->toISOString(),
+            'updated_at' => $this->updated_at->toISOString(),
         ];
     }
 }

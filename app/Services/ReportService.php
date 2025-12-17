@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Services;
 
+use App\Models\Invoice;
 use App\Repositories\Contracts\InvoiceRepository as InvoiceRepositoryContract;
 use App\Services\Interfaces\ReportService as ReportServiceContract;
 use Carbon\Carbon;
@@ -45,11 +46,13 @@ final class ReportService implements ReportServiceContract
     {
         [$start, $end] = $this->parseDateRange($startDate, $endDate);
 
+        /** @var \Illuminate\Database\Eloquent\Collection<int, Invoice> $incomeInvoices */
         $incomeInvoices = $this->invoiceRepository->getIncomeInvoices($companyId, $start, $end);
+        /** @var \Illuminate\Database\Eloquent\Collection<int, Invoice> $expenseInvoices */
         $expenseInvoices = $this->invoiceRepository->getExpenseInvoices($companyId, $start, $end);
 
         return [
-            'income_invoices' => $incomeInvoices->map(fn ($invoice) => [
+            'income_invoices' => $incomeInvoices->map(static fn (Invoice $invoice): array => [
                 'id' => $invoice->id,
                 'invoice_number' => $invoice->invoice_number,
                 'customer_name' => $invoice->company->name ?? 'N/A',
@@ -59,7 +62,7 @@ final class ReportService implements ReportServiceContract
                 'currency' => $invoice->currency,
                 'status' => $invoice->status,
             ])->toArray(),
-            'expense_invoices' => $expenseInvoices->map(fn ($invoice) => [
+            'expense_invoices' => $expenseInvoices->map(static fn (Invoice $invoice): array => [
                 'id' => $invoice->id,
                 'invoice_number' => $invoice->invoice_number,
                 'supplier_name' => $invoice->supplierCompany->name ?? 'N/A',

@@ -7,9 +7,11 @@ namespace App\Services;
 use App\Enums\InvoiceTemplate;
 use App\Enums\VatPayerStatus;
 use App\Models\Invoice;
+use App\Models\InvoiceItem;
 use App\Services\Interfaces\InvoicePdfService as InvoicePdfServiceContract;
 use App\Services\Interfaces\PayBySquare as PayBySquareContract;
 use Illuminate\Http\Response;
+use Illuminate\Support\Collection;
 use Spatie\Browsershot\Browsershot;
 
 final class InvoicePdfService implements InvoicePdfServiceContract
@@ -32,63 +34,14 @@ final class InvoicePdfService implements InvoicePdfServiceContract
     {
         $invoice->load(['items', 'supplierCompany', 'user.settings']);
 
-        // Get user's invoice template preference
-        $template = $invoice->user->settings?->invoice_template?->value ?? InvoiceTemplate::default()->value;
-
-        // Generate Pay by Square QR code if we have the necessary data
-        $qrCode = null;
-        if ($invoice->supplierCompany && $invoice->supplierCompany->iban && $invoice->supplierCompany->swift) {
-            // Ensure variable symbol is max 10 characters
-            $variableSymbol = $invoice->invoice_number;
-            $variableSymbol = substr($variableSymbol, 0, 10);
-
-            $qrCode = $this->payBySquare->generateQrCode(
-                $invoice->supplierCompany->iban,
-                $invoice->supplierCompany->swift,
-                $invoice->total_amount,
-                $variableSymbol, // Limited to 10 characters
-                '', // Constant symbol
-                '', // Specific symbol
-                "Invoice {$invoice->invoice_number}", // Note
-                $invoice->supplierCompany->name // Recipient
-            );
-        }
-
-        // Calculate VAT summary for VAT payers
+        $template = $this->getInvoiceTemplate($invoice);
+        $qrCode = $this->generatePayBySquareQrCode($invoice);
         $vatSummary = $this->calculateVatSummary($invoice);
-
-        // Pre-calculate VAT payer status for templates
         $isVatPayer = $this->isVatPayer($invoice);
 
-        // Render the HTML view based on template
-        $html = view('invoices.pdf-render', [
-            'invoice' => $invoice,
-            'qrCode' => $qrCode,
-            'template' => $template,
-            'vatSummary' => $vatSummary,
-            'isVatPayer' => $isVatPayer,
-        ])->render();
+        $html = $this->renderInvoiceHtml($invoice, $template, $qrCode, $vatSummary, $isVatPayer);
 
-        // Generate PDF using Browsershot
-        $browsershot = Browsershot::html($html)
-            ->setNodeModulePath(base_path('node_modules'))
-            ->format('A4')
-            ->margins(0, 0, 0, 0)
-            ->showBackground()
-            ->waitUntilNetworkIdle();
-
-        // Use system Chromium if available (for Docker/Alpine)
-        if (file_exists('/usr/bin/chromium-browser')) {
-            $browsershot->setChromePath('/usr/bin/chromium-browser')
-                ->addChromiumArguments([
-                    'no-sandbox',
-                    'disable-setuid-sandbox',
-                    'disable-dev-shm-usage',
-                    'disable-gpu',
-                ]);
-        }
-
-        return $browsershot->pdf();
+        return $this->generatePdfFromHtml($html);
     }
 
     /**
@@ -119,6 +72,88 @@ final class InvoicePdfService implements InvoicePdfServiceContract
         ]);
     }
 
+    private function getInvoiceTemplate(Invoice $invoice): string
+    {
+        return $invoice->user->settings?->invoice_template->value ?? InvoiceTemplate::default()->value;
+    }
+
+    private function generatePayBySquareQrCode(Invoice $invoice): ?string
+    {
+        if (! $this->canGenerateQrCode($invoice)) {
+            return null;
+        }
+
+        $variableSymbol = substr($invoice->invoice_number, 0, 10);
+
+        return $this->payBySquare->generateQrCode(
+            $invoice->supplierCompany->iban,
+            $invoice->supplierCompany->swift,
+            $invoice->total_amount,
+            $variableSymbol,
+            '',
+            '',
+            "Invoice {$invoice->invoice_number}",
+            $invoice->supplierCompany->name
+        );
+    }
+
+    private function canGenerateQrCode(Invoice $invoice): bool
+    {
+        return $invoice->supplierCompany
+            && $invoice->supplierCompany->iban
+            && $invoice->supplierCompany->swift;
+    }
+
+    /**
+     * @param  array<int, array{rate: float, base: float, vat_amount: float}>  $vatSummary
+     *
+     * @SuppressWarnings(PHPMD.ExcessiveParameterList)
+     */
+    private function renderInvoiceHtml(
+        Invoice $invoice,
+        string $template,
+        ?string $qrCode,
+        array $vatSummary,
+        bool $isVatPayer
+    ): string {
+        return view('invoices.pdf-render', [
+            'invoice' => $invoice,
+            'qrCode' => $qrCode,
+            'template' => $template,
+            'vatSummary' => $vatSummary,
+            'isVatPayer' => $isVatPayer,
+        ])->render();
+    }
+
+    private function generatePdfFromHtml(string $html): string
+    {
+        $browsershot = Browsershot::html($html)
+            ->setNodeModulePath(base_path('node_modules'))
+            ->format('A4')
+            ->margins(0, 0, 0, 0)
+            ->showBackground()
+            ->waitUntilNetworkIdle();
+
+        $this->configureChromiumIfAvailable($browsershot);
+
+        return $browsershot->pdf();
+    }
+
+    private function configureChromiumIfAvailable(Browsershot $browsershot): void
+    {
+        if (! file_exists('/usr/bin/chromium-browser')) {
+            return;
+        }
+
+        $browsershot->setChromePath('/usr/bin/chromium-browser')
+            ->addChromiumArguments([
+                'no-sandbox',
+                'disable-setuid-sandbox',
+                'disable-dev-shm-usage',
+                'disable-gpu',
+            ]);
+    }
+
     /**
      * Calculate VAT summary grouped by rate
      *
@@ -138,10 +173,10 @@ final class InvoicePdfService implements InvoicePdfServiceContract
         }
 
         $grouped = $invoice->items
-            ->filter(fn ($item) => $item->tax_rate !== null)
+            ->filter(static fn (InvoiceItem $item): bool => $item->tax_rate > 0)
             ->groupBy('tax_rate');
 
-        return $grouped->map(function ($items, $rate) use ($invoice) {
+        return $grouped->map(function (Collection $items, string|int $rate) use ($invoice): array {
             $base = $items->sum('subtotal');
             $vatAmount = $invoice->reverse_charge ? 0 : $items->sum('tax_amount');
 

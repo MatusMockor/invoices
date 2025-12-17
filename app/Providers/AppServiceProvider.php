@@ -49,6 +49,11 @@ use App\Services\VatService;
 use Illuminate\Support\Facades\Gate;
 use Illuminate\Support\ServiceProvider;
 
+/**
+ * Application service provider for binding interfaces to implementations.
+ *
+ * @SuppressWarnings(PHPMD.CouplingBetweenObjects)
+ */
 class AppServiceProvider extends ServiceProvider
 {
     /**

@@ -12,6 +12,6 @@ enum Roles: string
 
     public static function values(): array
     {
-        return array_map(static fn (self $r) => $r->value, self::cases());
+        return array_map(static fn (self $role) => $role->value, self::cases());
     }
 }

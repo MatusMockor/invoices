@@ -4,6 +4,11 @@ declare(strict_types=1);
 
 namespace App\DTOs\Company;
 
+/**
+ * DTO for company creation data.
+ *
+ * @SuppressWarnings(PHPMD.ExcessiveParameterList)
+ */
 final readonly class CompanyCreationDTO
 {
     public function __construct(

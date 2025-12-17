@@ -82,7 +82,7 @@ final class LoginRequest extends FormRequest
      */
     public function throttleKey(): string
     {
-        return Str::transliterate(Str::lower($this->string('email')).'|'.$this->ip());
+        return Str::transliterate(Str::lower($this->string('email')->toString()).'|'.$this->ip());
     }
 
     public function getEmail(): string
@@ -95,7 +95,7 @@ final class LoginRequest extends FormRequest
         return $this->validated('password');
     }
 
-    public function getRemember(): bool
+    public function shouldRemember(): bool
     {
         return $this->boolean('remember');
     }

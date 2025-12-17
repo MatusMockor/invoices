@@ -7,6 +7,9 @@ namespace App\Policies;
 use App\Models\User;
 use App\Models\UserCompany;
 
+/**
+ * @SuppressWarnings(PHPMD.UnusedFormalParameter)
+ */
 class UserCompanyPolicy
 {
     /**

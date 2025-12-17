@@ -7,6 +7,11 @@ namespace App\DTOs\User;
 use App\Enums\CompanyType;
 use App\Http\Requests\RegisterWithCompanyRequest;
 
+/**
+ * DTO for user registration data.
+ *
+ * @SuppressWarnings(PHPMD.ExcessiveParameterList)
+ */
 final readonly class UserRegistrationDTO
 {
     public function __construct(

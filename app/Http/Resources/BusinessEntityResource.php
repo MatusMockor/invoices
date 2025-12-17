@@ -10,6 +10,8 @@ use Illuminate\Http\Resources\Json\JsonResource;
 
 /**
  * @mixin UserCompany
+ *
+ * @SuppressWarnings(PHPMD.UnusedFormalParameter)
  */
 final class BusinessEntityResource extends JsonResource
 {
