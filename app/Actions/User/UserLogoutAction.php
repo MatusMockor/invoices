@@ -14,8 +14,8 @@ final class UserLogoutAction
      */
     public function handle(User $user): void
     {
-        DB::transaction(function () use ($user): void {
-            $user->currentAccessToken()->delete();
+        DB::transaction(static function () use ($user): void {
+            $user->token()->revoke();
         });
     }
 }

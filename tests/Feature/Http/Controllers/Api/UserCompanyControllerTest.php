@@ -6,8 +6,9 @@ namespace Tests\Feature\Http\Controllers\Api;
 
 use App\Models\User;
 use App\Models\UserCompany;
+use App\OAuth\OAuthScopes;
 use Illuminate\Foundation\Testing\RefreshDatabase;
-use Laravel\Sanctum\Sanctum;
+use Laravel\Passport\Passport;
 use Tests\TestCase;
 
 final class UserCompanyControllerTest extends TestCase
@@ -28,7 +29,10 @@ final class UserCompanyControllerTest extends TestCase
         ]);
         $this->user->update(['current_company_id' => $this->userCompany->id]);
 
-        Sanctum::actingAs($this->user);
+        // Grant companies:read scope - company write operations don't require OAuth scope
+        Passport::actingAs($this->user, [
+            OAuthScopes::COMPANIES_READ->value,
+        ]);
     }
 
     public function test_user_can_update_their_company_data(): void
@@ -236,7 +240,7 @@ final class UserCompanyControllerTest extends TestCase
             'country' => 'Slovakia',
         ];
 
-        // Make request without being authenticated (don't use Sanctum::actingAs)
+        // Make request without being authenticated (don't use Passport::actingAs)
         $response = $this->json('PUT', route('api.user.companies.update', $testCompany), $updateData);
 
         // Laravel returns 403 when accessing protected resources without authentication

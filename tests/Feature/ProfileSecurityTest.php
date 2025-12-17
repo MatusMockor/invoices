@@ -7,7 +7,7 @@ namespace Feature;
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Hash;
-use Laravel\Sanctum\Sanctum;
+use Laravel\Passport\Passport;
 use Tests\TestCase;
 
 class ProfileSecurityTest extends TestCase
@@ -23,7 +23,7 @@ class ProfileSecurityTest extends TestCase
             'password' => Hash::make($currentPassword),
         ]);
 
-        Sanctum::actingAs($user);
+        Passport::actingAs($user);
 
         $newPassword = fake()->password(8);
         $payload = [
@@ -51,7 +51,7 @@ class ProfileSecurityTest extends TestCase
             'password' => Hash::make($currentPassword),
         ]);
 
-        Sanctum::actingAs($user);
+        Passport::actingAs($user);
 
         $newPassword = fake()->password(8);
         $payload = [
@@ -74,7 +74,7 @@ class ProfileSecurityTest extends TestCase
     {
         $user = User::factory()->create();
 
-        Sanctum::actingAs($user);
+        Passport::actingAs($user);
 
         $newPassword = fake()->password(8);
         $payload = [
@@ -95,7 +95,7 @@ class ProfileSecurityTest extends TestCase
             'password' => Hash::make($currentPassword),
         ]);
 
-        Sanctum::actingAs($user);
+        Passport::actingAs($user);
 
         $payload = [
             'current_password' => $currentPassword,
@@ -115,7 +115,7 @@ class ProfileSecurityTest extends TestCase
             'password' => Hash::make($currentPassword),
         ]);
 
-        Sanctum::actingAs($user);
+        Passport::actingAs($user);
 
         $payload = [
             'current_password' => $currentPassword,
@@ -136,7 +136,7 @@ class ProfileSecurityTest extends TestCase
             'password' => Hash::make($currentPassword),
         ]);
 
-        Sanctum::actingAs($user);
+        Passport::actingAs($user);
 
         $shortPassword = 'short'; // Less than 8 characters
         $payload = [
@@ -158,7 +158,7 @@ class ProfileSecurityTest extends TestCase
             'password' => Hash::make($currentPassword),
         ]);
 
-        Sanctum::actingAs($user);
+        Passport::actingAs($user);
 
         $newPassword = fake()->password(8);
         $payload = [
@@ -199,7 +199,7 @@ class ProfileSecurityTest extends TestCase
             'password' => Hash::make($password),
         ]);
 
-        Sanctum::actingAs($user);
+        Passport::actingAs($user);
 
         $payload = [
             'password' => $password,
@@ -225,7 +225,7 @@ class ProfileSecurityTest extends TestCase
             'password' => Hash::make($password),
         ]);
 
-        Sanctum::actingAs($user);
+        Passport::actingAs($user);
 
         $payload = [
             'password' => fake()->password(8), // Wrong password
@@ -247,7 +247,7 @@ class ProfileSecurityTest extends TestCase
     {
         $user = User::factory()->create();
 
-        Sanctum::actingAs($user);
+        Passport::actingAs($user);
 
         $response = $this->deleteJson(route('api.profile.destroy'), []);
 
@@ -269,13 +269,13 @@ class ProfileSecurityTest extends TestCase
         ]);
 
         // Create multiple tokens for the user
-        $token1 = $user->createToken('device1')->plainTextToken;
-        $token2 = $user->createToken('device2')->plainTextToken;
-        $token3 = $user->createToken('device3')->plainTextToken;
+        $user->createToken('device1');
+        $user->createToken('device2');
+        $user->createToken('device3');
 
         $this->assertCount(3, $user->tokens);
 
-        Sanctum::actingAs($user);
+        Passport::actingAs($user);
 
         $payload = [
             'password' => $password,
@@ -283,9 +283,9 @@ class ProfileSecurityTest extends TestCase
 
         $this->deleteJson(route('api.profile.destroy'), $payload);
 
-        // All tokens should be deleted
+        // All tokens should be revoked
         $user->refresh();
-        $this->assertCount(0, $user->tokens);
+        $this->assertCount(0, $user->tokens()->where('revoked', false)->get());
     }
 
     public function test_user_is_soft_deleted_not_hard_deleted(): void
@@ -297,7 +297,7 @@ class ProfileSecurityTest extends TestCase
 
         $userId = $user->id;
 
-        Sanctum::actingAs($user);
+        Passport::actingAs($user);
 
         $payload = [
             'password' => $password,
@@ -321,7 +321,7 @@ class ProfileSecurityTest extends TestCase
             'password' => Hash::make($password),
         ]);
 
-        Sanctum::actingAs($user);
+        Passport::actingAs($user);
 
         $payload = [
             'password' => $password,
@@ -330,7 +330,7 @@ class ProfileSecurityTest extends TestCase
         $this->deleteJson(route('api.profile.destroy'), $payload);
 
         // Verify all tokens were revoked
-        $this->assertCount(0, $user->tokens);
+        $this->assertCount(0, $user->tokens()->where('revoked', false)->get());
 
         // Create a new test context without authentication
         $this->app = $this->createApplication();
@@ -350,7 +350,7 @@ class ProfileSecurityTest extends TestCase
             'password' => Hash::make($password),
         ]);
 
-        Sanctum::actingAs($user);
+        Passport::actingAs($user);
 
         // Delete the account
         $this->deleteJson(route('api.profile.destroy'), [

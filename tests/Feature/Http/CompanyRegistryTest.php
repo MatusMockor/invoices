@@ -9,8 +9,9 @@ use App\Models\Company;
 use App\Models\Invoice;
 use App\Models\User;
 use App\Models\UserCompany;
+use App\OAuth\OAuthScopes;
 use Illuminate\Foundation\Testing\RefreshDatabase;
-use Laravel\Sanctum\Sanctum;
+use Laravel\Passport\Passport;
 use Tests\TestCase;
 
 final class CompanyRegistryTest extends TestCase
@@ -31,7 +32,11 @@ final class CompanyRegistryTest extends TestCase
         ]);
         $this->user->update(['current_company_id' => $this->userCompany->id]);
 
-        Sanctum::actingAs($this->user);
+        // Grant scopes for testing company and invoice endpoints
+        Passport::actingAs($this->user, [
+            OAuthScopes::COMPANIES_READ->value,
+            OAuthScopes::INVOICES_READ->value,
+        ]);
     }
 
     public function test_company_show_api_response_includes_registration_office(): void

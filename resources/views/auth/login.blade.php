@@ -33,7 +33,7 @@
                     </div>
                 @endif
 
-                <form class="space-y-4 md:space-y-6" method="POST" action="{{ route('login') }}">
+                <form class="space-y-4 md:space-y-6" method="POST" action="{{ request()->routeIs('oauth.login') ? route('oauth.login.store') : route('login') }}">
                     @csrf
 
                     <!-- Email Address -->

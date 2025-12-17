@@ -6,7 +6,7 @@ namespace Tests\Feature;
 
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
-use Laravel\Sanctum\Sanctum;
+use Laravel\Passport\Passport;
 use Tests\TestCase;
 
 final class ProfileUpdateTest extends TestCase
@@ -17,7 +17,7 @@ final class ProfileUpdateTest extends TestCase
     {
         $user = User::factory()->create();
 
-        Sanctum::actingAs($user);
+        Passport::actingAs($user);
 
         $newFirstName = fake()->firstName();
         $newLastName = fake()->lastName();
@@ -50,7 +50,7 @@ final class ProfileUpdateTest extends TestCase
     {
         $user = User::factory()->create();
 
-        Sanctum::actingAs($user);
+        Passport::actingAs($user);
 
         $response = $this->putJson(route('api.profile.update'), [
             'last_name' => fake()->lastName(),
@@ -65,7 +65,7 @@ final class ProfileUpdateTest extends TestCase
     {
         $user = User::factory()->create();
 
-        Sanctum::actingAs($user);
+        Passport::actingAs($user);
 
         $response = $this->putJson(route('api.profile.update'), [
             'first_name' => fake()->firstName(),
@@ -80,7 +80,7 @@ final class ProfileUpdateTest extends TestCase
     {
         $user = User::factory()->create();
 
-        Sanctum::actingAs($user);
+        Passport::actingAs($user);
 
         $response = $this->putJson(route('api.profile.update'), [
             'first_name' => fake()->firstName(),
@@ -95,7 +95,7 @@ final class ProfileUpdateTest extends TestCase
     {
         $user = User::factory()->create();
 
-        Sanctum::actingAs($user);
+        Passport::actingAs($user);
 
         $response = $this->putJson(route('api.profile.update'), [
             'first_name' => fake()->firstName(),
@@ -116,7 +116,7 @@ final class ProfileUpdateTest extends TestCase
 
         $user = User::factory()->create();
 
-        Sanctum::actingAs($user);
+        Passport::actingAs($user);
 
         $response = $this->putJson(route('api.profile.update'), [
             'first_name' => fake()->firstName(),
@@ -132,7 +132,7 @@ final class ProfileUpdateTest extends TestCase
     {
         $user = User::factory()->create();
 
-        Sanctum::actingAs($user);
+        Passport::actingAs($user);
 
         $newFirstName = fake()->firstName();
         $newLastName = fake()->lastName();
@@ -157,7 +157,7 @@ final class ProfileUpdateTest extends TestCase
     {
         $user = User::factory()->create();
 
-        Sanctum::actingAs($user);
+        Passport::actingAs($user);
 
         $response = $this->putJson(route('api.profile.update'), [
             'first_name' => str_repeat('a', 256),
@@ -173,7 +173,7 @@ final class ProfileUpdateTest extends TestCase
     {
         $user = User::factory()->create();
 
-        Sanctum::actingAs($user);
+        Passport::actingAs($user);
 
         $response = $this->putJson(route('api.profile.update'), [
             'first_name' => fake()->firstName(),
@@ -200,7 +200,7 @@ final class ProfileUpdateTest extends TestCase
     {
         $user = User::factory()->create();
 
-        Sanctum::actingAs($user);
+        Passport::actingAs($user);
 
         $newFirstName = fake()->firstName();
         $newLastName = fake()->lastName();
@@ -227,7 +227,7 @@ final class ProfileUpdateTest extends TestCase
     {
         $user = User::factory()->create();
 
-        Sanctum::actingAs($user);
+        Passport::actingAs($user);
 
         $response = $this->putJson(route('api.profile.update'), [
             'first_name' => '',
@@ -243,7 +243,7 @@ final class ProfileUpdateTest extends TestCase
     {
         $user = User::factory()->create();
 
-        Sanctum::actingAs($user);
+        Passport::actingAs($user);
 
         $response = $this->putJson(route('api.profile.update'), [
             'first_name' => fake()->firstName(),
@@ -259,7 +259,7 @@ final class ProfileUpdateTest extends TestCase
     {
         $user = User::factory()->create();
 
-        Sanctum::actingAs($user);
+        Passport::actingAs($user);
 
         $response = $this->putJson(route('api.profile.update'), [
             'first_name' => fake()->firstName(),
@@ -275,7 +275,7 @@ final class ProfileUpdateTest extends TestCase
     {
         $user = User::factory()->create();
 
-        Sanctum::actingAs($user);
+        Passport::actingAs($user);
 
         $newEmail = fake()->unique()->safeEmail();
 

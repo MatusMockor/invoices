@@ -15,6 +15,7 @@ use App\Http\Controllers\Api\ReportsApiController;
 use App\Http\Controllers\Api\UserCompanyController;
 use App\Http\Controllers\Api\UserSettingController;
 use App\Http\Controllers\Api\VatStatusController;
+use App\OAuth\OAuthScopes;
 use Illuminate\Support\Facades\Route;
 
 /*
@@ -39,30 +40,82 @@ Route::post('/login', [AuthController::class, 'login'])
     ->middleware('throttle:6,1')
     ->name('api.login');
 
-// Protected routes (require authentication via Sanctum)
-Route::middleware('auth:sanctum')->group(function () {
-    // Auth
+// Protected routes (require authentication via Passport)
+Route::middleware('auth:api')->group(function () {
+    // ========================================
+    // AUTH (no scope required - basic user info)
+    // ========================================
     Route::get('/user', [AuthController::class, 'user'])->name('api.user');
     Route::post('/logout', [AuthController::class, 'logout'])->name('api.logout');
 
-    // Onboarding (doesn't require company)
+    // ========================================
+    // ONBOARDING (no scope required - doesn't access sensitive data)
+    // ========================================
     Route::get('/onboarding/check', [OnboardingController::class, 'check'])->name('api.onboarding.check');
     Route::post('/onboarding', [OnboardingController::class, 'store'])->name('api.onboarding.store');
 
-    // User Companies
-    Route::get('/user/companies/minimal', [UserCompanyController::class, 'minimal'])->name('api.user.companies.minimal');
-    Route::get('/user/companies', [UserCompanyController::class, 'index'])->name('api.user.companies.index');
-    Route::get('/user/companies/{userCompany}', [UserCompanyController::class, 'show'])->name('api.user.companies.show');
+    // ========================================
+    // COMPANIES - requires companies:read
+    // ========================================
+    Route::middleware('scopes:'.OAuthScopes::COMPANIES_READ->value)->group(function () {
+        // User Companies (read)
+        Route::get('/user/companies/minimal', [UserCompanyController::class, 'minimal'])->name('api.user.companies.minimal');
+        Route::get('/user/companies', [UserCompanyController::class, 'index'])->name('api.user.companies.index');
+        Route::get('/user/companies/{userCompany}', [UserCompanyController::class, 'show'])->name('api.user.companies.show');
+
+        // VAT Status (read-only, part of company data)
+        Route::get('/user/companies/{userCompany}/vat-status', [VatStatusController::class, 'show'])->name('api.user.companies.vat-status.show');
+        Route::get('/user/companies/{userCompany}/vat-status-history', [VatStatusController::class, 'history'])->name('api.user.companies.vat-status-history');
+
+        // Customer Companies (for invoice autocomplete)
+        Route::get('/customer-companies/search', [CompanyController::class, 'search'])->name('api.customer-companies.search');
+        Route::get('/customer-companies', [CompanyController::class, 'index'])->name('api.customer-companies.index');
+    });
+
+    // Company write operations (not exposed via OAuth in Phase 1)
+    // These remain protected but without OAuth scope - session auth only
     Route::post('/user/companies', [UserCompanyController::class, 'store'])->name('api.user.companies.store');
     Route::put('/user/companies/{userCompany}', [UserCompanyController::class, 'update'])->name('api.user.companies.update');
     Route::delete('/user/companies/{userCompany}', [UserCompanyController::class, 'destroy'])->name('api.user.companies.destroy');
     Route::post('/user/companies/{userCompany}/switch', [UserCompanyController::class, 'switch'])->name('api.user.companies.switch');
-
-    // VAT Status
-    Route::get('/user/companies/{userCompany}/vat-status', [VatStatusController::class, 'show'])->name('api.user.companies.vat-status.show');
     Route::put('/user/companies/{userCompany}/vat-status', [VatStatusController::class, 'update'])->name('api.user.companies.vat-status.update');
-    Route::get('/user/companies/{userCompany}/vat-status-history', [VatStatusController::class, 'history'])->name('api.user.companies.vat-status-history');
 
+    // ========================================
+    // INVOICES - requires invoices:read or invoices:write
+    // ========================================
+    Route::middleware('scopes:'.OAuthScopes::INVOICES_READ->value)->group(function () {
+        Route::get('/invoices', [InvoiceController::class, 'index'])->name('api.invoices.index');
+        Route::get('/invoices/latest-number', [InvoiceController::class, 'latestNumber'])->name('api.invoices.latest-number');
+        Route::get('/invoices/by-number/{invoiceNumber}', [InvoiceController::class, 'showByNumber'])->name('api.invoices.show-by-number');
+        Route::get('/invoices/{invoice}', [InvoiceController::class, 'show'])->name('api.invoices.show');
+        Route::get('/invoices/{invoice}/pdf/download', [InvoiceController::class, 'downloadPdf'])->name('api.invoices.pdf.download');
+        Route::get('/invoices/{invoice}/pdf/view', [InvoiceController::class, 'viewPdf'])->name('api.invoices.pdf.view');
+    });
+
+    Route::middleware('scopes:'.OAuthScopes::INVOICES_WRITE->value)->group(function () {
+        Route::post('/invoices', [InvoiceController::class, 'store'])->name('api.invoices.store');
+        Route::put('/invoices/{invoice}', [InvoiceController::class, 'update'])->name('api.invoices.update');
+        Route::patch('/invoices/{invoice}/status', [InvoiceController::class, 'updateStatus'])->name('api.invoices.update-status');
+        Route::delete('/invoices/{invoice}', [InvoiceController::class, 'destroy'])->name('api.invoices.destroy');
+    });
+
+    // ========================================
+    // CONTACTS - requires contacts:read or contacts:write
+    // ========================================
+    Route::middleware('scopes:'.OAuthScopes::CONTACTS_READ->value)->group(function () {
+        Route::get('/contacts', [ContactController::class, 'index'])->name('api.contacts.index');
+        Route::get('/contacts/{contact}', [ContactController::class, 'show'])->name('api.contacts.show');
+    });
+
+    Route::middleware('scopes:'.OAuthScopes::CONTACTS_WRITE->value)->group(function () {
+        Route::post('/contacts', [ContactController::class, 'store'])->name('api.contacts.store');
+        Route::put('/contacts/{contact}', [ContactController::class, 'update'])->name('api.contacts.update');
+        Route::delete('/contacts/{contact}', [ContactController::class, 'destroy'])->name('api.contacts.destroy');
+    });
+
+    // ========================================
+    // OTHER ENDPOINTS (no OAuth scope - session auth only)
+    // ========================================
     // Business Entities
     Route::get('/business-entities', [BusinessEntityController::class, 'index'])->name('api.business-entities.index');
     Route::get('/business-entities/{businessEntity}', [BusinessEntityController::class, 'show'])->name('api.business-entities.show');
@@ -71,38 +124,16 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::delete('/business-entities/{businessEntity}', [BusinessEntityController::class, 'destroy'])->name('api.business-entities.destroy');
     Route::get('/business-entities-fetch-by-ico', [BusinessEntityController::class, 'fetchByIco'])->name('api.business-entities.fetch-by-ico');
 
-    // Customer Companies (for invoice autocomplete)
-    Route::get('/customer-companies/search', [CompanyController::class, 'search'])->name('api.customer-companies.search');
-    Route::get('/customer-companies', [CompanyController::class, 'index'])->name('api.customer-companies.index');
-
-    // Invoices
-    Route::get('/invoices', [InvoiceController::class, 'index'])->name('api.invoices.index');
-    Route::get('/invoices/latest-number', [InvoiceController::class, 'latestNumber'])->name('api.invoices.latest-number');
-    Route::get('/invoices/{invoice}', [InvoiceController::class, 'show'])->name('api.invoices.show');
-    Route::post('/invoices', [InvoiceController::class, 'store'])->name('api.invoices.store');
-    Route::put('/invoices/{invoice}', [InvoiceController::class, 'update'])->name('api.invoices.update');
-    Route::patch('/invoices/{invoice}/status', [InvoiceController::class, 'updateStatus'])->name('api.invoices.update-status');
-    Route::delete('/invoices/{invoice}', [InvoiceController::class, 'destroy'])->name('api.invoices.destroy');
-    Route::get('/invoices/{invoice}/pdf/download', [InvoiceController::class, 'downloadPdf'])->name('api.invoices.pdf.download');
-    Route::get('/invoices/{invoice}/pdf/view', [InvoiceController::class, 'viewPdf'])->name('api.invoices.pdf.view');
+    // Notes
+    Route::get('/notes', [NoteController::class, 'index'])->name('api.notes.index');
+    Route::post('/notes', [NoteController::class, 'store'])->name('api.notes.store');
+    Route::delete('/notes/{note}', [NoteController::class, 'destroy'])->name('api.notes.destroy');
 
     // Profile
     Route::get('/profile', [ProfileController::class, 'show'])->name('api.profile.show');
     Route::put('/profile', [ProfileController::class, 'update'])->name('api.profile.update');
     Route::patch('/user/password', [ProfileController::class, 'updatePassword'])->name('api.user.password.update');
     Route::delete('/profile', [ProfileController::class, 'destroy'])->name('api.profile.destroy');
-
-    // Contacts
-    Route::get('/contacts', [ContactController::class, 'index'])->name('api.contacts.index');
-    Route::get('/contacts/{contact}', [ContactController::class, 'show'])->name('api.contacts.show');
-    Route::post('/contacts', [ContactController::class, 'store'])->name('api.contacts.store');
-    Route::put('/contacts/{contact}', [ContactController::class, 'update'])->name('api.contacts.update');
-    Route::delete('/contacts/{contact}', [ContactController::class, 'destroy'])->name('api.contacts.destroy');
-
-    // Notes
-    Route::get('/notes', [NoteController::class, 'index'])->name('api.notes.index');
-    Route::post('/notes', [NoteController::class, 'store'])->name('api.notes.store');
-    Route::delete('/notes/{note}', [NoteController::class, 'destroy'])->name('api.notes.destroy');
 
     // User Settings
     Route::get('/settings', [UserSettingController::class, 'show'])->name('api.settings.show');

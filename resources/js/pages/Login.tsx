@@ -1,4 +1,4 @@
-import { Link, useNavigate } from "react-router-dom";
+import { Link, useNavigate, useSearchParams } from "react-router-dom";
 import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -11,12 +11,24 @@ import { toast } from "sonner";
 const Login = () => {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [isRedirecting, setIsRedirecting] = useState(false);
   const { login, isLoggingIn, isAuthenticated, user } = useAuthContext();
   const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
+
+  // Get redirect URL from query params (for OAuth flow)
+  const redirectUrl = searchParams.get("redirect");
 
   // Redirect authenticated users to appropriate page
   useEffect(() => {
-    if (isAuthenticated && user) {
+    if (isAuthenticated && user && !isRedirecting) {
+      // If there's a redirect URL (OAuth flow), use it
+      if (redirectUrl) {
+        setIsRedirecting(true);
+        // Full page redirect to OAuth authorize endpoint
+        window.location.replace(redirectUrl);
+        return;
+      }
       // If user has company, go to dashboard, otherwise go to onboarding
       if (user.current_company_id) {
         navigate("/app/dashboard", { replace: true });
@@ -24,7 +36,19 @@ const Login = () => {
         navigate("/app/onboarding", { replace: true });
       }
     }
-  }, [isAuthenticated, user, navigate]);
+  }, [isAuthenticated, user, navigate, redirectUrl, isRedirecting]);
+
+  // Show loading screen while redirecting to OAuth
+  if (isRedirecting) {
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-background via-background to-secondary/20 flex items-center justify-center p-4">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary mx-auto mb-4"></div>
+          <p className="text-muted-foreground">Presmerovanie na autorizáciu...</p>
+        </div>
+      </div>
+    );
+  }
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();

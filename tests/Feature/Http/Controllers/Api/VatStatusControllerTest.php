@@ -9,8 +9,9 @@ use App\Enums\VatPeriod;
 use App\Models\User;
 use App\Models\UserCompany;
 use App\Models\VatStatusHistory;
+use App\OAuth\OAuthScopes;
 use Illuminate\Foundation\Testing\RefreshDatabase;
-use Laravel\Sanctum\Sanctum;
+use Laravel\Passport\Passport;
 use Tests\TestCase;
 
 class VatStatusControllerTest extends TestCase
@@ -34,7 +35,10 @@ class VatStatusControllerTest extends TestCase
 
         $this->user->update(['current_company_id' => $this->userCompany->id]);
 
-        Sanctum::actingAs($this->user);
+        // Grant companies:read scope for VAT status read tests
+        Passport::actingAs($this->user, [
+            OAuthScopes::COMPANIES_READ->value,
+        ]);
     }
 
     public function test_show_returns_current_vat_status(): void

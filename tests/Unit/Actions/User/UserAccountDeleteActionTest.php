@@ -61,13 +61,13 @@ final class UserAccountDeleteActionTest extends TestCase
         $user->createToken('token2');
         $user->createToken('token3');
 
-        $this->assertCount(3, $user->tokens);
+        $this->assertCount(3, $user->tokens()->where('revoked', false)->get());
 
         $this->action->handle($user);
 
-        // All tokens should be deleted
+        // All tokens should be revoked (not deleted, but revoked in Passport)
         $user->refresh();
-        $this->assertCount(0, $user->tokens);
+        $this->assertCount(0, $user->tokens()->where('revoked', false)->get());
     }
 
     public function test_uses_transaction_wrapper(): void
@@ -135,14 +135,14 @@ final class UserAccountDeleteActionTest extends TestCase
         $mockRepository = Mockery::mock(UserRepositoryContract::class);
 
         // Track the order of operations
-        $tokensDeletedBeforeSoftDelete = false;
+        $tokensRevokedBeforeSoftDelete = false;
 
         $mockRepository->shouldReceive('softDelete')
             ->once()
             ->with($user)
-            ->andReturnUsing(function ($user) use (&$tokensDeletedBeforeSoftDelete) {
-                // At this point, tokens should already be deleted
-                $tokensDeletedBeforeSoftDelete = $user->tokens()->count() === 0;
+            ->andReturnUsing(static function (User $user) use (&$tokensRevokedBeforeSoftDelete): bool {
+                // At this point, tokens should already be revoked
+                $tokensRevokedBeforeSoftDelete = $user->tokens()->where('revoked', false)->count() === 0;
 
                 return true;
             });
@@ -150,7 +150,7 @@ final class UserAccountDeleteActionTest extends TestCase
         $action = new UserAccountDeleteAction($mockRepository);
         $action->handle($user);
 
-        $this->assertTrue($tokensDeletedBeforeSoftDelete, 'Tokens should be deleted before soft delete');
+        $this->assertTrue($tokensRevokedBeforeSoftDelete, 'Tokens should be revoked before soft delete');
     }
 
     public function test_transaction_rolls_back_if_soft_delete_fails(): void

@@ -50,4 +50,10 @@ interface InvoiceRepository
      * Get the latest invoice number for a company
      */
     public function getLatestInvoiceNumber(int $companyId): ?string;
+
+    /**
+     * Find invoice by invoice number for a specific user.
+     * Returns null if not found or doesn't belong to user's companies.
+     */
+    public function findByNumberForUser(string $invoiceNumber, int $userId): ?Invoice;
 }

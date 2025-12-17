@@ -20,8 +20,8 @@ final class UserAccountDeleteAction
     public function handle(User $user): bool
     {
         return DB::transaction(function () use ($user): bool {
-            // Revoke all Sanctum tokens
-            $user->tokens()->delete();
+            // Revoke all Passport tokens
+            $user->tokens()->update(['revoked' => true]);
 
             // Soft delete the user
             return $this->userRepository->softDelete($user);

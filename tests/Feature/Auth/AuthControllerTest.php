@@ -6,7 +6,7 @@ namespace Feature\Auth;
 
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
-use Laravel\Sanctum\Sanctum;
+use Laravel\Passport\Passport;
 use Tests\TestCase;
 
 class AuthControllerTest extends TestCase
@@ -279,7 +279,7 @@ class AuthControllerTest extends TestCase
     {
         $user = User::factory()->create();
 
-        Sanctum::actingAs($user);
+        Passport::actingAs($user);
 
         $response = $this->postJson(route('api.logout'));
 
@@ -302,7 +302,7 @@ class AuthControllerTest extends TestCase
     {
         $user = User::factory()->create();
 
-        Sanctum::actingAs($user);
+        Passport::actingAs($user);
 
         $response = $this->getJson(route('api.user'));
 

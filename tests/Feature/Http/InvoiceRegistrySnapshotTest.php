@@ -9,8 +9,9 @@ use App\Models\Company;
 use App\Models\Invoice;
 use App\Models\User;
 use App\Models\UserCompany;
+use App\OAuth\OAuthScopes;
 use Illuminate\Foundation\Testing\RefreshDatabase;
-use Laravel\Sanctum\Sanctum;
+use Laravel\Passport\Passport;
 use Tests\TestCase;
 
 final class InvoiceRegistrySnapshotTest extends TestCase
@@ -34,7 +35,11 @@ final class InvoiceRegistrySnapshotTest extends TestCase
         ]);
         $this->user->update(['current_company_id' => $this->supplierCompany->id]);
 
-        Sanctum::actingAs($this->user);
+        // Grant invoice scopes for testing
+        Passport::actingAs($this->user, [
+            OAuthScopes::INVOICES_READ->value,
+            OAuthScopes::INVOICES_WRITE->value,
+        ]);
     }
 
     public function test_invoice_snapshot_preserves_registry_office_when_supplier_company_updated(): void

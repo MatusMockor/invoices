@@ -9,9 +9,10 @@ use App\Models\Invoice;
 use App\Models\InvoiceItem;
 use App\Models\User;
 use App\Models\UserCompany;
+use App\OAuth\OAuthScopes;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Http;
-use Laravel\Sanctum\Sanctum;
+use Laravel\Passport\Passport;
 use Tests\TestCase;
 
 class InvoiceControllerTest extends TestCase
@@ -31,7 +32,11 @@ class InvoiceControllerTest extends TestCase
         $this->userCompany = UserCompany::factory()->vatPayer()->create();
         $this->user->update(['current_company_id' => $this->userCompany->id]);
 
-        Sanctum::actingAs($this->user);
+        // Grant all invoice scopes for testing
+        Passport::actingAs($this->user, [
+            OAuthScopes::INVOICES_READ->value,
+            OAuthScopes::INVOICES_WRITE->value,
+        ]);
     }
 
     public function test_index_returns_successful_response(): void

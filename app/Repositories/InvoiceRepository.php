@@ -5,12 +5,13 @@ declare(strict_types=1);
 namespace App\Repositories;
 
 use App\Models\Invoice;
+use App\Models\UserCompany;
 use App\Repositories\Contracts\InvoiceRepository as InvoiceRepositoryContract;
 use Carbon\Carbon;
 use Illuminate\Contracts\Pagination\LengthAwarePaginator;
 use Illuminate\Database\Eloquent\Collection;
 
-class InvoiceRepository implements InvoiceRepositoryContract
+final class InvoiceRepository implements InvoiceRepositoryContract
 {
     /**
      * Get all invoices for the current company with pagination
@@ -89,5 +90,24 @@ class InvoiceRepository implements InvoiceRepositoryContract
             ->first();
 
         return $latestInvoice?->invoice_number;
+    }
+
+    /**
+     * Find invoice by invoice number for a specific user.
+     * Returns null if not found or doesn't belong to user's companies.
+     */
+    public function findByNumberForUser(string $invoiceNumber, int $userId): ?Invoice
+    {
+        $userCompanyIds = UserCompany::where('user_id', $userId)
+            ->pluck('id')
+            ->toArray();
+
+        if (empty($userCompanyIds)) {
+            return null;
+        }
+
+        return Invoice::where('invoice_number', $invoiceNumber)
+            ->whereIn('supplier_company_id', $userCompanyIds)
+            ->first();
     }
 }

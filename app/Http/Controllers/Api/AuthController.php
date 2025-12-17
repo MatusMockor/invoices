@@ -44,7 +44,7 @@ final class AuthController extends Controller
         $dto = SimpleUserRegistrationDTO::fromFormRequest($request);
         $user = $action->handle($dto);
 
-        $token = $user->createToken('auth-token')->plainTextToken;
+        $token = $user->createToken('auth-token')->accessToken;
 
         return response()->json([
             'message' => 'User registered successfully',
@@ -64,7 +64,7 @@ final class AuthController extends Controller
 
         $user = $action->handle($dto);
 
-        $token = $user->createToken('auth-token')->plainTextToken;
+        $token = $user->createToken('auth-token')->accessToken;
 
         return response()->json([
             'message' => 'User and company registered successfully',

@@ -79,6 +79,29 @@ final class InvoiceController extends Controller
     }
 
     /**
+     * Get a single invoice by invoice number.
+     * Invoice number is scoped to the current user's companies.
+     */
+    public function showByNumber(string $invoiceNumber): InvoiceResource
+    {
+        $invoice = $this->invoiceRepository->findByNumberForUser(
+            $invoiceNumber,
+            auth()->id()
+        );
+
+        if (! $invoice) {
+            abort(404, 'Faktura s cislom '.$invoiceNumber.' nebola najdena.');
+        }
+
+        $this->authorize('view', $invoice);
+
+        $invoice->load(['company', 'supplierCompany', 'items']);
+        $invoice->qr_code = $this->generateQrCode($invoice);
+
+        return new InvoiceResource($invoice);
+    }
+
+    /**
      * Create a new invoice.
      */
     public function store(StoreInvoiceRequest $request): JsonResponse

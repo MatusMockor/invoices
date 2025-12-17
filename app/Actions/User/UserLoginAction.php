@@ -37,7 +37,7 @@ final class UserLoginAction
             ]);
         }
 
-        $token = $user->createToken('auth-token')->plainTextToken;
+        $token = $user->createToken('auth-token')->accessToken;
 
         return new LoginResultDTO(
             user: $user,
