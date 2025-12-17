@@ -1,0 +1,29 @@
+includes:
+    - vendor/larastan/larastan/extension.neon
+    - phpstan-baseline.neon
+
+parameters:
+    level: 5
+
+    paths:
+        - app
+
+    excludePaths:
+        - bootstrap/cache
+        - storage
+        - vendor
+        - node_modules
+        - public/build
+        - _ide_helper*.php
+
+    # Laravel-specific settings
+    checkModelProperties: true
+    checkOctaneCompatibility: false
+
+    # Report settings
+    reportUnmatchedIgnoredErrors: false
+
+    # Ignore specific errors (if needed)
+    ignoreErrors:
+        # Example: Ignore dynamic properties on specific classes
+        # - '#Access to an undefined property#'

@@ -18,12 +18,14 @@
     },
     "require-dev": {
         "fakerphp/faker": "^1.23",
+        "larastan/larastan": "^3.0",
         "laravel/breeze": "^2.3",
         "laravel/pail": "^1.2.2",
         "laravel/pint": "^1.13",
         "laravel/sail": "^1.42",
         "mockery/mockery": "^1.6",
         "nunomaduro/collision": "^8.6",
+        "phpmd/phpmd": "^2.15",
         "phpunit/phpunit": "^11.5.3"
     },
     "autoload": {
@@ -61,7 +63,14 @@
         "test": [
             "@php artisan config:clear --ansi",
             "@php artisan test"
-        ]
+        ],
+        "analyse": "phpstan analyse --memory-limit=2G",
+        "analyse:baseline": "phpstan analyse --memory-limit=2G --generate-baseline",
+        "analyse:clear": "phpstan clear-result-cache && composer analyse",
+        "phpmd": "phpmd app text phpmd.xml --baseline-file phpmd.baseline.xml",
+        "phpmd:html": "phpmd app html phpmd.xml --baseline-file phpmd.baseline.xml --reportfile phpmd-report.html",
+        "phpmd:baseline": "phpmd app text phpmd.xml --generate-baseline",
+        "phpmd:ci": "phpmd app github phpmd.xml --baseline-file phpmd.baseline.xml"
     },
     "extra": {
         "laravel": {

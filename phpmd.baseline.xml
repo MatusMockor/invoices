@@ -1,0 +1,103 @@
+<?xml version="1.0"?>
+<phpmd-baseline>
+  <violation rule="PHPMD\Rule\Design\LongParameterList" file="app/Actions/Company/ChangeVatStatusAction.php" method="handle"/>
+  <violation rule="PHPMD\Rule\Design\LongMethod" file="app/Actions/Company/SyncCompaniesDicAction.php" method="handle"/>
+  <violation rule="PHPMD\Rule\CleanCode\ElseExpression" file="app/Actions/Company/SyncCompaniesDicAction.php"/>
+  <violation rule="PHPMD\Rule\Design\LongClass" file="app/Actions/Company/SyncCompaniesFromOracleAction.php"/>
+  <violation rule="PHPMD\Rule\CyclomaticComplexity" file="app/Actions/Company/SyncCompaniesFromOracleAction.php" method="handle"/>
+  <violation rule="PHPMD\Rule\Design\NpathComplexity" file="app/Actions/Company/SyncCompaniesFromOracleAction.php" method="handle"/>
+  <violation rule="PHPMD\Rule\Design\LongMethod" file="app/Actions/Company/SyncCompaniesFromOracleAction.php" method="handle"/>
+  <violation rule="PHPMD\Rule\CyclomaticComplexity" file="app/Actions/Company/SyncCompaniesFromOracleAction.php" method="parseCompanyData"/>
+  <violation rule="PHPMD\Rule\Design\NpathComplexity" file="app/Actions/Company/SyncCompaniesFromOracleAction.php" method="parseCompanyData"/>
+  <violation rule="PHPMD\Rule\Design\LongMethod" file="app/Actions/Company/SyncCompaniesFromOracleAction.php" method="parseCompanyData"/>
+  <violation rule="PHPMD\Rule\CyclomaticComplexity" file="app/Actions/Company/SyncCompaniesFromOracleAction.php" method="buildStreetAddress"/>
+  <violation rule="PHPMD\Rule\CyclomaticComplexity" file="app/Actions/Company/SyncCompaniesFromOracleAction.php" method="findCurrentlyValidEntry"/>
+  <violation rule="PHPMD\Rule\Design\NpathComplexity" file="app/Actions/Company/SyncCompaniesFromOracleAction.php" method="findCurrentlyValidEntry"/>
+  <violation rule="PHPMD\Rule\CyclomaticComplexity" file="app/Actions/Company/SyncCompaniesFromOracleAction.php" method="extractCompanyTypeFromName"/>
+  <violation rule="PHPMD\Rule\Design\NpathComplexity" file="app/Actions/Company/SyncCompaniesFromOracleAction.php" method="extractCompanyTypeFromName"/>
+  <violation rule="PHPMD\Rule\Design\LongMethod" file="app/Actions/Company/SyncCompaniesVatAction.php" method="handle"/>
+  <violation rule="PHPMD\Rule\Design\LongParameterList" file="app/Actions/Invoice/InvoiceCreateAction.php" method="__construct"/>
+  <violation rule="PHPMD\Rule\Design\LongMethod" file="app/Actions/Invoice/InvoiceCreateAction.php" method="handle"/>
+  <violation rule="PHPMD\Rule\Design\CouplingBetweenObjects" file="app/Actions/Invoice/InvoiceUpdateAction.php"/>
+  <violation rule="PHPMD\Rule\Design\LongParameterList" file="app/Actions/Invoice/InvoiceUpdateAction.php" method="__construct"/>
+  <violation rule="PHPMD\Rule\Design\LongMethod" file="app/Actions/Invoice/InvoiceUpdateAction.php" method="handle"/>
+  <violation rule="PHPMD\Rule\CleanCode\ElseExpression" file="app/Actions/Invoice/InvoiceUpdateAction.php"/>
+  <violation rule="PHPMD\Rule\Design\LongParameterList" file="app/DTOs/Company/CompanyCreationDTO.php" method="__construct"/>
+  <violation rule="PHPMD\Rule\Design\LongParameterList" file="app/DTOs/Invoice/InvoiceCreateDTO.php" method="__construct"/>
+  <violation rule="PHPMD\Rule\CleanCode\BooleanArgumentFlag" file="app/DTOs/Invoice/InvoiceCreateDTO.php"/>
+  <violation rule="PHPMD\Rule\Design\LongParameterList" file="app/DTOs/Invoice/InvoiceUpdateDTO.php" method="__construct"/>
+  <violation rule="PHPMD\Rule\Design\LongParameterList" file="app/DTOs/User/UserRegistrationDTO.php" method="__construct"/>
+  <violation rule="PHPMD\Rule\Design\LongParameterList" file="app/DTOs/Vat/VatStatusDTO.php" method="__construct"/>
+  <violation rule="PHPMD\Rule\CleanCode\BooleanArgumentFlag" file="app/DTOs/Vat/VatSummaryDTO.php"/>
+  <violation rule="PHPMD\Rule\Naming\ShortVariable" file="app/Enums/Roles.php"/>
+  <violation rule="PHPMD\Rule\CleanCode\ElseExpression" file="app/Http/Controllers/Api/BusinessEntityController.php"/>
+  <violation rule="PHPMD\Rule\UnusedFormalParameter" file="app/Http/Controllers/CompanyController.php"/>
+  <violation rule="PHPMD\Rule\Design\NumberOfChildren" file="app/Http/Controllers/Controller.php"/>
+  <violation rule="PHPMD\Rule\Design\LongParameterList" file="app/Http/Controllers/InvoiceController.php" method="__construct"/>
+  <violation rule="PHPMD\Rule\CleanCode\BooleanArgumentFlag" file="app/Http/Requests/Concerns/HasInvoiceValidationRules.php"/>
+  <violation rule="PHPMD\Rule\CleanCode\ElseExpression" file="app/Http/Requests/Concerns/HasInvoiceValidationRules.php"/>
+  <violation rule="PHPMD\Rule\UnusedFormalParameter" file="app/Http/Resources/BusinessEntityCollection.php"/>
+  <violation rule="PHPMD\Rule\UnusedFormalParameter" file="app/Http/Resources/BusinessEntityResource.php"/>
+  <violation rule="PHPMD\Rule\UnusedFormalParameter" file="app/Http/Resources/CompanyAnalyticsResource.php"/>
+  <violation rule="PHPMD\Rule\UnusedFormalParameter" file="app/Http/Resources/CompanyCollection.php"/>
+  <violation rule="PHPMD\Rule\UnusedFormalParameter" file="app/Http/Resources/CompanyMinimalCollection.php"/>
+  <violation rule="PHPMD\Rule\UnusedFormalParameter" file="app/Http/Resources/CompanyMinimalResource.php"/>
+  <violation rule="PHPMD\Rule\UnusedFormalParameter" file="app/Http/Resources/CompanyResource.php"/>
+  <violation rule="PHPMD\Rule\UnusedFormalParameter" file="app/Http/Resources/ContactCollection.php"/>
+  <violation rule="PHPMD\Rule\UnusedFormalParameter" file="app/Http/Resources/ContactResource.php"/>
+  <violation rule="PHPMD\Rule\UnusedFormalParameter" file="app/Http/Resources/InvoiceCollection.php"/>
+  <violation rule="PHPMD\Rule\UnusedFormalParameter" file="app/Http/Resources/InvoiceItemResource.php"/>
+  <violation rule="PHPMD\Rule\Design\LongMethod" file="app/Http/Resources/InvoiceResource.php" method="toArray"/>
+  <violation rule="PHPMD\Rule\UnusedFormalParameter" file="app/Http/Resources/InvoiceResource.php"/>
+  <violation rule="PHPMD\Rule\UnusedFormalParameter" file="app/Http/Resources/LatestInvoiceNumberResource.php"/>
+  <violation rule="PHPMD\Rule\UnusedFormalParameter" file="app/Http/Resources/NoteCollection.php"/>
+  <violation rule="PHPMD\Rule\UnusedFormalParameter" file="app/Http/Resources/NoteResource.php"/>
+  <violation rule="PHPMD\Rule\UnusedFormalParameter" file="app/Http/Resources/ReportResource.php"/>
+  <violation rule="PHPMD\Rule\UnusedFormalParameter" file="app/Http/Resources/UserCompanyCollection.php"/>
+  <violation rule="PHPMD\Rule\UnusedFormalParameter" file="app/Http/Resources/UserCompanyResource.php"/>
+  <violation rule="PHPMD\Rule\UnusedFormalParameter" file="app/Http/Resources/UserResource.php"/>
+  <violation rule="PHPMD\Rule\UnusedFormalParameter" file="app/Http/Resources/VatStatusHistoryCollection.php"/>
+  <violation rule="PHPMD\Rule\UnusedFormalParameter" file="app/Http/Resources/VatStatusHistoryResource.php"/>
+  <violation rule="PHPMD\Rule\UnusedFormalParameter" file="app/Policies/InvoicePolicy.php"/>
+  <violation rule="PHPMD\Rule\UnusedFormalParameter" file="app/Policies/UserCompanyPolicy.php"/>
+  <violation rule="PHPMD\Rule\Design\CouplingBetweenObjects" file="app/Providers/AppServiceProvider.php"/>
+  <violation rule="PHPMD\Rule\UnusedFormalParameter" file="app/Rules/EmailWhitelisted.php"/>
+  <violation rule="PHPMD\Rule\UnusedFormalParameter" file="app/Rules/Paragraph7aReverseChargeRule.php"/>
+  <violation rule="PHPMD\Rule\UnusedFormalParameter" file="app/Rules/VatRateProhibitedForNonVatPayer.php"/>
+  <violation rule="PHPMD\Rule\UnusedFormalParameter" file="app/Rules/VatRateRequiredForVatPayer.php"/>
+  <violation rule="PHPMD\Rule\Design\LongClass" file="app/Services/FinancialDataService.php"/>
+  <violation rule="PHPMD\Rule\Design\LongMethod" file="app/Services/FinancialDataService.php" method="extractZipFile"/>
+  <violation rule="PHPMD\Rule\CyclomaticComplexity" file="app/Services/FinancialDataService.php" method="processCompanyData"/>
+  <violation rule="PHPMD\Rule\Design\LongMethod" file="app/Services/FinancialDataService.php" method="processCompanyData"/>
+  <violation rule="PHPMD\Rule\CyclomaticComplexity" file="app/Services/FinancialDataService.php" method="processDicData"/>
+  <violation rule="PHPMD\Rule\Design\LongMethod" file="app/Services/FinancialDataService.php" method="processDicData"/>
+  <violation rule="PHPMD\Rule\Design\LongMethod" file="app/Services/FinancialDataService.php" method="extractVatZipFile"/>
+  <violation rule="PHPMD\Rule\CyclomaticComplexity" file="app/Services/FinancialDataService.php" method="processVatData"/>
+  <violation rule="PHPMD\Rule\Design\LongMethod" file="app/Services/FinancialDataService.php" method="processVatData"/>
+  <violation rule="PHPMD\Rule\Design\LongParameterList" file="app/Services/Interfaces/PayBySquare.php" method="generateQrCode"/>
+  <violation rule="PHPMD\Rule\Design\LongParameterList" file="app/Services/Interfaces/VatService.php" method="changeVatStatus"/>
+  <violation rule="PHPMD\Rule\CleanCode\BooleanArgumentFlag" file="app/Services/Interfaces/VatService.php"/>
+  <violation rule="PHPMD\Rule\CleanCode\BooleanArgumentFlag" file="app/Services/Invoice/InvoiceTotalCalculatorService.php"/>
+  <violation rule="PHPMD\Rule\CleanCode\BooleanArgumentFlag" file="app/Services/Invoice/VatCalculatorService.php"/>
+  <violation rule="PHPMD\Rule\Design\LongMethod" file="app/Services/InvoicePdfService.php" method="generatePdf"/>
+  <violation rule="PHPMD\Rule\Design\LongClass" file="app/Services/OracleCloudStorageService.php"/>
+  <violation rule="PHPMD\Rule\Naming\ShortVariable" file="app/Services/OracleCloudStorageService.php"/>
+  <violation rule="PHPMD\Rule\CyclomaticComplexity" file="app/Services/OracleCloudStorageService.php" method="streamJsonFromGzip"/>
+  <violation rule="PHPMD\Rule\Design\NpathComplexity" file="app/Services/OracleCloudStorageService.php" method="streamJsonFromGzip"/>
+  <violation rule="PHPMD\Rule\Design\LongMethod" file="app/Services/OracleCloudStorageService.php" method="streamJsonFromGzip"/>
+  <violation rule="PHPMD\Rule\CyclomaticComplexity" file="app/Services/OracleCloudStorageService.php" method="streamJsonRecords"/>
+  <violation rule="PHPMD\Rule\Design\NpathComplexity" file="app/Services/OracleCloudStorageService.php" method="streamJsonRecords"/>
+  <violation rule="PHPMD\Rule\Design\LongMethod" file="app/Services/OracleCloudStorageService.php" method="streamJsonRecords"/>
+  <violation rule="PHPMD\Rule\CleanCode\ElseExpression" file="app/Services/OracleCloudStorageService.php"/>
+  <violation rule="PHPMD\Rule\CyclomaticComplexity" file="app/Services/OracleCloudStorageService.php" method="processJsonCharacter"/>
+  <violation rule="PHPMD\Rule\Design\NpathComplexity" file="app/Services/OracleCloudStorageService.php" method="processJsonCharacter"/>
+  <violation rule="PHPMD\Rule\Design\LongMethod" file="app/Services/OracleCloudStorageService.php" method="processJsonCharacter"/>
+  <violation rule="PHPMD\Rule\Design\LongParameterList" file="app/Services/OracleCloudStorageService.php" method="processJsonCharacter"/>
+  <violation rule="PHPMD\Rule\Design\LongMethod" file="app/Services/PayBySquareService.php" method="generateQrCode"/>
+  <violation rule="PHPMD\Rule\Design\LongParameterList" file="app/Services/PayBySquareService.php" method="generateQrCode"/>
+  <violation rule="PHPMD\Rule\Design\LongMethod" file="app/Services/PayBySquareService.php" method="removeAccents"/>
+  <violation rule="PHPMD\Rule\Design\LongMethod" file="app/Services/ScraperService.php" method="fetchCompanyDataByIco"/>
+  <violation rule="PHPMD\Rule\Design\LongMethod" file="app/Services/VatService.php" method="changeVatStatus"/>
+  <violation rule="PHPMD\Rule\Design\LongParameterList" file="app/Services/VatService.php" method="changeVatStatus"/>
+  <violation rule="PHPMD\Rule\CleanCode\BooleanArgumentFlag" file="app/Services/VatService.php"/>
+</phpmd-baseline>
