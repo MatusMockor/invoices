@@ -52,7 +52,7 @@ final class TempFileManager
 
         $files = $disk->files($this->tempDir);
         foreach ($files as $file) {
-            if (str_ends_with(strtolower($file), '.' . $extension)) {
+            if (str_ends_with(strtolower($file), '.'.$extension)) {
                 $disk->delete($file);
             }
         }

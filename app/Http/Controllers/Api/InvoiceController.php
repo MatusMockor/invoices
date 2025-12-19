@@ -10,6 +10,7 @@ use App\Actions\Invoice\InvoiceDeleteAction;
 use App\Actions\Invoice\InvoiceUpdateAction;
 use App\Actions\Invoice\InvoiceUpdateStatusAction;
 use App\DataTransferObjects\PayBySquareData;
+use App\DataTransferObjects\PaymentSymbols;
 use App\DTOs\Invoice\InvoiceCreateDTO;
 use App\DTOs\Invoice\InvoiceUpdateDTO;
 use App\Http\Controllers\Controller;
@@ -183,10 +184,12 @@ final class InvoiceController extends Controller
             iban: str_replace(' ', '', $userCompany->iban),
             swift: $userCompany->swift,
             amount: $invoice->total_amount,
-            variableSymbol: $invoice->variable_symbol ?? '',
-            constantSymbol: $invoice->constant_symbol ?? '',
-            specificSymbol: $invoice->specific_symbol ?? '',
-            note: 'Faktura ' . $invoice->invoice_number,
+            symbols: PaymentSymbols::fromInvoice(
+                $invoice->variable_symbol,
+                $invoice->constant_symbol,
+                $invoice->specific_symbol
+            ),
+            note: 'Faktura '.$invoice->invoice_number,
             recipient: $userCompany->name,
         );
 

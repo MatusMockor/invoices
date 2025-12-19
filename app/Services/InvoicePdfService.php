@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Services;
 
 use App\DataTransferObjects\PayBySquareData;
+use App\DataTransferObjects\PaymentSymbols;
 use App\Enums\InvoiceTemplate;
 use App\Enums\VatPayerStatus;
 use App\Models\Invoice;
@@ -88,7 +89,7 @@ final class InvoicePdfService implements InvoicePdfServiceContract
             iban: $invoice->supplierCompany->iban,
             swift: $invoice->supplierCompany->swift,
             amount: $invoice->total_amount,
-            variableSymbol: substr($invoice->invoice_number, 0, 10),
+            symbols: new PaymentSymbols(variable: substr($invoice->invoice_number, 0, 10)),
             note: "Invoice {$invoice->invoice_number}",
             recipient: $invoice->supplierCompany->name,
         );

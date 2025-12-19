@@ -4,8 +4,6 @@
     $isVatPayerStatus = $invoice->supplier_vat_payer_status === VatPayerStatus::VAT_PAYER
         || $invoice->supplier_vat_payer_status === VatPayerStatus::VAT_PAYER_PARAGRAPH_7;
     $isRegisteredForVat = $invoice->supplier_vat_payer_status === VatPayerStatus::REGISTERED_PARAGRAPH_7A;
-    $isNotVatPayer = $invoice->supplier_vat_payer_status === VatPayerStatus::NOT_VAT_PAYER
-        || $invoice->supplier_vat_payer_status === null;
     $darkTheme = $darkTheme ?? false;
 @endphp
 
@@ -39,21 +37,8 @@
     @endif
 @endif
 
-{{-- Non-VAT Payer Text --}}
-@if($isNotVatPayer)
-    @if($darkTheme)
-        <div class="mb-3 p-3 rounded-xl border" style="background: rgba(255, 255, 255, 0.05); border-color: rgba(255, 255, 255, 0.1);">
-            <p class="text-sm text-slate-300">Nie som platca DPH</p>
-        </div>
-    @else
-        <div class="legal-text non-vat-payer mb-3 p-3 bg-gray-50 border border-gray-200 rounded">
-            <p class="text-sm text-gray-700">Nie som platca DPH</p>
-        </div>
-    @endif
-@endif
-
-{{-- Special Text (if not duplicate of non-VAT payer message) --}}
-@if($invoice->special_text && !str_contains($invoice->special_text, 'Nie som platca DPH'))
+{{-- Special Text --}}
+@if($invoice->special_text)
     @if($darkTheme)
         <div class="mb-3 p-3 rounded-xl border" style="background: rgba(255, 255, 255, 0.05); border-color: rgba(255, 255, 255, 0.1);">
             <p class="text-sm text-slate-300">{{ $invoice->special_text }}</p>

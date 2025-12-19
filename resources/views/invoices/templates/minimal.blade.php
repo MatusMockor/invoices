@@ -46,7 +46,7 @@
             <div class="mt-3 text-sm text-gray-600 space-y-0.5">
                 <p>IČO: {{ $invoice->company_ico ?? 'N/A' }}</p>
                 <p>DIČ: {{ $invoice->company_dic ?? 'N/A' }}</p>
-                @if($showIcDph && ($invoice->company_ic_dph ?? false))
+                @if($invoice->company_ic_dph ?? false)
                     <p>IČ DPH: {{ $invoice->company_ic_dph }}</p>
                 @endif
             </div>
@@ -96,13 +96,13 @@
                     <td class="py-4">{{ $item->description }}</td>
                     <td class="text-right py-4">{{ number_format($item->quantity, 0, ',', ' ') }}</td>
                     @if($isVatPayer)
-                        <td class="text-right py-4">{{ number_format($item->unit_price_without_tax ?? $item->unit_price, 2, ',', ' ') }} {{ $invoice->currency }}</td>
+                        <td class="text-right py-4">{{ number_format($item->unit_price_without_tax, 2, ',', ' ') }} {{ $invoice->currency }}</td>
                         <td class="text-right py-4">{{ number_format($item->tax_rate ?? 0, 0) }}%</td>
                         <td class="text-right py-4 font-semibold">
                             {{ number_format($item->total_price, 2, ',', ' ') }} {{ $invoice->currency }}
                         </td>
                     @else
-                        <td class="text-right py-4">{{ number_format($item->unit_price, 2, ',', ' ') }} {{ $invoice->currency }}</td>
+                        <td class="text-right py-4">{{ number_format($item->unit_price_without_tax, 2, ',', ' ') }} {{ $invoice->currency }}</td>
                         <td class="text-right py-4 font-semibold">
                             {{ number_format($item->total_price, 2, ',', ' ') }} {{ $invoice->currency }}
                         </td>
