@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Services;
 
+use App\DataTransferObjects\PayBySquareData;
 use App\Enums\InvoiceTemplate;
 use App\Enums\VatPayerStatus;
 use App\Models\Invoice;
@@ -83,18 +84,16 @@ final class InvoicePdfService implements InvoicePdfServiceContract
             return null;
         }
 
-        $variableSymbol = substr($invoice->invoice_number, 0, 10);
-
-        return $this->payBySquare->generateQrCode(
-            $invoice->supplierCompany->iban,
-            $invoice->supplierCompany->swift,
-            $invoice->total_amount,
-            $variableSymbol,
-            '',
-            '',
-            "Invoice {$invoice->invoice_number}",
-            $invoice->supplierCompany->name
+        $data = new PayBySquareData(
+            iban: $invoice->supplierCompany->iban,
+            swift: $invoice->supplierCompany->swift,
+            amount: $invoice->total_amount,
+            variableSymbol: substr($invoice->invoice_number, 0, 10),
+            note: "Invoice {$invoice->invoice_number}",
+            recipient: $invoice->supplierCompany->name,
         );
+
+        return $this->payBySquare->generateQrCode($data);
     }
 
     private function canGenerateQrCode(Invoice $invoice): bool

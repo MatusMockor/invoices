@@ -4,10 +4,8 @@ declare(strict_types=1);
 
 namespace App\Services;
 
-use App\DTOs\Vat\VatCalculationDTO;
 use App\DTOs\Vat\VatStatusChangeDTO;
 use App\DTOs\Vat\VatStatusDTO;
-use App\DTOs\Vat\VatSummaryDTO;
 use App\Enums\VatPayerStatus;
 use App\Enums\VatPeriod;
 use App\Events\VatStatusChanged;
@@ -22,9 +20,7 @@ use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 
 /**
- * Service for VAT status management and calculations.
- *
- * @SuppressWarnings(PHPMD.CouplingBetweenObjects)
+ * Service for VAT status management.
  */
 final class VatService implements VatServiceInterface
 {
@@ -76,7 +72,7 @@ final class VatService implements VatServiceInterface
         $this->validateVatPeriodRequired($change);
         $period = $change->getPeriodForStatus();
 
-        DB::transaction(function () use ($company, $change, $period) {
+        DB::transaction(function () use ($company, $change, $period): void {
             $this->ensureNoOverlappingRecord($company, $change->validFrom);
             $this->closePreviousActiveRecord($company, $change->validFrom);
             $this->createVatStatusHistory($company, $change, $period);
@@ -84,30 +80,6 @@ final class VatService implements VatServiceInterface
 
             event(new VatStatusChanged($company, $change->status, $period, $change->validFrom));
         });
-    }
-
-    public function calculateVat(float $amountWithoutVat, float $vatRate): VatCalculationDTO
-    {
-        $base = round($amountWithoutVat, 2);
-        $vatAmount = round($base * ($vatRate / 100), 2);
-        $total = round($base + $vatAmount, 2);
-
-        return new VatCalculationDTO(
-            base: $base,
-            vatAmount: $vatAmount,
-            total: $total,
-            vatRate: $vatRate,
-        );
-    }
-
-    public function calculateVatSummary(array $items): VatSummaryDTO
-    {
-        return VatSummaryDTO::fromItems($items);
-    }
-
-    public function calculateVatSummaryForReverseCharge(array $items): VatSummaryDTO
-    {
-        return VatSummaryDTO::fromItemsWithReverseCharge($items);
     }
 
     /**

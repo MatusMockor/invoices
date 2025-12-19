@@ -39,12 +39,14 @@ use App\Services\Interfaces\OracleCloudStorageService as OracleCloudStorageServi
 use App\Services\Interfaces\PayBySquare as PayBySquareContract;
 use App\Services\Interfaces\ReportService as ReportServiceContract;
 use App\Services\Interfaces\ScraperService as ScraperServiceContract;
+use App\Services\Interfaces\VatCalculator as VatCalculatorContract;
 use App\Services\Interfaces\VatService as VatServiceContract;
 use App\Services\InvoicePdfService as InvoicePdfServiceImpl;
 use App\Services\OracleCloudStorageService;
 use App\Services\PayBySquareService;
 use App\Services\ReportService;
 use App\Services\ScraperService as ScraperServiceImpl;
+use App\Services\VatCalculatorService;
 use App\Services\VatService;
 use Illuminate\Support\Facades\Gate;
 use Illuminate\Support\ServiceProvider;
@@ -83,6 +85,7 @@ class AppServiceProvider extends ServiceProvider
         $this->app->bind(FinancialDataServiceContract::class, FinancialDataServiceImpl::class);
         $this->app->bind(OracleCloudStorageServiceContract::class, OracleCloudStorageService::class);
         $this->app->bind(VatServiceContract::class, VatService::class);
+        $this->app->bind(VatCalculatorContract::class, VatCalculatorService::class);
     }
 
     /**
