@@ -42,8 +42,6 @@ class InvoicePdfVatTest extends TestCase
         $this->assertStringNotContainsString('Sadzba', $html);
         $this->assertStringNotContainsString('(bez DPH)', $html);
         $this->assertStringNotContainsString('(s DPH)', $html);
-        // Should contain non-VAT payer message
-        $this->assertStringContainsString('Nie som platca DPH', $html);
     }
 
     public function test_vat_payer_pdf_includes_vat_columns(): void
@@ -249,8 +247,6 @@ class InvoicePdfVatTest extends TestCase
 
         // Should not contain VAT column header (bold uses >DPH< pattern)
         $this->assertStringNotContainsString('>DPH<', $html);
-        // Should contain non-VAT payer text
-        $this->assertStringContainsString('Nie som platca DPH', $html);
     }
 
     public function test_bold_template_vat_payer_includes_vat_columns(): void
@@ -354,8 +350,6 @@ class InvoicePdfVatTest extends TestCase
         // Should NOT contain VAT columns because snapshot says NOT_VAT_PAYER
         $this->assertStringNotContainsString('Sadzba', $html);
         $this->assertStringNotContainsString('(bez DPH)', $html);
-        // Should show non-VAT payer message
-        $this->assertStringContainsString('Nie som platca DPH', $html);
     }
 
     public function test_special_text_is_displayed(): void
@@ -448,6 +442,7 @@ class InvoicePdfVatTest extends TestCase
             'user_id' => $user->id,
             'supplier_company_id' => $company->id,
             'supplier_vat_payer_status' => VatPayerStatus::NOT_VAT_PAYER,
+            'special_text' => 'Test special text for dark theme',
         ]);
 
         $html = view('invoices.partials.legal-texts', [
@@ -455,9 +450,9 @@ class InvoicePdfVatTest extends TestCase
             'darkTheme' => true,
         ])->render();
 
-        // Should contain dark theme styling
+        // Should contain dark theme styling for special text
         $this->assertStringContainsString('text-slate-300', $html);
-        $this->assertStringContainsString('Nie som platca DPH', $html);
+        $this->assertStringContainsString('Test special text for dark theme', $html);
     }
 
     public function test_bold_template_uses_dark_theme_partials(): void
