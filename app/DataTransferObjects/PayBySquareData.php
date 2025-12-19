@@ -13,9 +13,7 @@ final readonly class PayBySquareData
         public string $iban,
         public string $swift,
         public float $amount,
-        public string $variableSymbol = '',
-        public string $constantSymbol = '',
-        public string $specificSymbol = '',
+        public PaymentSymbols $symbols = new PaymentSymbols,
         public string $note = '',
         public ?string $recipient = null,
     ) {}

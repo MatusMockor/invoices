@@ -54,10 +54,10 @@ final class XmlStreamProcessor
     private function resolveAndValidatePath(FinancialDataState $state, string $logPrefix): string
     {
         $disk = $this->getDisk();
-        $extractedPath = $this->tempDir . '/' . $state->extractedFileName;
+        $extractedPath = $this->tempDir.'/'.$state->extractedFileName;
 
         if (! $disk->exists($extractedPath)) {
-            throw new RuntimeException("Extracted {$logPrefix} file does not exist: " . $extractedPath);
+            throw new RuntimeException("Extracted {$logPrefix} file does not exist: ".$extractedPath);
         }
 
         return $disk->path($extractedPath);
@@ -66,7 +66,7 @@ final class XmlStreamProcessor
     /**
      * Stream and process XML items.
      *
-     * @param array<string, int> $counts
+     * @param  array<string, int>  $counts
      * @return Generator<array<string, mixed>>
      */
     private function streamItems(XMLReader $reader, FinancialDataParser $parser, array &$counts): Generator
@@ -84,6 +84,7 @@ final class XmlStreamProcessor
             $parsedData = $parser->parse($itemArray);
             if (! $parsedData) {
                 $counts['skipped']++;
+
                 continue;
             }
 
@@ -99,7 +100,7 @@ final class XmlStreamProcessor
     /**
      * Log processing results.
      *
-     * @param array<string, int> $counts
+     * @param  array<string, int>  $counts
      */
     private function logResults(string $logPrefix, array $counts): void
     {
@@ -115,10 +116,10 @@ final class XmlStreamProcessor
      */
     private function openXmlReader(string $fullPath, string $logPrefix): XMLReader
     {
-        $reader = new XMLReader();
+        $reader = new XMLReader;
 
         if (! $reader->open($fullPath)) {
-            throw new RuntimeException("Failed to open {$logPrefix} XML file: " . $fullPath);
+            throw new RuntimeException("Failed to open {$logPrefix} XML file: ".$fullPath);
         }
 
         return $reader;

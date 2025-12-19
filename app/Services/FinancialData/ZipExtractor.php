@@ -27,13 +27,13 @@ final class ZipExtractor
     public function extract(string $zipFileName, string $logPrefix): FinancialDataState
     {
         $disk = $this->getDisk();
-        $zipPath = $this->tempDir . '/' . $zipFileName;
+        $zipPath = $this->tempDir.'/'.$zipFileName;
         $zipFullPath = $disk->path($zipPath);
 
-        $zip = new ZipArchive();
+        $zip = new ZipArchive;
 
         if ($zip->open($zipFullPath) !== true) {
-            throw new RuntimeException("Failed to open {$logPrefix} file: " . $zipFullPath);
+            throw new RuntimeException("Failed to open {$logPrefix} file: ".$zipFullPath);
         }
 
         $filesInZip = $this->getFilesInZip($zip);
@@ -43,7 +43,7 @@ final class ZipExtractor
 
         if (! $fileName) {
             $zip->close();
-            throw new RuntimeException("No XML file found in {$logPrefix} archive. Files: " . implode(', ', $filesInZip));
+            throw new RuntimeException("No XML file found in {$logPrefix} archive. Files: ".implode(', ', $filesInZip));
         }
 
         Log::info("Found XML data file in {$logPrefix}", ['file' => $fileName]);
@@ -52,7 +52,7 @@ final class ZipExtractor
 
         if (! $zip->extractTo($extractPath, $fileName)) {
             $zip->close();
-            throw new RuntimeException("Failed to extract file from {$logPrefix}: " . $fileName);
+            throw new RuntimeException("Failed to extract file from {$logPrefix}: ".$fileName);
         }
 
         $zip->close();
@@ -85,7 +85,7 @@ final class ZipExtractor
     /**
      * Find XML file in list of files.
      *
-     * @param array<string> $files
+     * @param  array<string>  $files
      */
     private function findXmlFile(array $files): ?string
     {

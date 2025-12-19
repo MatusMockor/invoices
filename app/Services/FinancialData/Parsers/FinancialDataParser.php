@@ -15,7 +15,7 @@ interface FinancialDataParser
     /**
      * Parse an XML item array into structured data.
      *
-     * @param array<string, string> $item Raw XML item as associative array
+     * @param  array<string, string>  $item  Raw XML item as associative array
      * @return array<string, mixed>|null Parsed data or null if item should be skipped
      */
     public function parse(array $item): ?array;

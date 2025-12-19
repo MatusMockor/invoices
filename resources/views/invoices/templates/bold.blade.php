@@ -60,7 +60,7 @@
             <div class="space-y-0.5 pt-2 border-t border-cyan-500/30">
                 <p class="text-[10px] text-slate-400">IČO: <span class="text-white font-semibold">{{ $invoice->company_ico ?? 'N/A' }}</span></p>
                 <p class="text-[10px] text-slate-400">DIČ: <span class="text-white font-semibold">{{ $invoice->company_dic ?? 'N/A' }}</span></p>
-                @if($showIcDph && ($invoice->company_ic_dph ?? false))
+                @if($invoice->company_ic_dph ?? false)
                     <p class="text-[10px] text-slate-400">IČ DPH: <span class="text-white font-semibold">{{ $invoice->company_ic_dph }}</span></p>
                 @endif
             </div>
@@ -143,13 +143,13 @@
                         <td class="py-2 px-2.5 text-sm text-white font-medium">{{ $item->description }}</td>
                         <td class="text-right py-2 px-2.5 text-sm text-slate-300">{{ number_format($item->quantity, 0, ',', ' ') }}</td>
                         @if($isVatPayer)
-                            <td class="text-right py-2 px-2.5 text-sm text-slate-300">{{ number_format($item->unit_price_without_tax ?? $item->unit_price, 2, ',', ' ') }} {{ $invoice->currency }}</td>
+                            <td class="text-right py-2 px-2.5 text-sm text-slate-300">{{ number_format($item->unit_price_without_tax, 2, ',', ' ') }} {{ $invoice->currency }}</td>
                             <td class="text-right py-2 px-2.5 text-sm text-slate-300">{{ number_format($item->tax_rate ?? 0, 0) }}%</td>
                             <td class="text-right py-2 px-2.5 text-sm font-bold text-white">
                                 {{ number_format($item->total_price, 2, ',', ' ') }} {{ $invoice->currency }}
                             </td>
                         @else
-                            <td class="text-right py-2 px-2.5 text-sm text-slate-300">{{ number_format($item->unit_price, 2, ',', ' ') }} {{ $invoice->currency }}</td>
+                            <td class="text-right py-2 px-2.5 text-sm text-slate-300">{{ number_format($item->unit_price_without_tax, 2, ',', ' ') }} {{ $invoice->currency }}</td>
                             <td class="text-right py-2 px-2.5 text-sm font-bold text-white">
                                 {{ number_format($item->total_price, 2, ',', ' ') }} {{ $invoice->currency }}
                             </td>

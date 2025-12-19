@@ -17,7 +17,7 @@ namespace App\Services\FinancialData\Parsers;
 final class DicDataParser implements FinancialDataParser
 {
     /**
-     * @param array<string, string> $item
+     * @param  array<string, string>  $item
      * @return array<string, mixed>|null
      */
     public function parse(array $item): ?array
@@ -37,7 +37,7 @@ final class DicDataParser implements FinancialDataParser
     /**
      * Extract and trim value from array, returning null if empty.
      *
-     * @param array<string, string> $item
+     * @param  array<string, string>  $item
      */
     private function extractValue(array $item, string $key): ?string
     {

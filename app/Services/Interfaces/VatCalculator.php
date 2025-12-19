@@ -17,14 +17,14 @@ interface VatCalculator
     /**
      * Calculate VAT summary from invoice items.
      *
-     * @param array<int, array{subtotal: float, tax_rate: float, tax_amount: float}> $items
+     * @param  array<int, array{subtotal: float, tax_rate: float, tax_amount: float}>  $items
      */
     public function calculateVatSummary(array $items): VatSummaryDTO;
 
     /**
      * Calculate VAT summary for reverse charge (VAT = 0).
      *
-     * @param array<int, array{subtotal: float, tax_rate: float, tax_amount: float}> $items
+     * @param  array<int, array{subtotal: float, tax_rate: float, tax_amount: float}>  $items
      */
     public function calculateVatSummaryForReverseCharge(array $items): VatSummaryDTO;
 }

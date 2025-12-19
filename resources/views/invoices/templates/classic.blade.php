@@ -35,7 +35,7 @@
                 <div class="mt-2 pt-2 border-t border-gray-200">
                     <p class="text-xs text-gray-600">IČO: {{ $invoice->company_ico ?? 'N/A' }}</p>
                     <p class="text-xs text-gray-600">DIČ: {{ $invoice->company_dic ?? 'N/A' }}</p>
-                    @if($isVatPayer && ($invoice->company_ic_dph ?? false))
+                    @if($invoice->company_ic_dph ?? false)
                         <p class="text-xs text-gray-600">IČ DPH: {{ $invoice->company_ic_dph }}</p>
                     @endif
                 </div>
@@ -44,7 +44,7 @@
     </div>
 
     <!-- Payment Info with QR Code -->
-    <div class="border-2 border-purple-200 rounded-lg p-4 mb-4 bg-gradient-to-br from-purple-50/50 to-white">
+    <div class="border-2 border-purple-200 rounded-lg p-4 mb-4 bg-white">
         <h3 class="font-bold mb-2 text-sm text-purple-600 border-b border-purple-200 pb-1">Platobné údaje</h3>
         <div class="flex gap-4 items-start">
             <div class="flex-1 space-y-2">
@@ -128,14 +128,14 @@
                         <td class="py-3 px-2">{{ $item->description }}</td>
                         <td class="text-right py-3 px-2">{{ number_format($item->quantity, 0, ',', ' ') }}</td>
                         @if($isVatPayer)
-                            <td class="text-right py-3 px-2">{{ number_format($item->unit_price_without_tax ?? $item->unit_price, 2, ',', ' ') }} {{ $invoice->currency }}</td>
+                            <td class="text-right py-3 px-2">{{ number_format($item->unit_price_without_tax, 2, ',', ' ') }} {{ $invoice->currency }}</td>
                             <td class="text-right py-3 px-2">{{ number_format($item->tax_rate ?? 0, 0) }}%</td>
                             <td class="text-right py-3 px-2">{{ number_format($item->tax_amount ?? 0, 2, ',', ' ') }} {{ $invoice->currency }}</td>
                             <td class="text-right py-3 px-2 font-semibold">
                                 {{ number_format($item->total_price, 2, ',', ' ') }} {{ $invoice->currency }}
                             </td>
                         @else
-                            <td class="text-right py-3 px-2">{{ number_format($item->unit_price, 2, ',', ' ') }} {{ $invoice->currency }}</td>
+                            <td class="text-right py-3 px-2">{{ number_format($item->unit_price_without_tax, 2, ',', ' ') }} {{ $invoice->currency }}</td>
                             <td class="text-right py-3 px-2 font-semibold">
                                 {{ number_format($item->total_price, 2, ',', ' ') }} {{ $invoice->currency }}
                             </td>

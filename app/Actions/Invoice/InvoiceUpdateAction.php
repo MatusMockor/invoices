@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Actions\Invoice;
 
 use App\Actions\Company\CompanyFetchOrCreateAction;
+use App\DTOs\Invoice\InvoiceUpdateContext;
 use App\DTOs\Invoice\InvoiceUpdateDTO;
 use App\Models\Company;
 use App\Models\Invoice;
@@ -33,9 +34,16 @@ final readonly class InvoiceUpdateAction
     {
         return DB::transaction(function () use ($invoice, $dto, $supplierCompanyId): Invoice {
             $isVatPayer = $this->determineVatPayerStatus($supplierCompanyId, $dto->issueDate ?? $invoice->issue_date);
-            $updateData = $this->buildBaseUpdateData($dto, $supplierCompanyId, $isVatPayer);
 
-            $updateData = $this->applyCompanyData($updateData, $dto, $invoice, $isVatPayer, $supplierCompanyId);
+            $context = new InvoiceUpdateContext(
+                invoice: $invoice,
+                dto: $dto,
+                supplierCompanyId: $supplierCompanyId,
+                isVatPayer: $isVatPayer,
+            );
+
+            $updateData = $this->buildBaseUpdateData($dto, $supplierCompanyId, $isVatPayer);
+            $updateData = $this->applyCompanyData($updateData, $context);
 
             $this->invoiceRepository->update($invoice, $updateData);
 
@@ -86,24 +94,19 @@ final readonly class InvoiceUpdateAction
      * @param  array<string, mixed>  $updateData
      * @return array<string, mixed>
      */
-    private function applyCompanyData(
-        array $updateData,
-        InvoiceUpdateDTO $dto,
-        Invoice $invoice,
-        bool $isVatPayer,
-        int $supplierCompanyId
-    ): array {
-        if ($dto->useCustomCompany === true) {
-            $updateData = $this->applyCustomCompanyData($updateData, $dto);
+    private function applyCompanyData(array $updateData, InvoiceUpdateContext $context): array
+    {
+        if ($context->dto->useCustomCompany === true) {
+            $updateData = $this->applyCustomCompanyData($updateData, $context->dto);
 
-            return $this->applyItemsData($updateData, $dto, $invoice, $isVatPayer, $supplierCompanyId);
+            return $this->applyItemsData($updateData, $context);
         }
 
-        if ($dto->useCustomCompany === false && $dto->clientIco !== null) {
-            $updateData = $this->applyStandardCompanyData($updateData, $dto);
+        if ($context->dto->useCustomCompany === false && $context->dto->clientIco !== null) {
+            $updateData = $this->applyStandardCompanyData($updateData, $context->dto);
         }
 
-        return $this->applyItemsData($updateData, $dto, $invoice, $isVatPayer, $supplierCompanyId);
+        return $this->applyItemsData($updateData, $context);
     }
 
     /**
@@ -150,33 +153,28 @@ final readonly class InvoiceUpdateAction
      * @param  array<string, mixed>  $updateData
      * @return array<string, mixed>
      */
-    private function applyItemsData(
-        array $updateData,
-        InvoiceUpdateDTO $dto,
-        Invoice $invoice,
-        bool $isVatPayer,
-        int $supplierCompanyId
-    ): array {
-        if ($dto->items === null) {
+    private function applyItemsData(array $updateData, InvoiceUpdateContext $context): array
+    {
+        if ($context->dto->items === null) {
             return $updateData;
         }
 
-        $reverseCharge = $dto->reverseCharge ?? $invoice->reverse_charge ?? false;
-        $itemsForCalculation = $this->prepareItemsWithTaxRate($dto->items, $isVatPayer, [
-            'invoice_id' => $invoice->id,
-            'invoice_number' => $dto->invoiceNumber ?? $invoice->invoice_number,
-            'supplier_id' => $supplierCompanyId,
-            'user_id' => $invoice->user_id,
+        $reverseCharge = $context->dto->reverseCharge ?? $context->invoice->reverse_charge ?? false;
+        $itemsForCalculation = $this->prepareItemsWithTaxRate($context->dto->items, $context->isVatPayer, [
+            'invoice_id' => $context->invoice->id,
+            'invoice_number' => $context->dto->invoiceNumber ?? $context->invoice->invoice_number,
+            'supplier_id' => $context->supplierCompanyId,
+            'user_id' => $context->invoice->user_id,
         ]);
 
         $totals = $reverseCharge
-            ? $this->totalCalculator->calculateTotalsWithReverseCharge($itemsForCalculation, $dto->discountAmount)
-            : $this->totalCalculator->calculateTotals($itemsForCalculation, $dto->discountAmount);
+            ? $this->totalCalculator->calculateTotalsWithReverseCharge($itemsForCalculation, $context->dto->discountAmount)
+            : $this->totalCalculator->calculateTotals($itemsForCalculation, $context->dto->discountAmount);
         $updateData['subtotal'] = $totals['subtotal'];
         $updateData['tax_amount'] = $totals['tax_amount'];
         $updateData['total_amount'] = $totals['total_amount'];
 
-        $this->itemsHandler->updateItems($invoice, $itemsForCalculation);
+        $this->itemsHandler->updateItems($context->invoice, $itemsForCalculation);
 
         return $updateData;
     }

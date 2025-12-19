@@ -54,9 +54,9 @@ final class FinancialDataService implements FinancialDataServiceContract
         $this->xmlProcessor = new XmlStreamProcessor($this->diskName, $this->tempDir);
         $this->fileManager = new TempFileManager($this->diskName, $this->tempDir);
 
-        $this->companyParser = new CompanyDataParser();
-        $this->dicParser = new DicDataParser();
-        $this->vatParser = new VatDataParser();
+        $this->companyParser = new CompanyDataParser;
+        $this->dicParser = new DicDataParser;
+        $this->vatParser = new VatDataParser;
     }
 
     /**
@@ -89,7 +89,7 @@ final class FinancialDataService implements FinancialDataServiceContract
     /**
      * Parse XML element into company data array.
      *
-     * @param array<string, string> $item
+     * @param  array<string, string>  $item
      * @return array<string, mixed>|null
      */
     public function parseCompanyData(array $item): ?array
@@ -127,7 +127,7 @@ final class FinancialDataService implements FinancialDataServiceContract
     /**
      * Parse DIC XML element into data array.
      *
-     * @param array<string, string> $item
+     * @param  array<string, string>  $item
      * @return array<string, mixed>|null
      */
     public function parseDicData(array $item): ?array
@@ -165,7 +165,7 @@ final class FinancialDataService implements FinancialDataServiceContract
     /**
      * Parse VAT XML element into data array.
      *
-     * @param array<string, string> $item
+     * @param  array<string, string>  $item
      * @return array<string, mixed>|null
      */
     public function parseVatData(array $item): ?array

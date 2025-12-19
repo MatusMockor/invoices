@@ -32,10 +32,10 @@ final class FileDownloader
      */
     public function download(string $url, string $fileName, string $logPrefix): void
     {
-        Log::info("Downloading {$logPrefix} from: " . $url);
+        Log::info("Downloading {$logPrefix} from: ".$url);
 
         $disk = $this->getDisk();
-        $filePath = $this->tempDir . '/' . $fileName;
+        $filePath = $this->tempDir.'/'.$fileName;
         $fullPath = $disk->path($filePath);
 
         $response = Http::timeout(self::DOWNLOAD_TIMEOUT_SECONDS)
@@ -48,11 +48,11 @@ final class FileDownloader
         if (! $response->successful()) {
             $this->deleteFileIfExists($disk, $filePath);
 
-            throw new RuntimeException("Failed to download {$logPrefix}: HTTP " . $response->status());
+            throw new RuntimeException("Failed to download {$logPrefix}: HTTP ".$response->status());
         }
 
         if (! $disk->exists($filePath)) {
-            throw new RuntimeException("{$logPrefix} download completed but file does not exist: " . $filePath);
+            throw new RuntimeException("{$logPrefix} download completed but file does not exist: ".$filePath);
         }
 
         $this->logDownloadSuccess($disk, $filePath, $logPrefix);
@@ -78,7 +78,7 @@ final class FileDownloader
             Log::debug("{$logPrefix} download progress", [
                 'downloaded_mb' => round($downloadedBytes / $bytesPerMb, 2),
                 'total_mb' => round($downloadTotal / $bytesPerMb, 2),
-                'progress' => round(($downloadedBytes / $downloadTotal) * 100, 2) . '%',
+                'progress' => round(($downloadedBytes / $downloadTotal) * 100, 2).'%',
             ]);
         };
     }
@@ -101,8 +101,8 @@ final class FileDownloader
         $fileSize = $disk->size($path);
 
         Log::info("{$logPrefix} downloaded successfully", [
-            'size' => $fileSize . ' bytes',
-            'size_mb' => round($fileSize / self::BYTES_PER_MB, 2) . ' MB',
+            'size' => $fileSize.' bytes',
+            'size_mb' => round($fileSize / self::BYTES_PER_MB, 2).' MB',
         ]);
     }
 
