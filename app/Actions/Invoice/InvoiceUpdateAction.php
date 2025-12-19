@@ -12,7 +12,7 @@ use App\Models\Invoice;
 use App\Models\UserCompany;
 use App\Repositories\Contracts\InvoiceRepository;
 use App\Services\Interfaces\VatService;
-use App\Services\Invoice\InvoiceTotalCalculatorService;
+use App\Services\Invoice\InvoiceItemsProcessorService;
 use Carbon\Carbon;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
@@ -25,8 +25,7 @@ final readonly class InvoiceUpdateAction
     public function __construct(
         private InvoiceRepository $invoiceRepository,
         private CompanyFetchOrCreateAction $companyFetchOrCreate,
-        private InvoiceTotalCalculatorService $totalCalculator,
-        private InvoiceItemsUpdateHandler $itemsHandler,
+        private InvoiceItemsProcessorService $itemsProcessor,
         private VatService $vatService
     ) {}
 
@@ -168,13 +167,13 @@ final readonly class InvoiceUpdateAction
         ]);
 
         $totals = $reverseCharge
-            ? $this->totalCalculator->calculateTotalsWithReverseCharge($itemsForCalculation, $context->dto->discountAmount)
-            : $this->totalCalculator->calculateTotals($itemsForCalculation, $context->dto->discountAmount);
+            ? $this->itemsProcessor->calculateTotalsWithReverseCharge($itemsForCalculation, $context->dto->discountAmount)
+            : $this->itemsProcessor->calculateTotals($itemsForCalculation, $context->dto->discountAmount);
         $updateData['subtotal'] = $totals['subtotal'];
         $updateData['tax_amount'] = $totals['tax_amount'];
         $updateData['total_amount'] = $totals['total_amount'];
 
-        $this->itemsHandler->updateItems($context->invoice, $itemsForCalculation);
+        $this->itemsProcessor->updateItems($context->invoice, $itemsForCalculation);
 
         return $updateData;
     }
