@@ -9,6 +9,7 @@ use App\Actions\Invoice\InvoiceCreateAction;
 use App\Actions\Invoice\InvoiceDeleteAction;
 use App\Actions\Invoice\InvoiceUpdateAction;
 use App\Actions\Invoice\InvoiceUpdateStatusAction;
+use App\DataTransferObjects\PayBySquareData;
 use App\DTOs\Invoice\InvoiceCreateDTO;
 use App\DTOs\Invoice\InvoiceUpdateDTO;
 use App\Http\Controllers\Controller;
@@ -178,15 +179,17 @@ final class InvoiceController extends Controller
             return null;
         }
 
-        return $this->payBySquareService->generateQrCode(
+        $data = new PayBySquareData(
             iban: str_replace(' ', '', $userCompany->iban),
             swift: $userCompany->swift,
             amount: $invoice->total_amount,
             variableSymbol: $invoice->variable_symbol ?? '',
             constantSymbol: $invoice->constant_symbol ?? '',
             specificSymbol: $invoice->specific_symbol ?? '',
-            note: 'Faktura '.$invoice->invoice_number,
-            recipient: $userCompany->name
+            note: 'Faktura ' . $invoice->invoice_number,
+            recipient: $userCompany->name,
         );
+
+        return $this->payBySquareService->generateQrCode($data);
     }
 }

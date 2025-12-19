@@ -4,34 +4,17 @@ declare(strict_types=1);
 
 namespace App\Services\Interfaces;
 
+use App\DataTransferObjects\PayBySquareData;
+
 /**
  * Interface for Pay by Square QR code generation.
- *
- * @SuppressWarnings(PHPMD.ExcessiveParameterList)
  */
 interface PayBySquare
 {
     /**
-     * Generate a Pay by Square QR code for an invoice payment
+     * Generate a Pay by Square QR code for an invoice payment.
      *
-     * @param  string  $iban  Recipient's IBAN (no spaces)
-     * @param  string  $swift  Recipient's BIC/SWIFT code
-     * @param  float  $amount  Payment amount
-     * @param  string  $variableSymbol  Variable symbol (max 10 digits)
-     * @param  string  $constantSymbol  Constant symbol (max 4 digits)
-     * @param  string  $specificSymbol  Specific symbol (max 10 digits)
-     * @param  string  $note  Payment note
-     * @param  string|null  $recipient  Recipient name
      * @return string Base64 encoded QR code image
      */
-    public function generateQrCode(
-        string $iban,
-        string $swift,
-        float $amount,
-        string $variableSymbol = '',
-        string $constantSymbol = '',
-        string $specificSymbol = '',
-        string $note = '',
-        ?string $recipient = null
-    ): string;
+    public function generateQrCode(PayBySquareData $data): string;
 }

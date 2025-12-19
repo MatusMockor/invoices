@@ -43,7 +43,7 @@ class Paragraph7aReverseChargeRule implements ValidationRule
         }
 
         // §7a: EU customers - must be 0% (reverse charge)
-        if (in_array($this->customerCountry, self::EU_COUNTRIES) && $value !== 0) {
+        if (in_array($this->customerCountry, self::EU_COUNTRIES, true) && $value !== 0) {
             $fail('Pre odberateľov z EÚ musí byť sadzba DPH 0% (prenesenie daňovej povinnosti).');
         }
     }
