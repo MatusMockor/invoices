@@ -10,11 +10,25 @@ namespace App\DataTransferObjects;
 final readonly class PayBySquareData
 {
     public function __construct(
-        public string $iban,
-        public string $swift,
+        public BankAccountData $bankAccount,
         public float $amount,
         public PaymentSymbols $symbols = new PaymentSymbols,
         public string $note = '',
-        public ?string $recipient = null,
     ) {}
+
+    /**
+     * Helper to access IBAN directly.
+     */
+    public function getIban(): string
+    {
+        return $this->bankAccount->iban;
+    }
+
+    /**
+     * Helper to access SWIFT directly.
+     */
+    public function getSwift(): string
+    {
+        return $this->bankAccount->swift;
+    }
 }

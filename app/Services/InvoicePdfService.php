@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Services;
 
+use App\DataTransferObjects\BankAccountData;
 use App\DataTransferObjects\PayBySquareData;
 use App\DataTransferObjects\PaymentSymbols;
 use App\Enums\InvoiceTemplate;
@@ -86,12 +87,13 @@ final class InvoicePdfService implements InvoicePdfServiceContract
         }
 
         $data = new PayBySquareData(
-            iban: $invoice->supplierCompany->iban,
-            swift: $invoice->supplierCompany->swift,
+            bankAccount: new BankAccountData(
+                iban: $invoice->supplierCompany->iban,
+                swift: $invoice->supplierCompany->swift,
+            ),
             amount: $invoice->total_amount,
             symbols: new PaymentSymbols(variable: substr($invoice->invoice_number, 0, 10)),
-            note: "Invoice {$invoice->invoice_number}",
-            recipient: $invoice->supplierCompany->name,
+            note: "Invoice {$invoice->invoice_number} - {$invoice->supplierCompany->name}",
         );
 
         return $this->payBySquare->generateQrCode($data);

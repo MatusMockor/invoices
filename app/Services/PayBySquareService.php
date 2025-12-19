@@ -56,11 +56,10 @@ class PayBySquareService implements PayBySquareContract
                 '',
                 $note,
                 '1',
-                $data->iban,
-                $data->swift,
+                $data->getIban(),
+                $data->getSwift(),
                 '0',
                 '0',
-                $data->recipient ?? '',
             ]),
         ]);
     }
