@@ -1,8 +1,7 @@
 import React, { useRef, useEffect } from "react";
 import { UseFormReturn } from "react-hook-form";
-import { Loader2, Building2, Search } from "lucide-react";
+import { Loader2, Building2, Search, X, MapPin, Hash } from "lucide-react";
 import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Command, CommandEmpty, CommandGroup, CommandItem, CommandList } from "@/components/ui/command";
@@ -105,9 +104,9 @@ const ClientInformationSectionComponent = ({
     <div className="space-y-4">
       {/* Info in edit mode */}
       {isEditMode && !useCustomCompany && (
-        <div className="mb-4 p-3 bg-blue-50 rounded-lg border border-blue-200">
-          <p className="text-sm text-blue-700">
-            Údaje o klientovi sú uložené z času vytvorenia. Pre úpravu zaškrtnite "Zadať vlastné údaje o spoločnosti".
+        <div className="mb-4 p-3 bg-blue-50 dark:bg-blue-950/30 rounded-lg border border-blue-200 dark:border-blue-800">
+          <p className="text-sm text-blue-700 dark:text-blue-300">
+            Údaje o klientovi sú uložené z času vytvorenia. Pre úpravu zaškrtnite "Zadať vlastné údaje".
           </p>
         </div>
       )}
@@ -129,10 +128,9 @@ const ClientInformationSectionComponent = ({
       {/* IČO search with autocomplete */}
       {!selectedCompany && !isSelectingCompany && (
           <div className="space-y-2">
-            <Label htmlFor="clientIco">Vyhľadať firmu podľa IČO alebo názvu</Label>
             <div className="relative">
               <div className="relative">
-                <Search className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
+                <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
                 <Input
                   id="clientIco"
                   value={icoSearch}
@@ -152,11 +150,9 @@ const ClientInformationSectionComponent = ({
                     }
                   }}
                   onKeyDown={handleKeyDown}
-                  placeholder="Začnite písať IČO alebo názov firmy..."
-                  className="border-primary/30 pl-9"
+                  placeholder="Hladať podľa ICO alebo názvu..."
+                  className="pl-9 pr-10 border-primary/30 focus:border-primary"
                   disabled={isEditMode && !useCustomCompany}
-                  inputMode="numeric"
-                  pattern="[0-9]*"
                   autoComplete="off"
                   data-form-type="other"
                   data-lpignore="true"
@@ -165,16 +161,18 @@ const ClientInformationSectionComponent = ({
                   aria-expanded={showSuggestions}
                   aria-controls="company-listbox"
                   aria-autocomplete="list"
-                  aria-label="Vyhľadať firmu podľa IČO alebo názvu"
+                  aria-label="Vyhladať firmu podla ICO alebo názvu"
                 />
                 {isSearching && (
-                  <Loader2 className="absolute right-3 top-3 h-4 w-4 animate-spin text-primary" />
+                  <div className="absolute right-3 top-1/2 -translate-y-1/2">
+                    <Loader2 className="h-4 w-4 animate-spin text-primary" />
+                  </div>
                 )}
               </div>
 
               {/* Validation message */}
               {icoSearch.length > 0 && icoSearch.length < 2 && (
-                <p className="text-sm text-muted-foreground mt-1">
+                <p className="text-xs text-muted-foreground mt-1.5">
                   Zadajte aspoň 2 znaky pre vyhľadávanie
                 </p>
               )}
@@ -183,30 +181,32 @@ const ClientInformationSectionComponent = ({
               {showSuggestions && icoSearch.length >= 2 && (
                 <div
                   ref={dropdownRef}
-                  className="absolute z-50 w-full mt-1 bg-popover border border-border rounded-md shadow-lg"
+                  className="absolute z-50 w-full mt-1 bg-popover border border-border rounded-lg shadow-lg overflow-hidden"
                   role="listbox"
                   id="company-listbox"
                   aria-label="Výsledky vyhľadávania spoločností"
                 >
                   <Command>
-                    <CommandList>
+                    <CommandList className="max-h-[280px]">
                       {searchError ? (
                         <div className="py-6 px-4 text-center text-sm text-destructive">
                           <p className="font-medium">{searchError}</p>
                           <p className="text-xs mt-1 text-muted-foreground">Skontrolujte pripojenie a skúste znova</p>
                         </div>
                       ) : isSearching ? (
-                        <div className="py-6 text-center text-sm flex items-center justify-center gap-2">
-                          <Loader2 className="h-4 w-4 animate-spin text-primary" />
-                          <span>Vyhľadávam...</span>
+                        <div className="py-8 text-center text-sm flex flex-col items-center justify-center gap-2">
+                          <Loader2 className="h-5 w-5 animate-spin text-primary" />
+                          <span className="text-muted-foreground">Vyhľadávam...</span>
                         </div>
                       ) : filteredCompanies.length === 0 ? (
-                        <CommandEmpty className="py-6 text-center">
+                        <CommandEmpty className="py-8 text-center">
                           <div className="flex flex-col items-center gap-2">
-                            <Building2 className="h-8 w-8 text-muted-foreground" />
+                            <div className="p-2 rounded-full bg-muted">
+                              <Building2 className="h-5 w-5 text-muted-foreground" />
+                            </div>
                             <p className="text-sm font-medium">Žiadne výsledky</p>
                             <p className="text-xs text-muted-foreground">
-                              Skúste iné IČO alebo názov spoločnosti
+                              Skúste iné IČO alebo názov
                             </p>
                           </div>
                         </CommandEmpty>
@@ -216,19 +216,21 @@ const ClientInformationSectionComponent = ({
                             <CommandItem
                               key={company.ico}
                               onSelect={() => onCompanySelect(company)}
-                              className="cursor-pointer group"
+                              className="cursor-pointer py-3 px-3 group"
                             >
-                              <div className="flex flex-col gap-1">
-                                <div className="font-semibold group-hover:text-white">{company.name}</div>
-                                <div className="text-sm text-foreground group-hover:text-white">
-                                  IČO: {company.ico}
-                                  {company.dic && ` | DIČ: ${company.dic}`}
-                                  {company.ic_dph && ` | IČ DPH: ${company.ic_dph}`}
+                              <div className="flex flex-col gap-1 w-full">
+                                <div className="font-medium text-sm group-hover:text-white">{company.name}</div>
+                                <div className="flex items-center gap-2 text-xs text-muted-foreground group-hover:text-white/80">
+                                  <span>IČO: {company.ico}</span>
+                                  {company.dic && <span>DIČ: {company.dic}</span>}
                                 </div>
                                 {company.address && (
-                                  <div className="text-xs text-muted-foreground group-hover:text-white/90">
-                                    {company.address}
-                                    {company.postal_code && company.city && `, ${company.postal_code} ${company.city}`}
+                                  <div className="text-xs text-muted-foreground group-hover:text-white/70 flex items-center gap-1">
+                                    <MapPin className="h-3 w-3 shrink-0" />
+                                    <span className="truncate">
+                                      {company.address}
+                                      {company.postal_code && company.city && `, ${company.postal_code} ${company.city}`}
+                                    </span>
                                   </div>
                                 )}
                               </div>
@@ -269,33 +271,63 @@ const ClientInformationSectionComponent = ({
 
       {/* Selected company - display card */}
       {selectedCompany && !isSelectingCompany && (
-        <div className="p-4 rounded-lg bg-primary/5 border border-primary/20">
-          <div className="flex justify-between items-start mb-3">
-            <div className="flex items-center gap-2">
-              <Building2 className="h-4 w-4 text-primary" />
-              <span className="font-semibold">{selectedCompany.name}</span>
+        <Card className="p-4 bg-gradient-to-br from-primary/5 to-primary/10 border-primary/20 relative overflow-hidden">
+          {/* Background decoration */}
+          <div className="absolute top-0 right-0 w-20 h-20 bg-primary/5 rounded-full -translate-y-1/2 translate-x-1/2" />
+
+          <div className="relative">
+            {/* Header with company name and change button */}
+            <div className="flex justify-between items-start gap-2 mb-3">
+              <div className="flex items-center gap-2 min-w-0">
+                <div className="p-1.5 rounded-md bg-primary/10 shrink-0">
+                  <Building2 className="h-4 w-4 text-primary" />
+                </div>
+                <span className="font-semibold text-sm truncate">{selectedCompany.name}</span>
+              </div>
+              {(!isEditMode || useCustomCompany) && (
+                <Button
+                  type="button"
+                  variant="ghost"
+                  size="sm"
+                  onClick={onClearSelection}
+                  className="h-7 px-2 text-xs text-muted-foreground hover:text-foreground shrink-0"
+                >
+                  <X className="h-3 w-3 mr-1" />
+                  Zmeniť
+                </Button>
+              )}
             </div>
-            {(!isEditMode || useCustomCompany) && (
-              <Button type="button" variant="ghost" size="sm" onClick={onClearSelection}>
-                Zmeniť
-              </Button>
-            )}
+
+            {/* Company details */}
+            <div className="space-y-2 text-sm">
+              {/* Address */}
+              {selectedCompany.address && (
+                <div className="flex items-start gap-2 text-muted-foreground">
+                  <MapPin className="h-3.5 w-3.5 mt-0.5 shrink-0" />
+                  <span className="text-xs">
+                    {selectedCompany.address}
+                    {selectedCompany.postal_code && selectedCompany.city &&
+                      `, ${selectedCompany.postal_code} ${selectedCompany.city}`}
+                  </span>
+                </div>
+              )}
+
+              {/* IDs - IČO, DIČ, IČ DPH */}
+              <div className="flex items-start gap-2 text-muted-foreground">
+                <Hash className="h-3.5 w-3.5 mt-0.5 shrink-0" />
+                <div className="flex flex-wrap gap-x-3 gap-y-0.5 text-xs">
+                  <span>IČO: <span className="text-foreground font-medium">{selectedCompany.ico}</span></span>
+                  {selectedCompany.dic && (
+                    <span>DIČ: <span className="text-foreground font-medium">{selectedCompany.dic}</span></span>
+                  )}
+                  {selectedCompany.ic_dph && (
+                    <span>IČ DPH: <span className="text-foreground font-medium">{selectedCompany.ic_dph}</span></span>
+                  )}
+                </div>
+              </div>
+            </div>
           </div>
-          <div className="text-sm text-muted-foreground space-y-1">
-            {selectedCompany.address && (
-              <p>
-                {selectedCompany.address}
-                {selectedCompany.postal_code && selectedCompany.city &&
-                  `, ${selectedCompany.postal_code} ${selectedCompany.city}`}
-              </p>
-            )}
-            <p>
-              IČO: {selectedCompany.ico}
-              {selectedCompany.dic && ` · DIČ: ${selectedCompany.dic}`}
-              {selectedCompany.ic_dph && ` · IČ DPH: ${selectedCompany.ic_dph}`}
-            </p>
-          </div>
-        </div>
+        </Card>
       )}
 
       {/* Hidden inputs for form validation */}
