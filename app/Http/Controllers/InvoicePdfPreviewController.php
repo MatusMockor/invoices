@@ -9,6 +9,7 @@ use App\DataTransferObjects\PayBySquareData;
 use App\DataTransferObjects\PaymentSymbols;
 use App\Enums\InvoiceTemplate;
 use App\Models\Invoice;
+use App\Models\InvoiceItem;
 use App\Services\Interfaces\PayBySquare;
 use Illuminate\Http\Request;
 use Illuminate\View\View;
@@ -38,7 +39,7 @@ final class InvoicePdfPreviewController extends Controller
 
         // Validate template against allowed values
         $requestedTemplate = $request->query('template');
-        $defaultTemplate = $invoice->user->settings?->invoice_template?->value ?? InvoiceTemplate::default()->value;
+        $defaultTemplate = $invoice->user->settings?->invoice_template->value ?? InvoiceTemplate::default()->value;
         $template = in_array($requestedTemplate, InvoiceTemplate::values(), true)
             ? $requestedTemplate
             : $defaultTemplate;
@@ -59,9 +60,9 @@ final class InvoicePdfPreviewController extends Controller
         return [
             'id' => $invoice->id,
             'invoice_number' => $invoice->invoice_number,
-            'issue_date' => $invoice->issue_date?->toDateString(),
-            'due_date' => $invoice->due_date?->toDateString(),
-            'delivery_date' => $invoice->delivery_date?->toDateString(),
+            'issue_date' => $invoice->issue_date->toDateString(),
+            'due_date' => $invoice->due_date->toDateString(),
+            'delivery_date' => $invoice->delivery_date->toDateString(),
             'variable_symbol' => $invoice->variable_symbol,
             'constant_symbol' => $invoice->constant_symbol,
             'specific_symbol' => $invoice->specific_symbol,
@@ -91,7 +92,7 @@ final class InvoicePdfPreviewController extends Controller
 
         return [
             'name' => $invoice->supplierCompany->name,
-            'address' => $invoice->supplierCompany->address,
+            'address' => $invoice->supplierCompany->street,
             'city' => $invoice->supplierCompany->city,
             'postal_code' => $invoice->supplierCompany->postal_code,
             'ico' => $invoice->supplierCompany->ico,
@@ -116,13 +117,13 @@ final class InvoicePdfPreviewController extends Controller
 
     private function prepareItemsData(Invoice $invoice): array
     {
-        return $invoice->items->map(fn ($item) => [
+        return $invoice->items->map(static fn (InvoiceItem $item): array => [
             'description' => $item->description,
             'quantity' => $item->quantity,
-            'unit_price' => $item->unit_price,
             'unit_price_without_tax' => $item->unit_price_without_tax,
             'tax_rate' => $item->tax_rate,
             'tax_amount' => $item->tax_amount,
+            'subtotal' => $item->subtotal,
             'total_price' => $item->total_price,
         ])->all();
     }
