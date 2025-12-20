@@ -4,31 +4,20 @@ declare(strict_types=1);
 
 namespace App\Services;
 
-use App\DataTransferObjects\BankAccountData;
-use App\DataTransferObjects\PayBySquareData;
-use App\DataTransferObjects\PaymentSymbols;
 use App\Enums\InvoiceTemplate;
-use App\Enums\VatPayerStatus;
 use App\Models\Invoice;
-use App\Models\InvoiceItem;
 use App\Services\Interfaces\InvoicePdfService as InvoicePdfServiceContract;
-use App\Services\Interfaces\PayBySquare as PayBySquareContract;
 use Illuminate\Http\Response;
-use Illuminate\Support\Collection;
+use Illuminate\Support\Facades\URL;
 use Spatie\Browsershot\Browsershot;
 
 final class InvoicePdfService implements InvoicePdfServiceContract
 {
     /**
-     * InvoicePdfService constructor
-     */
-    public function __construct(protected PayBySquareContract $payBySquare) {}
-
-    /**
      * Generate a PDF for the given invoice
      *
-     * Loads the user's preferred invoice template from settings and renders
-     * the PDF with the appropriate template, company data, and QR code.
+     * Uses Browsershot to screenshot the React preview page for 1:1 match
+     * between preview and PDF output.
      *
      * @param  Invoice  $invoice  The invoice to generate PDF for (will eager load relations)
      * @return string The PDF content as a binary string
@@ -38,13 +27,15 @@ final class InvoicePdfService implements InvoicePdfServiceContract
         $invoice->load(['items', 'supplierCompany', 'user.settings']);
 
         $template = $this->getInvoiceTemplate($invoice);
-        $qrCode = $this->generatePayBySquareQrCode($invoice);
-        $vatSummary = $this->calculateVatSummary($invoice);
-        $isVatPayer = $this->isVatPayer($invoice);
 
-        $html = $this->renderInvoiceHtml($invoice, $template, $qrCode, $vatSummary, $isVatPayer);
+        // Generate URL for React preview with secret token
+        $previewUrl = route('invoices.pdf-preview', [
+            'invoice' => $invoice->id,
+            'template' => $template,
+            'token' => config('app.pdf_preview_token'),
+        ]);
 
-        return $this->generatePdfFromHtml($html);
+        return $this->generatePdfFromUrl($previewUrl);
     }
 
     /**
@@ -80,61 +71,26 @@ final class InvoicePdfService implements InvoicePdfServiceContract
         return $invoice->user->settings?->invoice_template->value ?? InvoiceTemplate::default()->value;
     }
 
-    private function generatePayBySquareQrCode(Invoice $invoice): ?string
-    {
-        if (! $this->canGenerateQrCode($invoice)) {
-            return null;
-        }
-
-        $data = new PayBySquareData(
-            bankAccount: new BankAccountData(
-                iban: $invoice->supplierCompany->iban,
-                swift: $invoice->supplierCompany->swift,
-            ),
-            amount: $invoice->total_amount,
-            symbols: new PaymentSymbols(variable: substr($invoice->invoice_number, 0, 10)),
-            note: "Invoice {$invoice->invoice_number} - {$invoice->supplierCompany->name}",
-        );
-
-        return $this->payBySquare->generateQrCode($data);
-    }
-
-    private function canGenerateQrCode(Invoice $invoice): bool
-    {
-        return $invoice->supplierCompany
-            && $invoice->supplierCompany->iban
-            && $invoice->supplierCompany->swift;
-    }
-
     /**
-     * @param  array<int, array{rate: float, base: float, vat_amount: float}>  $vatSummary
+     * Generate PDF from React preview URL using Browsershot
      *
-     * @SuppressWarnings(PHPMD.ExcessiveParameterList)
+     * Uses A4 viewport dimensions (794x1123px) for optimal single-page rendering.
      */
-    private function renderInvoiceHtml(
-        Invoice $invoice,
-        string $template,
-        ?string $qrCode,
-        array $vatSummary,
-        bool $isVatPayer
-    ): string {
-        return view('invoices.pdf-render', [
-            'invoice' => $invoice,
-            'qrCode' => $qrCode,
-            'template' => $template,
-            'vatSummary' => $vatSummary,
-            'isVatPayer' => $isVatPayer,
-        ])->render();
-    }
-
-    private function generatePdfFromHtml(string $html): string
+    private function generatePdfFromUrl(string $url): string
     {
-        $browsershot = Browsershot::html($html)
+        // For Docker: replace hostname with 127.0.0.1 and ensure port 80
+        // Apache runs on port 80 inside the container
+        $url = preg_replace('#https?://[^/]+#', 'http://127.0.0.1', $url);
+
+        // A4 dimensions at 96 DPI: 794px x 1123px
+        $browsershot = Browsershot::url($url)
             ->setNodeModulePath(base_path('node_modules'))
+            ->windowSize(794, 1123)
             ->format('A4')
             ->margins(0, 0, 0, 0)
             ->showBackground()
-            ->waitUntilNetworkIdle();
+            ->waitUntilNetworkIdle()
+            ->setDelay(2000);
 
         $this->configureChromiumIfAvailable($browsershot);
 
@@ -154,51 +110,5 @@ final class InvoicePdfService implements InvoicePdfServiceContract
                 'disable-dev-shm-usage',
                 'disable-gpu',
             ]);
-    }
-
-    /**
-     * Calculate VAT summary grouped by rate
-     *
-     * @return array<int, array{rate: float, base: float, vat_amount: float}>
-     */
-    private function calculateVatSummary(Invoice $invoice): array
-    {
-        // Only calculate for VAT payers
-        if ($invoice->supplier_vat_payer_status === null
-            || $invoice->supplier_vat_payer_status === VatPayerStatus::NOT_VAT_PAYER) {
-            return [];
-        }
-
-        // Ensure items are loaded and not empty
-        if (! $invoice->relationLoaded('items') || $invoice->items->isEmpty()) {
-            return [];
-        }
-
-        $grouped = $invoice->items
-            ->filter(static fn (InvoiceItem $item): bool => $item->tax_rate > 0)
-            ->groupBy('tax_rate');
-
-        return $grouped->map(function (Collection $items, string|int $rate) use ($invoice): array {
-            $base = $items->sum('subtotal');
-            $vatAmount = $invoice->reverse_charge ? 0 : $items->sum('tax_amount');
-
-            return [
-                'rate' => (float) $rate,
-                'base' => round($base, 2),
-                'vat_amount' => round($vatAmount, 2),
-            ];
-        })->sortByDesc('rate')->values()->toArray();
-    }
-
-    /**
-     * Determine if invoice supplier is a VAT payer based on snapshot or fallback
-     */
-    private function isVatPayer(Invoice $invoice): bool
-    {
-        $vatStatus = $invoice->supplier_vat_payer_status
-            ?? $invoice->supplierCompany?->vat_payer_status;
-
-        return $vatStatus !== null
-            && $vatStatus !== VatPayerStatus::NOT_VAT_PAYER;
     }
 }

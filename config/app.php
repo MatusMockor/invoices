@@ -101,6 +101,18 @@ return [
 
     'key' => env('APP_KEY'),
 
+    /*
+    |--------------------------------------------------------------------------
+    | PDF Preview Token
+    |--------------------------------------------------------------------------
+    |
+    | Secret token for authenticating Browsershot access to PDF preview page.
+    | This should be a random string set in your .env file.
+    |
+    */
+
+    'pdf_preview_token' => env('PDF_PREVIEW_TOKEN'),
+
     'previous_keys' => [
         ...array_filter(
             explode(',', env('APP_PREVIOUS_KEYS', ''))

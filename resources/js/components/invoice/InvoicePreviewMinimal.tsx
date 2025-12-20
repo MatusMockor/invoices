@@ -1,57 +1,12 @@
-interface InvoiceData {
-  id: string;
-  date: string;
-  dueDate: string;
-  deliveryDate?: string;
-  variableSymbol?: string;
-  constantSymbol?: string;
-  specificSymbol?: string;
-  supplier?: {
-    name: string;
-    address: string;
-    ico: string;
-    dic: string;
-    icDph?: string;
-    iban?: string;
-    registryOffice?: string;
-    registryNumber?: string;
-  };
-  client: {
-    name: string;
-    address: string;
-    ico: string;
-    dic: string;
-  };
-  items: Array<{
-    description: string;
-    quantity: number;
-    price: number;
-    unitPriceWithoutTax?: number;
-    taxRate?: number;
-    taxAmount?: number;
-    totalPrice?: number;
-  }>;
-  // VAT related fields
-  isVatPayer?: boolean;
-  subtotal?: number;
-  taxRate?: number;
-  taxAmount?: number;
-  totalAmount?: number;
-  currency?: string;
-  // QR code from API
-  qrCode?: string;
-  // Legal texts
-  reverseChargeText?: string;
-  taxExemptionText?: string;
-}
+import { InvoiceData } from '@/types/invoice';
 
 interface InvoicePreviewMinimalProps {
   invoiceData: InvoiceData;
 }
 
 export const InvoicePreviewMinimal = ({ invoiceData }: InvoicePreviewMinimalProps) => {
-  // Use actual VAT data if available, otherwise calculate
-  const isVatPayer = invoiceData.isVatPayer ?? true;
+  // Use actual VAT data from backend
+  const isVatPayer = invoiceData.isVatPayer ?? false;
   const subtotal = invoiceData.subtotal ?? invoiceData.items.reduce((sum, item) => sum + item.quantity * item.price, 0);
   const taxRate = invoiceData.taxRate ?? 20;
   const vat = invoiceData.taxAmount ?? subtotal * (taxRate / 100);
@@ -59,41 +14,41 @@ export const InvoicePreviewMinimal = ({ invoiceData }: InvoicePreviewMinimalProp
   const currency = invoiceData.currency ?? 'EUR';
 
   return (
-    <div className="bg-white text-slate-900 p-8 rounded-lg" id="invoice-content">
+    <div className="bg-white text-slate-900 p-5 rounded-lg print:p-0" id="invoice-content">
       {/* Minimal Header */}
-      <div className="mb-8">
-        <div className="flex justify-between items-start pb-6 border-b border-slate-300">
+      <div className="mb-3 print:break-inside-avoid">
+        <div className="flex justify-between items-start pb-3 border-b border-slate-300">
           <div>
-            <h1 className="text-2xl font-light tracking-wide text-slate-800 mb-1">InvoiceHub</h1>
-            <p className="text-xs text-slate-500 uppercase tracking-widest">Invoice Management</p>
+            <h1 className="text-[16pt] font-light tracking-wide text-slate-800 mb-0.5 leading-tight">InvoiceHub</h1>
+            <p className="text-[9pt] text-slate-500 uppercase tracking-widest">Invoice Management</p>
           </div>
           <div className="text-right">
-            <p className="text-xs text-slate-500 uppercase tracking-wider mb-1">Invoice</p>
-            <p className="text-2xl font-light text-slate-900">{invoiceData.id}</p>
+            <p className="text-[9pt] text-slate-500 uppercase tracking-wider mb-0.5">Invoice</p>
+            <p className="text-[14pt] font-light text-slate-900 leading-tight">{invoiceData.id}</p>
           </div>
         </div>
       </div>
 
       {/* Supplier and Client - Side by Side */}
-      <div className="grid grid-cols-2 gap-12 mb-8">
+      <div className="grid grid-cols-2 gap-6 mb-3 print:break-inside-avoid">
         {/* Supplier */}
         <div>
-          <p className="text-xs font-semibold text-slate-500 uppercase tracking-wider mb-3">From</p>
-          <p className="font-medium text-slate-900 mb-1">{invoiceData.supplier?.name || 'N/A'}</p>
-          {invoiceData.supplier?.address.split(',').map((part, index) => (
-            <p key={index} className="text-sm text-slate-600">{part.trim()}</p>
+          <p className="text-[9pt] font-semibold text-slate-500 uppercase tracking-wider mb-2">From</p>
+          <p className="font-medium text-[11pt] text-slate-900 mb-0.5 leading-relaxed">{invoiceData.supplier?.name || 'N/A'}</p>
+          {(invoiceData.supplier?.address ?? '').split(',').filter(Boolean).map((part, index) => (
+            <p key={index} className="text-[10pt] text-slate-600 leading-relaxed">{part.trim()}</p>
           ))}
-          <div className="space-y-0.5 mt-3">
-            <p className="text-xs text-slate-500">IČO: {invoiceData.supplier?.ico}</p>
-            <p className="text-xs text-slate-500">DIČ: {invoiceData.supplier?.dic}</p>
+          <div className="space-y-0.5 mt-2">
+            <p className="text-[9pt] text-slate-500 leading-relaxed">ICO: {invoiceData.supplier?.ico}</p>
+            <p className="text-[9pt] text-slate-500 leading-relaxed">DIC: {invoiceData.supplier?.dic}</p>
             {invoiceData.supplier?.icDph && (
-              <p className="text-xs text-slate-500">IČ DPH: {invoiceData.supplier?.icDph}</p>
+              <p className="text-[9pt] text-slate-500 leading-relaxed">IC DPH: {invoiceData.supplier?.icDph}</p>
             )}
             {(invoiceData.supplier?.registryOffice || invoiceData.supplier?.registryNumber) && (
-              <p className="text-xs text-slate-500 mt-2">
+              <p className="text-[9pt] text-slate-500 leading-relaxed mt-1.5">
                 {invoiceData.supplier?.registryOffice}
-                {invoiceData.supplier?.registryOffice && invoiceData.supplier?.registryNumber && ', registrácia č. '}
-                {!invoiceData.supplier?.registryOffice && invoiceData.supplier?.registryNumber && 'registrácia č. '}
+                {invoiceData.supplier?.registryOffice && invoiceData.supplier?.registryNumber && ', registracia c. '}
+                {!invoiceData.supplier?.registryOffice && invoiceData.supplier?.registryNumber && 'registracia c. '}
                 {invoiceData.supplier?.registryNumber}
               </p>
             )}
@@ -102,62 +57,62 @@ export const InvoicePreviewMinimal = ({ invoiceData }: InvoicePreviewMinimalProp
 
         {/* Client */}
         <div>
-          <p className="text-xs font-semibold text-slate-500 uppercase tracking-wider mb-3">To</p>
-          <p className="font-medium text-slate-900 mb-1">{invoiceData.client.name}</p>
-          {invoiceData.client.address.split(',').map((part, index) => (
-            <p key={index} className="text-sm text-slate-600">{part.trim()}</p>
+          <p className="text-[9pt] font-semibold text-slate-500 uppercase tracking-wider mb-2">To</p>
+          <p className="font-medium text-[11pt] text-slate-900 mb-0.5 leading-relaxed">{invoiceData.client.name}</p>
+          {(invoiceData.client.address ?? '').split(',').filter(Boolean).map((part, index) => (
+            <p key={index} className="text-[10pt] text-slate-600 leading-relaxed">{part.trim()}</p>
           ))}
-          <div className="space-y-0.5 mt-3">
-            <p className="text-xs text-slate-500">IČO: {invoiceData.client.ico}</p>
-            <p className="text-xs text-slate-500">DIČ: {invoiceData.client.dic}</p>
+          <div className="space-y-0.5 mt-2">
+            <p className="text-[9pt] text-slate-500 leading-relaxed">ICO: {invoiceData.client.ico}</p>
+            <p className="text-[9pt] text-slate-500 leading-relaxed">DIC: {invoiceData.client.dic}</p>
           </div>
         </div>
       </div>
 
       {/* Invoice Details & Payment */}
-      <div className="grid grid-cols-[1fr_auto_120px] gap-8 mb-8 pb-6 border-b border-slate-200">
-        <div className="space-y-2">
+      <div className="grid grid-cols-[1fr_auto_100px] gap-4 mb-3 pb-3 border-b border-slate-200 print:break-inside-avoid">
+        <div className="space-y-1.5">
           <div>
-            <p className="text-xs text-slate-500 uppercase tracking-wider">Issue Date</p>
-            <p className="text-sm font-medium text-slate-900">{invoiceData.date}</p>
+            <p className="text-[9pt] text-slate-500 uppercase tracking-wider">Issue Date</p>
+            <p className="text-[11pt] font-medium text-slate-900 leading-relaxed">{invoiceData.date}</p>
           </div>
           <div>
-            <p className="text-xs text-slate-500 uppercase tracking-wider">Due Date</p>
-            <p className="text-sm font-medium text-slate-900">{invoiceData.dueDate}</p>
+            <p className="text-[9pt] text-slate-500 uppercase tracking-wider">Due Date</p>
+            <p className="text-[11pt] font-medium text-slate-900 leading-relaxed">{invoiceData.dueDate}</p>
           </div>
           {invoiceData.deliveryDate && (
             <div>
-              <p className="text-xs text-slate-500 uppercase tracking-wider">Delivery Date</p>
-              <p className="text-sm font-medium text-slate-900">{invoiceData.deliveryDate}</p>
+              <p className="text-[9pt] text-slate-500 uppercase tracking-wider">Delivery Date</p>
+              <p className="text-[11pt] font-medium text-slate-900 leading-relaxed">{invoiceData.deliveryDate}</p>
             </div>
           )}
           <div>
-            <p className="text-xs text-slate-500 uppercase tracking-wider">Payment Method</p>
-            <p className="text-sm font-medium text-slate-900">Bank Transfer</p>
+            <p className="text-[9pt] text-slate-500 uppercase tracking-wider">Payment Method</p>
+            <p className="text-[11pt] font-medium text-slate-900 leading-relaxed">Bank Transfer</p>
           </div>
         </div>
 
-        <div className="space-y-2">
+        <div className="space-y-1.5">
           {invoiceData.supplier?.iban && (
             <div>
-              <p className="text-xs text-slate-500 uppercase tracking-wider">Account Number</p>
-              <p className="text-xs font-mono font-medium text-slate-900">{invoiceData.supplier.iban}</p>
+              <p className="text-[9pt] text-slate-500 uppercase tracking-wider">Account Number</p>
+              <p className="text-[10pt] font-mono font-medium text-slate-900 leading-relaxed">{invoiceData.supplier.iban}</p>
             </div>
           )}
           <div>
-            <p className="text-xs text-slate-500 uppercase tracking-wider">Variable Symbol</p>
-            <p className="text-xs font-mono font-medium text-slate-900">{invoiceData.variableSymbol || invoiceData.id.replace("INV-", "")}</p>
+            <p className="text-[9pt] text-slate-500 uppercase tracking-wider">Variable Symbol</p>
+            <p className="text-[10pt] font-mono font-medium text-slate-900 leading-relaxed">{invoiceData.variableSymbol || invoiceData.id.replace("INV-", "")}</p>
           </div>
           {invoiceData.constantSymbol && (
             <div>
-              <p className="text-xs text-slate-500 uppercase tracking-wider">Constant Symbol</p>
-              <p className="text-xs font-mono font-medium text-slate-900">{invoiceData.constantSymbol}</p>
+              <p className="text-[9pt] text-slate-500 uppercase tracking-wider">Constant Symbol</p>
+              <p className="text-[10pt] font-mono font-medium text-slate-900 leading-relaxed">{invoiceData.constantSymbol}</p>
             </div>
           )}
           {invoiceData.specificSymbol && (
             <div>
-              <p className="text-xs text-slate-500 uppercase tracking-wider">Specific Symbol</p>
-              <p className="text-xs font-mono font-medium text-slate-900">{invoiceData.specificSymbol}</p>
+              <p className="text-[9pt] text-slate-500 uppercase tracking-wider">Specific Symbol</p>
+              <p className="text-[10pt] font-mono font-medium text-slate-900 leading-relaxed">{invoiceData.specificSymbol}</p>
             </div>
           )}
         </div>
@@ -165,52 +120,52 @@ export const InvoicePreviewMinimal = ({ invoiceData }: InvoicePreviewMinimalProp
         {/* QR Code */}
         {invoiceData.qrCode && (
           <div className="flex flex-col items-center">
-            <div className="border border-slate-300 p-3 rounded">
-              <img src={invoiceData.qrCode} alt="Pay by Square QR Code" className="w-[100px] h-[100px]" />
+            <div className="border border-slate-300 p-2 rounded">
+              <img src={invoiceData.qrCode} alt="Pay by Square QR Code" className="w-[80px] h-[80px]" />
             </div>
-            <p className="text-xs text-slate-500 mt-2">Pay by Square</p>
+            <p className="text-[9pt] text-slate-500 mt-1.5">Pay by Square</p>
           </div>
         )}
       </div>
 
       {/* Items Table - Minimal Style */}
-      <div className="mb-8">
+      <div className="mb-3 print:break-inside-auto">
         <table className="w-full">
-          <thead>
+          <thead className="print:table-header-group">
             <tr className="border-b border-slate-300">
-              <th className="text-left py-3 text-xs font-semibold text-slate-500 uppercase tracking-wider">Popis</th>
-              <th className="text-right py-3 w-16 text-xs font-semibold text-slate-500 uppercase tracking-wider">Počet</th>
+              <th className="text-left py-2 text-[10pt] font-semibold text-slate-500 uppercase tracking-wider">Popis</th>
+              <th className="text-right py-2 w-16 text-[10pt] font-semibold text-slate-500 uppercase tracking-wider">Pocet</th>
               {isVatPayer ? (
                 <>
-                  <th className="text-right py-3 w-24 text-xs font-semibold text-slate-500 uppercase tracking-wider">Cena/ks<br/><span className="text-[10px] font-normal">(bez DPH)</span></th>
-                  <th className="text-right py-3 w-16 text-xs font-semibold text-slate-500 uppercase tracking-wider">DPH</th>
-                  <th className="text-right py-3 w-24 text-xs font-semibold text-slate-500 uppercase tracking-wider">Výška DPH</th>
-                  <th className="text-right py-3 w-28 text-xs font-semibold text-slate-500 uppercase tracking-wider">Celkom</th>
+                  <th className="text-right py-2 w-24 text-[10pt] font-semibold text-slate-500 uppercase tracking-wider">Cena/ks<br/><span className="text-[9pt] font-normal">(bez DPH)</span></th>
+                  <th className="text-right py-2 w-16 text-[10pt] font-semibold text-slate-500 uppercase tracking-wider">DPH</th>
+                  <th className="text-right py-2 w-24 text-[10pt] font-semibold text-slate-500 uppercase tracking-wider">Vyska DPH</th>
+                  <th className="text-right py-2 w-28 text-[10pt] font-semibold text-slate-500 uppercase tracking-wider">Celkom</th>
                 </>
               ) : (
                 <>
-                  <th className="text-right py-3 w-28 text-xs font-semibold text-slate-500 uppercase tracking-wider">Cena/ks</th>
-                  <th className="text-right py-3 w-28 text-xs font-semibold text-slate-500 uppercase tracking-wider">Celkom</th>
+                  <th className="text-right py-2 w-28 text-[10pt] font-semibold text-slate-500 uppercase tracking-wider">Cena/ks</th>
+                  <th className="text-right py-2 w-28 text-[10pt] font-semibold text-slate-500 uppercase tracking-wider">Celkom</th>
                 </>
               )}
             </tr>
           </thead>
           <tbody>
             {invoiceData.items.map((item, index) => (
-              <tr key={index} className="border-b border-slate-100">
-                <td className="py-3 text-sm text-slate-900">{item.description}</td>
-                <td className="text-right py-3 text-sm text-slate-600">{item.quantity}</td>
+              <tr key={index} className="border-b border-slate-100 print:break-inside-avoid">
+                <td className="py-2 text-[11pt] text-slate-900 leading-relaxed">{item.description}</td>
+                <td className="text-right py-2 text-[11pt] text-slate-600 leading-relaxed">{item.quantity}</td>
                 {isVatPayer ? (
                   <>
-                    <td className="text-right py-3 text-sm text-slate-600">{(item.unitPriceWithoutTax ?? item.price).toFixed(2)} €</td>
-                    <td className="text-right py-3 text-sm text-slate-600">{(item.taxRate ?? taxRate).toFixed(0)}%</td>
-                    <td className="text-right py-3 text-sm text-slate-600">{(item.taxAmount ?? 0).toFixed(2)} €</td>
-                    <td className="text-right py-3 text-sm font-medium text-slate-900">{(item.totalPrice ?? item.quantity * item.price).toFixed(2)} €</td>
+                    <td className="text-right py-2 text-[11pt] text-slate-600 leading-relaxed">{(item.unitPriceWithoutTax ?? item.price).toFixed(2)} {currency}</td>
+                    <td className="text-right py-2 text-[11pt] text-slate-600 leading-relaxed">{(item.taxRate ?? taxRate).toFixed(0)}%</td>
+                    <td className="text-right py-2 text-[11pt] text-slate-600 leading-relaxed">{(item.taxAmount ?? 0).toFixed(2)} {currency}</td>
+                    <td className="text-right py-2 text-[11pt] font-medium text-slate-900 leading-relaxed">{(item.totalPrice ?? item.quantity * item.price).toFixed(2)} {currency}</td>
                   </>
                 ) : (
                   <>
-                    <td className="text-right py-3 text-sm text-slate-600">{item.price.toFixed(2)} €</td>
-                    <td className="text-right py-3 text-sm font-medium text-slate-900">{(item.totalPrice ?? item.quantity * item.price).toFixed(2)} €</td>
+                    <td className="text-right py-2 text-[11pt] text-slate-600 leading-relaxed">{item.price.toFixed(2)} {currency}</td>
+                    <td className="text-right py-2 text-[11pt] font-medium text-slate-900 leading-relaxed">{(item.totalPrice ?? item.quantity * item.price).toFixed(2)} {currency}</td>
                   </>
                 )}
               </tr>
@@ -220,24 +175,24 @@ export const InvoicePreviewMinimal = ({ invoiceData }: InvoicePreviewMinimalProp
       </div>
 
       {/* Totals - Minimal */}
-      <div className="flex justify-end">
-        <div className="w-80">
-          <div className="space-y-2">
+      <div className="flex justify-end print:break-inside-avoid print:break-before-avoid">
+        <div className="w-72">
+          <div className="space-y-1.5">
             {isVatPayer && (
               <>
-                <div className="flex justify-between py-2 text-sm">
-                  <span className="text-slate-600">Základ dane (bez DPH):</span>
-                  <span className="font-medium text-slate-900">{subtotal.toFixed(2)} €</span>
+                <div className="flex justify-between py-1.5 text-[11pt]">
+                  <span className="text-slate-600 leading-relaxed">Zaklad dane (bez DPH):</span>
+                  <span className="font-medium text-slate-900 leading-relaxed">{subtotal.toFixed(2)} {currency}</span>
                 </div>
-                <div className="flex justify-between py-2 text-sm">
-                  <span className="text-slate-600">DPH ({taxRate.toFixed(0)}%):</span>
-                  <span className="font-medium text-slate-900">{vat.toFixed(2)} €</span>
+                <div className="flex justify-between py-1.5 text-[11pt]">
+                  <span className="text-slate-600 leading-relaxed">DPH ({taxRate.toFixed(0)}%):</span>
+                  <span className="font-medium text-slate-900 leading-relaxed">{vat.toFixed(2)} {currency}</span>
                 </div>
               </>
             )}
-            <div className="flex justify-between py-3 border-t-2 border-slate-900">
-              <span className="font-semibold text-slate-900">Celkom k úhrade:</span>
-              <span className="font-bold text-xl text-slate-900">{total.toFixed(2)} €</span>
+            <div className="flex justify-between py-2 border-t-2 border-slate-900">
+              <span className="font-semibold text-[14pt] text-slate-900 leading-tight">Celkom k uhrade:</span>
+              <span className="font-bold text-[14pt] text-slate-900 leading-tight">{total.toFixed(2)} {currency}</span>
             </div>
           </div>
         </div>
@@ -245,26 +200,26 @@ export const InvoicePreviewMinimal = ({ invoiceData }: InvoicePreviewMinimalProp
 
       {/* Reverse Charge or Tax Exemption Text */}
       {invoiceData.reverseChargeText && (
-        <div className="mb-4 p-3 bg-yellow-50 border border-yellow-200 rounded">
-          <p className="text-sm font-semibold text-yellow-800">{invoiceData.reverseChargeText}</p>
+        <div className="mb-3 mt-4 p-2.5 bg-yellow-50 border border-yellow-200 rounded print:break-inside-avoid">
+          <p className="text-[10pt] font-semibold text-yellow-800 leading-relaxed">{invoiceData.reverseChargeText}</p>
         </div>
       )}
 
       {invoiceData.taxExemptionText && (
-        <div className="mb-4 p-3 bg-blue-50 border border-blue-200 rounded">
-          <p className="text-sm font-semibold text-blue-800">{invoiceData.taxExemptionText}</p>
+        <div className="mb-3 mt-4 p-2.5 bg-blue-50 border border-blue-200 rounded print:break-inside-avoid">
+          <p className="text-[10pt] font-semibold text-blue-800 leading-relaxed">{invoiceData.taxExemptionText}</p>
         </div>
       )}
 
       {/* Footer */}
-      <div className="mt-12 pt-6 border-t border-slate-200">
-        <p className="text-xs text-slate-500 text-center">
+      <div className="mt-3 pt-2 border-t border-slate-200">
+        <p className="text-[9pt] text-slate-500 text-center leading-relaxed">
           Payment is due by the due date. For any questions, please contact us at email@invoicehub.sk
         </p>
       </div>
 
-      <div className="mt-4 text-center">
-        <p className="text-xs text-slate-400">Thank you for your business</p>
+      <div className="mt-2 text-center">
+        <p className="text-[9pt] text-slate-400">Thank you for your business</p>
       </div>
     </div>
   );

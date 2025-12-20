@@ -1,57 +1,12 @@
-interface InvoiceData {
-  id: string;
-  date: string;
-  dueDate: string;
-  deliveryDate?: string;
-  variableSymbol?: string;
-  constantSymbol?: string;
-  specificSymbol?: string;
-  supplier?: {
-    name: string;
-    address: string;
-    ico: string;
-    dic: string;
-    icDph?: string;
-    iban?: string;
-    registryOffice?: string;
-    registryNumber?: string;
-  };
-  client: {
-    name: string;
-    address: string;
-    ico: string;
-    dic: string;
-  };
-  items: Array<{
-    description: string;
-    quantity: number;
-    price: number;
-    unitPriceWithoutTax?: number;
-    taxRate?: number;
-    taxAmount?: number;
-    totalPrice?: number;
-  }>;
-  // VAT related fields
-  isVatPayer?: boolean;
-  subtotal?: number;
-  taxRate?: number;
-  taxAmount?: number;
-  totalAmount?: number;
-  currency?: string;
-  // QR code from API
-  qrCode?: string;
-  // Legal texts
-  reverseChargeText?: string;
-  taxExemptionText?: string;
-}
+import { InvoiceData } from '@/types/invoice';
 
 interface InvoicePreviewModernProps {
   invoiceData: InvoiceData;
 }
 
 export const InvoicePreviewModern = ({ invoiceData }: InvoicePreviewModernProps) => {
-  // Use actual VAT data if available, otherwise calculate
-  const isVatPayer = invoiceData.isVatPayer ?? true;
+  // Use actual VAT data from backend
+  const isVatPayer = invoiceData.isVatPayer ?? false;
   const subtotal = invoiceData.subtotal ?? invoiceData.items.reduce((sum, item) => sum + item.quantity * item.price, 0);
   const taxRate = invoiceData.taxRate ?? 20;
   const vat = invoiceData.taxAmount ?? subtotal * (taxRate / 100);
@@ -59,53 +14,53 @@ export const InvoicePreviewModern = ({ invoiceData }: InvoicePreviewModernProps)
   const currency = invoiceData.currency ?? 'EUR';
 
   return (
-    <div className="bg-gradient-to-br from-slate-50 to-blue-50 text-slate-900 p-8 rounded-lg" id="invoice-content">
+    <div className="bg-gradient-to-br from-slate-50 to-blue-50 text-slate-900 p-5 rounded-lg print:p-0" id="invoice-content">
       {/* Modern Header with Gradient - Compact */}
-      <div className="mb-6 relative overflow-hidden">
+      <div className="mb-3 relative overflow-hidden print:break-inside-avoid">
         <div className="absolute inset-0 bg-gradient-to-r from-blue-600 to-purple-600 opacity-10 rounded-xl"></div>
-        <div className="relative bg-white/80 backdrop-blur-sm p-5 rounded-xl border border-blue-200 shadow-lg">
-          <div className="flex justify-between items-start mb-4">
+        <div className="relative bg-white/80 backdrop-blur-sm p-3 rounded-xl border border-blue-200 shadow-lg">
+          <div className="flex justify-between items-start mb-2">
             <div>
-              <h1 className="text-xl font-black bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent mb-1">
+              <h1 className="text-[16pt] font-black bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent mb-0.5 leading-tight">
                 InvoiceHub
               </h1>
-              <p className="text-xs text-slate-600">Profesionálne riešenie pre faktúry</p>
+              <p className="text-[9pt] text-slate-600 leading-relaxed">Profesionalne riesenie pre faktury</p>
             </div>
             <div className="text-right">
-              <div className="inline-block bg-gradient-to-r from-blue-600 to-purple-600 text-white px-3 py-1.5 rounded-lg shadow-lg">
-                <p className="text-xs uppercase tracking-wider font-semibold opacity-90">Faktúra</p>
-                <p className="text-base font-bold">{invoiceData.id}</p>
+              <div className="inline-block bg-gradient-to-r from-blue-600 to-purple-600 text-white px-2.5 py-1 rounded-lg shadow-lg">
+                <p className="text-[9pt] uppercase tracking-wider font-semibold opacity-90">Faktura</p>
+                <p className="text-[14pt] font-bold leading-tight">{invoiceData.id}</p>
               </div>
             </div>
           </div>
 
           {/* Client and Supplier Info in Modern Cards - Compact */}
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-3 mt-3">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-2 mt-1.5 print:break-inside-avoid">
             {/* Supplier */}
             <div className="relative">
               <div className="absolute -inset-0.5 bg-gradient-to-r from-blue-500 to-purple-500 rounded-lg opacity-20"></div>
-              <div className="relative bg-white p-3 rounded-lg">
-                <div className="flex items-center gap-1.5 mb-2">
-                  <div className="w-5 h-5 bg-gradient-to-r from-blue-500 to-purple-500 rounded flex items-center justify-center">
-                    <span className="text-white text-[10px] font-bold">OD</span>
+              <div className="relative bg-white p-2.5 rounded-lg">
+                <div className="flex items-center gap-1.5 mb-1.5">
+                  <div className="w-4 h-4 bg-gradient-to-r from-blue-500 to-purple-500 rounded flex items-center justify-center">
+                    <span className="text-white text-[8pt] font-bold">OD</span>
                   </div>
-                  <h3 className="font-bold text-slate-700 uppercase text-[10px] tracking-wider">Dodávateľ</h3>
+                  <h3 className="font-bold text-slate-700 uppercase text-[9pt] tracking-wider">Dodavatel</h3>
                 </div>
-                <p className="font-bold text-sm mb-1 text-slate-900">{invoiceData.supplier?.name || 'N/A'}</p>
-                {invoiceData.supplier?.address.split(',').map((part, index) => (
-                  <p key={index} className="text-xs text-slate-600">{part.trim()}</p>
+                <p className="font-bold text-[11pt] mb-0.5 text-slate-900 leading-relaxed">{invoiceData.supplier?.name || 'N/A'}</p>
+                {(invoiceData.supplier?.address ?? '').split(',').filter(Boolean).map((part, index) => (
+                  <p key={index} className="text-[10pt] text-slate-600 leading-relaxed">{part.trim()}</p>
                 ))}
-                <div className="border-t border-slate-200 pt-1.5 mt-1.5 space-y-0.5">
-                  <p className="text-[10px] text-slate-500"><span className="font-semibold">IČO:</span> {invoiceData.supplier?.ico}</p>
-                  <p className="text-[10px] text-slate-500"><span className="font-semibold">DIČ:</span> {invoiceData.supplier?.dic}</p>
+                <div className="border-t border-slate-200 pt-1 mt-1 space-y-0.5">
+                  <p className="text-[9pt] text-slate-500 leading-relaxed"><span className="font-semibold">ICO:</span> {invoiceData.supplier?.ico}</p>
+                  <p className="text-[9pt] text-slate-500 leading-relaxed"><span className="font-semibold">DIC:</span> {invoiceData.supplier?.dic}</p>
                   {invoiceData.supplier?.icDph && (
-                    <p className="text-[10px] text-slate-500"><span className="font-semibold">IČ DPH:</span> {invoiceData.supplier?.icDph}</p>
+                    <p className="text-[9pt] text-slate-500 leading-relaxed"><span className="font-semibold">IC DPH:</span> {invoiceData.supplier?.icDph}</p>
                   )}
                   {(invoiceData.supplier?.registryOffice || invoiceData.supplier?.registryNumber) && (
-                    <p className="text-[10px] text-slate-500 mt-1.5">
+                    <p className="text-[9pt] text-slate-500 leading-relaxed mt-1">
                       {invoiceData.supplier?.registryOffice}
-                      {invoiceData.supplier?.registryOffice && invoiceData.supplier?.registryNumber && ', registrácia č. '}
-                      {!invoiceData.supplier?.registryOffice && invoiceData.supplier?.registryNumber && 'registrácia č. '}
+                      {invoiceData.supplier?.registryOffice && invoiceData.supplier?.registryNumber && ', registracia c. '}
+                      {!invoiceData.supplier?.registryOffice && invoiceData.supplier?.registryNumber && 'registracia c. '}
                       {invoiceData.supplier?.registryNumber}
                     </p>
                   )}
@@ -116,20 +71,20 @@ export const InvoicePreviewModern = ({ invoiceData }: InvoicePreviewModernProps)
             {/* Client */}
             <div className="relative">
               <div className="absolute -inset-0.5 bg-gradient-to-r from-slate-300 to-slate-400 rounded-lg opacity-20"></div>
-              <div className="relative bg-white p-3 rounded-lg">
-                <div className="flex items-center gap-1.5 mb-2">
-                  <div className="w-5 h-5 bg-slate-600 rounded flex items-center justify-center">
-                    <span className="text-white text-[10px] font-bold">PRE</span>
+              <div className="relative bg-white p-2.5 rounded-lg">
+                <div className="flex items-center gap-1.5 mb-1.5">
+                  <div className="w-4 h-4 bg-slate-600 rounded flex items-center justify-center">
+                    <span className="text-white text-[8pt] font-bold">PRE</span>
                   </div>
-                  <h3 className="font-bold text-slate-700 uppercase text-[10px] tracking-wider">Odberateľ</h3>
+                  <h3 className="font-bold text-slate-700 uppercase text-[9pt] tracking-wider">Odberatel</h3>
                 </div>
-                <p className="font-bold text-sm mb-1 text-slate-900">{invoiceData.client.name}</p>
-                {invoiceData.client.address.split(',').map((part, index) => (
-                  <p key={index} className="text-xs text-slate-600">{part.trim()}</p>
+                <p className="font-bold text-[11pt] mb-0.5 text-slate-900 leading-relaxed">{invoiceData.client.name}</p>
+                {(invoiceData.client.address ?? '').split(',').filter(Boolean).map((part, index) => (
+                  <p key={index} className="text-[10pt] text-slate-600 leading-relaxed">{part.trim()}</p>
                 ))}
-                <div className="border-t border-slate-200 pt-1.5 mt-1.5 space-y-0.5">
-                  <p className="text-[10px] text-slate-500"><span className="font-semibold">IČO:</span> {invoiceData.client.ico}</p>
-                  <p className="text-[10px] text-slate-500"><span className="font-semibold">DIČ:</span> {invoiceData.client.dic}</p>
+                <div className="border-t border-slate-200 pt-1 mt-1 space-y-0.5">
+                  <p className="text-[9pt] text-slate-500 leading-relaxed"><span className="font-semibold">ICO:</span> {invoiceData.client.ico}</p>
+                  <p className="text-[9pt] text-slate-500 leading-relaxed"><span className="font-semibold">DIC:</span> {invoiceData.client.dic}</p>
                 </div>
               </div>
             </div>
@@ -138,63 +93,63 @@ export const InvoicePreviewModern = ({ invoiceData }: InvoicePreviewModernProps)
       </div>
 
       {/* Payment Section with Modern Design - Compact */}
-      <div className="bg-white rounded-xl p-4 mb-6 shadow-lg border border-slate-200">
-        <div className="flex items-start justify-between gap-4">
+      <div className="bg-white rounded-xl p-3 mb-3 shadow-lg border border-slate-200 print:break-inside-avoid">
+        <div className="flex items-start justify-between gap-3">
           <div className="flex-1">
-            <h3 className="text-base font-bold mb-3 bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">
-              Platobné údaje
+            <h3 className="text-[11pt] font-bold mb-2 bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent leading-tight">
+              Platobne udaje
             </h3>
 
             {/* Dates in Pills */}
-            <div className="grid grid-cols-2 gap-2 mb-3">
-              <div className="bg-gradient-to-br from-blue-50 to-blue-100 p-2 rounded-lg border border-blue-200">
-                <p className="text-xs text-blue-600 font-semibold mb-0.5">Vystavené</p>
-                <p className="text-xs font-bold text-slate-900">{invoiceData.date}</p>
+            <div className="grid grid-cols-2 gap-1.5 mb-2">
+              <div className="bg-gradient-to-br from-blue-50 to-blue-100 p-1.5 rounded-lg border border-blue-200">
+                <p className="text-[9pt] text-blue-600 font-semibold mb-0.5">Vystavene</p>
+                <p className="text-[10pt] font-bold text-slate-900 leading-relaxed">{invoiceData.date}</p>
               </div>
-              <div className="bg-gradient-to-br from-purple-50 to-purple-100 p-2 rounded-lg border border-purple-200">
-                <p className="text-xs text-purple-600 font-semibold mb-0.5">Splatnosť</p>
-                <p className="text-xs font-bold text-slate-900">{invoiceData.dueDate}</p>
+              <div className="bg-gradient-to-br from-purple-50 to-purple-100 p-1.5 rounded-lg border border-purple-200">
+                <p className="text-[9pt] text-purple-600 font-semibold mb-0.5">Splatnost</p>
+                <p className="text-[10pt] font-bold text-slate-900 leading-relaxed">{invoiceData.dueDate}</p>
               </div>
               {invoiceData.deliveryDate && (
-                <div className="bg-gradient-to-br from-green-50 to-green-100 p-2 rounded-lg border border-green-200">
-                  <p className="text-xs text-green-600 font-semibold mb-0.5">Dodanie</p>
-                  <p className="text-xs font-bold text-slate-900">{invoiceData.deliveryDate}</p>
+                <div className="bg-gradient-to-br from-green-50 to-green-100 p-1.5 rounded-lg border border-green-200">
+                  <p className="text-[9pt] text-green-600 font-semibold mb-0.5">Dodanie</p>
+                  <p className="text-[10pt] font-bold text-slate-900 leading-relaxed">{invoiceData.deliveryDate}</p>
                 </div>
               )}
-              <div className="bg-gradient-to-br from-slate-50 to-slate-100 p-2 rounded-lg border border-slate-200">
-                <p className="text-xs text-slate-600 font-semibold mb-0.5">Spôsob úhrady</p>
-                <p className="text-xs font-bold text-slate-900">Bankový prevod</p>
+              <div className="bg-gradient-to-br from-slate-50 to-slate-100 p-1.5 rounded-lg border border-slate-200">
+                <p className="text-[9pt] text-slate-600 font-semibold mb-0.5">Sposob uhrady</p>
+                <p className="text-[10pt] font-bold text-slate-900 leading-relaxed">Bankovy prevod</p>
               </div>
             </div>
 
             {/* Bank Details */}
-            <div className="bg-gradient-to-br from-slate-50 to-slate-100 p-3 rounded-lg border border-slate-200 space-y-1 text-xs">
+            <div className="bg-gradient-to-br from-slate-50 to-slate-100 p-2.5 rounded-lg border border-slate-200 space-y-1">
               {invoiceData.supplier?.iban && (
                 <div className="flex justify-between items-center pb-1 border-b border-slate-300">
-                  <span className="text-slate-600 font-semibold">Číslo účtu</span>
-                  <span className="font-mono font-bold text-slate-900">{invoiceData.supplier.iban}</span>
+                  <span className="text-[9pt] text-slate-600 font-semibold">Cislo uctu</span>
+                  <span className="font-mono font-bold text-[10pt] text-slate-900">{invoiceData.supplier.iban}</span>
                 </div>
               )}
               <div className="flex justify-between items-center pb-1 border-b border-slate-300">
-                <span className="text-slate-600 font-semibold">Variabilný symbol</span>
-                <span className="font-mono font-bold text-slate-900">{invoiceData.variableSymbol || invoiceData.id.replace("INV-", "")}</span>
+                <span className="text-[9pt] text-slate-600 font-semibold">Variabilny symbol</span>
+                <span className="font-mono font-bold text-[10pt] text-slate-900">{invoiceData.variableSymbol || invoiceData.id.replace("INV-", "")}</span>
               </div>
               {invoiceData.constantSymbol && (
                 <div className="flex justify-between items-center pb-1 border-b border-slate-300">
-                  <span className="text-slate-600 font-semibold">Konštantný symbol</span>
-                  <span className="font-mono font-bold text-slate-900">{invoiceData.constantSymbol}</span>
+                  <span className="text-[9pt] text-slate-600 font-semibold">Konstantny symbol</span>
+                  <span className="font-mono font-bold text-[10pt] text-slate-900">{invoiceData.constantSymbol}</span>
                 </div>
               )}
               {invoiceData.specificSymbol && (
                 <div className="flex justify-between items-center pb-1 border-b border-slate-300">
-                  <span className="text-slate-600 font-semibold">Špecifický symbol</span>
-                  <span className="font-mono font-bold text-slate-900">{invoiceData.specificSymbol}</span>
+                  <span className="text-[9pt] text-slate-600 font-semibold">Specificky symbol</span>
+                  <span className="font-mono font-bold text-[10pt] text-slate-900">{invoiceData.specificSymbol}</span>
                 </div>
               )}
-              <div className="flex justify-between items-center pt-1">
-                <span className="font-bold text-slate-700">Suma k úhrade</span>
-                <span className="font-black text-lg bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">
-                  €{total.toFixed(2)}
+              <div className="flex justify-between items-center pt-0.5">
+                <span className="font-bold text-[11pt] text-slate-700">Suma k uhrade</span>
+                <span className="font-black text-[14pt] bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">
+                  {total.toFixed(2)} {currency}
                 </span>
               </div>
             </div>
@@ -206,10 +161,10 @@ export const InvoicePreviewModern = ({ invoiceData }: InvoicePreviewModernProps)
               <div className="relative">
                 <div className="absolute -inset-1 bg-gradient-to-r from-blue-500 to-purple-500 rounded-xl opacity-30 blur"></div>
                 <div className="relative bg-white p-2 rounded-xl shadow-lg border border-slate-200">
-                  <img src={invoiceData.qrCode} alt="Pay by Square QR Code" className="w-[90px] h-[90px]" />
+                  <img src={invoiceData.qrCode} alt="Pay by Square QR Code" className="w-[80px] h-[80px]" />
                 </div>
               </div>
-              <p className="text-xs font-bold bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">
+              <p className="text-[9pt] font-bold bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">
                 Pay by Square
               </p>
             </div>
@@ -218,25 +173,25 @@ export const InvoicePreviewModern = ({ invoiceData }: InvoicePreviewModernProps)
       </div>
 
       {/* Modern Items Table */}
-      <div className="bg-white rounded-2xl p-5 mb-6 shadow-xl border border-slate-200">
-        <h3 className="text-lg font-bold mb-4 text-slate-900">Položky</h3>
+      <div className="bg-white rounded-xl p-3 mb-3 shadow-xl border border-slate-200 print:break-inside-auto">
+        <h3 className="text-[11pt] font-bold mb-2 text-slate-900 leading-tight">Polozky</h3>
         <div className="overflow-hidden rounded-xl border border-slate-200">
           <table className="w-full">
-            <thead>
+            <thead className="print:table-header-group">
               <tr className="bg-gradient-to-r from-blue-600 to-purple-600 text-white">
-                <th className="text-left py-3 px-3 font-semibold text-xs uppercase tracking-wide">Popis</th>
-                <th className="text-right py-3 px-3 w-16 font-semibold text-xs uppercase tracking-wide">Počet</th>
+                <th className="text-left py-2 px-2 font-semibold text-[10pt] uppercase tracking-wide">Popis</th>
+                <th className="text-right py-2 px-2 w-16 font-semibold text-[10pt] uppercase tracking-wide">Pocet</th>
                 {isVatPayer ? (
                   <>
-                    <th className="text-right py-3 px-3 w-24 font-semibold text-xs uppercase tracking-wide">Cena/ks<br/><span className="text-[10px] font-normal opacity-80">(bez DPH)</span></th>
-                    <th className="text-right py-3 px-3 w-16 font-semibold text-xs uppercase tracking-wide">DPH</th>
-                    <th className="text-right py-3 px-3 w-24 font-semibold text-xs uppercase tracking-wide">Výška<br/><span className="text-[10px] font-normal opacity-80">DPH</span></th>
-                    <th className="text-right py-3 px-3 w-28 font-semibold text-xs uppercase tracking-wide">Celkom</th>
+                    <th className="text-right py-2 px-2 w-24 font-semibold text-[10pt] uppercase tracking-wide">Cena/ks<br/><span className="text-[9pt] font-normal opacity-80">(bez DPH)</span></th>
+                    <th className="text-right py-2 px-2 w-16 font-semibold text-[10pt] uppercase tracking-wide">DPH</th>
+                    <th className="text-right py-2 px-2 w-24 font-semibold text-[10pt] uppercase tracking-wide">Vyska<br/><span className="text-[9pt] font-normal opacity-80">DPH</span></th>
+                    <th className="text-right py-2 px-2 w-28 font-semibold text-[10pt] uppercase tracking-wide">Celkom</th>
                   </>
                 ) : (
                   <>
-                    <th className="text-right py-3 px-3 w-28 font-semibold text-xs uppercase tracking-wide">Cena/ks</th>
-                    <th className="text-right py-3 px-3 w-28 font-semibold text-xs uppercase tracking-wide">Celkom</th>
+                    <th className="text-right py-2 px-2 w-28 font-semibold text-[10pt] uppercase tracking-wide">Cena/ks</th>
+                    <th className="text-right py-2 px-2 w-28 font-semibold text-[10pt] uppercase tracking-wide">Celkom</th>
                   </>
                 )}
               </tr>
@@ -245,21 +200,21 @@ export const InvoicePreviewModern = ({ invoiceData }: InvoicePreviewModernProps)
               {invoiceData.items.map((item, index) => (
                 <tr
                   key={index}
-                  className={`border-b border-slate-200 ${index % 2 === 0 ? 'bg-slate-50' : 'bg-white'} hover:bg-blue-50 transition-colors`}
+                  className={`border-b border-slate-200 ${index % 2 === 0 ? 'bg-slate-50' : 'bg-white'} hover:bg-blue-50 transition-colors print:break-inside-avoid`}
                 >
-                  <td className="py-3 px-3 text-slate-900 text-sm">{item.description}</td>
-                  <td className="text-right py-3 px-3 text-slate-700 text-sm">{item.quantity}</td>
+                  <td className="py-2 px-2 text-slate-900 text-[11pt] leading-relaxed">{item.description}</td>
+                  <td className="text-right py-2 px-2 text-slate-700 text-[11pt] leading-relaxed">{item.quantity}</td>
                   {isVatPayer ? (
                     <>
-                      <td className="text-right py-3 px-3 text-slate-700 text-sm">{(item.unitPriceWithoutTax ?? item.price).toFixed(2)} €</td>
-                      <td className="text-right py-3 px-3 text-slate-700 text-sm">{(item.taxRate ?? taxRate).toFixed(0)}%</td>
-                      <td className="text-right py-3 px-3 text-slate-700 text-sm">{(item.taxAmount ?? 0).toFixed(2)} €</td>
-                      <td className="text-right py-3 px-3 font-bold text-slate-900 text-sm">{(item.totalPrice ?? item.quantity * item.price).toFixed(2)} €</td>
+                      <td className="text-right py-2 px-2 text-slate-700 text-[11pt] leading-relaxed">{(item.unitPriceWithoutTax ?? item.price).toFixed(2)} {currency}</td>
+                      <td className="text-right py-2 px-2 text-slate-700 text-[11pt] leading-relaxed">{(item.taxRate ?? taxRate).toFixed(0)}%</td>
+                      <td className="text-right py-2 px-2 text-slate-700 text-[11pt] leading-relaxed">{(item.taxAmount ?? 0).toFixed(2)} {currency}</td>
+                      <td className="text-right py-2 px-2 font-bold text-slate-900 text-[11pt] leading-relaxed">{(item.totalPrice ?? item.quantity * item.price).toFixed(2)} {currency}</td>
                     </>
                   ) : (
                     <>
-                      <td className="text-right py-3 px-3 text-slate-700 text-sm">{item.price.toFixed(2)} €</td>
-                      <td className="text-right py-3 px-3 font-bold text-slate-900 text-sm">{(item.totalPrice ?? item.quantity * item.price).toFixed(2)} €</td>
+                      <td className="text-right py-2 px-2 text-slate-700 text-[11pt] leading-relaxed">{item.price.toFixed(2)} {currency}</td>
+                      <td className="text-right py-2 px-2 font-bold text-slate-900 text-[11pt] leading-relaxed">{(item.totalPrice ?? item.quantity * item.price).toFixed(2)} {currency}</td>
                     </>
                   )}
                 </tr>
@@ -270,24 +225,24 @@ export const InvoicePreviewModern = ({ invoiceData }: InvoicePreviewModernProps)
       </div>
 
       {/* Totals with Modern Styling */}
-      <div className="flex justify-end mb-6">
-        <div className="w-80">
-          <div className="bg-white rounded-2xl p-4 shadow-xl border border-slate-200">
+      <div className="flex justify-end mb-3 print:break-inside-avoid print:break-before-avoid">
+        <div className="w-72">
+          <div className="bg-white rounded-xl p-3 shadow-xl border border-slate-200">
             {isVatPayer && (
               <>
-                <div className="flex justify-between py-2 border-b border-slate-200">
-                  <span className="text-slate-600 font-medium text-sm">Základ dane (bez DPH):</span>
-                  <span className="font-semibold text-slate-900 text-sm">{subtotal.toFixed(2)} €</span>
+                <div className="flex justify-between py-1.5 border-b border-slate-200">
+                  <span className="text-slate-600 font-medium text-[11pt] leading-relaxed">Zaklad dane (bez DPH):</span>
+                  <span className="font-semibold text-slate-900 text-[11pt] leading-relaxed">{subtotal.toFixed(2)} {currency}</span>
                 </div>
-                <div className="flex justify-between py-2 border-b border-slate-200">
-                  <span className="text-slate-600 font-medium text-sm">DPH ({taxRate.toFixed(0)}%):</span>
-                  <span className="font-semibold text-slate-900 text-sm">{vat.toFixed(2)} €</span>
+                <div className="flex justify-between py-1.5 border-b border-slate-200">
+                  <span className="text-slate-600 font-medium text-[11pt] leading-relaxed">DPH ({taxRate.toFixed(0)}%):</span>
+                  <span className="font-semibold text-slate-900 text-[11pt] leading-relaxed">{vat.toFixed(2)} {currency}</span>
                 </div>
               </>
             )}
-            <div className="flex justify-between py-3 mt-2 bg-gradient-to-r from-blue-600 to-purple-600 px-4 rounded-xl">
-              <span className="font-bold text-base text-white">Celkom k úhrade:</span>
-              <span className="font-black text-xl text-white">{total.toFixed(2)} €</span>
+            <div className="flex justify-between py-2 mt-1.5 bg-gradient-to-r from-blue-600 to-purple-600 px-3 rounded-xl">
+              <span className="font-bold text-[14pt] text-white leading-tight">Celkom k uhrade:</span>
+              <span className="font-black text-[14pt] text-white leading-tight">{total.toFixed(2)} {currency}</span>
             </div>
           </div>
         </div>
@@ -295,26 +250,26 @@ export const InvoicePreviewModern = ({ invoiceData }: InvoicePreviewModernProps)
 
       {/* Reverse Charge or Tax Exemption Text */}
       {invoiceData.reverseChargeText && (
-        <div className="mb-4 p-3 bg-yellow-50 border border-yellow-200 rounded-xl">
-          <p className="text-sm font-semibold text-yellow-800">{invoiceData.reverseChargeText}</p>
+        <div className="mb-3 p-2.5 bg-yellow-50 border border-yellow-200 rounded-xl print:break-inside-avoid">
+          <p className="text-[10pt] font-semibold text-yellow-800 leading-relaxed">{invoiceData.reverseChargeText}</p>
         </div>
       )}
 
       {invoiceData.taxExemptionText && (
-        <div className="mb-4 p-3 bg-blue-50 border border-blue-200 rounded-xl">
-          <p className="text-sm font-semibold text-blue-800">{invoiceData.taxExemptionText}</p>
+        <div className="mb-3 p-2.5 bg-blue-50 border border-blue-200 rounded-xl print:break-inside-avoid">
+          <p className="text-[10pt] font-semibold text-blue-800 leading-relaxed">{invoiceData.taxExemptionText}</p>
         </div>
       )}
 
       {/* Footer */}
-      <div className="bg-white rounded-2xl p-6 border border-slate-200">
-        <p className="text-sm text-slate-600 text-center">
-          Faktúru je potrebné uhradiť do dátumu splatnosti. V prípade otázok nás kontaktujte na email@invoicehub.sk
+      <div className="bg-white rounded-xl p-3 border border-slate-200">
+        <p className="text-[9pt] text-slate-600 text-center leading-relaxed">
+          Fakturu je potrebne uhradit do datumu splatnosti. V pripade otazok nas kontaktujte na email@invoicehub.sk
         </p>
       </div>
 
-      <div className="mt-6 text-center text-xs text-slate-500">
-        <p className="font-medium">Ďakujeme za vašu dôveru! ✨</p>
+      <div className="mt-3 text-center text-[9pt] text-slate-500">
+        <p className="font-medium">Dakujeme za vasu doveru!</p>
       </div>
     </div>
   );
