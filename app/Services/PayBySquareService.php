@@ -164,8 +164,6 @@ class PayBySquareService implements PayBySquareContract
             return $result !== false ? $result : $string;
         }
 
-        $result = iconv('UTF-8', 'ASCII//TRANSLIT//IGNORE', $string);
-
-        return $result !== false ? $result : $string;
+        return $string;
     }
 }

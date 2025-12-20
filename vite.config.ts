@@ -8,7 +8,8 @@ export default defineConfig({
         laravel({
             input: [
                 'resources/js/index.css',
-                'resources/js/main.tsx'
+                'resources/js/main.tsx',
+                'resources/js/pdf-preview.tsx'
             ],
             refresh: true,
         }),
