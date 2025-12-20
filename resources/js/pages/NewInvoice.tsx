@@ -2,12 +2,13 @@ import { useNavigate, useParams } from "react-router-dom";
 import { useForm, useFieldArray, FieldErrors } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";
-import { Save, ArrowLeft, Loader2, ChevronDown } from "lucide-react";
+import { Save, ArrowLeft, Loader2, ChevronDown, Building2, FileText, CreditCard } from "lucide-react";
 import { DashboardLayout } from "@/components/dashboard/DashboardLayout";
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
 import { Card } from "@/components/ui/card";
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
+import { Textarea } from "@/components/ui/textarea";
 import { cn } from "@/lib/utils";
 import { useToast } from "@/hooks/use-toast";
 import { useState, useEffect, useCallback, useMemo } from "react";
@@ -19,12 +20,12 @@ import { invoiceService } from "@/services/invoiceService";
 import { ClientInformationSection } from "@/components/invoices/ClientInformationSection";
 import { CustomCompanySection } from "@/components/invoices/CustomCompanySection";
 import { InvoiceDateSection } from "@/components/invoices/InvoiceDateSection";
-import { PaymentSymbolsSection } from "@/components/invoices/PaymentSymbolsSection";
-import { PaymentDPHSection } from "@/components/invoices/PaymentDPHSection";
+import { SectionHeader } from "@/components/ui/SectionHeader";
+import { PaymentSection } from "@/components/invoices/PaymentSection";
 import { InvoiceNumberSection } from "@/components/invoices/InvoiceNumberSection";
 import { InvoiceItemsSection } from "@/components/invoices/InvoiceItemsSection";
 import { InvoiceSummarySection } from "@/components/invoices/InvoiceSummarySection";
-import { InvoiceStatusDropdown } from "@/components/invoices/InvoiceStatusDropdown";
+import { NotesSection } from "@/components/invoices/NotesSection";
 import type { InvoiceFormData } from "@/components/invoices/ClientInformationSection";
 import { Company } from "@/types/company";
 import { useQueryClient } from "@tanstack/react-query";
@@ -178,6 +179,7 @@ const NewInvoice = () => {
   // VAT visibility based on supplier status and customer country
   const {
     showVatFields,
+    showVatSummary,
     isVatRateEditable,
     defaultVatRate,
     section7aMessage,
@@ -641,7 +643,7 @@ const NewInvoice = () => {
   if (isEditMode && isLoadingInvoice) {
     return (
       <DashboardLayout>
-        <div className="max-w-6xl mx-auto animate-fade-in">
+        <div className="max-w-[1440px] mx-auto animate-fade-in">
           <div className="flex items-center justify-center py-12">
             <Loader2 className="h-8 w-8 animate-spin" />
           </div>
@@ -652,39 +654,41 @@ const NewInvoice = () => {
 
   return (
     <DashboardLayout>
-      <div className="max-w-6xl mx-auto animate-fade-in pb-8">
-        {/* Compact Header */}
-        <div className="flex items-center justify-between mb-6">
+      <div className="max-w-[1440px] mx-auto animate-fade-in pb-8">
+        {/* Responsive Header */}
+        <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 mb-6">
           <div className="flex items-center gap-3">
-            <Button variant="ghost" size="icon" onClick={() => navigate("/app/invoices")}>
+            <Button
+              variant="ghost"
+              size="icon"
+              onClick={() => navigate("/app/invoices")}
+              className="h-11 w-11 shrink-0"
+            >
               <ArrowLeft className="h-5 w-5" />
             </Button>
             <div>
-              <h1 className="text-2xl font-bold">{isEditMode ? "Upraviť faktúru" : "Nová faktúra"}</h1>
+              <h1 className="text-xl sm:text-2xl font-bold">
+                {isEditMode ? "Upravit fakturu" : "Nova faktura"}
+              </h1>
               <p className="text-sm text-muted-foreground">#{watch("invoiceNumber")}</p>
             </div>
           </div>
-          <div className="flex items-center gap-3">
-            {isEditMode && invoice && (
-              <InvoiceStatusDropdown
-                invoiceId={Number(id)}
-                currentStatus={invoice.status}
-                onStatusChange={handleStatusChange}
-              />
-            )}
-            <Button onClick={handleSubmit(onSubmit, onError)} className="gap-2">
-              <Save className="h-4 w-4" />
-              Uložiť
-            </Button>
-          </div>
+          {/* Desktop save button - hidden on mobile */}
+          <Button
+            onClick={handleSubmit(onSubmit, onError)}
+            className="hidden lg:flex gap-2 min-h-[44px]"
+          >
+            <Save className="h-4 w-4" />
+            Ulozit
+          </Button>
         </div>
 
-        <form onSubmit={handleSubmit(onSubmit, onError)} className="space-y-6">
-          {/* Klient + Základné info */}
-          <div className="grid lg:grid-cols-2 gap-6">
+        <form onSubmit={handleSubmit(onSubmit, onError)} className="space-y-4 sm:space-y-6">
+          {/* Klient + Detaily + Platobne udaje - 3-column grid on lg */}
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 md:gap-6">
             {/* Klient */}
-            <Card className="p-5">
-              <h2 className="font-semibold mb-4">Klient</h2>
+            <Card className="p-4 sm:p-5">
+              <SectionHeader icon={Building2} title="Klient" />
 
               {/* Toggle between standard and custom company */}
               <div className="flex items-center space-x-2 mb-4 p-2 bg-muted/30 rounded-md border text-sm">
@@ -725,11 +729,17 @@ const NewInvoice = () => {
               )}
             </Card>
 
-            {/* Detaily faktúry */}
-            <Card className="p-5">
-              <h2 className="font-semibold mb-4">Detaily faktúry</h2>
+            {/* Detaily faktury */}
+            <Card className="p-4 sm:p-5">
+              <SectionHeader icon={FileText} title="Detaily faktury" />
               <div className="space-y-4">
-                <InvoiceNumberSection form={form} />
+                <InvoiceNumberSection
+                  form={form}
+                  isEditMode={isEditMode}
+                  invoiceId={id ? Number(id) : undefined}
+                  currentStatus={invoice?.status}
+                  onStatusChange={handleStatusChange}
+                />
                 <InvoiceDateSection
                   form={form}
                   issueDate={issueDate}
@@ -742,6 +752,12 @@ const NewInvoice = () => {
                   setDueDateDays={setDueDateDays}
                 />
               </div>
+            </Card>
+
+            {/* Platobne udaje */}
+            <Card className="p-4 sm:p-5 md:col-span-2 lg:col-span-1">
+              <SectionHeader icon={CreditCard} title="Platobne udaje" />
+              <PaymentSection form={form} showVatSettings={showVatFields} />
             </Card>
           </div>
 
@@ -758,26 +774,40 @@ const NewInvoice = () => {
             vatInfoMessage={section7aMessage}
           />
 
-          {/* Rozšírené nastavenia (Collapsible) */}
+          {/* Rozsirene nastavenia (Collapsible) */}
           <Collapsible open={advancedOpen} onOpenChange={setAdvancedOpen}>
             <CollapsibleTrigger asChild>
-              <Button type="button" variant="ghost" className="w-full justify-between text-muted-foreground">
-                Rozšírené nastavenia
+              <Button type="button" variant="ghost" className="w-full justify-between text-muted-foreground min-h-[44px]">
+                Rozsirene nastavenia
                 <ChevronDown className={cn("h-4 w-4 transition-transform", advancedOpen && "rotate-180")} />
               </Button>
             </CollapsibleTrigger>
-            <CollapsibleContent className="space-y-4 pt-4">
-              <PaymentDPHSection form={form} />
+            <CollapsibleContent className="pt-4">
+              <Card className="p-4 sm:p-5">
+                {/* Specificky text */}
+                <div>
+                  <Label className="text-xs">Specificky text na fakture</Label>
+                  <Textarea
+                    {...register("specialText")}
+                    placeholder="Volitelny text zobrazeny na fakture..."
+                    className="mt-1 resize-none"
+                    rows={2}
+                  />
+                </div>
+              </Card>
             </CollapsibleContent>
           </Collapsible>
 
-          {/* Súhrn */}
-          <InvoiceSummarySection form={form} items={items} />
+          {/* Notes & Summary Grid - 2 columns on lg */}
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 sm:gap-6">
+            <NotesSection form={form} />
+            <InvoiceSummarySection form={form} showVatSummary={showVatSummary} />
+          </div>
 
-          {/* Mobile save button */}
-          <Button type="submit" className="w-full lg:hidden gap-2">
+          {/* Mobile save button - at bottom of form */}
+          <Button type="submit" className="w-full lg:hidden gap-2 min-h-[48px]">
             <Save className="h-4 w-4" />
-            {isEditMode ? "Uložiť zmeny" : "Uložiť faktúru"}
+            {isEditMode ? "Ulozit zmeny" : "Ulozit fakturu"}
           </Button>
         </form>
       </div>

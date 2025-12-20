@@ -52,9 +52,10 @@ export const CustomCompanySection = ({
         />
       </div>
 
-      <div className="grid grid-cols-3 gap-2">
+      {/* ICO, DIC, IC DPH - responsive grid */}
+      <div className="grid grid-cols-1 sm:grid-cols-3 gap-2 sm:gap-3">
         <div>
-          <Label className="text-xs">IČO</Label>
+          <Label className="text-xs">ICO</Label>
           <Input
             {...register("customCompanyIco")}
             placeholder="12345678"
@@ -63,7 +64,7 @@ export const CustomCompanySection = ({
           />
         </div>
         <div>
-          <Label className="text-xs">DIČ</Label>
+          <Label className="text-xs">DIC</Label>
           <Input
             {...register("customCompanyDic")}
             placeholder="1234567890"
@@ -72,7 +73,7 @@ export const CustomCompanySection = ({
           />
         </div>
         <div>
-          <Label className="text-xs">IČ DPH</Label>
+          <Label className="text-xs">IC DPH</Label>
           <Input
             {...register("customCompanyIcDph")}
             placeholder="SK1234567890"
@@ -82,9 +83,10 @@ export const CustomCompanySection = ({
         </div>
       </div>
 
-      <div className="grid grid-cols-3 gap-2">
+      {/* PSC, Mesto, Krajina - responsive grid */}
+      <div className="grid grid-cols-2 sm:grid-cols-3 gap-2 sm:gap-3">
         <div>
-          <Label className="text-xs">PSČ</Label>
+          <Label className="text-xs">PSC</Label>
           <Input
             {...register("customCompanyZip")}
             placeholder="811 01"
@@ -101,7 +103,7 @@ export const CustomCompanySection = ({
             disabled={isEditMode && !useCustomCompany}
           />
         </div>
-        <div>
+        <div className="col-span-2 sm:col-span-1">
           <Label className="text-xs">Krajina</Label>
           <Input
             {...register("customCompanyCountry")}

@@ -34,74 +34,78 @@ export const InvoiceDateSection = ({
   const { setValue, formState: { errors } } = form;
 
   return (
-    <div className="grid grid-cols-2 gap-3">
-      {/* Dátum vystavenia */}
-      <div>
-        <Label className="text-xs">Dátum vystavenia</Label>
-        <Popover>
-          <PopoverTrigger asChild>
-            <Button type="button" variant="outline" className="w-full mt-1 justify-start font-normal">
-              <CalendarIcon className="mr-2 h-4 w-4" />
-              {issueDate ? format(issueDate, "dd.MM.yyyy") : "Vyberte"}
-            </Button>
-          </PopoverTrigger>
-          <PopoverContent className="w-auto p-0" align="start">
-            <Calendar
-              mode="single"
-              selected={issueDate}
-              onSelect={(date) => {
-                setIssueDate(date);
-                setValue("issueDate", date as Date);
-              }}
-              className="pointer-events-auto"
-            />
-          </PopoverContent>
-        </Popover>
-        {errors.issueDate && (
-          <p className="text-xs text-destructive mt-1">{errors.issueDate.message}</p>
-        )}
+    <div className="pt-3 border-t space-y-3">
+      {/* Date pickers row - responsive grid */}
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+        {/* Datum vystavenia */}
+        <div>
+          <Label className="text-xs">Datum vystavenia</Label>
+          <Popover>
+            <PopoverTrigger asChild>
+              <Button type="button" variant="outline" className="w-full mt-1 justify-start font-normal min-h-[44px] sm:min-h-[40px]">
+                <CalendarIcon className="mr-2 h-4 w-4" />
+                {issueDate ? format(issueDate, "dd.MM.yyyy") : "Vyberte"}
+              </Button>
+            </PopoverTrigger>
+            <PopoverContent className="w-auto p-0" align="start">
+              <Calendar
+                mode="single"
+                selected={issueDate}
+                onSelect={(date) => {
+                  setIssueDate(date);
+                  setValue("issueDate", date as Date);
+                }}
+                className="pointer-events-auto"
+              />
+            </PopoverContent>
+          </Popover>
+          {errors.issueDate && (
+            <p className="text-xs text-destructive mt-1">{errors.issueDate.message}</p>
+          )}
+        </div>
+
+        {/* Datum dodania */}
+        <div>
+          <Label className="text-xs">Datum dodania</Label>
+          <Popover>
+            <PopoverTrigger asChild>
+              <Button type="button" variant="outline" className="w-full mt-1 justify-start font-normal min-h-[44px] sm:min-h-[40px]">
+                <CalendarIcon className="mr-2 h-4 w-4" />
+                {deliveryDate ? format(deliveryDate, "dd.MM.yyyy") : "Vyberte"}
+              </Button>
+            </PopoverTrigger>
+            <PopoverContent className="w-auto p-0" align="start">
+              <Calendar
+                mode="single"
+                selected={deliveryDate}
+                onSelect={(date) => {
+                  setDeliveryDate(date);
+                  setValue("deliveryDate", date as Date);
+                }}
+                className="pointer-events-auto"
+              />
+            </PopoverContent>
+          </Popover>
+          {errors.deliveryDate && (
+            <p className="text-xs text-destructive mt-1">{errors.deliveryDate.message}</p>
+          )}
+        </div>
       </div>
 
-      {/* Dátum dodania */}
+      {/* Splatnost - full width with days input and date picker */}
       <div>
-        <Label className="text-xs">Dátum dodania</Label>
-        <Popover>
-          <PopoverTrigger asChild>
-            <Button type="button" variant="outline" className="w-full mt-1 justify-start font-normal">
-              <CalendarIcon className="mr-2 h-4 w-4" />
-              {deliveryDate ? format(deliveryDate, "dd.MM.yyyy") : "Vyberte"}
-            </Button>
-          </PopoverTrigger>
-          <PopoverContent className="w-auto p-0" align="start">
-            <Calendar
-              mode="single"
-              selected={deliveryDate}
-              onSelect={(date) => {
-                setDeliveryDate(date);
-                setValue("deliveryDate", date as Date);
-              }}
-              className="pointer-events-auto"
-            />
-          </PopoverContent>
-        </Popover>
-        {errors.deliveryDate && (
-          <p className="text-xs text-destructive mt-1">{errors.deliveryDate.message}</p>
-        )}
-      </div>
-
-      {/* Splatnosť - full width */}
-      <div className="col-span-2">
-        <Label className="text-xs">Splatnosť (dní)</Label>
+        <Label className="text-xs">Splatnost (dni)</Label>
         <div className="grid grid-cols-3 gap-2 mt-1">
           <Input
             type="number"
             value={dueDateDays}
             onChange={(e) => setDueDateDays(Number(e.target.value))}
             className="text-center"
+            min="1"
           />
           <Popover>
             <PopoverTrigger asChild>
-              <Button type="button" variant="outline" className="col-span-2 justify-start font-normal">
+              <Button type="button" variant="outline" className="col-span-2 justify-start font-normal min-h-[44px] sm:min-h-[40px]">
                 <CalendarIcon className="mr-2 h-4 w-4" />
                 {dueDate ? format(dueDate, "dd.MM.yyyy") : "Vyberte"}
               </Button>
