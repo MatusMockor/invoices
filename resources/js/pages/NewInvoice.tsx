@@ -139,6 +139,13 @@ const MAX_VISIBLE_ERRORS = 5;
 const ERROR_TOAST_DURATION_MS = 12000;
 const MAX_RECURSION_DEPTH = 10;
 
+const formatDateForApi = (date: Date): string => {
+  const year = date.getFullYear();
+  const month = String(date.getMonth() + 1).padStart(2, '0');
+  const day = String(date.getDate()).padStart(2, '0');
+  return `${year}-${month}-${day}`;
+};
+
 const NewInvoice = () => {
   const navigate = useNavigate();
   const { id } = useParams();
@@ -471,6 +478,13 @@ const NewInvoice = () => {
       const issueDateObj = new Date(invoice.issue_date);
       const dueDateObj = new Date(invoice.due_date);
       const deliveryDateObj = new Date(invoice.delivery_date);
+
+      // Calculate dueDateDays from actual data BEFORE setting issueDate
+      // so the useEffect doesn't overwrite dueDate with a recalculated value
+      const diffTime = Math.abs(dueDateObj.getTime() - issueDateObj.getTime());
+      const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+      setDueDateDays(diffDays);
+
       setIssueDate(issueDateObj);
       setDueDate(dueDateObj);
       setDeliveryDate(deliveryDateObj);
@@ -550,9 +564,9 @@ const NewInvoice = () => {
         customCompanyZip: data.customCompanyZip,
         customCompanyCountry: data.customCompanyCountry,
         invoiceNumber: data.invoiceNumber,
-        issue_date: data.issueDate.toISOString().split('T')[0], // Format: YYYY-MM-DD
-        due_date: data.dueDate.toISOString().split('T')[0], // Format: YYYY-MM-DD
-        delivery_date: data.deliveryDate.toISOString().split('T')[0], // Format: YYYY-MM-DD
+        issue_date: formatDateForApi(data.issueDate),
+        due_date: formatDateForApi(data.dueDate),
+        delivery_date: formatDateForApi(data.deliveryDate),
         variableSymbol: data.variableSymbol,
         constantSymbol: data.constantSymbol,
         specificSymbol: data.specificSymbol,
