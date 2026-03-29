@@ -193,10 +193,10 @@ final class InvoicePartySnapshot
         ])['customer'];
     }
 
-    private static function normalizeEnumValue(string|BackedEnum|null $value): ?string
+    private static function normalizeEnumValue(mixed $value): ?string
     {
         if ($value instanceof BackedEnum) {
-            return self::nullableString((string) $value->value);
+            $value = $value->value;
         }
 
         return self::nullableString($value);
@@ -205,6 +205,10 @@ final class InvoicePartySnapshot
     private static function nullableString(mixed $value): ?string
     {
         if ($value === null) {
+            return null;
+        }
+
+        if (! is_scalar($value) && ! $value instanceof \Stringable) {
             return null;
         }
 
