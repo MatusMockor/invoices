@@ -182,9 +182,14 @@ class InvoiceControllerTest extends TestCase
             ],
         ]);
 
-        // Calculate expected total with 20% VAT (default Slovak VAT rate)
-        $subtotal = ($item1Quantity * $item1Price) + ($item2Quantity * $item2Price);
-        $expectedTotal = round($subtotal * 1.20, 2); // Add 20% VAT
+        // Calculate expected total using the same per-item VAT rounding as the app.
+        $item1Subtotal = round($item1Quantity * $item1Price, 2);
+        $item2Subtotal = round($item2Quantity * $item2Price, 2);
+        $expectedTax = round(
+            round($item1Subtotal * 0.20, 2) + round($item2Subtotal * 0.20, 2),
+            2
+        );
+        $expectedTotal = round($item1Subtotal + $item2Subtotal + $expectedTax, 2);
 
         $this->assertDatabaseHas(Invoice::class, [
             'invoice_number' => $invoiceNumber,
