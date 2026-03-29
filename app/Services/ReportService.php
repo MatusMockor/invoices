@@ -55,7 +55,7 @@ final class ReportService implements ReportServiceContract
             'income_invoices' => $incomeInvoices->map(static fn (Invoice $invoice): array => [
                 'id' => $invoice->id,
                 'invoice_number' => $invoice->invoice_number,
-                'customer_name' => $invoice->company->name ?? 'N/A',
+                'customer_name' => data_get($invoice->party_snapshot, 'customer.name', 'N/A'),
                 'issue_date' => $invoice->issue_date->toDateString(),
                 'due_date' => $invoice->due_date->toDateString(),
                 'total_amount' => $invoice->total_amount,
@@ -65,7 +65,7 @@ final class ReportService implements ReportServiceContract
             'expense_invoices' => $expenseInvoices->map(static fn (Invoice $invoice): array => [
                 'id' => $invoice->id,
                 'invoice_number' => $invoice->invoice_number,
-                'supplier_name' => $invoice->supplierCompany->name ?? 'N/A',
+                'supplier_name' => data_get($invoice->party_snapshot, 'supplier.name', 'N/A'),
                 'issue_date' => $invoice->issue_date->toDateString(),
                 'due_date' => $invoice->due_date->toDateString(),
                 'total_amount' => $invoice->total_amount,

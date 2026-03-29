@@ -20,9 +20,8 @@ class InvoiceResource extends JsonResource
     {
         return array_merge(
             $this->getInvoiceMetadata(),
-            $this->getSupplierData(),
-            $this->getClientData(),
-            $this->getRelationshipsData(),
+            $this->getPartySnapshotData(),
+            $this->getResourceData(),
             $this->getVatStatusData(),
             $this->getComputedTextFields(),
         );
@@ -62,50 +61,27 @@ class InvoiceResource extends JsonResource
     }
 
     /**
-     * Get supplier (seller) related data.
+     * Get invoice party snapshot data.
      *
      * @return array<string, mixed>
      */
-    private function getSupplierData(): array
+    private function getPartySnapshotData(): array
     {
         return [
             'supplier_company_id' => $this->supplier_company_id,
-            'supplier_registry_office' => $this->supplier_registry_office,
-            'supplier_registry_number' => $this->supplier_registry_number,
-        ];
-    }
-
-    /**
-     * Get client (buyer) company data snapshot.
-     *
-     * @return array<string, mixed>
-     */
-    private function getClientData(): array
-    {
-        return [
-            'business_entity_id' => $this->company_id,
             'company_id' => $this->company_id,
-            'company_ico' => $this->company_ico,
-            'company_dic' => $this->company_dic,
-            'company_ic_dph' => $this->company_ic_dph,
-            'company_name' => $this->company_name,
-            'company_address' => $this->company_address,
-            'company_city' => $this->company_city,
-            'company_zip' => $this->company_zip,
-            'company_country' => $this->company_country,
+            'party_snapshot' => $this->party_snapshot,
         ];
     }
 
     /**
-     * Get loaded relationships data.
+     * Get loaded resource data.
      *
      * @return array<string, mixed>
      */
-    private function getRelationshipsData(): array
+    private function getResourceData(): array
     {
         return [
-            'business_entity' => new CompanyResource($this->whenLoaded('company')),
-            'supplier_company' => new UserCompanyResource($this->whenLoaded('supplierCompany')),
             'items' => InvoiceItemResource::collection($this->whenLoaded('items')),
             'qr_code' => $this->qr_code ?? null,
         ];
@@ -120,7 +96,7 @@ class InvoiceResource extends JsonResource
     {
         return [
             'supplier_vat_payer_status' => $this->getEffectiveVatStatus()?->value,
-            'supplier_vat_period' => $this->supplier_vat_period,
+            'supplier_vat_period' => $this->getSupplierVatPeriodSnapshot()?->value,
             'supplier_is_vat_payer' => $this->supplierIsVatPayer(),
             'supplier_is_registered_paragraph_7a' => $this->supplierIsRegisteredParagraph7a(),
             'should_show_vat_fields' => $this->shouldShowVatFields(),

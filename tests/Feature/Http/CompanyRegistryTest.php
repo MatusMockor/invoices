@@ -102,8 +102,8 @@ final class CompanyRegistryTest extends TestCase
         $response = $this->getJson(route('api.invoices.show', $invoice));
 
         $response->assertSuccessful()
-            ->assertJsonPath('data.supplier_registry_office', 'Okresny sud Bratislava I')
-            ->assertJsonPath('data.supplier_registry_number', 'Oddiel: Sro, Vlozka c. 123456/B');
+            ->assertJsonPath('data.party_snapshot.supplier.registration_office', 'Okresny sud Bratislava I')
+            ->assertJsonPath('data.party_snapshot.supplier.registration_number', 'Oddiel: Sro, Vlozka c. 123456/B');
     }
 
     public function test_company_list_api_includes_registry_fields(): void
@@ -146,10 +146,8 @@ final class CompanyRegistryTest extends TestCase
         $response = $this->getJson(route('api.invoices.index'));
 
         $response->assertSuccessful()
-            ->assertJsonFragment([
-                'supplier_registry_office' => 'Okresny sud Bratislava I',
-                'supplier_registry_number' => 'Oddiel: Sro, Vlozka c. 123456/B',
-            ]);
+            ->assertJsonPath('data.0.party_snapshot.supplier.registration_office', 'Okresny sud Bratislava I')
+            ->assertJsonPath('data.0.party_snapshot.supplier.registration_number', 'Oddiel: Sro, Vlozka c. 123456/B');
     }
 
     public function test_company_show_returns_null_registration_office_when_not_set(): void
@@ -191,8 +189,8 @@ final class CompanyRegistryTest extends TestCase
         $response = $this->getJson(route('api.invoices.show', $invoice));
 
         $response->assertSuccessful()
-            ->assertJsonPath('data.supplier_registry_office', null)
-            ->assertJsonPath('data.supplier_registry_number', null);
+            ->assertJsonPath('data.party_snapshot.supplier.registration_office', null)
+            ->assertJsonPath('data.party_snapshot.supplier.registration_number', null);
     }
 
     public function test_sro_company_registry_data_is_returned_in_api(): void
@@ -254,7 +252,7 @@ final class CompanyRegistryTest extends TestCase
 
         // Verify snapshot values are returned (not live company values)
         $response->assertSuccessful()
-            ->assertJsonPath('data.supplier_registry_office', 'Original Snapshot Office')
-            ->assertJsonPath('data.supplier_registry_number', 'Original Snapshot Number');
+            ->assertJsonPath('data.party_snapshot.supplier.registration_office', 'Original Snapshot Office')
+            ->assertJsonPath('data.party_snapshot.supplier.registration_number', 'Original Snapshot Number');
     }
 }

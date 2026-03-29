@@ -223,11 +223,18 @@ class CompanyRepository implements CompanyRepositoryContract
     private function getMonthlyAmounts(int $companyId, int $year, string $companyField): array
     {
         $result = array_fill(1, 12, 0.0);
+        $driver = Invoice::query()->getConnection()->getDriverName();
+
+        $monthExpression = match ($driver) {
+            'sqlite' => "CAST(strftime('%m', issue_date) AS integer)",
+            'mysql', 'mariadb' => 'MONTH(issue_date)',
+            default => 'EXTRACT(MONTH FROM issue_date)::integer',
+        };
 
         $monthlyTotals = Invoice::where($companyField, $companyId)
             ->whereNotNull('issue_date')
             ->whereYear('issue_date', $year)
-            ->selectRaw('EXTRACT(MONTH FROM issue_date)::integer as month, SUM(total_amount) as total')
+            ->selectRaw("{$monthExpression} as month, SUM(total_amount) as total")
             ->groupBy('month')
             ->pluck('total', 'month')
             ->toArray();

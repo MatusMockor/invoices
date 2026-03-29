@@ -226,8 +226,8 @@ final class InvoiceResourceTest extends TestCase
         $resource = new InvoiceResource($invoice);
         $response = $resource->toArray(Request::create('/'));
 
-        $this->assertArrayHasKey('supplier_registry_office', $response);
-        $this->assertEquals($registryOffice, $response['supplier_registry_office']);
+        $this->assertArrayHasKey('party_snapshot', $response);
+        $this->assertEquals($registryOffice, data_get($response, 'party_snapshot.supplier.registration_office'));
     }
 
     public function test_resource_includes_supplier_registry_number(): void
@@ -246,8 +246,8 @@ final class InvoiceResourceTest extends TestCase
         $resource = new InvoiceResource($invoice);
         $response = $resource->toArray(Request::create('/'));
 
-        $this->assertArrayHasKey('supplier_registry_number', $response);
-        $this->assertEquals($registryNumber, $response['supplier_registry_number']);
+        $this->assertArrayHasKey('party_snapshot', $response);
+        $this->assertEquals($registryNumber, data_get($response, 'party_snapshot.supplier.registration_number'));
     }
 
     public function test_resource_includes_both_registry_fields(): void
@@ -269,10 +269,9 @@ final class InvoiceResourceTest extends TestCase
         $resource = new InvoiceResource($invoice);
         $response = $resource->toArray(Request::create('/'));
 
-        $this->assertArrayHasKey('supplier_registry_office', $response);
-        $this->assertArrayHasKey('supplier_registry_number', $response);
-        $this->assertEquals($registryOffice, $response['supplier_registry_office']);
-        $this->assertEquals($registryNumber, $response['supplier_registry_number']);
+        $this->assertArrayHasKey('party_snapshot', $response);
+        $this->assertEquals($registryOffice, data_get($response, 'party_snapshot.supplier.registration_office'));
+        $this->assertEquals($registryNumber, data_get($response, 'party_snapshot.supplier.registration_number'));
     }
 
     public function test_resource_returns_null_for_registry_fields_when_not_set(): void
@@ -287,10 +286,9 @@ final class InvoiceResourceTest extends TestCase
         $resource = new InvoiceResource($invoice);
         $response = $resource->toArray(Request::create('/'));
 
-        $this->assertArrayHasKey('supplier_registry_office', $response);
-        $this->assertArrayHasKey('supplier_registry_number', $response);
-        $this->assertNull($response['supplier_registry_office']);
-        $this->assertNull($response['supplier_registry_number']);
+        $this->assertArrayHasKey('party_snapshot', $response);
+        $this->assertNull(data_get($response, 'party_snapshot.supplier.registration_office'));
+        $this->assertNull(data_get($response, 'party_snapshot.supplier.registration_number'));
     }
 
     public function test_resource_includes_sole_proprietorship_registry_data(): void
@@ -313,7 +311,7 @@ final class InvoiceResourceTest extends TestCase
         $resource = new InvoiceResource($invoice);
         $response = $resource->toArray(Request::create('/'));
 
-        $this->assertEquals($registryOffice, $response['supplier_registry_office']);
-        $this->assertEquals($registryNumber, $response['supplier_registry_number']);
+        $this->assertEquals($registryOffice, data_get($response, 'party_snapshot.supplier.registration_office'));
+        $this->assertEquals($registryNumber, data_get($response, 'party_snapshot.supplier.registration_number'));
     }
 }

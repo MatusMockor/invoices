@@ -17,8 +17,7 @@ class InvoiceRepository implements InvoiceRepositoryContract
      */
     public function getAllForCompanyPaginated(int $companyId, int $perPage = 10): LengthAwarePaginator
     {
-        return Invoice::with('company')
-            ->where('supplier_company_id', $companyId)
+        return Invoice::where('supplier_company_id', $companyId)
             ->orderBy('created_at', 'desc')
             ->paginate($perPage);
     }
@@ -60,8 +59,7 @@ class InvoiceRepository implements InvoiceRepositoryContract
      */
     public function getIncomeInvoices(int $companyId, Carbon $startDate, Carbon $endDate): Collection
     {
-        return Invoice::with('company')
-            ->where('supplier_company_id', $companyId)
+        return Invoice::where('supplier_company_id', $companyId)
             ->whereBetween('issue_date', [$startDate, $endDate])
             ->orderBy('issue_date', 'desc')
             ->get();
@@ -72,8 +70,7 @@ class InvoiceRepository implements InvoiceRepositoryContract
      */
     public function getExpenseInvoices(int $companyId, Carbon $startDate, Carbon $endDate): Collection
     {
-        return Invoice::with('supplierCompany')
-            ->where('company_id', $companyId)
+        return Invoice::where('company_id', $companyId)
             ->whereBetween('issue_date', [$startDate, $endDate])
             ->orderBy('issue_date', 'desc')
             ->get();

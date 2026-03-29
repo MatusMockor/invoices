@@ -3,19 +3,25 @@ import { Document, Page, Text, View, StyleSheet, Image } from '@react-pdf/render
 interface InvoiceItem {
   description: string;
   quantity: number;
-  unit_price: number;
+  unit_price?: number;
+  unit_price_without_tax?: number;
   total_price: number;
 }
 
-interface Company {
+interface InvoicePartySnapshotBank {
+  iban?: string;
+}
+
+interface Party {
   name: string;
-  address?: string;
+  street?: string;
   postal_code?: string;
   city?: string;
   ico?: string;
   dic?: string;
   ic_dph?: string;
-  iban?: string;
+  registration_office?: string;
+  registration_number?: string;
 }
 
 interface Invoice {
@@ -27,8 +33,10 @@ interface Invoice {
   currency: string;
   notes?: string;
   qr_code?: string;
-  supplier_company?: Company;
-  business_entity?: Company;
+  party_snapshot: {
+    supplier: Party & { bank: InvoicePartySnapshotBank };
+    customer: Party;
+  };
   items?: InvoiceItem[];
 }
 
@@ -293,6 +301,12 @@ const styles = StyleSheet.create({
 export const InvoicePDFDocument = ({ invoice }: InvoicePDFDocumentProps) => (
   <Document>
     <Page size="A4" style={styles.page}>
+      {(() => {
+        const supplier = invoice.party_snapshot.supplier;
+        const customer = invoice.party_snapshot.customer;
+
+        return (
+          <>
       {/* Header */}
       <View style={styles.header}>
         <View style={styles.headerRow}>
@@ -305,16 +319,16 @@ export const InvoicePDFDocument = ({ invoice }: InvoicePDFDocumentProps) => (
           {/* Supplier */}
           <View style={styles.partyBox}>
             <Text style={styles.partyTitle}>Dodávateľ</Text>
-            <Text style={styles.partyName}>{invoice.supplier_company?.name || 'N/A'}</Text>
-            <Text style={styles.partyDetail}>{invoice.supplier_company?.address || ''}</Text>
+            <Text style={styles.partyName}>{supplier?.name || 'N/A'}</Text>
+            <Text style={styles.partyDetail}>{supplier?.street || ''}</Text>
             <Text style={styles.partyDetail}>
-              {invoice.supplier_company?.postal_code} {invoice.supplier_company?.city}
+              {supplier?.postal_code} {supplier?.city}
             </Text>
             <View style={styles.partyDetailSection}>
-              <Text style={styles.partyDetail}>IČO: {invoice.supplier_company?.ico || 'N/A'}</Text>
-              <Text style={styles.partyDetail}>DIČ: {invoice.supplier_company?.dic || 'N/A'}</Text>
-              {invoice.supplier_company?.ic_dph && (
-                <Text style={styles.partyDetail}>IČ DPH: {invoice.supplier_company.ic_dph}</Text>
+              <Text style={styles.partyDetail}>IČO: {supplier?.ico || 'N/A'}</Text>
+              <Text style={styles.partyDetail}>DIČ: {supplier?.dic || 'N/A'}</Text>
+              {supplier?.ic_dph && (
+                <Text style={styles.partyDetail}>IČ DPH: {supplier.ic_dph}</Text>
               )}
             </View>
           </View>
@@ -322,16 +336,16 @@ export const InvoicePDFDocument = ({ invoice }: InvoicePDFDocumentProps) => (
           {/* Client */}
           <View style={styles.partyBoxClient}>
             <Text style={styles.partyTitleClient}>Odberateľ</Text>
-            <Text style={styles.partyName}>{invoice.business_entity?.name || 'N/A'}</Text>
-            <Text style={styles.partyDetail}>{invoice.business_entity?.address || ''}</Text>
+            <Text style={styles.partyName}>{customer?.name || 'N/A'}</Text>
+            <Text style={styles.partyDetail}>{customer?.street || ''}</Text>
             <Text style={styles.partyDetail}>
-              {invoice.business_entity?.postal_code} {invoice.business_entity?.city}
+              {customer?.postal_code} {customer?.city}
             </Text>
             <View style={styles.partyDetailSection}>
-              <Text style={styles.partyDetail}>IČO: {invoice.business_entity?.ico || 'N/A'}</Text>
-              <Text style={styles.partyDetail}>DIČ: {invoice.business_entity?.dic || 'N/A'}</Text>
-              {invoice.business_entity?.ic_dph && (
-                <Text style={styles.partyDetail}>IČ DPH: {invoice.business_entity.ic_dph}</Text>
+              <Text style={styles.partyDetail}>IČO: {customer?.ico || 'N/A'}</Text>
+              <Text style={styles.partyDetail}>DIČ: {customer?.dic || 'N/A'}</Text>
+              {customer?.ic_dph && (
+                <Text style={styles.partyDetail}>IČ DPH: {customer.ic_dph}</Text>
               )}
             </View>
           </View>
@@ -361,10 +375,10 @@ export const InvoicePDFDocument = ({ invoice }: InvoicePDFDocumentProps) => (
 
             {/* Bank Details */}
             <View style={styles.bankDetails}>
-              {invoice.supplier_company?.iban && (
+              {supplier?.bank?.iban && (
                 <View style={styles.bankRow}>
                   <Text style={styles.bankLabel}>Číslo účtu</Text>
-                  <Text style={styles.bankValue}>{invoice.supplier_company.iban}</Text>
+                  <Text style={styles.bankValue}>{supplier.bank.iban}</Text>
                 </View>
               )}
               {invoice.variable_symbol && (
@@ -405,7 +419,7 @@ export const InvoicePDFDocument = ({ invoice }: InvoicePDFDocumentProps) => (
             <Text style={styles.tableColDescription}>{item.description}</Text>
             <Text style={styles.tableColQuantity}>{Number(item.quantity)}</Text>
             <Text style={styles.tableColPrice}>
-              {Number(item.unit_price).toFixed(2)} {invoice.currency}
+              {Number(item.unit_price ?? item.unit_price_without_tax ?? 0).toFixed(2)} {invoice.currency}
             </Text>
             <Text style={styles.tableColTotal}>
               {Number(item.total_price).toFixed(2)} {invoice.currency}
@@ -436,6 +450,9 @@ export const InvoicePDFDocument = ({ invoice }: InvoicePDFDocumentProps) => (
       <View style={styles.footerCenter}>
         <Text>Ďakujeme za vašu dôveru!</Text>
       </View>
+          </>
+        );
+      })()}
     </Page>
   </Document>
 );

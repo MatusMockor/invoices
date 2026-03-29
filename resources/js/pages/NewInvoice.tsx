@@ -409,50 +409,51 @@ const NewInvoice = () => {
     if (isEditMode && invoice) {
       // Always load from invoice snapshot data (not through relationship)
       // This preserves the historical data from when the invoice was created
+      const customerSnapshot = invoice.party_snapshot.customer;
 
       // Check if invoice has custom company data (no company_id means it was custom)
-      if (invoice.company_ico && !invoice.company_id) {
+      if (customerSnapshot.ico && !invoice.company_id) {
         setValue("useCustomCompany", true);
-        setValue("customCompanyIco", invoice.company_ico);
-        setValue("customCompanyDic", invoice.company_dic || "");
-        setValue("customCompanyIcDph", invoice.company_ic_dph || "");
-        setValue("customCompanyName", invoice.company_name || "");
-        setValue("customCompanyAddress", invoice.company_address || "");
-        setValue("customCompanyCity", invoice.company_city || "");
-        setValue("customCompanyZip", invoice.company_zip || "");
-        setValue("customCompanyCountry", invoice.company_country || "");
+        setValue("customCompanyIco", customerSnapshot.ico);
+        setValue("customCompanyDic", customerSnapshot.dic || "");
+        setValue("customCompanyIcDph", customerSnapshot.ic_dph || "");
+        setValue("customCompanyName", customerSnapshot.name || "");
+        setValue("customCompanyAddress", customerSnapshot.street || "");
+        setValue("customCompanyCity", customerSnapshot.city || "");
+        setValue("customCompanyZip", customerSnapshot.postal_code || "");
+        setValue("customCompanyCountry", customerSnapshot.country || "");
       } else {
         // Load from invoice snapshot data (NOT from business_entity relationship)
         setValue("useCustomCompany", false);
-        setValue("clientName", invoice.company_name || "");
-        setValue("clientStreet", invoice.company_address || "");
-        setValue("clientCity", invoice.company_city || "");
-        setValue("clientPostalCode", invoice.company_zip || "");
-        setValue("clientIco", invoice.company_ico || "");
-        setValue("clientDic", invoice.company_dic || "");
-        setValue("clientIcDph", invoice.company_ic_dph || "");
-        setIcoSearch(invoice.company_ico || "");
+        setValue("clientName", customerSnapshot.name || "");
+        setValue("clientStreet", customerSnapshot.street || "");
+        setValue("clientCity", customerSnapshot.city || "");
+        setValue("clientPostalCode", customerSnapshot.postal_code || "");
+        setValue("clientIco", customerSnapshot.ico || "");
+        setValue("clientDic", customerSnapshot.dic || "");
+        setValue("clientIcDph", customerSnapshot.ic_dph || "");
+        setIcoSearch(customerSnapshot.ico || "");
 
         // Set selectedCompany to display company info card in edit mode
         setSelectedCompany({
-          ico: invoice.company_ico || "",
-          name: invoice.company_name || "",
-          address: invoice.company_address,
-          city: invoice.company_city,
-          postal_code: invoice.company_zip,
-          dic: invoice.company_dic,
-          ic_dph: invoice.company_ic_dph,
+          ico: customerSnapshot.ico || "",
+          name: customerSnapshot.name || "",
+          address: customerSnapshot.street,
+          city: customerSnapshot.city,
+          postal_code: customerSnapshot.postal_code,
+          dic: customerSnapshot.dic,
+          ic_dph: customerSnapshot.ic_dph,
         });
 
         // Also pre-fill custom company fields from invoice snapshot data for when user toggles checkbox
-        setValue("customCompanyIco", invoice.company_ico || "");
-        setValue("customCompanyDic", invoice.company_dic || "");
-        setValue("customCompanyIcDph", invoice.company_ic_dph || "");
-        setValue("customCompanyName", invoice.company_name || "");
-        setValue("customCompanyAddress", invoice.company_address || "");
-        setValue("customCompanyCity", invoice.company_city || "");
-        setValue("customCompanyZip", invoice.company_zip || "");
-        setValue("customCompanyCountry", invoice.company_country || "");
+        setValue("customCompanyIco", customerSnapshot.ico || "");
+        setValue("customCompanyDic", customerSnapshot.dic || "");
+        setValue("customCompanyIcDph", customerSnapshot.ic_dph || "");
+        setValue("customCompanyName", customerSnapshot.name || "");
+        setValue("customCompanyAddress", customerSnapshot.street || "");
+        setValue("customCompanyCity", customerSnapshot.city || "");
+        setValue("customCompanyZip", customerSnapshot.postal_code || "");
+        setValue("customCompanyCountry", customerSnapshot.country || "");
       }
 
       // Set invoice number and variable symbol
@@ -471,6 +472,7 @@ const NewInvoice = () => {
       const issueDateObj = new Date(invoice.issue_date);
       const dueDateObj = new Date(invoice.due_date);
       const deliveryDateObj = new Date(invoice.delivery_date);
+
       setIssueDate(issueDateObj);
       setDueDate(dueDateObj);
       setDeliveryDate(deliveryDateObj);

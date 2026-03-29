@@ -85,6 +85,9 @@ export const InvoicePreviewModern = ({ invoiceData }: InvoicePreviewModernProps)
                 <div className="border-t border-slate-200 pt-1 mt-1 space-y-0.5">
                   <p className="text-[9pt] text-slate-500 leading-relaxed"><span className="font-semibold">ICO:</span> {invoiceData.client.ico}</p>
                   <p className="text-[9pt] text-slate-500 leading-relaxed"><span className="font-semibold">DIC:</span> {invoiceData.client.dic}</p>
+                  {invoiceData.client.icDph && (
+                    <p className="text-[9pt] text-slate-500 leading-relaxed"><span className="font-semibold">IC DPH:</span> {invoiceData.client.icDph}</p>
+                  )}
                 </div>
               </div>
             </div>

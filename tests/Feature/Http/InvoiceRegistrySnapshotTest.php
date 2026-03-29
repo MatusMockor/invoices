@@ -195,8 +195,8 @@ final class InvoiceRegistrySnapshotTest extends TestCase
         $response = $this->getJson(route('api.invoices.show', $invoice));
 
         $response->assertOk()
-            ->assertJsonPath('data.supplier_registry_office', 'Okresny sud Bratislava I')
-            ->assertJsonPath('data.supplier_registry_number', 'Oddiel: Sro, Vlozka c. 123456/B');
+            ->assertJsonPath('data.party_snapshot.supplier.registration_office', 'Okresny sud Bratislava I')
+            ->assertJsonPath('data.party_snapshot.supplier.registration_number', 'Oddiel: Sro, Vlozka c. 123456/B');
     }
 
     public function test_invoice_index_api_response_includes_registry_snapshot(): void
@@ -214,10 +214,8 @@ final class InvoiceRegistrySnapshotTest extends TestCase
         $response = $this->getJson(route('api.invoices.index'));
 
         $response->assertOk()
-            ->assertJsonFragment([
-                'supplier_registry_office' => 'Okresny sud Bratislava I',
-                'supplier_registry_number' => 'Oddiel: Sro, Vlozka c. 123456/B',
-            ]);
+            ->assertJsonPath('data.0.party_snapshot.supplier.registration_office', 'Okresny sud Bratislava I')
+            ->assertJsonPath('data.0.party_snapshot.supplier.registration_number', 'Oddiel: Sro, Vlozka c. 123456/B');
     }
 
     public function test_invoice_snapshot_is_independent_of_live_supplier_company_data(): void
@@ -243,8 +241,8 @@ final class InvoiceRegistrySnapshotTest extends TestCase
 
         // Verify snapshot values are returned (not live company values)
         $response->assertOk()
-            ->assertJsonPath('data.supplier_registry_office', 'Snapshot Office Value')
-            ->assertJsonPath('data.supplier_registry_number', 'Snapshot Number Value');
+            ->assertJsonPath('data.party_snapshot.supplier.registration_office', 'Snapshot Office Value')
+            ->assertJsonPath('data.party_snapshot.supplier.registration_number', 'Snapshot Number Value');
 
         // Verify company still has its own values
         $this->supplierCompany->refresh();
@@ -264,11 +262,10 @@ final class InvoiceRegistrySnapshotTest extends TestCase
             'supplier_registry_number' => 'Oddiel: Sro, Vlozka c. 123456/B',
         ]);
 
-        $this->assertDatabaseHas(Invoice::class, [
-            'id' => $invoice->id,
-            'supplier_registry_office' => 'Okresny sud Bratislava I',
-            'supplier_registry_number' => 'Oddiel: Sro, Vlozka c. 123456/B',
-        ]);
+        $snapshot = $this->getStoredPartySnapshot($invoice->id);
+
+        $this->assertSame('Okresny sud Bratislava I', data_get($snapshot, 'supplier.registration_office'));
+        $this->assertSame('Oddiel: Sro, Vlozka c. 123456/B', data_get($snapshot, 'supplier.registration_number'));
     }
 
     public function test_invoice_snapshot_with_null_values_stored_in_database(): void
@@ -288,10 +285,30 @@ final class InvoiceRegistrySnapshotTest extends TestCase
             'supplier_registry_number' => null,
         ]);
 
-        $this->assertDatabaseHas(Invoice::class, [
-            'id' => $invoice->id,
-            'supplier_registry_office' => null,
-            'supplier_registry_number' => null,
-        ]);
+        $snapshot = $this->getStoredPartySnapshot($invoice->id);
+
+        $this->assertNull(data_get($snapshot, 'supplier.registration_office'));
+        $this->assertNull(data_get($snapshot, 'supplier.registration_number'));
+    }
+
+    /**
+     * @return array<string, mixed>
+     */
+    private function getStoredPartySnapshot(int $invoiceId): array
+    {
+        /** @var array<string, mixed>|string|null $snapshot */
+        $snapshot = Invoice::query()->whereKey($invoiceId)->value('party_snapshot');
+
+        if (is_array($snapshot)) {
+            return $snapshot;
+        }
+
+        $this->assertIsString($snapshot);
+
+        $decoded = json_decode($snapshot, true);
+
+        $this->assertIsArray($decoded);
+
+        return $decoded;
     }
 }
