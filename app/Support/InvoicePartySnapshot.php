@@ -127,8 +127,6 @@ final class InvoicePartySnapshot
 
     /**
      * @param  array<string, mixed>  $supplier
-     * @param  string|VatPayerStatus|BackedEnum|null  $vatStatus
-     * @param  string|VatPeriod|BackedEnum|null  $vatPeriod
      * @return array<string, mixed>
      */
     public static function supplierFromArray(array $supplier, string|VatPayerStatus|BackedEnum|null $vatStatus = null, string|VatPeriod|BackedEnum|null $vatPeriod = null): array
@@ -195,9 +193,6 @@ final class InvoicePartySnapshot
         ])['customer'];
     }
 
-    /**
-     * @param  string|BackedEnum|null  $value
-     */
     private static function normalizeEnumValue(string|BackedEnum|null $value): ?string
     {
         if ($value instanceof BackedEnum) {
