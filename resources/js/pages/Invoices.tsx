@@ -163,7 +163,7 @@ const Invoices = () => {
   const filteredInvoices = invoices.filter(
     (invoice) =>
       invoice.invoice_number.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      (invoice.party_snapshot.customer.name || '').toLowerCase().includes(searchQuery.toLowerCase())
+      (invoice.party_snapshot?.customer?.name || '').toLowerCase().includes(searchQuery.toLowerCase())
   );
 
   return (
@@ -267,7 +267,7 @@ const Invoices = () => {
                 filteredInvoices.map((invoice) => (
                   <TableRow key={invoice.id}>
                     <TableCell className="font-medium">{invoice.invoice_number}</TableCell>
-                    <TableCell>{invoice.party_snapshot.customer.name || 'N/A'}</TableCell>
+                    <TableCell>{invoice.party_snapshot?.customer?.name || 'N/A'}</TableCell>
                     <TableCell>{new Date(invoice.issue_date).toLocaleDateString('sk-SK')}</TableCell>
                     <TableCell>{new Date(invoice.due_date).toLocaleDateString('sk-SK')}</TableCell>
                     <TableCell className="font-semibold">

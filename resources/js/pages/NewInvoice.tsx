@@ -409,7 +409,16 @@ const NewInvoice = () => {
     if (isEditMode && invoice) {
       // Always load from invoice snapshot data (not through relationship)
       // This preserves the historical data from when the invoice was created
-      const customerSnapshot = invoice.party_snapshot.customer;
+      const customerSnapshot = invoice.party_snapshot?.customer ?? {
+        name: null,
+        ico: null,
+        dic: null,
+        ic_dph: null,
+        street: null,
+        city: null,
+        postal_code: null,
+        country: null,
+      };
 
       // Check if invoice has custom company data (no company_id means it was custom)
       if (customerSnapshot.ico && !invoice.company_id) {
