@@ -223,7 +223,7 @@ class CompanyRepository implements CompanyRepositoryContract
     private function getMonthlyAmounts(int $companyId, int $year, string $companyField): array
     {
         $result = array_fill(1, 12, 0.0);
-        $driver = Invoice::query()->getConnection()->getDriverName();
+        $driver = (string) config('database.connections.'.config('database.default').'.driver', 'pgsql');
 
         $monthExpression = match ($driver) {
             'sqlite' => "CAST(strftime('%m', issue_date) AS integer)",
