@@ -7,7 +7,6 @@ namespace App\Actions\Invoice;
 use App\Actions\Company\CompanyFetchOrCreateAction;
 use App\DTOs\Invoice\InvoiceUpdateContext;
 use App\DTOs\Invoice\InvoiceUpdateDTO;
-use App\Models\Company;
 use App\Models\Invoice;
 use App\Models\UserCompany;
 use App\Repositories\Contracts\InvoiceRepository;
@@ -35,13 +34,16 @@ final readonly class InvoiceUpdateAction
         return DB::transaction(function () use ($invoice, $dto, $supplierCompanyId): Invoice {
             $supplierChanged = $invoice->supplier_company_id !== $supplierCompanyId;
             $supplierCompany = UserCompany::find($supplierCompanyId);
-            $issueDate = $dto->issueDate ?? $invoice->issue_date;
+            $issueDate = $dto->issueDate ?? $invoice->issue_date->toDateString();
             $vatStatus = $supplierChanged
                 ? $this->getVatStatusForSupplier($supplierCompany, $issueDate)
                 : null;
             $isVatPayer = $supplierChanged
                 ? ($vatStatus?->status->isVatPayer() ?? false)
                 : $invoice->supplierIsVatPayer();
+            $supplierSnapshot = $supplierChanged
+                ? InvoicePartySnapshot::supplierFromUserCompany($supplierCompany, $vatStatus)
+                : $invoice->getSupplierSnapshot();
 
             $context = new InvoiceUpdateContext(
                 invoice: $invoice,
@@ -51,7 +53,7 @@ final readonly class InvoiceUpdateAction
             );
 
             $updateData = $this->buildBaseUpdateData($dto, $supplierCompanyId, $isVatPayer);
-            $updateData = $this->applyCompanyData($updateData, $context, $supplierCompany, $vatStatus, $supplierChanged);
+            $updateData = $this->applyCompanyData($updateData, $context, $supplierSnapshot);
 
             $this->invoiceRepository->update($invoice, $updateData);
 
@@ -100,19 +102,8 @@ final readonly class InvoiceUpdateAction
      * @param  array<string, mixed>  $updateData
      * @return array<string, mixed>
      */
-    private function applyCompanyData(
-        array $updateData,
-        InvoiceUpdateContext $context,
-        ?UserCompany $supplierCompany,
-        ?object $vatStatus,
-        bool $supplierChanged
-    ): array
+    private function applyCompanyData(array $updateData, InvoiceUpdateContext $context, array $supplierSnapshot): array
     {
-        $partySnapshot = InvoicePartySnapshot::normalize($context->invoice->party_snapshot);
-        $supplierSnapshot = $supplierChanged
-            ? InvoicePartySnapshot::supplierFromUserCompany($supplierCompany, $vatStatus)
-            : $partySnapshot['supplier'];
-
         if ($context->dto->useCustomCompany === true) {
             $updateData = $this->applyCustomCompanyData($updateData, $context->dto, $supplierSnapshot);
 
@@ -127,7 +118,7 @@ final readonly class InvoiceUpdateAction
 
         $updateData['party_snapshot'] = InvoicePartySnapshot::make(
             $supplierSnapshot,
-            $partySnapshot['customer']
+            $context->invoice->getCustomerSnapshot()
         );
 
         return $this->applyItemsData($updateData, $context);
@@ -206,7 +197,7 @@ final readonly class InvoiceUpdateAction
         return $updateData;
     }
 
-    private function findOrCreateCompany(InvoiceUpdateDTO $dto): Company
+    private function findOrCreateCompany(InvoiceUpdateDTO $dto)
     {
         return $this->companyFetchOrCreate->handle($dto->clientIco, [
             'name' => $dto->clientName,

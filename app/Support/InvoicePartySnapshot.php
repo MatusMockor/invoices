@@ -122,7 +122,7 @@ final class InvoicePartySnapshot
                 'swift' => $supplierCompany?->swift,
                 'bank_name' => null,
             ],
-        ], $vatStatus?->status ?? null, $vatStatus?->period ?? null);
+        ], $vatStatus->status ?? null, $vatStatus->period ?? null);
     }
 
     /**
