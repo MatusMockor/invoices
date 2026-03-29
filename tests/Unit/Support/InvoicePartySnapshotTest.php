@@ -19,11 +19,11 @@ final class InvoicePartySnapshotTest extends TestCase
                 'vat_payer_status' => [],
                 'bank' => [
                     'iban' => [],
-                    'swift' => new stdClass(),
+                    'swift' => new stdClass,
                 ],
             ],
             'customer' => [
-                'name' => new stdClass(),
+                'name' => new stdClass,
                 'country' => ['SK'],
             ],
         ]);

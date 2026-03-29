@@ -9,6 +9,7 @@ use App\Enums\VatPeriod;
 use App\Models\Company;
 use App\Models\UserCompany;
 use BackedEnum;
+use Stringable;
 
 final class InvoicePartySnapshot
 {
@@ -208,7 +209,7 @@ final class InvoicePartySnapshot
             return null;
         }
 
-        if (! is_scalar($value) && ! $value instanceof \Stringable) {
+        if (! is_scalar($value) && ! $value instanceof Stringable) {
             return null;
         }
 
