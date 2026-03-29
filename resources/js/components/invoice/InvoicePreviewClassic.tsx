@@ -57,6 +57,9 @@ export const InvoicePreviewClassic = ({ invoiceData }: InvoicePreviewClassicProp
             <div className="mt-1.5 pt-1.5 border-t border-gray-200">
               <p className="text-[9pt] text-gray-600 leading-relaxed">ICO: {invoiceData.client.ico || 'N/A'}</p>
               <p className="text-[9pt] text-gray-600 leading-relaxed">DIC: {invoiceData.client.dic || 'N/A'}</p>
+              {invoiceData.client.icDph && (
+                <p className="text-[9pt] text-gray-600 leading-relaxed">IC DPH: {invoiceData.client.icDph}</p>
+              )}
             </div>
           </div>
         </div>

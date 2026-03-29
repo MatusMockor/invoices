@@ -97,14 +97,13 @@ class InvoiceCreateActionDicTest extends TestCase
         $this->assertEquals($company->ico, $invoice->company_ico);
         $this->assertEquals($company->name, $invoice->company_name);
 
-        $this->assertDatabaseHas(Invoice::class, [
-            'id' => $invoice->id,
-            'company_id' => $company->id,
-            'company_ico' => $company->ico,
-            'company_dic' => $company->dic,
-            'company_ic_dph' => $company->ic_dph,
-            'company_name' => $company->name,
-        ]);
+        $storedInvoice = Invoice::query()->findOrFail($invoice->id);
+
+        $this->assertSame($company->id, $storedInvoice->company_id);
+        $this->assertSame($company->ico, data_get($storedInvoice->party_snapshot, 'customer.ico'));
+        $this->assertSame($company->dic, data_get($storedInvoice->party_snapshot, 'customer.dic'));
+        $this->assertSame($company->ic_dph, data_get($storedInvoice->party_snapshot, 'customer.ic_dph'));
+        $this->assertSame($company->name, data_get($storedInvoice->party_snapshot, 'customer.name'));
     }
 
     public function test_creates_invoice_with_custom_company_dic_and_ic_dph(): void
@@ -163,14 +162,13 @@ class InvoiceCreateActionDicTest extends TestCase
         $this->assertEquals($customCompanyName, $invoice->company_name);
         $this->assertNull($invoice->company_id);
 
-        $this->assertDatabaseHas(Invoice::class, [
-            'id' => $invoice->id,
-            'company_id' => null,
-            'company_ico' => $customIco,
-            'company_dic' => $customDic,
-            'company_ic_dph' => $customIcDph,
-            'company_name' => $customCompanyName,
-        ]);
+        $storedInvoice = Invoice::query()->findOrFail($invoice->id);
+
+        $this->assertNull($storedInvoice->company_id);
+        $this->assertSame($customIco, data_get($storedInvoice->party_snapshot, 'customer.ico'));
+        $this->assertSame($customDic, data_get($storedInvoice->party_snapshot, 'customer.dic'));
+        $this->assertSame($customIcDph, data_get($storedInvoice->party_snapshot, 'customer.ic_dph'));
+        $this->assertSame($customCompanyName, data_get($storedInvoice->party_snapshot, 'customer.name'));
     }
 
     public function test_creates_invoice_with_null_dic_and_ic_dph(): void
@@ -215,12 +213,11 @@ class InvoiceCreateActionDicTest extends TestCase
         $this->assertNull($invoice->company_ic_dph);
         $this->assertEquals($company->ico, $invoice->company_ico);
 
-        $this->assertDatabaseHas(Invoice::class, [
-            'id' => $invoice->id,
-            'company_id' => $company->id,
-            'company_ico' => $company->ico,
-            'company_dic' => null,
-            'company_ic_dph' => null,
-        ]);
+        $storedInvoice = Invoice::query()->findOrFail($invoice->id);
+
+        $this->assertSame($company->id, $storedInvoice->company_id);
+        $this->assertSame($company->ico, data_get($storedInvoice->party_snapshot, 'customer.ico'));
+        $this->assertNull(data_get($storedInvoice->party_snapshot, 'customer.dic'));
+        $this->assertNull(data_get($storedInvoice->party_snapshot, 'customer.ic_dph'));
     }
 }

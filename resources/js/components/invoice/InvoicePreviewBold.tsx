@@ -75,6 +75,9 @@ export const InvoicePreviewBold = ({ invoiceData }: InvoicePreviewBoldProps) => 
           <div className="space-y-0.5 pt-2 border-t border-cyan-500/30">
             <p className="text-[9pt] text-slate-400 leading-relaxed">ICO: <span className="text-white font-semibold">{invoiceData.client.ico}</span></p>
             <p className="text-[9pt] text-slate-400 leading-relaxed">DIC: <span className="text-white font-semibold">{invoiceData.client.dic}</span></p>
+            {invoiceData.client.icDph && (
+              <p className="text-[9pt] text-slate-400 leading-relaxed">IC DPH: <span className="text-white font-semibold">{invoiceData.client.icDph}</span></p>
+            )}
           </div>
         </div>
       </div>

@@ -117,15 +117,13 @@ class InvoiceUpdateActionDicTest extends TestCase
         $this->assertEquals($newCompany->ico, $updatedInvoice->company_ico);
         $this->assertEquals($newCompany->name, $updatedInvoice->company_name);
 
-        // Assert database has the correct data
-        $this->assertDatabaseHas('invoices', [
-            'id' => $invoice->id,
-            'company_id' => $newCompany->id,
-            'company_ico' => '22222222',
-            'company_dic' => '2022222222',
-            'company_ic_dph' => 'SK2022222222',
-            'company_name' => 'New Company',
-        ]);
+        $storedInvoice = Invoice::query()->findOrFail($invoice->id);
+
+        $this->assertSame($newCompany->id, $storedInvoice->company_id);
+        $this->assertSame('22222222', data_get($storedInvoice->party_snapshot, 'customer.ico'));
+        $this->assertSame('2022222222', data_get($storedInvoice->party_snapshot, 'customer.dic'));
+        $this->assertSame('SK2022222222', data_get($storedInvoice->party_snapshot, 'customer.ic_dph'));
+        $this->assertSame('New Company', data_get($storedInvoice->party_snapshot, 'customer.name'));
     }
 
     public function test_updates_invoice_with_custom_company_dic_and_ic_dph(): void
@@ -185,15 +183,13 @@ class InvoiceUpdateActionDicTest extends TestCase
         $this->assertEquals('Custom Updated Company', $updatedInvoice->company_name);
         $this->assertNull($updatedInvoice->company_id); // No company_id for custom
 
-        // Assert database has the correct data
-        $this->assertDatabaseHas('invoices', [
-            'id' => $invoice->id,
-            'company_id' => null,
-            'company_ico' => '44444444',
-            'company_dic' => '2044444444',
-            'company_ic_dph' => 'SK2044444444',
-            'company_name' => 'Custom Updated Company',
-        ]);
+        $storedInvoice = Invoice::query()->findOrFail($invoice->id);
+
+        $this->assertNull($storedInvoice->company_id);
+        $this->assertSame('44444444', data_get($storedInvoice->party_snapshot, 'customer.ico'));
+        $this->assertSame('2044444444', data_get($storedInvoice->party_snapshot, 'customer.dic'));
+        $this->assertSame('SK2044444444', data_get($storedInvoice->party_snapshot, 'customer.ic_dph'));
+        $this->assertSame('Custom Updated Company', data_get($storedInvoice->party_snapshot, 'customer.name'));
     }
 
     public function test_preserves_dic_and_ic_dph_when_not_updating_company(): void
@@ -247,12 +243,10 @@ class InvoiceUpdateActionDicTest extends TestCase
         $this->assertEquals($company->ic_dph, $updatedInvoice->company_ic_dph);
         $this->assertEquals($company->ico, $updatedInvoice->company_ico);
 
-        // Assert database has the correct data
-        $this->assertDatabaseHas('invoices', [
-            'id' => $invoice->id,
-            'company_dic' => '2055555555',
-            'company_ic_dph' => 'SK2055555555',
-            'invoice_number' => 'INV-2025-CHANGED',
-        ]);
+        $storedInvoice = Invoice::query()->findOrFail($invoice->id);
+
+        $this->assertSame('INV-2025-CHANGED', $storedInvoice->invoice_number);
+        $this->assertSame('2055555555', data_get($storedInvoice->party_snapshot, 'customer.dic'));
+        $this->assertSame('SK2055555555', data_get($storedInvoice->party_snapshot, 'customer.ic_dph'));
     }
 }

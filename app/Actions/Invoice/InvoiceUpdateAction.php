@@ -11,6 +11,7 @@ use App\Models\Company;
 use App\Models\Invoice;
 use App\Models\UserCompany;
 use App\Repositories\Contracts\InvoiceRepository;
+use App\Support\InvoicePartySnapshot;
 use App\Services\Interfaces\VatService;
 use App\Services\Invoice\InvoiceItemsProcessorService;
 use Carbon\Carbon;
@@ -32,7 +33,15 @@ final readonly class InvoiceUpdateAction
     public function handle(Invoice $invoice, InvoiceUpdateDTO $dto, int $supplierCompanyId): Invoice
     {
         return DB::transaction(function () use ($invoice, $dto, $supplierCompanyId): Invoice {
-            $isVatPayer = $this->determineVatPayerStatus($supplierCompanyId, $dto->issueDate ?? $invoice->issue_date);
+            $supplierChanged = $invoice->supplier_company_id !== $supplierCompanyId;
+            $supplierCompany = UserCompany::find($supplierCompanyId);
+            $issueDate = $dto->issueDate ?? $invoice->issue_date;
+            $vatStatus = $supplierChanged
+                ? $this->getVatStatusForSupplier($supplierCompany, $issueDate)
+                : null;
+            $isVatPayer = $supplierChanged
+                ? ($vatStatus?->status->isVatPayer() ?? false)
+                : $invoice->supplierIsVatPayer();
 
             $context = new InvoiceUpdateContext(
                 invoice: $invoice,
@@ -42,23 +51,21 @@ final readonly class InvoiceUpdateAction
             );
 
             $updateData = $this->buildBaseUpdateData($dto, $supplierCompanyId, $isVatPayer);
-            $updateData = $this->applyCompanyData($updateData, $context);
+            $updateData = $this->applyCompanyData($updateData, $context, $supplierCompany, $vatStatus, $supplierChanged);
 
             $this->invoiceRepository->update($invoice, $updateData);
 
-            return $invoice->fresh()->load(['company', 'items']);
+            return $invoice->fresh()->load(['items']);
         });
     }
 
-    private function determineVatPayerStatus(int $supplierCompanyId, string|Carbon $issueDate): bool
+    private function getVatStatusForSupplier(?UserCompany $supplierCompany, string|Carbon $issueDate): ?object
     {
-        $supplierCompany = UserCompany::find($supplierCompanyId);
         $issueDateParsed = $issueDate instanceof Carbon ? $issueDate : Carbon::parse($issueDate);
-        $vatStatus = $supplierCompany
+
+        return $supplierCompany
             ? $this->vatService->getVatStatusAtDate($supplierCompany, $issueDateParsed)
             : null;
-
-        return $vatStatus?->status->isVatPayer() ?? false;
     }
 
     /**
@@ -93,58 +100,79 @@ final readonly class InvoiceUpdateAction
      * @param  array<string, mixed>  $updateData
      * @return array<string, mixed>
      */
-    private function applyCompanyData(array $updateData, InvoiceUpdateContext $context): array
+    private function applyCompanyData(
+        array $updateData,
+        InvoiceUpdateContext $context,
+        ?UserCompany $supplierCompany,
+        ?object $vatStatus,
+        bool $supplierChanged
+    ): array
     {
+        $partySnapshot = InvoicePartySnapshot::normalize($context->invoice->party_snapshot);
+        $supplierSnapshot = $supplierChanged
+            ? InvoicePartySnapshot::supplierFromUserCompany($supplierCompany, $vatStatus)
+            : $partySnapshot['supplier'];
+
         if ($context->dto->useCustomCompany === true) {
-            $updateData = $this->applyCustomCompanyData($updateData, $context->dto);
+            $updateData = $this->applyCustomCompanyData($updateData, $context->dto, $supplierSnapshot);
 
             return $this->applyItemsData($updateData, $context);
         }
 
         if ($context->dto->useCustomCompany === false && $context->dto->clientIco !== null) {
-            $updateData = $this->applyStandardCompanyData($updateData, $context->dto);
+            $updateData = $this->applyStandardCompanyData($updateData, $context->dto, $supplierSnapshot);
+
+            return $this->applyItemsData($updateData, $context);
         }
+
+        $updateData['party_snapshot'] = InvoicePartySnapshot::make(
+            $supplierSnapshot,
+            $partySnapshot['customer']
+        );
 
         return $this->applyItemsData($updateData, $context);
     }
 
     /**
      * @param  array<string, mixed>  $updateData
+     * @param  array<string, mixed>  $supplierSnapshot
      * @return array<string, mixed>
      */
-    private function applyCustomCompanyData(array $updateData, InvoiceUpdateDTO $dto): array
+    private function applyCustomCompanyData(array $updateData, InvoiceUpdateDTO $dto, array $supplierSnapshot): array
     {
         return array_merge($updateData, [
             'company_id' => null,
-            'company_ico' => $dto->customCompanyIco,
-            'company_dic' => $dto->customCompanyDic,
-            'company_ic_dph' => $dto->customCompanyIcDph,
-            'company_name' => $dto->customCompanyName,
-            'company_address' => $dto->customCompanyAddress,
-            'company_city' => $dto->customCompanyCity,
-            'company_zip' => $dto->customCompanyZip,
-            'company_country' => $dto->customCompanyCountry,
+            'party_snapshot' => InvoicePartySnapshot::make(
+                $supplierSnapshot,
+                InvoicePartySnapshot::customerFromArray([
+                    'ico' => $dto->customCompanyIco,
+                    'dic' => $dto->customCompanyDic,
+                    'ic_dph' => $dto->customCompanyIcDph,
+                    'name' => $dto->customCompanyName,
+                    'street' => $dto->customCompanyAddress,
+                    'city' => $dto->customCompanyCity,
+                    'postal_code' => $dto->customCompanyZip,
+                    'country' => $dto->customCompanyCountry,
+                ])
+            ),
         ]);
     }
 
     /**
      * @param  array<string, mixed>  $updateData
+     * @param  array<string, mixed>  $supplierSnapshot
      * @return array<string, mixed>
      */
-    private function applyStandardCompanyData(array $updateData, InvoiceUpdateDTO $dto): array
+    private function applyStandardCompanyData(array $updateData, InvoiceUpdateDTO $dto, array $supplierSnapshot): array
     {
         $customerCompany = $this->findOrCreateCompany($dto);
 
         return array_merge($updateData, [
             'company_id' => $customerCompany->id,
-            'company_ico' => $customerCompany->ico,
-            'company_dic' => $customerCompany->dic,
-            'company_ic_dph' => $customerCompany->ic_dph,
-            'company_name' => $customerCompany->name,
-            'company_address' => $customerCompany->street,
-            'company_city' => $customerCompany->city,
-            'company_zip' => $customerCompany->postal_code,
-            'company_country' => $customerCompany->country,
+            'party_snapshot' => InvoicePartySnapshot::make(
+                $supplierSnapshot,
+                InvoicePartySnapshot::customerFromCompany($customerCompany)
+            ),
         ]);
     }
 

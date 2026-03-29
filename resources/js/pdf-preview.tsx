@@ -9,6 +9,8 @@ import "./index.css";
 interface InvoicePageData {
   invoice: {
     id: number;
+    company_id: number | null;
+    supplier_company_id: number | null;
     invoice_number: string;
     issue_date: string;
     due_date: string;
@@ -25,26 +27,34 @@ interface InvoicePageData {
     reverse_charge_text?: string;
     tax_exemption_text?: string;
     supplier_is_vat_payer: boolean;
-    supplier_registry_office?: string;
-    supplier_registry_number?: string;
-    supplier_company?: {
-      name: string;
-      address: string;
-      city: string;
-      postal_code: string;
-      ico: string;
-      dic: string;
-      ic_dph?: string;
-      iban?: string;
-    };
-    business_entity?: {
-      name: string;
-      address: string;
-      city: string;
-      postal_code: string;
-      ico: string;
-      dic: string;
-      ic_dph?: string;
+    party_snapshot: {
+      supplier: {
+        name: string;
+        ico: string;
+        dic: string;
+        ic_dph?: string;
+        street?: string;
+        city?: string;
+        postal_code?: string;
+        country?: string;
+        registration_office?: string;
+        registration_number?: string;
+        bank: {
+          iban?: string;
+          swift?: string;
+          bank_name?: string;
+        };
+      };
+      customer: {
+        name: string;
+        ico: string;
+        dic: string;
+        ic_dph?: string;
+        street?: string;
+        city?: string;
+        postal_code?: string;
+        country?: string;
+      };
     };
     items: Array<{
       description: string;
@@ -66,8 +76,14 @@ declare global {
   }
 }
 
+const formatAddress = (street?: string, postalCode?: string, city?: string) =>
+  [street, postalCode, city].filter(Boolean).join(', ');
+
 // Transform server data to component format
 function transformInvoiceData(data: InvoicePageData['invoice']) {
+  const supplier = data.party_snapshot.supplier;
+  const customer = data.party_snapshot.customer;
+
   return {
     id: data.invoice_number,
     date: new Date(data.issue_date).toLocaleDateString('sk-SK'),
@@ -78,23 +94,22 @@ function transformInvoiceData(data: InvoicePageData['invoice']) {
     variableSymbol: data.variable_symbol,
     constantSymbol: data.constant_symbol,
     specificSymbol: data.specific_symbol,
-    supplier: data.supplier_company ? {
-      name: data.supplier_company.name,
-      address: `${data.supplier_company.address}, ${data.supplier_company.postal_code} ${data.supplier_company.city}`,
-      ico: data.supplier_company.ico,
-      dic: data.supplier_company.dic,
-      icDph: data.supplier_company.ic_dph,
-      iban: data.supplier_company.iban,
-      registryOffice: data.supplier_registry_office,
-      registryNumber: data.supplier_registry_number,
-    } : undefined,
+    supplier: {
+      name: supplier.name || 'N/A',
+      address: formatAddress(supplier.street, supplier.postal_code, supplier.city),
+      ico: supplier.ico || '',
+      dic: supplier.dic || '',
+      icDph: supplier.ic_dph,
+      iban: supplier.bank?.iban,
+      registryOffice: supplier.registration_office,
+      registryNumber: supplier.registration_number,
+    },
     client: {
-      name: data.business_entity?.name || 'N/A',
-      address: data.business_entity
-        ? `${data.business_entity.address}, ${data.business_entity.postal_code} ${data.business_entity.city}`
-        : '',
-      ico: data.business_entity?.ico || '',
-      dic: data.business_entity?.dic || '',
+      name: customer.name || 'N/A',
+      address: formatAddress(customer.street, customer.postal_code, customer.city),
+      ico: customer.ico || '',
+      dic: customer.dic || '',
+      icDph: customer.ic_dph,
     },
     items: data.items.map(item => ({
       description: item.description,

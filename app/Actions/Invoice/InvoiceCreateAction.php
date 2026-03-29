@@ -11,6 +11,7 @@ use App\Models\Invoice;
 use App\Models\UserCompany;
 use App\Repositories\Contracts\InvoiceItemRepository;
 use App\Repositories\Contracts\InvoiceRepository;
+use App\Support\InvoicePartySnapshot;
 use App\Services\Interfaces\VatService;
 use App\Services\Invoice\InvoiceTotalCalculatorService;
 use App\Services\Invoice\VatCalculatorService;
@@ -55,13 +56,14 @@ final class InvoiceCreateAction
             $totals = $dto->reverseCharge
                 ? $this->totalCalculator->calculateTotalsWithReverseCharge($itemsForCalculation, $dto->discountAmount ?? null)
                 : $this->totalCalculator->calculateTotals($itemsForCalculation, $dto->discountAmount ?? null);
-            $invoiceData = $this->buildInvoiceData($dto, $userId, $supplierCompanyId, $supplierCompany, $vatStatus, $totals, $isVatPayer);
-            $invoiceData = $this->applyCompanyDataToInvoice($invoiceData, $dto);
+            $supplierSnapshot = InvoicePartySnapshot::supplierFromUserCompany($supplierCompany, $vatStatus);
+            $invoiceData = $this->buildInvoiceData($dto, $userId, $supplierCompanyId, $totals, $isVatPayer);
+            $invoiceData = $this->applyCompanyDataToInvoice($invoiceData, $dto, $supplierSnapshot);
 
             $invoice = $this->invoiceRepository->create($invoiceData);
             $this->createInvoiceItems($invoice, $itemsForCalculation, $dto->reverseCharge);
 
-            return $invoice->load(['company', 'items']);
+            return $invoice->load(['items']);
         });
     }
 
@@ -82,8 +84,6 @@ final class InvoiceCreateAction
         InvoiceCreateDTO $dto,
         int $userId,
         int $supplierCompanyId,
-        ?UserCompany $supplierCompany,
-        ?object $vatStatus,
         array $totals,
         bool $isVatPayer
     ): array {
@@ -96,10 +96,6 @@ final class InvoiceCreateAction
             'due_date' => $dto->dueDate,
             'delivery_date' => $dto->deliveryDate,
             'supplier_company_id' => $supplierCompanyId,
-            'supplier_registry_office' => $supplierCompany?->registration_office,
-            'supplier_registry_number' => $supplierCompany?->registration_number,
-            'supplier_vat_payer_status' => $vatStatus?->status->value,
-            'supplier_vat_period' => $vatStatus?->period?->value,
             'subtotal' => $totals['subtotal'],
             'tax_amount' => $totals['tax_amount'],
             'tax_rate' => $taxRate,
@@ -120,53 +116,57 @@ final class InvoiceCreateAction
 
     /**
      * @param  array<string, mixed>  $invoiceData
+     * @param  array<string, mixed>  $supplierSnapshot
      * @return array<string, mixed>
      */
-    private function applyCompanyDataToInvoice(array $invoiceData, InvoiceCreateDTO $dto): array
+    private function applyCompanyDataToInvoice(array $invoiceData, InvoiceCreateDTO $dto, array $supplierSnapshot): array
     {
         if ($dto->useCustomCompany) {
-            return $this->applyCustomCompanyData($invoiceData, $dto);
+            return $this->applyCustomCompanyData($invoiceData, $dto, $supplierSnapshot);
         }
 
-        return $this->applyStandardCompanyData($invoiceData, $dto);
+        return $this->applyStandardCompanyData($invoiceData, $dto, $supplierSnapshot);
     }
 
     /**
      * @param  array<string, mixed>  $invoiceData
+     * @param  array<string, mixed>  $supplierSnapshot
      * @return array<string, mixed>
      */
-    private function applyCustomCompanyData(array $invoiceData, InvoiceCreateDTO $dto): array
+    private function applyCustomCompanyData(array $invoiceData, InvoiceCreateDTO $dto, array $supplierSnapshot): array
     {
         $invoiceData['company_id'] = null;
-        $invoiceData['company_ico'] = $dto->customCompanyIco;
-        $invoiceData['company_dic'] = $dto->customCompanyDic;
-        $invoiceData['company_ic_dph'] = $dto->customCompanyIcDph;
-        $invoiceData['company_name'] = $dto->customCompanyName;
-        $invoiceData['company_address'] = $dto->customCompanyAddress;
-        $invoiceData['company_city'] = $dto->customCompanyCity;
-        $invoiceData['company_zip'] = $dto->customCompanyZip;
-        $invoiceData['company_country'] = $dto->customCompanyCountry;
+        $invoiceData['party_snapshot'] = InvoicePartySnapshot::make(
+            $supplierSnapshot,
+            InvoicePartySnapshot::customerFromArray([
+                'ico' => $dto->customCompanyIco,
+                'dic' => $dto->customCompanyDic,
+                'ic_dph' => $dto->customCompanyIcDph,
+                'name' => $dto->customCompanyName,
+                'street' => $dto->customCompanyAddress,
+                'city' => $dto->customCompanyCity,
+                'postal_code' => $dto->customCompanyZip,
+                'country' => $dto->customCompanyCountry,
+            ])
+        );
 
         return $invoiceData;
     }
 
     /**
      * @param  array<string, mixed>  $invoiceData
+     * @param  array<string, mixed>  $supplierSnapshot
      * @return array<string, mixed>
      */
-    private function applyStandardCompanyData(array $invoiceData, InvoiceCreateDTO $dto): array
+    private function applyStandardCompanyData(array $invoiceData, InvoiceCreateDTO $dto, array $supplierSnapshot): array
     {
         $customerCompany = $this->findOrCreateCompany($dto);
 
         $invoiceData['company_id'] = $customerCompany->id;
-        $invoiceData['company_ico'] = $customerCompany->ico;
-        $invoiceData['company_dic'] = $customerCompany->dic;
-        $invoiceData['company_ic_dph'] = $customerCompany->ic_dph;
-        $invoiceData['company_name'] = $customerCompany->name;
-        $invoiceData['company_address'] = $customerCompany->street;
-        $invoiceData['company_city'] = $customerCompany->city;
-        $invoiceData['company_zip'] = $customerCompany->postal_code;
-        $invoiceData['company_country'] = $customerCompany->country;
+        $invoiceData['party_snapshot'] = InvoicePartySnapshot::make(
+            $supplierSnapshot,
+            InvoicePartySnapshot::customerFromCompany($customerCompany)
+        );
 
         return $invoiceData;
     }

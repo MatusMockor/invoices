@@ -18,6 +18,7 @@ export interface InvoiceClient {
   address: string;
   ico: string;
   dic: string;
+  icDph?: string;
 }
 
 export interface InvoiceItem {

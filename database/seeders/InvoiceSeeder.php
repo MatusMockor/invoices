@@ -10,6 +10,7 @@ use App\Models\Invoice;
 use App\Models\InvoiceItem;
 use App\Models\User;
 use App\Models\UserCompany;
+use App\Support\InvoicePartySnapshot;
 use Carbon\Carbon;
 use Illuminate\Database\Seeder;
 
@@ -315,18 +316,11 @@ class InvoiceSeeder extends Seeder
                 $invoicesBatch[] = [
                     'user_id' => $user->id,
                     'supplier_company_id' => $supplierCompanyId,
-                    // Supplier registry snapshot
-                    'supplier_registry_office' => $supplierCompany?->registration_office,
-                    'supplier_registry_number' => $supplierCompany?->registration_number,
                     'company_id' => $company->id,
-                    'company_ico' => $company->ico,
-                    'company_dic' => $company->dic,
-                    'company_ic_dph' => $company->ic_dph,
-                    'company_name' => $company->name,
-                    'company_address' => $company->street,
-                    'company_city' => $company->city,
-                    'company_zip' => $company->postal_code,
-                    'company_country' => $company->country,
+                    'party_snapshot' => json_encode(InvoicePartySnapshot::make(
+                        InvoicePartySnapshot::supplierFromUserCompany($supplierCompany),
+                        InvoicePartySnapshot::customerFromCompany($company)
+                    )),
                     'invoice_number' => (string) $invoiceCounter++,
                     'issue_date' => $issueDate,
                     'due_date' => $dueDate,

@@ -776,10 +776,13 @@ final class InvoiceVatCalculationTest extends TestCase
 
         // Verify snapshot is stored
         $this->assertEquals(VatPayerStatus::VAT_PAYER, $invoice->supplier_vat_payer_status);
-        $this->assertDatabaseHas(Invoice::class, [
-            'id' => $invoice->id,
-            'supplier_vat_payer_status' => VatPayerStatus::VAT_PAYER->value,
-        ]);
+
+        $storedInvoice = Invoice::query()->findOrFail($invoice->id);
+
+        $this->assertSame(
+            VatPayerStatus::VAT_PAYER->value,
+            data_get($storedInvoice->party_snapshot, 'supplier.vat_payer_status')
+        );
     }
 
     public function test_non_vat_payer_snapshot_is_stored(): void

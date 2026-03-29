@@ -91,7 +91,9 @@ class InvoiceControllerTest extends TestCase
                 'total_amount',
                 'currency',
                 'status',
-                'business_entity',
+                'supplier_company_id',
+                'company_id',
+                'party_snapshot',
                 'items',
                 'supplier_vat_payer_status',
                 'supplier_is_vat_payer',
@@ -728,17 +730,14 @@ class InvoiceControllerTest extends TestCase
 
         $response->assertStatus(201);
 
-        // Verify the invoice was created with DIČ and IČ DPH
-        $this->assertDatabaseHas(Invoice::class, [
-            'invoice_number' => $invoiceNumber,
-            'company_ico' => $clientIco,
-            'company_dic' => $clientDic,
-            'company_ic_dph' => $clientIcDph,
-        ]);
+        $invoice = Invoice::query()->where('invoice_number', $invoiceNumber)->firstOrFail();
 
-        // Verify the response includes DIČ and IČ DPH
-        $response->assertJsonPath('data.company_dic', $clientDic);
-        $response->assertJsonPath('data.company_ic_dph', $clientIcDph);
+        $this->assertSame($clientIco, data_get($invoice->party_snapshot, 'customer.ico'));
+        $this->assertSame($clientDic, data_get($invoice->party_snapshot, 'customer.dic'));
+        $this->assertSame($clientIcDph, data_get($invoice->party_snapshot, 'customer.ic_dph'));
+
+        $response->assertJsonPath('data.party_snapshot.customer.dic', $clientDic);
+        $response->assertJsonPath('data.party_snapshot.customer.ic_dph', $clientIcDph);
     }
 
     public function test_store_saves_custom_company_dic_and_ic_dph_to_invoice(): void
@@ -782,19 +781,17 @@ class InvoiceControllerTest extends TestCase
 
         $response->assertStatus(201);
 
-        // Verify the invoice was created with custom company DIČ and IČ DPH
-        $this->assertDatabaseHas(Invoice::class, [
-            'invoice_number' => $invoiceNumber,
-            'company_id' => null, // No company_id for custom companies
-            'company_ico' => $customCompanyIco,
-            'company_dic' => $customCompanyDic,
-            'company_ic_dph' => $customCompanyIcDph,
-            'company_name' => $customCompanyName,
-        ]);
+        $invoice = Invoice::query()->where('invoice_number', $invoiceNumber)->firstOrFail();
 
-        // Verify the response includes DIČ and IČ DPH
-        $response->assertJsonPath('data.company_dic', $customCompanyDic);
-        $response->assertJsonPath('data.company_ic_dph', $customCompanyIcDph);
+        $this->assertNull($invoice->company_id);
+        $this->assertSame($customCompanyIco, data_get($invoice->party_snapshot, 'customer.ico'));
+        $this->assertSame($customCompanyDic, data_get($invoice->party_snapshot, 'customer.dic'));
+        $this->assertSame($customCompanyIcDph, data_get($invoice->party_snapshot, 'customer.ic_dph'));
+        $this->assertSame($customCompanyName, data_get($invoice->party_snapshot, 'customer.name'));
+
+        $response->assertJsonPath('data.company_id', null);
+        $response->assertJsonPath('data.party_snapshot.customer.dic', $customCompanyDic);
+        $response->assertJsonPath('data.party_snapshot.customer.ic_dph', $customCompanyIcDph);
     }
 
     public function test_latest_number_returns_null_when_no_invoices_exist(): void

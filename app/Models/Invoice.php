@@ -8,6 +8,7 @@ use App\Enums\InvoiceStatus;
 use App\Enums\VatPayerStatus;
 use App\Enums\VatPeriod;
 use App\Observers\InvoiceObserver;
+use App\Support\InvoicePartySnapshot;
 use Illuminate\Database\Eloquent\Attributes\ObservedBy;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
@@ -28,6 +29,7 @@ use Illuminate\Support\Carbon;
  * @property Carbon $delivery_date
  * @property int|null $company_id
  * @property int|null $supplier_company_id
+ * @property array<string, mixed> $party_snapshot
  * @property string|null $supplier_registry_office Snapshot of supplier registry office
  * @property string|null $supplier_registry_number Snapshot of supplier registration number
  * @property VatPayerStatus|null $supplier_vat_payer_status Snapshot of supplier VAT status
@@ -79,6 +81,7 @@ class Invoice extends Model
         'delivery_date',
         'company_id',
         'supplier_company_id',
+        'party_snapshot',
         'supplier_registry_office',
         'supplier_registry_number',
         'supplier_vat_payer_status',
@@ -121,9 +124,33 @@ class Invoice extends Model
         'discount_percentage' => 'float',
         'reverse_charge' => 'boolean',
         'status' => InvoiceStatus::class,
-        'supplier_vat_payer_status' => VatPayerStatus::class,
-        'supplier_vat_period' => VatPeriod::class,
     ];
+
+    /**
+     * @return array<string, mixed>
+     */
+    public function getPartySnapshotAttribute(mixed $value): array
+    {
+        if (is_array($value)) {
+            return InvoicePartySnapshot::normalize($value);
+        }
+
+        if (is_string($value) && $value !== '') {
+            $decoded = json_decode($value, true);
+
+            return InvoicePartySnapshot::normalize(is_array($decoded) ? $decoded : null);
+        }
+
+        return InvoicePartySnapshot::normalize(null);
+    }
+
+    /**
+     * @param  array<string, mixed>|null  $value
+     */
+    public function setPartySnapshotAttribute(?array $value): void
+    {
+        $this->attributes['party_snapshot'] = json_encode(InvoicePartySnapshot::normalize($value));
+    }
 
     /**
      * Get the user that owns the invoice.
@@ -185,16 +212,28 @@ class Invoice extends Model
     }
 
     /**
-     * Get effective VAT status (snapshot or fallback to supplier company)
+     * Get supplier VAT status from immutable party snapshot.
      */
     public function getEffectiveVatStatus(): ?VatPayerStatus
     {
-        // Use snapshot if available, otherwise fallback to supplier company
-        if ($this->supplier_vat_payer_status !== null) {
-            return $this->supplier_vat_payer_status;
+        $status = data_get($this->party_snapshot, 'supplier.vat_payer_status');
+
+        if (! is_string($status) || $status === '') {
+            return null;
         }
 
-        return $this->supplierCompany?->vat_payer_status;
+        return VatPayerStatus::from($status);
+    }
+
+    public function getSupplierVatPeriodSnapshot(): ?VatPeriod
+    {
+        $period = data_get($this->party_snapshot, 'supplier.vat_period');
+
+        if (! is_string($period) || $period === '') {
+            return null;
+        }
+
+        return VatPeriod::from($period);
     }
 
     /**
@@ -224,5 +263,178 @@ class Invoice extends Model
         $status = $this->getEffectiveVatStatus();
 
         return $status !== null && $status !== VatPayerStatus::NOT_VAT_PAYER;
+    }
+
+    /**
+     * @return array<string, mixed>
+     */
+    public function getSupplierSnapshot(): array
+    {
+        /** @var array<string, mixed> $snapshot */
+        $snapshot = data_get($this->party_snapshot, 'supplier', []);
+
+        return $snapshot;
+    }
+
+    /**
+     * @return array<string, mixed>
+     */
+    public function getCustomerSnapshot(): array
+    {
+        /** @var array<string, mixed> $snapshot */
+        $snapshot = data_get($this->party_snapshot, 'customer', []);
+
+        return $snapshot;
+    }
+
+    /**
+     * @return array<string, mixed>
+     */
+    public function getSupplierBankSnapshot(): array
+    {
+        /** @var array<string, mixed> $snapshot */
+        $snapshot = data_get($this->party_snapshot, 'supplier.bank', []);
+
+        return $snapshot;
+    }
+
+    public function getSupplierRegistryOfficeAttribute(): ?string
+    {
+        return $this->getLegacySnapshotValue('supplier.registration_office');
+    }
+
+    public function setSupplierRegistryOfficeAttribute(?string $value): void
+    {
+        $this->setLegacySnapshotValue('supplier.registration_office', $value);
+    }
+
+    public function getSupplierRegistryNumberAttribute(): ?string
+    {
+        return $this->getLegacySnapshotValue('supplier.registration_number');
+    }
+
+    public function setSupplierRegistryNumberAttribute(?string $value): void
+    {
+        $this->setLegacySnapshotValue('supplier.registration_number', $value);
+    }
+
+    public function getSupplierVatPayerStatusAttribute(): ?VatPayerStatus
+    {
+        return $this->getEffectiveVatStatus();
+    }
+
+    public function setSupplierVatPayerStatusAttribute(VatPayerStatus|string|null $value): void
+    {
+        $this->setLegacySnapshotValue(
+            'supplier.vat_payer_status',
+            $value instanceof VatPayerStatus ? $value->value : $value
+        );
+    }
+
+    public function getSupplierVatPeriodAttribute(): ?VatPeriod
+    {
+        return $this->getSupplierVatPeriodSnapshot();
+    }
+
+    public function setSupplierVatPeriodAttribute(VatPeriod|string|null $value): void
+    {
+        $this->setLegacySnapshotValue(
+            'supplier.vat_period',
+            $value instanceof VatPeriod ? $value->value : $value
+        );
+    }
+
+    public function getCompanyIcoAttribute(): ?string
+    {
+        return $this->getLegacySnapshotValue('customer.ico');
+    }
+
+    public function setCompanyIcoAttribute(?string $value): void
+    {
+        $this->setLegacySnapshotValue('customer.ico', $value);
+    }
+
+    public function getCompanyDicAttribute(): ?string
+    {
+        return $this->getLegacySnapshotValue('customer.dic');
+    }
+
+    public function setCompanyDicAttribute(?string $value): void
+    {
+        $this->setLegacySnapshotValue('customer.dic', $value);
+    }
+
+    public function getCompanyIcDphAttribute(): ?string
+    {
+        return $this->getLegacySnapshotValue('customer.ic_dph');
+    }
+
+    public function setCompanyIcDphAttribute(?string $value): void
+    {
+        $this->setLegacySnapshotValue('customer.ic_dph', $value);
+    }
+
+    public function getCompanyNameAttribute(): ?string
+    {
+        return $this->getLegacySnapshotValue('customer.name');
+    }
+
+    public function setCompanyNameAttribute(?string $value): void
+    {
+        $this->setLegacySnapshotValue('customer.name', $value);
+    }
+
+    public function getCompanyAddressAttribute(): ?string
+    {
+        return $this->getLegacySnapshotValue('customer.street');
+    }
+
+    public function setCompanyAddressAttribute(?string $value): void
+    {
+        $this->setLegacySnapshotValue('customer.street', $value);
+    }
+
+    public function getCompanyCityAttribute(): ?string
+    {
+        return $this->getLegacySnapshotValue('customer.city');
+    }
+
+    public function setCompanyCityAttribute(?string $value): void
+    {
+        $this->setLegacySnapshotValue('customer.city', $value);
+    }
+
+    public function getCompanyZipAttribute(): ?string
+    {
+        return $this->getLegacySnapshotValue('customer.postal_code');
+    }
+
+    public function setCompanyZipAttribute(?string $value): void
+    {
+        $this->setLegacySnapshotValue('customer.postal_code', $value);
+    }
+
+    public function getCompanyCountryAttribute(): ?string
+    {
+        return $this->getLegacySnapshotValue('customer.country');
+    }
+
+    public function setCompanyCountryAttribute(?string $value): void
+    {
+        $this->setLegacySnapshotValue('customer.country', $value);
+    }
+
+    private function getLegacySnapshotValue(string $path): ?string
+    {
+        $value = data_get($this->party_snapshot, $path);
+
+        return is_string($value) && $value !== '' ? $value : null;
+    }
+
+    private function setLegacySnapshotValue(string $path, mixed $value): void
+    {
+        $snapshot = $this->party_snapshot;
+        data_set($snapshot, $path, $value);
+        $this->party_snapshot = $snapshot;
     }
 }

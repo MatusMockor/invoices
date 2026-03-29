@@ -65,6 +65,9 @@ export const InvoicePreviewMinimal = ({ invoiceData }: InvoicePreviewMinimalProp
           <div className="space-y-0.5 mt-2">
             <p className="text-[9pt] text-slate-500 leading-relaxed">ICO: {invoiceData.client.ico}</p>
             <p className="text-[9pt] text-slate-500 leading-relaxed">DIC: {invoiceData.client.dic}</p>
+            {invoiceData.client.icDph && (
+              <p className="text-[9pt] text-slate-500 leading-relaxed">IC DPH: {invoiceData.client.icDph}</p>
+            )}
           </div>
         </div>
       </div>

@@ -127,10 +127,48 @@ export interface BusinessEntity {
   updated_at: string;
 }
 
+export interface InvoicePartySnapshotBank {
+  iban: string | null;
+  swift: string | null;
+  bank_name: string | null;
+}
+
+export interface InvoiceSupplierSnapshot {
+  name: string | null;
+  ico: string | null;
+  dic: string | null;
+  ic_dph: string | null;
+  street: string | null;
+  city: string | null;
+  postal_code: string | null;
+  country: string | null;
+  registration_office: string | null;
+  registration_number: string | null;
+  vat_payer_status: VatPayerStatus | null;
+  vat_period: VatPeriod | null;
+  bank: InvoicePartySnapshotBank;
+}
+
+export interface InvoiceCustomerSnapshot {
+  name: string | null;
+  ico: string | null;
+  dic: string | null;
+  ic_dph: string | null;
+  street: string | null;
+  city: string | null;
+  postal_code: string | null;
+  country: string | null;
+}
+
+export interface InvoicePartySnapshot {
+  supplier: InvoiceSupplierSnapshot;
+  customer: InvoiceCustomerSnapshot;
+}
+
 export interface Invoice {
   id: number;
-  company_id: number;
-  business_entity_id: number;
+  company_id: number | null;
+  supplier_company_id: number | null;
   invoice_number: string;
   issue_date: string;
   due_date: string;
@@ -158,20 +196,9 @@ export interface Invoice {
   status: 'draft' | 'sent' | 'paid' | 'overdue' | 'cancelled';
   created_at: string;
   updated_at: string;
-
-  // Snapshot fields for customer company (stored at invoice creation time)
-  company_ico?: string;
-  company_dic?: string | null;
-  company_ic_dph?: string | null;
-  company_name?: string;
-  company_address?: string;
-  company_city?: string;
-  company_zip?: string;
-  company_country?: string;
+  party_snapshot: InvoicePartySnapshot;
 
   // Relationships
-  business_entity?: BusinessEntity;
-  supplier_company?: UserCompany;
   items?: InvoiceItem[];
   qr_code?: string;
 
@@ -182,10 +209,6 @@ export interface Invoice {
   supplier_is_vat_payer?: boolean;
   supplier_is_registered_paragraph_7a?: boolean;
   should_show_vat_fields?: boolean;
-
-  // Supplier registry snapshot fields (immutable after invoice creation)
-  supplier_registry_office?: string | null;
-  supplier_registry_number?: string | null;
 }
 
 export interface InvoiceItem {
@@ -444,4 +467,3 @@ export interface AxiosErrorResponse {
   };
   message?: string;
 }
-

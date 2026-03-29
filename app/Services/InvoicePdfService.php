@@ -24,7 +24,7 @@ final class InvoicePdfService implements InvoicePdfServiceContract
      */
     public function generatePdf(Invoice $invoice): string
     {
-        $invoice->load(['items', 'supplierCompany', 'user.settings']);
+        $invoice->load(['items', 'user.settings']);
 
         $template = $this->getInvoiceTemplate($invoice);
 

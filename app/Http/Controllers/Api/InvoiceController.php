@@ -75,7 +75,7 @@ final class InvoiceController extends Controller
      */
     public function show(Invoice $invoice): InvoiceResource
     {
-        $invoice->load(['company', 'supplierCompany', 'items']);
+        $invoice->load(['items']);
         $invoice->qr_code = $this->generateQrCode($invoice);
 
         return new InvoiceResource($invoice);
@@ -94,7 +94,7 @@ final class InvoiceController extends Controller
             auth()->user()->current_company_id
         );
 
-        $invoice->load(['supplierCompany']);
+        $invoice->loadMissing(['items']);
         $invoice->qr_code = $this->generateQrCode($invoice);
 
         return new InvoiceResource($invoice)
@@ -117,7 +117,7 @@ final class InvoiceController extends Controller
             auth()->user()->current_company_id
         );
 
-        $updatedInvoice->load(['supplierCompany']);
+        $updatedInvoice->loadMissing(['items']);
         $updatedInvoice->qr_code = $this->generateQrCode($updatedInvoice);
 
         return new InvoiceResource($updatedInvoice);
@@ -175,21 +175,22 @@ final class InvoiceController extends Controller
      */
     private function generateQrCode(Invoice $invoice): ?string
     {
-        $userCompany = $invoice->supplierCompany;
+        $supplierBank = $invoice->getSupplierBankSnapshot();
+        $supplierSnapshot = $invoice->getSupplierSnapshot();
 
-        if (! $userCompany || ! $userCompany->iban || ! $userCompany->swift) {
+        if (! ($supplierBank['iban'] ?? null) || ! ($supplierBank['swift'] ?? null)) {
             return null;
         }
 
         $data = new PayBySquareData(
-            bankAccount: BankAccountData::fromUserCompany($userCompany->iban, $userCompany->swift),
+            bankAccount: BankAccountData::fromUserCompany($supplierBank['iban'], $supplierBank['swift']),
             amount: $invoice->total_amount,
             symbols: PaymentSymbols::fromInvoice(
                 $invoice->variable_symbol,
                 $invoice->constant_symbol,
                 $invoice->specific_symbol
             ),
-            note: 'Faktura '.$invoice->invoice_number.' - '.$userCompany->name,
+            note: 'Faktura '.$invoice->invoice_number.' - '.($supplierSnapshot['name'] ?? 'N/A'),
         );
 
         return $this->payBySquareService->generateQrCode($data);
