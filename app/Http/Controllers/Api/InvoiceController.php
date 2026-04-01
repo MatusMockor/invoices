@@ -94,7 +94,7 @@ final class InvoiceController extends Controller
             auth()->user()->current_company_id
         );
 
-        $invoice->loadMissing(['items']);
+        $invoice = $invoice->fresh(['items']) ?? $invoice->load(['items']);
         $invoice->qr_code = $this->generateQrCode($invoice);
 
         return new InvoiceResource($invoice)
@@ -117,7 +117,7 @@ final class InvoiceController extends Controller
             auth()->user()->current_company_id
         );
 
-        $updatedInvoice->loadMissing(['items']);
+        $updatedInvoice = $updatedInvoice->fresh(['items']) ?? $updatedInvoice->load(['items']);
         $updatedInvoice->qr_code = $this->generateQrCode($updatedInvoice);
 
         return new InvoiceResource($updatedInvoice);

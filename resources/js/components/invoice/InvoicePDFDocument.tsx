@@ -17,6 +17,7 @@ interface Party {
   street?: string;
   postal_code?: string;
   city?: string;
+  country?: string;
   ico?: string;
   dic?: string;
   ic_dph?: string;
@@ -322,7 +323,7 @@ export const InvoicePDFDocument = ({ invoice }: InvoicePDFDocumentProps) => (
             <Text style={styles.partyName}>{supplier?.name || 'N/A'}</Text>
             <Text style={styles.partyDetail}>{supplier?.street || ''}</Text>
             <Text style={styles.partyDetail}>
-              {supplier?.postal_code} {supplier?.city}
+              {[supplier?.postal_code, supplier?.city, supplier?.country].filter(Boolean).join(' ')}
             </Text>
             <View style={styles.partyDetailSection}>
               <Text style={styles.partyDetail}>IČO: {supplier?.ico || 'N/A'}</Text>
@@ -339,7 +340,7 @@ export const InvoicePDFDocument = ({ invoice }: InvoicePDFDocumentProps) => (
             <Text style={styles.partyName}>{customer?.name || 'N/A'}</Text>
             <Text style={styles.partyDetail}>{customer?.street || ''}</Text>
             <Text style={styles.partyDetail}>
-              {customer?.postal_code} {customer?.city}
+              {[customer?.postal_code, customer?.city, customer?.country].filter(Boolean).join(' ')}
             </Text>
             <View style={styles.partyDetailSection}>
               <Text style={styles.partyDetail}>IČO: {customer?.ico || 'N/A'}</Text>

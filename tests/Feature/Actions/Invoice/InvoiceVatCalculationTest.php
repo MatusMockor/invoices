@@ -640,6 +640,97 @@ final class InvoiceVatCalculationTest extends TestCase
         $this->assertEquals(VatPayerStatus::NOT_VAT_PAYER, $invoice->supplier_vat_payer_status);
     }
 
+    public function test_invoice_update_recalculates_vat_when_issue_date_changes(): void
+    {
+        $company = UserCompany::factory()->create([
+            'vat_payer_status' => VatPayerStatus::NOT_VAT_PAYER,
+        ]);
+        $this->user->update(['current_company_id' => $company->id]);
+
+        VatStatusHistory::factory()->create([
+            'user_company_id' => $company->id,
+            'vat_status' => VatPayerStatus::VAT_PAYER,
+            'vat_period' => VatPeriod::MONTHLY,
+            'valid_from' => now()->subYear()->toDateString(),
+            'valid_to' => now()->subMonth()->toDateString(),
+        ]);
+
+        VatStatusHistory::factory()->create([
+            'user_company_id' => $company->id,
+            'vat_status' => VatPayerStatus::NOT_VAT_PAYER,
+            'vat_period' => null,
+            'valid_from' => now()->subMonth()->addDay()->toDateString(),
+            'valid_to' => null,
+        ]);
+
+        $customerCompany = Company::factory()->create();
+
+        $invoice = Invoice::factory()->create([
+            'supplier_company_id' => $company->id,
+            'company_id' => $customerCompany->id,
+            'user_id' => $this->user->id,
+            'issue_date' => now()->subMonths(6)->toDateString(),
+            'tax_rate' => 20.0,
+            'tax_amount' => 20.0,
+            'total_amount' => 120.0,
+            'supplier_vat_payer_status' => VatPayerStatus::VAT_PAYER,
+            'supplier_vat_period' => VatPeriod::MONTHLY,
+        ]);
+
+        $item = InvoiceItem::factory()->create([
+            'invoice_id' => $invoice->id,
+            'quantity' => 1,
+            'unit_price_without_tax' => 100.0,
+            'tax_rate' => 20.0,
+            'tax_amount' => 20.0,
+            'subtotal' => 100.0,
+            'total_price' => 120.0,
+        ]);
+
+        $action = app(InvoiceUpdateAction::class);
+
+        $dto = new InvoiceUpdateDTO(
+            clientName: null,
+            clientIco: null,
+            clientDic: null,
+            clientIcDph: null,
+            clientStreet: null,
+            clientCity: null,
+            clientPostalCode: null,
+            clientCountry: null,
+            invoiceNumber: null,
+            issueDate: now()->toDateString(),
+            dueDate: null,
+            deliveryDate: null,
+            variableSymbol: null,
+            constantSymbol: null,
+            specificSymbol: null,
+            currency: null,
+            notes: null,
+            status: null,
+            items: [
+                [
+                    'id' => $item->id,
+                    'description' => $item->description,
+                    'quantity' => 1,
+                    'price' => 100.0,
+                    'tax_rate' => 20.0,
+                ],
+            ],
+            taxRate: 20.0
+        );
+
+        $updatedInvoice = $action->handle($invoice, $dto, $company->id);
+
+        $this->assertSame(now()->toDateString(), $updatedInvoice->issue_date->toDateString());
+        $this->assertEquals(0.0, $updatedInvoice->tax_rate);
+        $this->assertEquals(0.0, $updatedInvoice->tax_amount);
+        $this->assertEquals(100.0, $updatedInvoice->total_amount);
+        $this->assertEquals(VatPayerStatus::NOT_VAT_PAYER, $updatedInvoice->supplier_vat_payer_status);
+        $this->assertEquals(VatPayerStatus::NOT_VAT_PAYER->value, data_get($updatedInvoice->party_snapshot, 'supplier.vat_payer_status'));
+        $this->assertEquals(0.0, $updatedInvoice->items->first()->tax_rate);
+    }
+
     // =========================================================================
     // PARAGRAPH 7 AND 7A SPECIFIC TESTS
     // =========================================================================

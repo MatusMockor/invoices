@@ -43,8 +43,8 @@ export const InvoicePreview = ({ open, onOpenChange, invoiceId }: InvoicePreview
 
     const supplier = invoice.party_snapshot.supplier;
     const customer = invoice.party_snapshot.customer;
-    const supplierAddress = [supplier.street, supplier.postal_code, supplier.city].filter(Boolean).join(', ').replace(', ,', ',');
-    const customerAddress = [customer.street, customer.postal_code, customer.city].filter(Boolean).join(', ').replace(', ,', ',');
+    const supplierAddress = [supplier.street, supplier.postal_code, supplier.city, supplier.country].filter(Boolean).join(', ').replace(', ,', ',');
+    const customerAddress = [customer.street, customer.postal_code, customer.city, customer.country].filter(Boolean).join(', ').replace(', ,', ',');
 
     return {
       id: invoice.invoice_number,

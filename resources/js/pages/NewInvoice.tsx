@@ -421,8 +421,17 @@ const NewInvoice = () => {
       };
 
       // Check if invoice has custom company data (no company_id means it was custom)
-      if (customerSnapshot.ico && !invoice.company_id) {
+      if (invoice.company_id === null) {
         setValue("useCustomCompany", true);
+        setSelectedCompany(null);
+        setIcoSearch("");
+        setValue("clientIco", "");
+        setValue("clientName", "");
+        setValue("clientStreet", "");
+        setValue("clientCity", "");
+        setValue("clientPostalCode", "");
+        setValue("clientDic", "");
+        setValue("clientIcDph", "");
         setValue("customCompanyIco", customerSnapshot.ico);
         setValue("customCompanyDic", customerSnapshot.dic || "");
         setValue("customCompanyIcDph", customerSnapshot.ic_dph || "");
@@ -434,6 +443,14 @@ const NewInvoice = () => {
       } else {
         // Load from invoice snapshot data (NOT from business_entity relationship)
         setValue("useCustomCompany", false);
+        setValue("customCompanyIco", customerSnapshot.ico || "");
+        setValue("customCompanyDic", customerSnapshot.dic || "");
+        setValue("customCompanyIcDph", customerSnapshot.ic_dph || "");
+        setValue("customCompanyName", customerSnapshot.name || "");
+        setValue("customCompanyAddress", customerSnapshot.street || "");
+        setValue("customCompanyCity", customerSnapshot.city || "");
+        setValue("customCompanyZip", customerSnapshot.postal_code || "");
+        setValue("customCompanyCountry", customerSnapshot.country || "");
         setValue("clientName", customerSnapshot.name || "");
         setValue("clientStreet", customerSnapshot.street || "");
         setValue("clientCity", customerSnapshot.city || "");
@@ -454,15 +471,6 @@ const NewInvoice = () => {
           ic_dph: customerSnapshot.ic_dph,
         });
 
-        // Also pre-fill custom company fields from invoice snapshot data for when user toggles checkbox
-        setValue("customCompanyIco", customerSnapshot.ico || "");
-        setValue("customCompanyDic", customerSnapshot.dic || "");
-        setValue("customCompanyIcDph", customerSnapshot.ic_dph || "");
-        setValue("customCompanyName", customerSnapshot.name || "");
-        setValue("customCompanyAddress", customerSnapshot.street || "");
-        setValue("customCompanyCity", customerSnapshot.city || "");
-        setValue("customCompanyZip", customerSnapshot.postal_code || "");
-        setValue("customCompanyCountry", customerSnapshot.country || "");
       }
 
       // Set invoice number and variable symbol

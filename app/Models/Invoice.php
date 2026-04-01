@@ -222,7 +222,7 @@ class Invoice extends Model
             return null;
         }
 
-        return VatPayerStatus::from($status);
+        return VatPayerStatus::tryFrom($status);
     }
 
     public function getSupplierVatPeriodSnapshot(): ?VatPeriod
@@ -233,7 +233,7 @@ class Invoice extends Model
             return null;
         }
 
-        return VatPeriod::from($period);
+        return VatPeriod::tryFrom($period);
     }
 
     /**
