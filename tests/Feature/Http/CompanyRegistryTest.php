@@ -189,6 +189,16 @@ final class CompanyRegistryTest extends TestCase
         $response = $this->getJson(route('api.invoices.show', $invoice));
 
         $response->assertSuccessful()
+            ->assertJsonStructure([
+                'data' => [
+                    'party_snapshot' => [
+                        'supplier' => [
+                            'registration_office',
+                            'registration_number',
+                        ],
+                    ],
+                ],
+            ])
             ->assertJsonPath('data.party_snapshot.supplier.registration_office', null)
             ->assertJsonPath('data.party_snapshot.supplier.registration_number', null);
     }

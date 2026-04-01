@@ -76,8 +76,8 @@ declare global {
   }
 }
 
-const formatAddress = (street?: string, postalCode?: string, city?: string) =>
-  [street, postalCode, city].filter(Boolean).join(', ');
+const formatAddress = (street?: string, postalCode?: string, city?: string, country?: string) =>
+  [street, postalCode, city, country].filter(Boolean).join(', ');
 
 // Transform server data to component format
 function transformInvoiceData(data: InvoicePageData['invoice']) {
@@ -96,7 +96,7 @@ function transformInvoiceData(data: InvoicePageData['invoice']) {
     specificSymbol: data.specific_symbol,
     supplier: {
       name: supplier.name || 'N/A',
-      address: formatAddress(supplier.street, supplier.postal_code, supplier.city),
+      address: formatAddress(supplier.street, supplier.postal_code, supplier.city, supplier.country),
       ico: supplier.ico || '',
       dic: supplier.dic || '',
       icDph: supplier.ic_dph,
@@ -106,7 +106,7 @@ function transformInvoiceData(data: InvoicePageData['invoice']) {
     },
     client: {
       name: customer.name || 'N/A',
-      address: formatAddress(customer.street, customer.postal_code, customer.city),
+      address: formatAddress(customer.street, customer.postal_code, customer.city, customer.country),
       ico: customer.ico || '',
       dic: customer.dic || '',
       icDph: customer.ic_dph,

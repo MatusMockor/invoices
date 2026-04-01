@@ -190,6 +190,31 @@ final class InvoiceResourceTest extends TestCase
         $this->assertNull($response['supplier_vat_payer_status']);
     }
 
+    public function test_resource_returns_null_for_unknown_snapshot_vat_values(): void
+    {
+        $invoice = Invoice::factory()->create([
+            'supplier_company_id' => null,
+            'party_snapshot' => [
+                'supplier' => [
+                    'name' => 'Supplier',
+                    'vat_payer_status' => 'legacy_unknown_status',
+                    'vat_period' => 'legacy_unknown_period',
+                    'bank' => [],
+                ],
+                'customer' => [
+                    'name' => 'Customer',
+                ],
+            ],
+        ]);
+
+        $resource = new InvoiceResource($invoice);
+        $response = $resource->toArray(Request::create('/'));
+
+        $this->assertNull($response['supplier_vat_payer_status']);
+        $this->assertNull($response['supplier_vat_period']);
+        $this->assertFalse($response['supplier_is_vat_payer']);
+    }
+
     public function test_resource_includes_all_required_vat_fields(): void
     {
         $supplierCompany = UserCompany::factory()->create([

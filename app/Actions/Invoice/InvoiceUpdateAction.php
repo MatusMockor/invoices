@@ -7,6 +7,7 @@ namespace App\Actions\Invoice;
 use App\Actions\Company\CompanyFetchOrCreateAction;
 use App\DTOs\Invoice\InvoiceUpdateContext;
 use App\DTOs\Invoice\InvoiceUpdateDTO;
+use App\Models\Company;
 use App\Models\Invoice;
 use App\Models\UserCompany;
 use App\Repositories\Contracts\InvoiceRepository;
@@ -33,15 +34,17 @@ final readonly class InvoiceUpdateAction
     {
         return DB::transaction(function () use ($invoice, $dto, $supplierCompanyId): Invoice {
             $supplierChanged = $invoice->supplier_company_id !== $supplierCompanyId;
+            $vatAffectingChange = $supplierChanged
+                || ($dto->issueDate !== null && $dto->issueDate !== $invoice->issue_date->toDateString());
             $supplierCompany = UserCompany::find($supplierCompanyId);
             $issueDate = $dto->issueDate ?? $invoice->issue_date->toDateString();
-            $vatStatus = $supplierChanged
+            $vatStatus = $vatAffectingChange
                 ? $this->getVatStatusForSupplier($supplierCompany, $issueDate)
                 : null;
-            $isVatPayer = $supplierChanged
+            $isVatPayer = $vatAffectingChange
                 ? ($vatStatus?->status->isVatPayer() ?? false)
                 : $invoice->supplierIsVatPayer();
-            $supplierSnapshot = $supplierChanged
+            $supplierSnapshot = $vatAffectingChange
                 ? InvoicePartySnapshot::supplierFromUserCompany($supplierCompany, $vatStatus)
                 : $invoice->getSupplierSnapshot();
 
@@ -162,8 +165,25 @@ final readonly class InvoiceUpdateAction
             'company_id' => $customerCompany->id,
             'party_snapshot' => InvoicePartySnapshot::make(
                 $supplierSnapshot,
-                InvoicePartySnapshot::customerFromCompany($customerCompany)
+                $this->buildStandardCustomerSnapshot($dto)
             ),
+        ]);
+    }
+
+    /**
+     * @return array<string, mixed>
+     */
+    private function buildStandardCustomerSnapshot(InvoiceUpdateDTO $dto): array
+    {
+        return InvoicePartySnapshot::customerFromArray([
+            'ico' => $dto->clientIco,
+            'dic' => $dto->clientDic,
+            'ic_dph' => $dto->clientIcDph,
+            'name' => $dto->clientName,
+            'street' => $dto->clientStreet,
+            'city' => $dto->clientCity,
+            'postal_code' => $dto->clientPostalCode,
+            'country' => $dto->clientCountry ?? config('invoices.default_country'),
         ]);
     }
 
@@ -197,7 +217,7 @@ final readonly class InvoiceUpdateAction
         return $updateData;
     }
 
-    private function findOrCreateCompany(InvoiceUpdateDTO $dto)
+    private function findOrCreateCompany(InvoiceUpdateDTO $dto): Company
     {
         return $this->companyFetchOrCreate->handle($dto->clientIco, [
             'name' => $dto->clientName,

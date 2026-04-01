@@ -228,7 +228,9 @@ class CompanyRepository implements CompanyRepositoryContract
         $monthExpression = match ($driver) {
             'sqlite' => "CAST(strftime('%m', issue_date) AS integer)",
             'mysql', 'mariadb' => 'MONTH(issue_date)',
-            default => 'EXTRACT(MONTH FROM issue_date)::integer',
+            'sqlsrv' => 'MONTH(issue_date)',
+            'pgsql' => 'EXTRACT(MONTH FROM issue_date)::integer',
+            default => 'MONTH(issue_date)',
         };
 
         $monthlyTotals = Invoice::where($companyField, $companyId)

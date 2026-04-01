@@ -220,4 +220,65 @@ class InvoiceCreateActionDicTest extends TestCase
         $this->assertNull(data_get($storedInvoice->party_snapshot, 'customer.dic'));
         $this->assertNull(data_get($storedInvoice->party_snapshot, 'customer.ic_dph'));
     }
+
+    public function test_creates_invoice_snapshot_from_submitted_standard_company_data_without_mutating_company(): void
+    {
+        $company = Company::factory()->create([
+            'ico' => '12345678',
+            'name' => 'Stored Company',
+            'dic' => '2012345678',
+            'ic_dph' => 'SK2012345678',
+            'street' => 'Stored Street 1',
+            'city' => 'Stored City',
+            'postal_code' => '81101',
+            'country' => 'SK',
+        ]);
+
+        $dto = new InvoiceCreateDTO(
+            clientName: 'Submitted Company',
+            clientIco: $company->ico,
+            clientDic: '2099999999',
+            clientIcDph: 'SK2099999999',
+            clientStreet: 'Submitted Street 9',
+            clientCity: 'Submitted City',
+            clientPostalCode: '04001',
+            clientCountry: 'CZ',
+            invoiceNumber: fake()->numerify('INV-####-###'),
+            issueDate: now()->toDateString(),
+            dueDate: now()->addDays(14)->toDateString(),
+            deliveryDate: now()->toDateString(),
+            variableSymbol: fake()->numerify('######'),
+            constantSymbol: null,
+            specificSymbol: null,
+            currency: 'EUR',
+            notes: null,
+            status: InvoiceStatus::DRAFT,
+            items: [
+                [
+                    'description' => fake()->words(3, true),
+                    'quantity' => 1,
+                    'price' => 100.0,
+                ],
+            ],
+            useCustomCompany: false
+        );
+
+        $invoice = $this->action->handle($dto, $this->user->id, $this->userCompany->id);
+        $storedInvoice = Invoice::query()->findOrFail($invoice->id);
+
+        $this->assertSame($company->id, $storedInvoice->company_id);
+        $this->assertSame('Submitted Company', data_get($storedInvoice->party_snapshot, 'customer.name'));
+        $this->assertSame('2099999999', data_get($storedInvoice->party_snapshot, 'customer.dic'));
+        $this->assertSame('SK2099999999', data_get($storedInvoice->party_snapshot, 'customer.ic_dph'));
+        $this->assertSame('Submitted Street 9', data_get($storedInvoice->party_snapshot, 'customer.street'));
+        $this->assertSame('Submitted City', data_get($storedInvoice->party_snapshot, 'customer.city'));
+        $this->assertSame('04001', data_get($storedInvoice->party_snapshot, 'customer.postal_code'));
+        $this->assertSame('CZ', data_get($storedInvoice->party_snapshot, 'customer.country'));
+
+        $company->refresh();
+
+        $this->assertSame('Stored Company', $company->name);
+        $this->assertSame('2012345678', $company->dic);
+        $this->assertSame('SK', $company->country);
+    }
 }

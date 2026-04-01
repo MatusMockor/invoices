@@ -165,10 +165,27 @@ final class InvoiceCreateAction
         $invoiceData['company_id'] = $customerCompany->id;
         $invoiceData['party_snapshot'] = InvoicePartySnapshot::make(
             $supplierSnapshot,
-            InvoicePartySnapshot::customerFromCompany($customerCompany)
+            $this->buildStandardCustomerSnapshot($dto)
         );
 
         return $invoiceData;
+    }
+
+    /**
+     * @return array<string, mixed>
+     */
+    private function buildStandardCustomerSnapshot(InvoiceCreateDTO $dto): array
+    {
+        return InvoicePartySnapshot::customerFromArray([
+            'ico' => $dto->clientIco,
+            'dic' => $dto->clientDic,
+            'ic_dph' => $dto->clientIcDph,
+            'name' => $dto->clientName,
+            'street' => $dto->clientStreet,
+            'city' => $dto->clientCity,
+            'postal_code' => $dto->clientPostalCode,
+            'country' => $dto->clientCountry ?? config('invoices.default_country'),
+        ]);
     }
 
     private function findOrCreateCompany(InvoiceCreateDTO $dto): Company
