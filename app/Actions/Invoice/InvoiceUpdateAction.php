@@ -20,6 +20,8 @@ use Illuminate\Support\Facades\Log;
 
 /**
  * Action for updating existing invoices with all related data.
+ *
+ * @SuppressWarnings(PHPMD.CouplingBetweenObjects)
  */
 final readonly class InvoiceUpdateAction
 {
